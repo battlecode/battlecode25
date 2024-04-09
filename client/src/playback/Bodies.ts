@@ -417,7 +417,7 @@ export class Body {
                         { x: renderCoords.x + 0.5, y: renderCoords.y + 0.5 },
                         direction,
                         2,
-                        '#ff0000aa'
+                        this.team.id == 1 ? '#ff0000aa' : '#00ffffaa'
                     )
                 }
             }
@@ -506,7 +506,7 @@ export class Body {
         const hpBarY = renderCoords.y + 0.5 + hpBarYOffset
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
-        ctx.fillStyle = 'green'
+        ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
         const maxHP = this.game.constants.robotBaseHealth()
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }

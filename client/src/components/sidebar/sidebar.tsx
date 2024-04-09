@@ -37,7 +37,7 @@ export const Sidebar: React.FC = () => {
 
     // Does not need to be set if tournamentSource is valid. This is only for when we want to enable
     // tournament mode and then upload from a local file
-    const [localTournament, setLocalTournament] = useSearchParamBool('localTournament', false)
+    const [localTournament] = useSearchParamBool('localTournament', false)
 
     const [tournamentSource, setTournamentSource] = useSearchParamString('tournamentSource', '')
     const fetchTournamentPage = (tournamentSource: string, rawGames: JsonTournamentGame[]) => {

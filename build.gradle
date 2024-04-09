@@ -51,6 +51,9 @@ task buildMaps(type: JavaExec, dependsOn: [':engine:build']) {
 
 def defaultClassLocation = project(':example-bots').sourceSets.main.output.classesDirs.getAsPath()
 def defaultReplay = 'matches/' + project.property('teamA') + '-vs-' + project.property('teamB') + '-on-' + project.property('maps') + new Date().format('yyyyMMddHHmmss') + '.bc24'
+def saveFileName = (project.findProperty('replay') ?: defaultReplay)
+saveFileName = saveFileName.substring(0, saveFileName.length() - 5)
+saveFileName = saveFileName.substring(0, Math.min(saveFileName.length(), 100)) + '.bc24'
 
 task headless(type: JavaExec, dependsOn: [':engine:build', ':example-bots:build']) {
   mainClass = 'battlecode.server.Main'
@@ -74,7 +77,7 @@ task headless(type: JavaExec, dependsOn: [':engine:build', ':example-bots:build'
     '-Dbc.game.maps=' + project.property('maps'),
     '-Dbc.server.validate-maps=' + project.property('validateMaps'),
     '-Dbc.server.alternate-order=' + project.property('alternateOrder'),
-    '-Dbc.server.save-file=' + (project.findProperty('replay') ?: defaultReplay),
+    '-Dbc.server.save-file=' + (saveFileName)
   ]
 }
 

@@ -3,11 +3,15 @@ import { useAppContext } from '../../../app-context'
 import { TournamentGameElement } from './tournament-game'
 import Tournament, { TournamentGame, TournamentState } from '../../../playback/Tournament'
 import { Space } from 'react-zoomable-ui'
+import { useSearchParamNumber } from '../../../app-search-params'
 
 export const TournamentRenderer: React.FC = () => {
     const appContext = useAppContext()
 
     const spaceRef = useRef<Space | null>(null)
+
+    const [tournamentWinnerStart] = useSearchParamNumber('tournamentWinnerStart', 0)
+    const [tournamentLoserStart] = useSearchParamNumber('tournamentLoserStart', 0)
 
     const tournament = appContext.state.tournament
     const tournamentState = appContext.state.tournamentState
@@ -20,6 +24,8 @@ export const TournamentRenderer: React.FC = () => {
                         tournament={tournament}
                         tournamentState={tournamentState}
                         spaceRef={spaceRef.current}
+                        winnerStart={tournamentWinnerStart}
+                        loserStart={tournamentLoserStart}
                     />
                 ) : (
                     <>Missing Tournament</>
@@ -33,6 +39,8 @@ interface TournamentTreeProps {
     tournament: Tournament
     tournamentState: TournamentState
     spaceRef: Space
+    winnerStart: number
+    loserStart: number
 }
 
 const TournamentTree: React.FC<TournamentTreeProps> = (props) => {
@@ -62,6 +70,8 @@ const TournamentTree: React.FC<TournamentTreeProps> = (props) => {
                         game={rootGame}
                         tournamentState={props.tournamentState}
                         spaceRef={props.spaceRef}
+                        winnerStart={props.winnerStart}
+                        loserStart={props.loserStart}
                     />
                     {bracketTitle && (
                         <div className="text-white pt-2 text-center border-t border-white">{bracketTitle}</div>
@@ -76,6 +86,8 @@ interface TournamentGameWrapperProps {
     game: TournamentGame
     tournamentState: TournamentState
     spaceRef: Space
+    winnerStart: number
+    loserStart: number
 }
 
 const TournamentGameWrapper: React.FC<TournamentGameWrapperProps> = (props) => {
@@ -128,11 +140,13 @@ const TournamentGameWrapper: React.FC<TournamentGameWrapperProps> = (props) => {
     let round = Math.abs(props.game.round)
     let minRound = props.tournamentState.minRoundWinners
     let maxRound = props.tournamentState.maxRoundWinners
+    let startRound = props.winnerStart
     if (Math.sign(props.game.round) < 0) {
         minRound = props.tournamentState.minRoundLosers
         maxRound = props.tournamentState.maxRoundLosers
+        startRound = props.loserStart
     }
-    if (round < minRound) {
+    if (round < minRound || round < startRound) {
         props.game.viewed = true
     }
 
@@ -155,6 +169,8 @@ const TournamentGameWrapper: React.FC<TournamentGameWrapperProps> = (props) => {
                             game={dependA}
                             tournamentState={props.tournamentState}
                             spaceRef={props.spaceRef}
+                            winnerStart={props.winnerStart}
+                            loserStart={props.loserStart}
                         />
                     </div>
                 )}
@@ -164,6 +180,8 @@ const TournamentGameWrapper: React.FC<TournamentGameWrapperProps> = (props) => {
                             game={dependB}
                             tournamentState={props.tournamentState}
                             spaceRef={props.spaceRef}
+                            winnerStart={props.winnerStart}
+                            loserStart={props.loserStart}
                         />
                     </div>
                 )}

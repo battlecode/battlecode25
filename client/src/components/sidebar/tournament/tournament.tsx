@@ -5,6 +5,7 @@ import { FiEye, FiEyeOff, FiUpload } from 'react-icons/fi'
 import Tournament, { JsonTournamentGame } from '../../../playback/Tournament'
 import { NumInput } from '../../forms'
 import { BsLock, BsUnlock } from 'react-icons/bs'
+import { useSearchParamBool, useSearchParamNumber } from '../../../app-search-params'
 
 interface TournamentPageProps {
     open: boolean
@@ -13,6 +14,12 @@ interface TournamentPageProps {
 export const TournamentPage: React.FC<TournamentPageProps> = ({ open }) => {
     const context = useAppContext()
     const inputRef = React.useRef<HTMLInputElement | null>()
+
+    const [tournamentWinnerMin] = useSearchParamNumber('tournamentWinnerMin', 0)
+    const [tournamentWinnerMax] = useSearchParamNumber('tournamentWinnerMax', 0)
+    const [tournamentLoserMin] = useSearchParamNumber('tournamentLoserMin', 0)
+    const [tournamentLoserMax] = useSearchParamNumber('tournamentLoserMax', 0)
+    const [tournamentShowLosers] = useSearchParamBool('tournamentShowLosers', false)
 
     const [locked, setLocked] = React.useState(false)
 
@@ -73,14 +80,16 @@ export const TournamentPage: React.FC<TournamentPageProps> = ({ open }) => {
     React.useEffect(() => {
         if (!tournament) return
 
+        // Reset state if it was not overridden
+        console.log(tournamentShowLosers)
         context.setState((prevState) => ({
             ...prevState,
             tournamentState: {
-                minRoundWinners: 1,
-                maxRoundWinners: tournament.maxRound,
-                minRoundLosers: 1,
-                maxRoundLosers: Math.abs(tournament.minRound),
-                showLosers: false
+                minRoundWinners: tournamentWinnerMin == 0 ? 1 : tournamentWinnerMin,
+                maxRoundWinners: tournamentWinnerMax == 0 ? tournament.maxRound : tournamentWinnerMax,
+                minRoundLosers: tournamentLoserMin == 0 ? 1 : tournamentLoserMin,
+                maxRoundLosers: tournamentLoserMax == 0 ? Math.abs(tournament.minRound) : tournamentLoserMax,
+                showLosers: tournamentShowLosers
             }
         }))
     }, [tournament])
