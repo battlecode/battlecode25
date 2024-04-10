@@ -11,8 +11,8 @@ export interface AppState {
     tournament: Tournament | undefined
     tournamentState: TournamentState
     loadingRemoteContent: string
-    updatesPerSecond: number
-    paused: boolean
+    // updatesPerSecond: number
+    // paused: boolean
     disableHotkeys: boolean
     config: ClientConfig
 }
@@ -24,8 +24,8 @@ const DEFAULT_APP_STATE: AppState = {
     tournament: undefined,
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',
-    updatesPerSecond: 1,
-    paused: true,
+    // updatesPerSecond: 1,
+    // paused: true,
     disableHotkeys: false,
     config: getDefaultConfig()
 }

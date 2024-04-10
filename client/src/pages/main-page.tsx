@@ -10,10 +10,7 @@ export const MainPage: React.FC = () => {
         <AppContextProvider>
             <div className="flex overflow-hidden" style={{ backgroundColor: GAMEAREA_BACKGROUND }}>
                 <Sidebar />
-                <div className="w-full h-screen flex justify-center">
-                    <GameArea />
-                    <ControlsBar />
-                </div>
+                <GameArea />
             </div>
         </AppContextProvider>
     )

@@ -7,129 +7,65 @@ import { ControlsBarTimeline } from './controls-bar-timeline'
 import { EventType, useListenEvent } from '../../app-events'
 import { useForceUpdate } from '../../util/react-util'
 import Tooltip from '../tooltip'
-import { PageType, usePage } from '../../app-search-params'
+import Match from '../../playback/Match'
 
-const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
+type ControlsBarProps = {
+    match: Match | undefined
+    paused: boolean
+    setPaused: (paused: boolean) => void
+    targetUPS: number
+    liveUPS: number
+    setTargetUPS: (targetUPS: number) => void
+    nextMatch: () => void
+    closeGame: () => void
+}
 
-export const ControlsBar: React.FC = () => {
+export const ControlsBar: React.FC<ControlsBarProps> = ({
+    match,
+    paused,
+    setPaused,
+    targetUPS,
+    setTargetUPS,
+    liveUPS,
+    nextMatch,
+    closeGame
+}) => {
     const { state: appState, setState: setAppState } = useAppContext()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
-    const [page, setPage] = usePage()
 
-    const currentUPSBuffer = React.useRef<number[]>([])
+    const forceUpdate = useForceUpdate()
+    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
 
-    const currentMatch = appState.activeGame?.currentMatch
-    const isPlayable = appState.activeGame && appState.activeGame.playable && currentMatch
-    const hasNextMatch =
-        currentMatch && appState.activeGame!.matches.indexOf(currentMatch!) + 1 < appState.activeGame!.matches.length
-
-    const changePaused = (paused: boolean) => {
-        if (!currentMatch) return
-        setAppState((prevState) => ({
-            ...prevState,
-            paused: paused,
-            updatesPerSecond: appState.updatesPerSecond == 0 && !paused ? 1 : appState.updatesPerSecond
-        }))
-    }
+    const hasNextMatch = match && match.game.matches.indexOf(match!) + 1 < match.game.matches.length
 
     const multiplyUpdatesPerSecond = (multiplier: number) => {
-        if (!isPlayable) return
-        setAppState((old) => {
-            const u = old.updatesPerSecond
-            const sign = Math.sign(u * multiplier)
-            const newMag = Math.max(1 / 4, Math.min(64, Math.abs(u * multiplier)))
-            return { ...old, updatesPerSecond: sign * newMag }
-        })
+        if (!match?.isPlayable()) return
+        const sign = Math.sign(targetUPS * multiplier)
+        const newMag = Math.max(1 / 4, Math.min(64, Math.abs(targetUPS * multiplier)))
+        setTargetUPS(sign * newMag)
     }
 
     const stepTurn = (delta: number) => {
-        if (!isPlayable) return
-        // explicit rerender at the end so a render doesnt occur between these two steps
-        currentMatch!.stepTurn(delta, false)
-        currentMatch!.roundSimulation()
-        currentMatch!.rerender()
+        if (!match?.isPlayable()) return
+        match.stepTurn(delta, false) // false to not rerender here, so we can round first
+        match.roundSimulation()
+        match.rerender()
     }
 
     const jumpToTurn = (turn: number) => {
-        if (!isPlayable) return
-        // explicit rerender at the end so a render doesnt occur between these two steps
-        currentMatch!.jumpToTurn(turn, false)
-        currentMatch!.roundSimulation()
-        currentMatch!.rerender()
+        if (!match?.isPlayable()) return
+        match.jumpToTurn(turn, false) // false to not rerender here, so we can round first
+        match.roundSimulation()
+        match.rerender()
     }
 
     const jumpToEnd = () => {
-        if (!isPlayable) return
-        // explicit rerender at the end so a render doesnt occur between these two steps
-        currentMatch!.jumpToEnd(false)
-        currentMatch!.roundSimulation()
-        currentMatch!.rerender()
+        if (!match?.isPlayable()) return
+        match.jumpToEnd(false) // false to not rerender here, so we can round first
+        match.roundSimulation()
+        match.rerender()
     }
-
-    const nextMatch = () => {
-        if (!isPlayable) return
-        const game = appState.activeGame!
-        const prevMatch = game.currentMatch!
-        const prevMatchIndex = game.matches.indexOf(prevMatch)
-        if (prevMatchIndex + 1 == game.matches.length) {
-            closeGame()
-            return
-        }
-
-        game.currentMatch = game.matches[prevMatchIndex + 1]
-        setAppState((prevState) => ({
-            ...prevState,
-            activeGame: game,
-            activeMatch: game.currentMatch
-        }))
-    }
-
-    const closeGame = () => {
-        setAppState((prevState) => ({
-            ...prevState,
-            activeGame: undefined,
-            activeMatch: undefined
-        }))
-        if (appState.tournament) setPage(PageType.TOURNAMENT)
-    }
-
-    React.useEffect(() => {
-        // We want to pause whenever the match changes
-        changePaused(true)
-    }, [currentMatch])
-
-    React.useEffect(() => {
-        if (!isPlayable) return
-        if (appState.paused) {
-            // Snap bots to their actual position when paused by rounding simulation
-            // to the true turn
-            currentMatch!.roundSimulation()
-            currentMatch!.rerender()
-            return
-        }
-
-        const msPerUpdate = 1000 / appState.updatesPerSecond
-        const updatesPerInterval = SIMULATION_UPDATE_INTERVAL_MS / msPerUpdate
-        const stepInterval = setInterval(() => {
-            const prevTurn = currentMatch!.currentTurn.turnNumber
-            currentMatch!.stepSimulation(updatesPerInterval)
-
-            if (prevTurn != currentMatch!.currentTurn.turnNumber) {
-                currentUPSBuffer.current.push(Date.now())
-                while (currentUPSBuffer.current.length > 0 && currentUPSBuffer.current[0] < Date.now() - 1000)
-                    currentUPSBuffer.current.shift()
-            }
-
-            if (currentMatch!.currentTurn.isEnd() && appState.updatesPerSecond > 0) {
-                changePaused(true)
-            }
-        }, SIMULATION_UPDATE_INTERVAL_MS)
-
-        return () => {
-            clearInterval(stepInterval)
-        }
-    }, [appState.updatesPerSecond, appState.activeGame, currentMatch, appState.paused])
 
     useEffect(() => {
         if (appState.disableHotkeys) return
@@ -139,12 +75,12 @@ export const ControlsBar: React.FC = () => {
         // specific accessibility features that mess with these shortcuts.
         if (keyboard.targetElem instanceof HTMLButtonElement) keyboard.targetElem.blur()
 
-        if (keyboard.keyCode === 'Space') changePaused(!appState.paused)
+        if (keyboard.keyCode === 'Space' && match) setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
 
         const applyArrows = () => {
-            if (appState.paused) {
+            if (paused) {
                 if (keyboard.keyCode === 'ArrowRight') stepTurn(1)
                 if (keyboard.keyCode === 'ArrowLeft') stepTurn(-1)
             } else {
@@ -170,13 +106,10 @@ export const ControlsBar: React.FC = () => {
         }
     }, [keyboard.keyCode])
 
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
+    if (!match?.isPlayable()) return null
 
-    if (!isPlayable) return null
-
-    const atStart = currentMatch.currentTurn.turnNumber == 0
-    const atEnd = currentMatch.currentTurn.turnNumber == currentMatch.maxTurn
+    const atStart = match.currentTurn.turnNumber == 0
+    const atEnd = match.currentTurn.turnNumber == match.maxTurn
 
     return (
         <div
@@ -200,7 +133,7 @@ export const ControlsBar: React.FC = () => {
                     ' flex bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
-                <ControlsBarTimeline currentUPS={currentUPSBuffer.current.length} />
+                <ControlsBarTimeline liveUPS={liveUPS} targetUPS={targetUPS} />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
                     tooltip="Reverse"
@@ -210,7 +143,7 @@ export const ControlsBar: React.FC = () => {
                     icon={<ControlIcons.SkipBackwardsIcon />}
                     tooltip={'Decrease Speed'}
                     onClick={() => multiplyUpdatesPerSecond(0.5)}
-                    disabled={Math.abs(appState.updatesPerSecond) <= 0.25}
+                    disabled={Math.abs(targetUPS) <= 0.25}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.GoPreviousIcon />}
@@ -218,12 +151,12 @@ export const ControlsBar: React.FC = () => {
                     onClick={() => stepTurn(-1)}
                     disabled={atStart}
                 />
-                {appState.paused ? (
+                {paused ? (
                     <ControlsBarButton
                         icon={<ControlIcons.PlaybackPlayIcon />}
                         tooltip="Play"
                         onClick={() => {
-                            changePaused(false)
+                            setPaused(false)
                         }}
                     />
                 ) : (
@@ -231,7 +164,7 @@ export const ControlsBar: React.FC = () => {
                         icon={<ControlIcons.PlaybackPauseIcon />}
                         tooltip="Pause"
                         onClick={() => {
-                            changePaused(true)
+                            setPaused(true)
                         }}
                     />
                 )}
@@ -245,7 +178,7 @@ export const ControlsBar: React.FC = () => {
                     icon={<ControlIcons.SkipForwardsIcon />}
                     tooltip={'Increase Speed'}
                     onClick={() => multiplyUpdatesPerSecond(2)}
-                    disabled={Math.abs(appState.updatesPerSecond) >= 64}
+                    disabled={Math.abs(targetUPS) >= 64}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
