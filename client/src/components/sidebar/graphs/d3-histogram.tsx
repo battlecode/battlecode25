@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { TEAM_WHITE, TEAM_BROWN } from '../../Constants'
+import { TEAM_WHITE, TEAM_BROWN } from '../../../current-game/Constants'
 import * as d3 from 'd3'
 
 interface HistogramProps {

@@ -2,7 +2,7 @@ import React from 'react'
 import { AppContext, useAppContext } from '../../app-context'
 import { useListenEvent, EventType } from '../../app-events'
 import { useForceUpdate } from '../../util/react-util'
-import { CanvasHistogram } from './graphs/quick-histogram'
+import { CanvasHistogram } from '../../components/sidebar/graphs/quick-histogram'
 import { ATTACK_COLOR, SPECIALTY_COLORS, TEAM_COLORS } from '../Constants'
 
 function getChartData(appContext: AppContext): number[][][] {
