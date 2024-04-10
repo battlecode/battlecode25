@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAppContext } from '../../../app-context'
 import { TournamentGameElement } from './tournament-game'
-import Tournament, { TournamentGame, TournamentState } from '../../../playback/Tournament'
 import { Space } from 'react-zoomable-ui'
 import { useSearchParamNumber } from '../../../app-search-params'
+import Tournament, { TournamentState, TournamentGame } from './Tournament';
 
 export const TournamentRenderer: React.FC = () => {
     const appContext = useAppContext()

@@ -7,7 +7,7 @@ import { ControlsBarTimeline } from './controls-bar-timeline'
 import { EventType, useListenEvent } from '../../app-events'
 import { useForceUpdate } from '../../util/react-util'
 import Tooltip from '../tooltip'
-import Match from '../../playback/Match'
+import Match from '../../current-game/Match'
 
 type ControlsBarProps = {
     match: Match | undefined

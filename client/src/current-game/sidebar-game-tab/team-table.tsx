@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react'
-import { useAppContext } from '../../../app-context'
-import { useForceUpdate } from '../../../util/react-util'
-import { useListenEvent, EventType } from '../../../app-events'
-import { getImageIfLoaded, imageSource, removeTriggerOnImageLoad, triggerOnImageLoad } from '../../../util/ImageLoader'
-import { TEAM_COLOR_NAMES } from '../../../constants'
+import { useAppContext } from '../../app-context'
+import { useForceUpdate } from '../../util/react-util'
+import { useListenEvent, EventType } from '../../app-events'
+import { getImageIfLoaded, imageSource, removeTriggerOnImageLoad, triggerOnImageLoad } from '../../util/image-loader'
+import { TEAM_COLOR_NAMES } from '../Constants'
 import { schema } from 'battlecode-schema'
-import { TeamTurnStat } from '../../../playback/TurnStat'
-import { DoubleChevronUpIcon } from '../../../icons/chevron'
-import { CurrentMap } from '../../../playback/Map'
+import { TeamTurnStat } from '../TurnStat'
+import { DoubleChevronUpIcon } from '../../icons/chevron'
+import { CurrentMap } from '../Map'
 
 interface UnitsIconProps {
     teamIdx: 0 | 1

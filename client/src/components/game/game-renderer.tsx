@@ -1,11 +1,11 @@
 import React, { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { useAppContext } from '../../app-context'
-import { Vector } from '../../playback/Vector'
+import { Vector } from '../../util/vector'
 import { EventType, publishEvent, useListenEvent } from '../../app-events'
 import { Overlay } from './overlay'
-import { TILE_RESOLUTION } from '../../constants'
-import { CurrentMap } from '../../playback/Map'
-import Match from '../../playback/Match'
+import { TILE_RESOLUTION } from '../../current-game/Constants'
+import { CurrentMap } from '../../current-game/Map'
+import Match from '../../current-game/Match'
 import { ClientConfig } from '../../client-config'
 
 export const GameRenderer: React.FC = () => {

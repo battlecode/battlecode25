@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { BATTLECODE_YEAR, ENGINE_BUILTIN_MAP_NAMES } from '../../../constants'
+import { BATTLECODE_YEAR, ENGINE_BUILTIN_MAP_NAMES } from '../../../current-game/Constants'
 import { NativeAPI, nativeAPI } from './native-api-wrapper'
 import { ConsoleLine } from './runner'
 import { useForceUpdate } from '../../../util/react-util'
 import WebSocketListener from './websocket'
 import { useAppContext } from '../../../app-context'
-import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
+import Game from '../../../current-game/Game'
+import Match from '../../../current-game/Match'
 import { RingBuffer } from '../../../util/ring-buffer'
 
 export type JavaInstall = {

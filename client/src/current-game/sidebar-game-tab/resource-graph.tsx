@@ -1,8 +1,8 @@
 import React from 'react'
-import { AppContext, useAppContext } from '../../../app-context'
-import { useListenEvent, EventType } from '../../../app-events'
-import { useForceUpdate } from '../../../util/react-util'
-import { D3LineChart, LineChartDataPoint } from './d3-line-chart'
+import { AppContext, useAppContext } from '../../app-context'
+import { useListenEvent, EventType } from '../../app-events'
+import { useForceUpdate } from '../../util/react-util'
+import { D3LineChart, LineChartDataPoint } from './graphs/d3-line-chart'
 import assert from 'assert'
 
 interface Props {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import Match from '../../playback/Match'
+import Match from '../../current-game/Match'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 

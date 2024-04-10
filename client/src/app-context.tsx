@@ -1,8 +1,8 @@
 import React from 'react'
-import Game from './playback/Game'
-import Match from './playback/Match'
-import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playback/Tournament'
+import Game from './current-game/Game'
+import Match from './current-game/Match'
 import { ClientConfig, getDefaultConfig } from './client-config'
+import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './components/game/tournament-renderer/Tournament'
 
 export interface AppState {
     queue: Game[]
@@ -11,8 +11,6 @@ export interface AppState {
     tournament: Tournament | undefined
     tournamentState: TournamentState
     loadingRemoteContent: string
-    // updatesPerSecond: number
-    // paused: boolean
     disableHotkeys: boolean
     config: ClientConfig
 }
@@ -24,8 +22,6 @@ const DEFAULT_APP_STATE: AppState = {
     tournament: undefined,
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',
-    // updatesPerSecond: 1,
-    // paused: true,
     disableHotkeys: false,
     config: getDefaultConfig()
 }

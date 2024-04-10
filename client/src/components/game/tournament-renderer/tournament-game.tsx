@@ -1,11 +1,11 @@
 import React from 'react'
 import { useAppContext } from '../../../app-context'
-import { TournamentGame } from '../../../playback/Tournament'
-import Game from '../../../playback/Game'
+import Game from '../../../current-game/Game'
 import { PageType, usePage } from '../../../app-search-params'
 import { Pressable } from 'react-zoomable-ui'
 import { Crown } from '../../../icons/crown'
 import Tooltip from '../../tooltip'
+import { TournamentGame } from './Tournament';
 
 interface Props {
     game: TournamentGame

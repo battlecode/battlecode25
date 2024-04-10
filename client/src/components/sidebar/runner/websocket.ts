@@ -1,6 +1,6 @@
 import { schema, flatbuffers } from 'battlecode-schema'
-import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
+import Game from '../../../current-game/Game'
+import Match from '../../../current-game/Match'
 import assert from 'assert'
 import { EventType, publishEvent } from '../../../app-events'
 

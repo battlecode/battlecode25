@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { TEAM_WHITE, TEAM_BROWN } from '../../../constants'
+import { TEAM_WHITE, TEAM_BROWN } from '../../Constants'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
 
 export interface LineChartDataPoint {

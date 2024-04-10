@@ -1,8 +1,8 @@
-import * as cst from '../constants'
-import { Team } from '../playback/Game'
-import { CurrentMap, Dimension, StaticMap } from '../playback/Map'
-import { Vector } from '../playback/Vector'
-import { Body } from '../playback/Bodies'
+import * as cst from '../current-game/Constants'
+import { Team } from '../current-game/Game'
+import { CurrentMap, Dimension, StaticMap } from '../current-game/Map'
+import { Vector } from './vector'
+import { Body } from '../current-game/Bodies'
 
 export const getRenderCoords = (cellX: number, cellY: number, dims: Dimension, centered: boolean = false) => {
     const cx = dims.minCorner.x + cellX

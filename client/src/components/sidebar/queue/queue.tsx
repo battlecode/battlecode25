@@ -1,10 +1,10 @@
 import React from 'react'
 import { useAppContext } from '../../../app-context'
 import { useKeyboard } from '../../../util/keyboard'
-import { BATTLECODE_YEAR } from '../../../constants'
+import { BATTLECODE_YEAR } from '../../../current-game/Constants'
 import { Button } from '../../button'
 import { FiUpload } from 'react-icons/fi'
-import Game from '../../../playback/Game'
+import Game from '../../../current-game/Game'
 import { QueuedGame } from './queue-game'
 
 interface Props {

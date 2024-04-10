@@ -2,7 +2,7 @@ import Match from './Match'
 import { flatbuffers, schema } from 'battlecode-schema'
 import { ungzip } from 'pako'
 import assert from 'assert'
-import { SPEC_VERSION, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
+import { SPEC_VERSION, TEAM_COLORS, TEAM_COLOR_NAMES } from './Constants'
 import { FakeGameWrapper } from '../components/sidebar/runner/websocket'
 
 let nextID = 0

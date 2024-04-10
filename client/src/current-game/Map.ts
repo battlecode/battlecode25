@@ -1,9 +1,9 @@
 import { flatbuffers, schema } from 'battlecode-schema'
 import assert from 'assert'
-import { Vector } from './Vector'
+import { Vector } from '../util/vector'
 import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
-import { packVecTable, parseVecTable } from './SchemaHelpers'
+import { packVecTable, parseVecTable } from '../util/schema-util'
 import { DividerBrush, ResourcePileBrush, SpawnZoneBrush, WallsBrush, WaterBrush } from './Brushes'
 import {
     DIVIDER_COLOR,
@@ -13,9 +13,9 @@ import {
     TEAM_COLORS,
     BUILD_NAMES,
     TEAM_COLOR_NAMES
-} from '../constants'
-import * as renderUtils from '../util/RenderUtil'
-import { getImageIfLoaded } from '../util/ImageLoader'
+} from './Constants'
+import * as renderUtils from '../util/render-util'
+import { getImageIfLoaded } from '../util/image-loader'
 import { ClientConfig } from '../client-config'
 
 export type Dimension = {

@@ -1,7 +1,7 @@
 import React from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, GAME_VERSION } from '../../current-game/Constants'
 import { ThreeBarsIcon } from '../../icons/three-bars'
-import { GamePage } from './game/game'
+import { GamePage } from '../../current-game/sidebar-game-tab/game'
 import { QueuePage } from './queue/queue'
 import { BsChevronLeft } from 'react-icons/bs'
 import { HelpPage } from './help/help'
@@ -11,13 +11,13 @@ import { usePage, PageType, useSearchParamBool, useSearchParamString } from '../
 import { useKeyboard } from '../../util/keyboard'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import useWindowDimensions from '../../util/window-size'
-import { TournamentPage } from './tournament/tournament'
-import Tournament, { JsonTournamentGame } from '../../playback/Tournament'
 import { useAppContext } from '../../app-context'
 import { useScaffold } from './runner/scaffold'
 import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
-import Game from '../../playback/Game'
+import Game from '../../current-game/Game'
+import Tournament, { JsonTournamentGame } from '../game/tournament-renderer/Tournament'
+import { TournamentPage } from './tournament/tournament-page';
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
