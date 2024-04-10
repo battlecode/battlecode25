@@ -3,7 +3,7 @@ import Match from '../../playback/Match'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 
-export const useSimulationControl = (currentMatch: Match | undefined) => {
+export const useGameControl = (currentMatch: Match | undefined) => {
     const [paused, setPaused] = useState(true)
     const [targetUPS, setTargetUPS] = useState(1)
     const [liveUPS, setLiveUPS] = useState(0) // State to keep track of liveUPS

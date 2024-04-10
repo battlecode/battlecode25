@@ -51,7 +51,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!openBrush) return
 
         openBrush.apply(point.x, point.y, openBrush.fields)
-        publishEvent(EventType.INITIAL_RENDER, {})
+        publishEvent(EventType.MAP_RENDER)
         setCleared(mapEmpty())
     }
 

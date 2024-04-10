@@ -35,7 +35,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
     const keyboard = useKeyboard()
 
     const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
+    useListenEvent(EventType.NEW_TURN, forceUpdate)
 
     const hasNextMatch = match && match.game.matches.indexOf(match!) + 1 < match.game.matches.length
 

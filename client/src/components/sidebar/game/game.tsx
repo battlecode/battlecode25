@@ -26,7 +26,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
     const [showStats, setShowStats] = useSearchParamBool('showStats', true)
 
     const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
+    useListenEvent(EventType.NEW_TURN, forceUpdate)
 
     if (!props.open) return null
 

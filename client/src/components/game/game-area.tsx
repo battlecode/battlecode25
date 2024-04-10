@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import { GameRenderer } from './game-renderer'
 import { useAppContext } from '../../app-context'
 import { TournamentRenderer } from './tournament-renderer/tournament-renderer'
 import { ControlsBar } from '../controls-bar/controls-bar'
-import { useSimulationControl } from './GameController';
+import { useGameControl } from './GameController';
 
 
 export const GameArea = () => {
     const { state: appState, setState: setAppState } = useAppContext()
     const currentMatch = appState.activeGame?.currentMatch
-    const { paused, setPaused, targetUPS, setTargetUPS, liveUPS } = useSimulationControl(currentMatch)
+    const { paused, setPaused, targetUPS, setTargetUPS, liveUPS } = useGameControl(currentMatch)
 
     const handleNextMatch = () => {
         if (!currentMatch) return

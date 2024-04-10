@@ -41,7 +41,7 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     const appContext = useAppContext()
     const forceUpdate = useForceUpdate()
 
-    useListenEvent(EventType.TURN_PROGRESS, () => {
+    useListenEvent(EventType.NEW_TURN, () => {
         if (props.active) forceUpdate()
     })
 

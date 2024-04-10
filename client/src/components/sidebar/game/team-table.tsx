@@ -32,7 +32,7 @@ interface TeamTableProps {
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
     const context = useAppContext()
     const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
+    useListenEvent(EventType.NEW_TURN, forceUpdate)
 
     const match = context.state.activeMatch
     const teamStat = match?.currentTurn?.stat.getTeamStat(match.game.teams[props.teamIdx])

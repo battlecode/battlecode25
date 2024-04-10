@@ -67,7 +67,7 @@ export default class WebSocketListener {
                 this.lastSetTurn = match.currentTurn.turnNumber
             } else {
                 // Publish anyways so the control bar updates
-                publishEvent(EventType.TURN_PROGRESS, {})
+                publishEvent(EventType.NEW_TURN, {})
             }
         }
 
@@ -110,7 +110,7 @@ export default class WebSocketListener {
                 break
             }
             case schema.Event.GameFooter: {
-                publishEvent(EventType.TURN_PROGRESS, {})
+                publishEvent(EventType.NEW_TURN, {})
                 this.onGameComplete(this.activeGame!)
                 this.reset()
 

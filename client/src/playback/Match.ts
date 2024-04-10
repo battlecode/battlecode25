@@ -213,7 +213,7 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        publishEvent(EventType.TURN_PROGRESS, {})
+        publishEvent(EventType.NEW_TURN, {})
         if (rerender) this.rerender()
     }
 }
