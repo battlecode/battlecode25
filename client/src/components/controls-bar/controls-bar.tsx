@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import * as ControlIcons from '../../icons/controls'
 import { ControlsBarButton } from './controls-bar-button'
 import { useAppContext } from '../../app-context'
-import { useKeyboard } from '../../util/keyboard'
+import { Hotkeys, useHotkey, useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import { EventType, useListenEvent } from '../../app-events'
 import { useForceUpdate } from '../../util/react-util'
@@ -33,6 +33,33 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
     const { state: appState, setState: setAppState } = useAppContext()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
+    
+    useHotkey(appState, keyboard, Hotkeys.MinimizeControlBar, () => setMinimized(!minimized))
+    useHotkey(appState, keyboard, Hotkeys.Pause, () => setPaused(!paused))
+    useHotkey(
+        appState,
+        keyboard,
+        Hotkeys.ControlsNext,
+        () => {
+            if (paused) stepTurn(1)
+            else multiplyUpdatesPerSecond(2)
+        },
+        [paused],
+        true
+    )
+    useHotkey(
+        appState,
+        keyboard,
+        Hotkeys.ControlsPrev,
+        () => {
+            if (paused) stepTurn(-1)
+            else multiplyUpdatesPerSecond(0.5)
+        },
+        [paused],
+        true
+    )
+    useHotkey(appState, keyboard, Hotkeys.JumpToStart, () => jumpToTurn(0))
+    useHotkey(appState, keyboard, Hotkeys.JumpToEnd, () => jumpToEnd())
 
     const forceUpdate = useForceUpdate()
     useListenEvent(EventType.NEW_TURN, forceUpdate)
@@ -74,37 +101,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         // control bar before using a shortcut, unselect it; Most browsers have
         // specific accessibility features that mess with these shortcuts.
         if (keyboard.targetElem instanceof HTMLButtonElement) keyboard.targetElem.blur()
-
-        if (keyboard.keyCode === 'Space' && match) setPaused(!paused)
-
-        if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
-
-        const applyArrows = () => {
-            if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') stepTurn(1)
-                if (keyboard.keyCode === 'ArrowLeft') stepTurn(-1)
-            } else {
-                if (keyboard.keyCode === 'ArrowRight') multiplyUpdatesPerSecond(2)
-                if (keyboard.keyCode === 'ArrowLeft') multiplyUpdatesPerSecond(0.5)
-            }
-        }
-        applyArrows()
-
-        if (keyboard.keyCode === 'Comma') jumpToTurn(0)
-        if (keyboard.keyCode === 'Period') jumpToEnd()
-
-        const initalDelay = 250
-        const repeatDelay = 100
-        const timeouts: { initialTimeout: NodeJS.Timeout; repeatedFire?: NodeJS.Timeout } = {
-            initialTimeout: setTimeout(() => {
-                timeouts.repeatedFire = setInterval(applyArrows, repeatDelay)
-            }, initalDelay)
-        }
-        return () => {
-            clearTimeout(timeouts.initialTimeout)
-            clearInterval(timeouts.repeatedFire)
-        }
-    }, [keyboard.keyCode])
+    }, [appState, keyboard])
 
     if (!match?.isPlayable()) return null
 

@@ -1,7 +1,6 @@
 import React, { PropsWithChildren } from 'react'
 import { useAppContext } from '../app-context'
-import { useKeyboard } from '../util/keyboard'
-import { useHotkeys } from '../util/hotkeys'
+import { Hotkeys, useHotkey, useKeyboard } from '../util/keyboard'
 
 interface Props {
     open: boolean
@@ -21,24 +20,15 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
     const context = useAppContext()
     const keyboard = useKeyboard()
 
-    useHotkeys(
-        {
-            EscapeDialog: () => {
-                if (props.open && props.onCancel) {
-                    props.onCancel()
-                }
-            }
+    useHotkey(
+        context.state,
+        keyboard,
+        Hotkeys.EscapeDialog,
+        () => {
+            if (props.open && props.onCancel) props.onCancel()
         },
-        [props.open, props.onCancel]
+        [props.onCancel, props.open]
     )
-
-    React.useEffect(() => {
-        if (!props.open) return
-
-        if (props.onCancel && keyboard.keyCode === 'Escape') {
-            props.onCancel()
-        }
-    }, [props.open, keyboard.keyCode])
 
     React.useEffect(() => {
         context.setState((prevState) => ({ ...prevState, disableHotkeys: props.open }))

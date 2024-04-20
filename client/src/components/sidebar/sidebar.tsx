@@ -8,7 +8,7 @@ import { HelpPage } from './help/help'
 import { MapEditorPage } from './map-editor/map-editor'
 import { RunnerPage } from './runner/runner'
 import { usePage, PageType, useSearchParamBool, useSearchParamString } from '../../app-search-params'
-import { useKeyboard } from '../../util/keyboard'
+import { Hotkeys, useHotkey, useKeyboard } from '../../util/keyboard'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import useWindowDimensions from '../../util/window-size'
 import { useAppContext } from '../../app-context'
@@ -17,13 +17,17 @@ import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../current-game/Game'
 import Tournament, { JsonTournamentGame } from '../game/tournament-renderer/Tournament'
-import { TournamentPage } from './tournament/tournament-page';
+import { TournamentPage } from './tournament/tournament-page'
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
     const [page, setPage] = usePage()
     const context = useAppContext()
     const keyboard = useKeyboard()
+    
+    useHotkey(context.state, keyboard, Hotkeys.BackSidebarPage, () => setPage(getNextPage(page, true)))
+    useHotkey(context.state, keyboard, Hotkeys.ForwardSidebarPage, () => setPage(getNextPage(page, false)))
+    useHotkey(context.state, keyboard, Hotkeys.JumpToQueue, () => setPage(PageType.QUEUE))
 
     // scaffold is created at this level so it is never re-created
     const scaffold = useScaffold()
@@ -128,17 +132,6 @@ export const Sidebar: React.FC = () => {
         const nextIndex = (index + (previous ? -1 : 1) + hotkeyPageLoop.length) % hotkeyPageLoop.length
         return hotkeyPageLoop[nextIndex]
     }
-
-    React.useEffect(() => {
-        if (context.state.disableHotkeys) return
-
-        if (keyboard.keyCode === 'Backquote') setPage(getNextPage(page, true))
-        if (keyboard.keyCode === 'Digit1') setPage(getNextPage(page, false))
-
-        if (keyboard.keyCode == 'KeyO' && (keyboard.ctrlKey || keyboard.metaKey)) {
-            setPage(PageType.QUEUE)
-        }
-    }, [keyboard])
 
     const activeSidebarButtons = React.useMemo(() => {
         if (showTournamentFeatures) {
