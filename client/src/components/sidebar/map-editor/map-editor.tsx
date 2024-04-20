@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
-import { CurrentMap, StaticMap } from '../../../playback/Map'
+import { CurrentMap, StaticMap } from '../../../current-game/Map'
 import { MapEditorBrushRow } from './map-editor-brushes'
-import Bodies from '../../../playback/Bodies'
-import Game from '../../../playback/Game'
+import Bodies from '../../../current-game/Bodies'
+import Game from '../../../current-game/Game'
 import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
 import { useAppContext } from '../../../app-context'
-import Match from '../../../playback/Match'
+import Match from '../../../current-game/Match'
 import { EventType, publishEvent, useListenEvent } from '../../../app-events'
 import { MapEditorBrush } from './MapEditorBrush'
-import { exportMap, loadFileAsMap } from './MapGenerator'
-import { MAP_SIZE_RANGE } from '../../../constants'
+import { exportMap, loadFileAsMap } from '../../../current-game/MapGenerator'
+import { MAP_SIZE_RANGE } from '../../../current-game/Constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
 
@@ -51,7 +51,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!openBrush) return
 
         openBrush.apply(point.x, point.y, openBrush.fields)
-        publishEvent(EventType.INITIAL_RENDER, {})
+        publishEvent(EventType.MAP_RENDER)
         setCleared(mapEmpty())
     }
 

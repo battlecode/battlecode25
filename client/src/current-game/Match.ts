@@ -86,6 +86,10 @@ export default class Match {
         return match
     }
 
+    public isPlayable() {
+        return this.game.playable
+    }
+
     /*
      * Add a new turn to the match. Used for live match replaying.
      */
@@ -209,7 +213,7 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        publishEvent(EventType.TURN_PROGRESS, {})
+        publishEvent(EventType.NEW_TURN, {})
         if (rerender) this.rerender()
     }
 }

@@ -1,6 +1,6 @@
 import { schema, flatbuffers } from 'battlecode-schema'
-import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
+import Game from '../../../current-game/Game'
+import Match from '../../../current-game/Match'
 import assert from 'assert'
 import { EventType, publishEvent } from '../../../app-events'
 
@@ -67,7 +67,7 @@ export default class WebSocketListener {
                 this.lastSetTurn = match.currentTurn.turnNumber
             } else {
                 // Publish anyways so the control bar updates
-                publishEvent(EventType.TURN_PROGRESS, {})
+                publishEvent(EventType.NEW_TURN, {})
             }
         }
 
@@ -110,7 +110,7 @@ export default class WebSocketListener {
                 break
             }
             case schema.Event.GameFooter: {
-                publishEvent(EventType.TURN_PROGRESS, {})
+                publishEvent(EventType.NEW_TURN, {})
                 this.onGameComplete(this.activeGame!)
                 this.reset()
 

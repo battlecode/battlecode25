@@ -1,4 +1,4 @@
-import { StaticMap, CurrentMap } from '../../../playback/Map'
+import { StaticMap, CurrentMap } from '../../../current-game/Map'
 
 export abstract class MapEditorBrush {
     abstract name: string

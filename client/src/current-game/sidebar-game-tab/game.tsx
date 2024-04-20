@@ -2,16 +2,16 @@ import React from 'react'
 import { TeamTable } from './team-table'
 import { ResourceGraph } from './resource-graph'
 import { SpecialtyHistogram } from './histogram'
-import { useSearchParamBool } from '../../../app-search-params'
-import { useAppContext } from '../../../app-context'
-import { SectionHeader } from '../../section-header'
-import { Crown } from '../../../icons/crown'
+import { useSearchParamBool } from '../../app-search-params'
+import { useAppContext } from '../../app-context'
+import { SectionHeader } from '../../components/section-header'
+import { Crown } from '../../icons/crown'
 import { BiMedal } from 'react-icons/bi'
-import { EventType, useListenEvent } from '../../../app-events'
-import Tooltip from '../../tooltip'
-import { useForceUpdate } from '../../../util/react-util'
-import Match from '../../../playback/Match'
-import { Team } from '../../../playback/Game'
+import { EventType, useListenEvent } from '../../app-events'
+import Tooltip from '../../components/tooltip'
+import { useForceUpdate } from '../../util/react-util'
+import Match from '../Match'
+import { Team } from '../Game'
 
 const NO_GAME_TEAM_NAME = '?????'
 
@@ -26,7 +26,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
     const [showStats, setShowStats] = useSearchParamBool('showStats', true)
 
     const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
+    useListenEvent(EventType.NEW_TURN, forceUpdate)
 
     if (!props.open) return null
 

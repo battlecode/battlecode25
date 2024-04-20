@@ -3,11 +3,11 @@ import assert from 'assert'
 import Game, { Team } from './Game'
 import Turn from './Turn'
 import TurnStat from './TurnStat'
-import { getImageIfLoaded } from '../util/ImageLoader'
-import * as renderUtils from '../util/RenderUtil'
+import { getImageIfLoaded } from '../util/image-loader'
+import * as renderUtils from '../util/render-util'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
-import { Vector } from './Vector'
+import { Vector } from '../util/vector'
 import {
     ATTACK_COLOR,
     BUILD_COLOR,
@@ -18,7 +18,7 @@ import {
     TOOLTIP_PATH_DECAY_R,
     TOOLTIP_PATH_INIT_R,
     TOOLTIP_PATH_LENGTH
-} from '../constants'
+} from './Constants'
 import Match from './Match'
 import { ClientConfig } from '../client-config'
 

@@ -1,5 +1,5 @@
 import { flatbuffers, schema } from 'battlecode-schema'
-import { Vector } from './Vector'
+import { Vector } from './vector'
 
 export const parseVecTable = (value: schema.VecTable) => {
     const result: Vector[] = []

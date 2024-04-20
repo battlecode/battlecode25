@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from 'react'
 import { useAppContext } from '../app-context'
-import { useKeyboard } from '../util/keyboard'
+import { Hotkeys, useHotkey, useKeyboard } from '../util/keyboard'
 
 interface Props {
     open: boolean
@@ -20,13 +20,15 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
     const context = useAppContext()
     const keyboard = useKeyboard()
 
-    React.useEffect(() => {
-        if (!props.open) return
-
-        if (props.onCancel && keyboard.keyCode === 'Escape') {
-            props.onCancel()
-        }
-    }, [props.open, keyboard.keyCode])
+    useHotkey(
+        context.state,
+        keyboard,
+        Hotkeys.EscapeDialog,
+        () => {
+            if (props.open && props.onCancel) props.onCancel()
+        },
+        [props.onCancel, props.open]
+    )
 
     React.useEffect(() => {
         context.setState((prevState) => ({ ...prevState, disableHotkeys: props.open }))
@@ -41,12 +43,12 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
         widthType == 'sm'
             ? 'w-4/6 md:w-3/5 lg:w-6/12'
             : widthType == 'md'
-            ? 'w-5/6 md:w-3/4 lg:w-7/12'
-            : widthType == 'lg'
-            ? 'w-5/6 md:w-4/5 lg:w-9/12'
-            : widthType == 'full'
-            ? 'w-5/6 md:w-5/6 lg:w-11/12'
-            : ''
+              ? 'w-5/6 md:w-3/4 lg:w-7/12'
+              : widthType == 'lg'
+                ? 'w-5/6 md:w-4/5 lg:w-9/12'
+                : widthType == 'full'
+                  ? 'w-5/6 md:w-5/6 lg:w-11/12'
+                  : ''
     return (
         <div className="fixed flex flex-col items-center justify-center w-full h-full top-0 left-0 bg-gray-500 bg-opacity-50 z-50">
             <div

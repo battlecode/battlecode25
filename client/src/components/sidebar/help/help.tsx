@@ -1,6 +1,6 @@
 import React from 'react'
 import { SectionHeader } from '../../section-header'
-import { BATTLECODE_YEAR } from '../../../constants'
+import { BATTLECODE_YEAR } from '../../../current-game/Constants'
 
 enum TabType {
     NONE = '',

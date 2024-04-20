@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
+import Game from '../../../current-game/Game'
+import Match from '../../../current-game/Match'
 import { useAppContext } from '../../../app-context'
 import { IconContext } from 'react-icons'
 import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'

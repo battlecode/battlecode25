@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, GAME_VERSION } from '../../current-game/Constants'
 import { nativeAPI } from './runner/native-api-wrapper'
 
 const UPDATE_CHECK_MINUTES = 5

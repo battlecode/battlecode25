@@ -1,8 +1,8 @@
 import React from 'react'
-import { AppContext, useAppContext } from '../../../app-context'
-import { useListenEvent, EventType } from '../../../app-events'
-import { useForceUpdate } from '../../../util/react-util'
-import { D3LineChart, LineChartDataPoint } from './d3-line-chart'
+import { AppContext, useAppContext } from '../../app-context'
+import { useListenEvent, EventType } from '../../app-events'
+import { useForceUpdate } from '../../util/react-util'
+import { D3LineChart, LineChartDataPoint } from '../../components/sidebar/graphs/d3-line-chart'
 import assert from 'assert'
 
 interface Props {
@@ -41,7 +41,7 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     const appContext = useAppContext()
     const forceUpdate = useForceUpdate()
 
-    useListenEvent(EventType.TURN_PROGRESS, () => {
+    useListenEvent(EventType.NEW_TURN, () => {
         if (props.active) forceUpdate()
     })
 

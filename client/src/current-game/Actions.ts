@@ -1,11 +1,11 @@
 import Turn from './Turn'
 import { schema } from 'battlecode-schema'
 import assert from 'assert'
-import * as renderUtils from '../util/RenderUtil'
-import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
+import * as renderUtils from '../util/render-util'
+import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from '../util/vector'
 import Match from './Match'
 import { Body } from './Bodies'
-import { ATTACK_COLOR, GRASS_COLOR, HEAL_COLOR, TEAM_COLORS, WATER_COLOR } from '../constants'
+import { ATTACK_COLOR, GRASS_COLOR, HEAL_COLOR, TEAM_COLORS, WATER_COLOR } from './Constants'
 
 export default class Actions {
     actions: Action[] = []

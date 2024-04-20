@@ -1,11 +1,11 @@
 import { schema, flatbuffers } from 'battlecode-schema'
-import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
-import { CurrentMap, StaticMap } from '../../../playback/Map'
-import Turn from '../../../playback/Turn'
-import Bodies from '../../../playback/Bodies'
-import { BATTLECODE_YEAR, DIRECTIONS } from '../../../constants'
-import { nativeAPI } from '../runner/native-api-wrapper'
+import Game from './Game'
+import Match from './Match'
+import { CurrentMap, StaticMap } from './Map'
+import Turn from './Turn'
+import Bodies from './Bodies'
+import { BATTLECODE_YEAR, DIRECTIONS } from './Constants'
+import { nativeAPI } from '../components/sidebar/runner/native-api-wrapper'
 
 export function loadFileAsMap(file: File): Promise<Game> {
     return new Promise((resolve, reject) => {

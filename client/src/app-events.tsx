@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 export enum EventType {
-    TURN_PROGRESS = 'turnprogress',
-    TILE_CLICK = 'tileclick',
+    NEW_TURN = 'NEW_TURN',
+    TILE_CLICK = 'TILE_CLICK',
     TILE_DRAG = 'TILE_DRAG',
     CANVAS_RIGHT_CLICK = 'CANVAS_RIGHT_CLICK',
-    RENDER = 'render',
-    INITIAL_RENDER = 'initalrender'
+    RENDER = 'RENDER',
+    MAP_RENDER = 'MAP_RENDER'
 }
 
 export function useListenEvent(
@@ -26,7 +26,7 @@ export function useListenEvent(
     }, deps)
 }
 
-export function publishEvent(eventType: string, eventData: any) {
+export function publishEvent(eventType: string, eventData: any = false) {
     const event = new CustomEvent(eventType as string, { detail: eventData })
     document.dispatchEvent(event)
 }

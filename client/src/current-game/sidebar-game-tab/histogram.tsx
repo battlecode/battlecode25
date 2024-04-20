@@ -1,9 +1,9 @@
 import React from 'react'
-import { AppContext, useAppContext } from '../../../app-context'
-import { useListenEvent, EventType } from '../../../app-events'
-import { useForceUpdate } from '../../../util/react-util'
-import { CanvasHistogram } from './quick-histogram'
-import { ATTACK_COLOR, SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
+import { AppContext, useAppContext } from '../../app-context'
+import { useListenEvent, EventType } from '../../app-events'
+import { useForceUpdate } from '../../util/react-util'
+import { CanvasHistogram } from '../../components/sidebar/graphs/quick-histogram'
+import { ATTACK_COLOR, SPECIALTY_COLORS, TEAM_COLORS } from '../Constants'
 
 function getChartData(appContext: AppContext): number[][][] {
     const match = appContext.state.activeMatch
@@ -33,7 +33,7 @@ interface SpecialtyHistogramProps {
 export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => {
     const appContext = useAppContext()
     const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, () => {
+    useListenEvent(EventType.NEW_TURN, () => {
         if (props.active) forceUpdate()
     })
 
