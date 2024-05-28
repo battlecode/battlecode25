@@ -1,0 +1,3 @@
+[submodule "battletrack"]
+	path = battletrack
+	url = git@github.com:n8kim1/battletrack.git
