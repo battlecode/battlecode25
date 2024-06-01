@@ -19,6 +19,20 @@ import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../playback/Game'
 
+export const fetchTournamentPage = (tournamentSource: string, rawGames: JsonTournamentGame[]) => {
+    fetch(tournamentSource)
+        .then((response) => response.text())
+        .then((text) => {
+            const data = JSON.parse(text)
+            const newGames = data.results as JsonTournamentGame[]
+            rawGames.push(...newGames)
+
+            if (data.next) {
+                fetchTournamentPage(data.next, rawGames)
+            }
+        })
+}
+
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
     const [page, setPage] = usePage()
@@ -40,24 +54,13 @@ export const Sidebar: React.FC = () => {
     const [localTournament] = useSearchParamBool('localTournament', false)
 
     const [tournamentSource, setTournamentSource] = useSearchParamString('tournamentSource', '')
-    const fetchTournamentPage = (tournamentSource: string, rawGames: JsonTournamentGame[]) => {
-        fetch(tournamentSource)
-            .then((response) => response.text())
-            .then((text) => {
-                const data = JSON.parse(text)
-                const newGames = data.results as JsonTournamentGame[]
-                rawGames.push(...newGames)
-
-                if (data.next) {
-                    fetchTournamentPage(data.next, rawGames)
-                } else {
-                    context.setState((prevState) => ({
-                        ...prevState,
-                        tournament: new Tournament(rawGames),
-                        loadingRemoteContent: ''
-                    }))
-                }
-            })
+    const loadTournamentPage = (tournamentSource: string, rawGames: JsonTournamentGame[]) => {
+        fetchTournamentPage(tournamentSource, rawGames)
+        context.setState((prevState) => ({
+            ...prevState,
+            tournament: new Tournament(rawGames),
+            loadingRemoteContent: ''
+        }))
     }
     React.useEffect(() => {
         if (tournamentSource) {
@@ -65,7 +68,7 @@ export const Sidebar: React.FC = () => {
                 ...prevState,
                 loadingRemoteContent: 'tournament'
             }))
-            fetchTournamentPage(tournamentSource, [])
+            loadTournamentPage(tournamentSource, [])
             setPage(PageType.TOURNAMENT)
         }
     }, [tournamentSource])

@@ -161,8 +161,8 @@ export default class Match {
     /**
      * Change the rounds current turn to the current turn + delta.
      */
-    public stepTurn(delta: number, rerender: boolean = true): void {
-        this.jumpToTurn(this.currentTurn.turnNumber + delta, rerender)
+    public stepTurn(delta: number, rerender: boolean = true, headless: boolean = false): void {
+        this.jumpToTurn(this.currentTurn.turnNumber + delta, rerender, headless)
     }
 
     /**
@@ -175,7 +175,7 @@ export default class Match {
     /**
      * Sets the current turn to the turn at the given turn number.
      */
-    public jumpToTurn(turnNumber: number, rerender: boolean = true): void {
+    public jumpToTurn(turnNumber: number, rerender: boolean = true, headless: boolean = false): void {
         if (!this.game.playable) return
 
         turnNumber = Math.max(0, Math.min(turnNumber, this.deltas.length))
@@ -209,7 +209,9 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        publishEvent(EventType.TURN_PROGRESS, {})
+        if (!headless) {
+            publishEvent(EventType.TURN_PROGRESS, {})
+        }
         if (rerender) this.rerender()
     }
 }

@@ -16,7 +16,8 @@
         "tauri-build": "npm run build && npm run tauri-pack",
         "electron-watch": "concurrently --kill-others \"npm run watch\" \"wait-on http://localhost:3000 && electron .\"",
         "electron-pack": "cross-env USE_HARD_LINKS=false CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production electron-builder build --publish never",
-        "electron-build": "npm run build && npm run electron-pack"
+        "electron-build": "npm run build && npm run electron-pack",
+        "battletrack-watch": "cross-env NODE_ENV=development webpack serve --config webpack-battletrack.config.js --mode development --env dev"
     },
     "build": {
         "asar": false,
