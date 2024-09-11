@@ -5,9 +5,10 @@ import { useMatch } from '../../playback/GameRunner'
 const TIMELINE_WIDTH = 350
 interface Props {
     currentUPS: number
+    targetUPS: number
 }
 
-export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS }) => {
+export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS, targetUPS }) => {
     const appContext = useAppContext()
     const match = useMatch()
 
@@ -69,8 +70,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS }) => {
     return (
         <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
             <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[10px] text-xs select-none whitespace-nowrap">
-                Turn: <b>{turn}</b>/{maxTurn} &nbsp; {appContext.state.updatesPerSecond} UPS (
-                {appContext.state.updatesPerSecond < 0 && '-'}
+                Turn: <b>{turn}</b>/{maxTurn} &nbsp; {targetUPS} UPS ({targetUPS < 0 && '-'}
                 {currentUPS})
             </p>
             <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
