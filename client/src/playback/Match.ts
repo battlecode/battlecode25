@@ -7,6 +7,7 @@ import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
 import { publishEvent, EventType } from '../app-events'
+import gameRunner from './GameRunner'
 
 // Amount of turns before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
@@ -209,7 +210,7 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        publishEvent(EventType.TURN_PROGRESS, {})
+        gameRunner.onTurnChanged()
         if (rerender) this.rerender()
     }
 }

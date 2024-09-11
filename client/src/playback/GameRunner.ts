@@ -13,18 +13,14 @@ class GameRunner {
     _controlListeners: (() => void)[] = []
 
     game: Game | undefined = undefined
-    _gameListeners: ((game: Game | undefined) => void)[] = []
+    _gameListeners: (() => void)[] = []
     match: Match | undefined = undefined
-    _matchListeners: ((match: Match | undefined) => void)[] = []
-    _turnListeners: ((turn: Turn | undefined) => void)[] = []
+    _matchListeners: (() => void)[] = []
+    _turnListeners: (() => void)[] = []
 
     eventLoop: NodeJS.Timeout | undefined = undefined
 
-    constructor() {
-        document.addEventListener(EventType.TURN_PROGRESS as string, () => this._updateTurnListeners())
-    }
-
-    startEventLoop(): void {
+    private startEventLoop(): void {
         if (this.eventLoop) throw new Error('Event loop already exists')
 
         this.eventLoop = setInterval(() => {
@@ -51,7 +47,7 @@ class GameRunner {
         }, SIMULATION_UPDATE_INTERVAL_MS)
     }
 
-    shutDownEventLoop(): void {
+    private shutDownEventLoop(): void {
         if (!this.eventLoop) throw new Error('Event loop does not exist')
         // Snap bots to their actual position when paused by rounding simulation to the true turn
         if (this.match) {
@@ -62,7 +58,7 @@ class GameRunner {
         this.eventLoop = undefined
     }
 
-    updateEventLoop(): void {
+    private updateEventLoop(): void {
         if (this.match && !this.paused && !this.eventLoop) {
             this.startEventLoop()
         } else if (this.eventLoop) {
@@ -70,29 +66,28 @@ class GameRunner {
         }
     }
 
-    _updateTurnListeners(): void {
-        this._turnListeners.forEach((listener) => listener(this.match?.currentTurn))
+    onTurnChanged(): void {
+        this._turnListeners.forEach((l) => l())
     }
 
     setGame(game: Game | undefined): void {
         this.game = game
-        this._gameListeners.forEach((listener) => listener(game))
+        this._gameListeners.forEach((l) => l())
         if (!game && this.match) {
             this.setMatch(undefined)
         }
-        this._updateTurnListeners()
+        this.onTurnChanged()
     }
 
     setMatch(match: Match | undefined): void {
         this.match = match
+        if (match) match.jumpToTurn(0)
         this.paused = true
-        this._updateControlListeners()
-        this._matchListeners.forEach((listener) => listener(match))
-        if (!this.game && match) {
-            this.setGame(match.game)
-        }
+        this._controlListeners.forEach((l) => l())
+        this._matchListeners.forEach((l) => l())
+        if (!this.game && match) this.setGame(match.game)
         this.updateEventLoop()
-        this._updateTurnListeners()
+        this.onTurnChanged()
     }
 
     selectMatch(match: Match): void {
@@ -100,16 +95,12 @@ class GameRunner {
         this.setMatch(match)
     }
 
-    _updateControlListeners(): void {
-        this._controlListeners.forEach((listener) => listener())
-    }
-
     multiplyUpdatesPerSecond(multiplier: number) {
         if (!this.match) return
         const scaled = this.targetUPS * multiplier
         const newMag = Math.max(1 / 4, Math.min(64, Math.abs(scaled)))
         this.targetUPS = Math.sign(scaled) * newMag
-        this._updateControlListeners()
+        this._controlListeners.forEach((l) => l())
     }
 
     setPaused(paused: boolean): void {
@@ -117,7 +108,7 @@ class GameRunner {
         this.paused = paused
         if (!paused && this.targetUPS == 0) this.targetUPS = 1
         this.updateEventLoop()
-        this._updateControlListeners()
+        this._controlListeners.forEach((l) => l())
     }
 
     stepTurn(delta: number) {
@@ -160,7 +151,7 @@ const gameRunner = new GameRunner()
 function useGame(): Game | undefined {
     const [game, setGame] = React.useState(gameRunner.game)
     React.useEffect(() => {
-        const listener = (game: Game | undefined) => setGame(game)
+        const listener = () => setGame(gameRunner.game)
         gameRunner._gameListeners.push(listener)
         return () => {
             gameRunner._gameListeners = gameRunner._gameListeners.filter((l) => l !== listener)
@@ -172,7 +163,7 @@ function useGame(): Game | undefined {
 function useMatch(): Match | undefined {
     const [match, setMatch] = React.useState(gameRunner.match)
     React.useEffect(() => {
-        const listener = (match: Match | undefined) => setMatch(match)
+        const listener = () => setMatch(gameRunner.match)
         gameRunner._matchListeners.push(listener)
         return () => {
             gameRunner._matchListeners = gameRunner._matchListeners.filter((l) => l !== listener)
@@ -186,9 +177,9 @@ function useTurn(): Turn | undefined {
     // since turn objects are reused, we need to update when the turn number changes to force a re-render
     const [turnNumber, setTurnNumber] = React.useState(gameRunner.match?.currentTurn?.turnNumber)
     React.useEffect(() => {
-        const listener = (turn: Turn | undefined) => {
-            setTurn(turn)
-            setTurnNumber(turn?.turnNumber)
+        const listener = () => {
+            setTurn(gameRunner.match?.currentTurn)
+            setTurnNumber(gameRunner.match?.currentTurn?.turnNumber)
         }
         gameRunner._turnListeners.push(listener)
         return () => {

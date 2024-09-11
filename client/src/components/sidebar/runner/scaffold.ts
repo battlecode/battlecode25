@@ -150,20 +150,11 @@ export function useScaffold(): Scaffold {
         }
 
         const onGameComplete = (game: Game) => {
-            // Reset all matches to beginning
-            for (const match of game.matches) {
-                match.jumpToTurn(0, true)
-            }
-
-            // Start at first match
-            game.currentMatch = game.matches[0]
-
             appContext.setState((prevState) => ({
                 ...prevState,
-                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game]),
+                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
             }))
-            gameRunner.setGame(game)
-            gameRunner.setMatch(game.currentMatch)
+            if (game.matches.length > 0) gameRunner.selectMatch(game.matches[0])
         }
 
         setWebSocketListener(

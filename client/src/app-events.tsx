@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 export enum EventType {
-    TURN_PROGRESS = 'turnprogress',
     TILE_CLICK = 'tileclick',
     TILE_DRAG = 'TILE_DRAG',
     CANVAS_RIGHT_CLICK = 'CANVAS_RIGHT_CLICK',

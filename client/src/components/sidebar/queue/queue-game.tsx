@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
 import { useAppContext } from '../../../app-context'
 import { IconContext } from 'react-icons'
 import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'
 import { schema } from 'battlecode-schema'
-import gameRunner, { useGame } from '../../../playback/GameRunner'
+import gameRunner from '../../../playback/GameRunner'
 import { useMatch } from '../../../playback/GameRunner'
 
 interface Props {
@@ -17,15 +16,6 @@ export const QueuedGame: React.FC<Props> = (props) => {
     const activeMatch = useMatch()
     const isTournamentMode = context.state.tournament !== undefined
     const [hoveredClose, setHoveredClose] = useState(false)
-
-    const setMatch = (match: Match) => {
-        match.jumpToTurn(0)
-        context.setState((prevState) => ({
-            ...prevState,
-        }))
-
-        gameRunner.selectMatch(match)
-    }
 
     const close = () => {
         context.setState((prevState) => ({
@@ -70,7 +60,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
                         'bg-light hover:bg-lightHighlight cursor-pointer ' +
                         (activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
                     }
-                    onClick={() => setMatch(match)}
+                    onClick={() => gameRunner.selectMatch(match)}
                 >
                     <span className="text-xxs font-bold">{match.map.name}</span>
                     {!isTournamentMode && (
