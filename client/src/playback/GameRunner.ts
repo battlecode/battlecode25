@@ -10,11 +10,14 @@ class GameRunner {
     targetUPS: number = 1
     currentUPSBuffer: number[] = []
     paused: boolean = true
-    _controlListeners: (() => void)[] = []
 
     game: Game | undefined = undefined
+    get match(): Match | undefined {
+        return this.game?.currentMatch
+    }
+
+    _controlListeners: (() => void)[] = []
     _gameListeners: (() => void)[] = []
-    match: Match | undefined = undefined
     _matchListeners: (() => void)[] = []
     _turnListeners: (() => void)[] = []
 
@@ -71,6 +74,7 @@ class GameRunner {
     }
 
     setGame(game: Game | undefined): void {
+        if (this.game == game) return
         this.game = game
         this._gameListeners.forEach((l) => l())
         if (!game && this.match) {
@@ -80,12 +84,15 @@ class GameRunner {
     }
 
     setMatch(match: Match | undefined): void {
-        this.match = match
-        if (match) match.jumpToTurn(0)
+        if (this.match == match) return
+        if (match) {
+            match.game.currentMatch = match
+            this.setGame(match.game)
+            match.jumpToTurn(0)
+        }
         this.paused = true
         this._controlListeners.forEach((l) => l())
         this._matchListeners.forEach((l) => l())
-        if (!this.game && match) this.setGame(match.game)
         this.updateEventLoop()
         this.onTurnChanged()
     }
