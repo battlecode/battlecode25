@@ -7,12 +7,10 @@ import { useAppContext } from '../../../app-context'
 import { SectionHeader } from '../../section-header'
 import { Crown } from '../../../icons/crown'
 import { BiMedal } from 'react-icons/bi'
-import { EventType, useListenEvent } from '../../../app-events'
 import Tooltip from '../../tooltip'
-import { useForceUpdate } from '../../../util/react-util'
 import Match from '../../../playback/Match'
 import { Team } from '../../../playback/Game'
-import { useGame, useMatch, useTurn } from '../../../playback/GameRunner'
+import { useGame, useTurn } from '../../../playback/GameRunner'
 
 const NO_GAME_TEAM_NAME = '?????'
 

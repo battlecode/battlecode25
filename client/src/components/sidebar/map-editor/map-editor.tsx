@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { CurrentMap, StaticMap } from '../../../playback/Map'
+import { StaticMap } from '../../../playback/Map'
 import { MapEditorBrushRow } from './map-editor-brushes'
 import Bodies from '../../../playback/Bodies'
 import Game from '../../../playback/Game'
@@ -13,7 +13,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import { useTurn } from '../../../playback/GameRunner'
+import gameRunner, { useTurn } from '../../../playback/GameRunner'
 
 type MapParams = {
     width: number
@@ -102,11 +102,8 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: editGame.current ?? undefined,
-                activeMatch: editGame.current?.currentMatch
-            }))
+            gameRunner.setGame(editGame.current)
+            gameRunner.setMatch(editGame.current.currentMatch)
 
             const turn = editGame.current.currentMatch!.currentTurn
             const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
@@ -114,11 +111,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             setBrushes(brushes)
             setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
         } else {
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: undefined,
-                activeMatch: undefined
-            }))
+            gameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 

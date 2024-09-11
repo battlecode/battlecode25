@@ -6,6 +6,7 @@ import { PageType, usePage } from '../../../app-search-params'
 import { Pressable } from 'react-zoomable-ui'
 import { Crown } from '../../../icons/crown'
 import Tooltip from '../../tooltip'
+import gameRunner from '../../../playback/GameRunner'
 
 interface Props {
     game: TournamentGame
@@ -32,14 +33,10 @@ export const TournamentGameElement: React.FC<Props> = ({ lines, game }) => {
                 }
                 const loadedGame = Game.loadFullGameRaw(buffer)
 
-                // select the first match
-                const selectedMatch = loadedGame.matches[0]
-                loadedGame.currentMatch = selectedMatch
+                gameRunner.selectMatch(loadedGame.matches[0])
 
                 appContext.setState((prevState) => ({
                     ...prevState,
-                    activeGame: loadedGame,
-                    activeMatch: loadedGame.currentMatch,
                     queue: prevState.queue.concat([loadedGame])
                 }))
                 game.viewed = true

@@ -1,9 +1,6 @@
 import React from 'react'
-import { AppContext, useAppContext } from '../../../app-context'
-import { useListenEvent, EventType } from '../../../app-events'
-import { useForceUpdate } from '../../../util/react-util'
 import { CanvasHistogram } from './quick-histogram'
-import { ATTACK_COLOR, SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
+import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
 import { useTurn } from '../../../playback/GameRunner'
 import Turn from '../../../playback/Turn'
 
