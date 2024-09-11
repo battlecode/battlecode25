@@ -6,8 +6,6 @@ import { ClientConfig, getDefaultConfig } from './client-config'
 
 export interface AppState {
     queue: Game[]
-    activeGame: Game | undefined
-    activeMatch: Match | undefined
     tournament: Tournament | undefined
     tournamentState: TournamentState
     loadingRemoteContent: string
@@ -19,8 +17,6 @@ export interface AppState {
 
 const DEFAULT_APP_STATE: AppState = {
     queue: [],
-    activeGame: undefined,
-    activeMatch: undefined,
     tournament: undefined,
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',

@@ -8,21 +8,23 @@ import { EventType, useListenEvent } from '../../app-events'
 import { useForceUpdate } from '../../util/react-util'
 import Tooltip from '../tooltip'
 import { PageType, usePage } from '../../app-search-params'
+import gameRunner, { useGame, useTurn } from '../../playback/GameRunner'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 
 export const ControlsBar: React.FC = () => {
     const { state: appState, setState: setAppState } = useAppContext()
+    const game = useGame()
+    const turn = useTurn()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
     const [page, setPage] = usePage()
 
     const currentUPSBuffer = React.useRef<number[]>([])
 
-    const currentMatch = appState.activeGame?.currentMatch
-    const isPlayable = appState.activeGame && appState.activeGame.playable && currentMatch
-    const hasNextMatch =
-        currentMatch && appState.activeGame!.matches.indexOf(currentMatch!) + 1 < appState.activeGame!.matches.length
+    const currentMatch = turn?.match
+    const isPlayable = !!turn && !!game && !!currentMatch
+    const hasNextMatch = currentMatch && game!.matches.indexOf(currentMatch!) + 1 < game!.matches.length
 
     const changePaused = (paused: boolean) => {
         if (!currentMatch) return
@@ -69,7 +71,6 @@ export const ControlsBar: React.FC = () => {
 
     const nextMatch = () => {
         if (!isPlayable) return
-        const game = appState.activeGame!
         const prevMatch = game.currentMatch!
         const prevMatchIndex = game.matches.indexOf(prevMatch)
         if (prevMatchIndex + 1 == game.matches.length) {
@@ -77,20 +78,17 @@ export const ControlsBar: React.FC = () => {
             return
         }
 
-        game.currentMatch = game.matches[prevMatchIndex + 1]
         setAppState((prevState) => ({
-            ...prevState,
-            activeGame: game,
-            activeMatch: game.currentMatch
+            ...prevState
         }))
+        gameRunner.selectMatch(game.matches[prevMatchIndex + 1])
     }
 
     const closeGame = () => {
         setAppState((prevState) => ({
-            ...prevState,
-            activeGame: undefined,
-            activeMatch: undefined
+            ...prevState
         }))
+        gameRunner.setGame(undefined)
         if (appState.tournament) setPage(PageType.TOURNAMENT)
     }
 
@@ -129,7 +127,7 @@ export const ControlsBar: React.FC = () => {
         return () => {
             clearInterval(stepInterval)
         }
-    }, [appState.updatesPerSecond, appState.activeGame, currentMatch, appState.paused])
+    }, [appState.updatesPerSecond, game, currentMatch, appState.paused])
 
     useEffect(() => {
         if (appState.disableHotkeys) return
@@ -170,13 +168,10 @@ export const ControlsBar: React.FC = () => {
         }
     }, [keyboard.keyCode])
 
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
-
     if (!isPlayable) return null
 
-    const atStart = currentMatch.currentTurn.turnNumber == 0
-    const atEnd = currentMatch.currentTurn.turnNumber == currentMatch.maxTurn
+    const atStart = turn.turnNumber == 0
+    const atEnd = turn.turnNumber == currentMatch.maxTurn
 
     return (
         <div

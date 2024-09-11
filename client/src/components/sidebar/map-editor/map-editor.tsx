@@ -13,6 +13,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
+import { useTurn } from '../../../playback/GameRunner'
 
 type MapParams = {
     width: number
@@ -27,6 +28,7 @@ interface Props {
 
 export const MapEditorPage: React.FC<Props> = (props) => {
     const context = useAppContext()
+    const turn = useTurn()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
     const [brushes, setBrushes] = React.useState<MapEditorBrush[]>([])
@@ -43,9 +45,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setBrushes(brushes.map((b) => b.opened(b === brush)))
     }
 
-    const mapEmpty = () =>
-        !context.state.activeMatch?.currentTurn ||
-        (context.state.activeMatch.currentTurn.map.isEmpty() && context.state.activeMatch.currentTurn.bodies.isEmpty())
+    const mapEmpty = () => !turn || (turn.map.isEmpty() && turn.bodies.isEmpty())
 
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
@@ -181,7 +181,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                 <div className="flex flex-row mt-8">
                     <BrightButton
                         onClick={() => {
-                            if (!context.state.activeMatch?.currentTurn) return
+                            if (!turn) return
                             setMapNameOpen(true)
                         }}
                     >
@@ -199,7 +199,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                         setMapNameOpen(false)
                         return
                     }
-                    const error = exportMap(context.state.activeMatch!.currentTurn, name)
+                    const error = exportMap(turn!, name)
                     setMapError(error)
                     if (!error) setMapNameOpen(false)
                 }}

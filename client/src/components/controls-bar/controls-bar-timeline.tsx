@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
+import { useMatch } from '../../playback/GameRunner'
 
 const TIMELINE_WIDTH = 350
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 
 export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS }) => {
     const appContext = useAppContext()
+    const match = useMatch()
 
     let down = useRef(false)
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -34,25 +36,25 @@ export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS }) => {
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
             if (x <= 0) {
-                appContext.state.activeGame!.currentMatch!.jumpToTurn(0)
+                match!.jumpToTurn(0)
             } else if (x >= rect.width) {
-                appContext.state.activeGame!.currentMatch!.jumpToEnd()
+                match!.jumpToEnd()
             }
         }
         timelineUp(e)
     }
 
     // TODO: should have a defined constant somewhere else
-    const maxTurn = appContext.state.tournament ? 2000 : appContext.state.activeGame!.currentMatch!.maxTurn
+    const maxTurn = appContext.state.tournament ? 2000 : match!.maxTurn
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
         const turn = Math.floor((x / TIMELINE_WIDTH) * maxTurn)
-        appContext.state.activeGame!.currentMatch!.jumpToTurn(turn)
+        match!.jumpToTurn(turn)
     }
 
-    if (!appContext.state.activeGame || !appContext.state.activeGame.currentMatch)
+    if (!match)
         return (
             <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
                 <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[9px] text-xs pointer-events-none">
@@ -62,7 +64,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS }) => {
             </div>
         )
 
-    const turn = appContext.state.activeGame!.currentMatch!.currentTurn.turnNumber
+    const turn = match!.currentTurn.turnNumber
     const turnPercentage = () => (1 - turn / maxTurn) * 100 + '%'
     return (
         <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>

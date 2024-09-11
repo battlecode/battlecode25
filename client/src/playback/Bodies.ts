@@ -566,7 +566,7 @@ export class Body {
         assert(this.attackLevel >= 0 && this.attackLevel <= 6, 'Attack level out of bounds')
         assert(this.healLevel >= 0 && this.healLevel <= 6, 'Heal level out of bounds')
         assert(this.buildLevel >= 0 && this.buildLevel <= 6, 'Build level out of bounds')
-        assert([this.attackLevel, this.healLevel, this.buildLevel].sort()[1] <= 3, 'Specialization level too high')
+        // assert([this.attackLevel, this.healLevel, this.buildLevel].sort()[1] <= 3, 'Specialization level too high')
         if (this.attackLevel > 3) return { idx: 1, name: 'attack' }
         if (this.buildLevel > 3) return { idx: 2, name: 'build' }
         if (this.healLevel > 3) return { idx: 3, name: 'heal' }
