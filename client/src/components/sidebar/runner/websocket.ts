@@ -3,6 +3,7 @@ import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import assert from 'assert'
 import { EventType, publishEvent } from '../../../app-events'
+import gameRunner from '../../../playback/GameRunner'
 
 export type FakeGameWrapper = {
     events: (index: number, unusedEventSlot: any) => schema.EventWrapper | null
@@ -66,8 +67,8 @@ export default class WebSocketListener {
                 match.jumpToTurn(match.maxTurn - 1, true)
                 this.lastSetTurn = match.currentTurn.turnNumber
             } else {
-                // Publish anyways so the control bar updates
-                publishEvent(EventType.TURN_PROGRESS, {})
+                // Publish so the control bar updates
+                gameRunner.onTurnChanged()
             }
         }
 
@@ -110,7 +111,8 @@ export default class WebSocketListener {
                 break
             }
             case schema.Event.GameFooter: {
-                publishEvent(EventType.TURN_PROGRESS, {})
+                // Publish so the control bar updates
+                gameRunner.onTurnChanged()
                 this.onGameComplete(this.activeGame!)
                 this.reset()
 

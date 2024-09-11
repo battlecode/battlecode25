@@ -6,6 +6,7 @@ import assert from 'assert'
 import { Tooltip } from './tooltip'
 import { TILE_RESOLUTION } from '../../constants'
 import { CurrentMap } from '../../playback/Map'
+import { useMatch, useTurn } from '../../playback/GameRunner'
 
 export const GameRenderer: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -14,7 +15,8 @@ export const GameRenderer: React.FC = () => {
     const overlayCanvas = useRef<HTMLCanvasElement | null>(null)
 
     const appContext = useAppContext()
-    const { activeGame, activeMatch } = appContext.state
+    const match = useMatch()
+    const turn = useTurn()
 
     const [selectedBodyID, setSelectedBodyID] = useState<number | undefined>(undefined)
     const [hoveredTile, setHoveredTile] = useState<Vector | undefined>(undefined)
@@ -22,7 +24,6 @@ export const GameRenderer: React.FC = () => {
     const [hoveredBodyID, setHoveredBodyID] = useState<number | undefined>(undefined)
     const calculateHoveredBodyID = () => {
         if (!hoveredTile) return setHoveredBodyID(undefined)
-        const match = appContext.state.activeMatch
         if (!match) return
         const hoveredBodyIDFound = match.currentTurn.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y)?.id
         setHoveredBodyID(hoveredBodyIDFound)
@@ -30,28 +31,26 @@ export const GameRenderer: React.FC = () => {
         // always clear this so the selection is cleared when you move
         setSelectedSquare(undefined)
     }
-    useEffect(calculateHoveredBodyID, [hoveredTile])
-    useListenEvent(EventType.TURN_PROGRESS, calculateHoveredBodyID)
+    useEffect(calculateHoveredBodyID, [turn?.turnNumber, hoveredTile]) // watch turn number, not turn object because it doesnt change
 
     const render = () => {
         const ctx = dynamicCanvas.current?.getContext('2d')
         const overlayCtx = overlayCanvas.current?.getContext('2d')
-        if (!activeMatch || !ctx || !overlayCtx) return
+        if (!match || !ctx || !overlayCtx) return
 
-        const currentTurn = activeMatch.currentTurn
+        const currentTurn = match.currentTurn
         const map = currentTurn.map
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height)
-        map.draw(activeMatch, ctx, appContext.state.config, selectedBodyID, hoveredBodyID)
-        currentTurn.bodies.draw(activeMatch, ctx, overlayCtx, appContext.state.config, selectedBodyID, hoveredBodyID)
-        currentTurn.actions.draw(activeMatch, ctx)
+        map.draw(match, ctx, appContext.state.config, selectedBodyID, hoveredBodyID)
+        currentTurn.bodies.draw(match, ctx, overlayCtx, appContext.state.config, selectedBodyID, hoveredBodyID)
+        currentTurn.actions.draw(match, ctx)
     }
     useEffect(render, [hoveredBodyID, selectedBodyID])
     useListenEvent(EventType.RENDER, render, [render])
 
     const fullRender = () => {
-        const match = appContext.state.activeMatch
         const ctx = backgroundCanvas.current?.getContext('2d')
         if (!match || !ctx) return
         match.currentTurn.map.staticMap.draw(ctx)
@@ -65,8 +64,8 @@ export const GameRenderer: React.FC = () => {
         canvas.height = dims.y * TILE_RESOLUTION
         canvas.getContext('2d')?.scale(TILE_RESOLUTION, TILE_RESOLUTION)
     }
+
     useEffect(() => {
-        const match = appContext.state.activeMatch
         if (!match) return
         const { width, height } = match.currentTurn.map
         updateCanvasDimensions(backgroundCanvas.current, { x: width, y: height })
@@ -77,12 +76,12 @@ export const GameRenderer: React.FC = () => {
         setHoveredTile(undefined)
         setHoveredBodyID(undefined)
         publishEvent(EventType.INITIAL_RENDER, {})
-    }, [appContext.state.activeMatch, backgroundCanvas.current, dynamicCanvas.current, overlayCanvas.current])
+    }, [match, backgroundCanvas.current, dynamicCanvas.current, overlayCanvas.current])
 
     const eventToPoint = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         const canvas = e.target as HTMLCanvasElement
         const rect = canvas.getBoundingClientRect()
-        const map = activeGame!.currentMatch!.currentTurn!.map ?? assert.fail('map is null in onclick')
+        const map = match!.currentTurn!.map ?? assert.fail('map is null in onclick')
         let x = Math.floor(((e.clientX - rect.left) / rect.width) * map.width)
         let y = Math.floor((1 - (e.clientY - rect.top) / rect.height) * map.height)
         x = Math.max(0, Math.min(x, map.width - 1))
@@ -118,9 +117,9 @@ export const GameRenderer: React.FC = () => {
     }
     const onCanvasClick = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         const point = eventToPoint(e)
-        const clickedBody = activeGame?.currentMatch?.currentTurn?.bodies.getBodyAtLocation(point.x, point.y)
+        const clickedBody = match?.currentTurn?.bodies.getBodyAtLocation(point.x, point.y)
         setSelectedBodyID(clickedBody ? clickedBody.id : undefined)
-        setSelectedSquare(clickedBody || !activeMatch?.game.playable ? undefined : point)
+        setSelectedSquare(clickedBody || !match?.game.playable ? undefined : point)
         publishEvent(EventType.TILE_CLICK, point)
     }
     const onCanvasDrag = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -137,7 +136,7 @@ export const GameRenderer: React.FC = () => {
             style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
             ref={wrapperRef}
         >
-            {!activeMatch ? (
+            {!match ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
                 <>
@@ -192,7 +191,7 @@ export const GameRenderer: React.FC = () => {
                     />
                     <HighlightedSquare
                         hoveredTile={hoveredTile}
-                        map={activeMatch?.currentTurn.map}
+                        map={match?.currentTurn.map}
                         wrapperRef={wrapperRef.current}
                         overlayCanvasRef={overlayCanvas.current}
                     />

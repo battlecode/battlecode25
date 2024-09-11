@@ -18,6 +18,7 @@ import { useScaffold } from './runner/scaffold'
 import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../playback/Game'
+import gameRunner from '../../playback/GameRunner'
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
@@ -92,13 +93,10 @@ export const Sidebar: React.FC = () => {
                 const loadedGame = Game.loadFullGameRaw(buffer)
 
                 // select the first match
-                const selectedMatch = loadedGame.matches[0]
-                loadedGame.currentMatch = selectedMatch
+                gameRunner.selectMatch(loadedGame.matches[0])
 
                 context.setState((prevState) => ({
                     ...prevState,
-                    activeGame: loadedGame,
-                    activeMatch: loadedGame.currentMatch,
                     queue: context.state.queue.concat([loadedGame]),
                     loadingRemoteContent: ''
                 }))

@@ -1,10 +1,9 @@
-import React, { MutableRefObject, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useAppContext } from '../../app-context'
-import { useListenEvent, EventType } from '../../app-events'
-import { useForceUpdate } from '../../util/react-util'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { getRenderCoords } from '../../util/RenderUtil'
 import { Vector } from '../../playback/Vector'
+import { useTurn } from '../../playback/GameRunner'
 
 type TooltipProps = {
     overlayCanvas: HTMLCanvasElement | null
@@ -24,18 +23,10 @@ export const Tooltip = ({
     wrapperRef
 }: TooltipProps) => {
     const appContext = useAppContext()
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
-    useListenEvent(EventType.INITIAL_RENDER, forceUpdate)
+    const turn = useTurn()
 
-    const selectedBody =
-        selectedBodyID !== undefined
-            ? appContext.state.activeMatch?.currentTurn.bodies.bodies.get(selectedBodyID)
-            : undefined
-    const hoveredBody =
-        hoveredBodyID !== undefined
-            ? appContext.state.activeMatch?.currentTurn.bodies.bodies.get(hoveredBodyID)
-            : undefined
+    const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
+    const hoveredBody = hoveredBodyID !== undefined ? turn?.bodies.bodies.get(hoveredBodyID) : undefined
 
     const tooltipRef = React.useRef<HTMLDivElement>(null)
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
@@ -52,7 +43,7 @@ export const Tooltip = ({
         }
     }, [hoveredBody, hoveredSquare])
 
-    const map = appContext.state.activeMatch?.currentTurn.map
+    const map = turn?.map
     if (!overlayCanvas || !wrapperRef || !map) return <></>
 
     const wrapperRect = wrapperRef.getBoundingClientRect()
@@ -100,8 +91,8 @@ export const Tooltip = ({
     const tooltipContent = hoveredBody
         ? hoveredBody.onHoverInfo()
         : hoveredSquare
-        ? map.getTooltipInfo(hoveredSquare, appContext.state.activeMatch!)
-        : []
+          ? map.getTooltipInfo(hoveredSquare, turn!.match)
+          : []
 
     if (tooltipContent.length === 0) showFloatingTooltip = false
 
