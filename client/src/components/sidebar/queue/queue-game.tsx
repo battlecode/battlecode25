@@ -60,7 +60,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
                         'bg-light hover:bg-lightHighlight cursor-pointer ' +
                         (activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
                     }
-                    onClick={() => gameRunner.selectMatch(match)}
+                    onClick={() => gameRunner.setMatch(match)}
                 >
                     <span className="text-xxs font-bold">{match.map.name}</span>
                     {!isTournamentMode && (

@@ -34,7 +34,7 @@ export const QueuePage: React.FC<Props> = (props) => {
                 ...prevState,
                 queue: queue.concat([game])
             }))
-            gameRunner.selectMatch(selectedMatch)
+            gameRunner.setMatch(selectedMatch)
         }
         reader.readAsArrayBuffer(file)
     }

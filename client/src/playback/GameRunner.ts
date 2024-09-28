@@ -97,11 +97,6 @@ class GameRunner {
         this.onTurnChanged()
     }
 
-    selectMatch(match: Match): void {
-        match.game.currentMatch = match
-        this.setMatch(match)
-    }
-
     multiplyUpdatesPerSecond(multiplier: number) {
         if (!this.match) return
         const scaled = this.targetUPS * multiplier
@@ -148,7 +143,7 @@ class GameRunner {
         if (prevMatchIndex + 1 == this.game.matches.length) {
             this.setGame(undefined)
         } else {
-            this.selectMatch(this.game.matches[prevMatchIndex + 1])
+            this.setMatch(this.game.matches[prevMatchIndex + 1])
         }
     }
 }

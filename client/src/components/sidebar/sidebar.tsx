@@ -93,7 +93,7 @@ export const Sidebar: React.FC = () => {
                 const loadedGame = Game.loadFullGameRaw(buffer)
 
                 // select the first match
-                gameRunner.selectMatch(loadedGame.matches[0])
+                gameRunner.setMatch(loadedGame.matches[0])
 
                 context.setState((prevState) => ({
                     ...prevState,
