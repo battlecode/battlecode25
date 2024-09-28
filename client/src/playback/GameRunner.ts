@@ -70,17 +70,21 @@ class GameRunner {
     }
 
     onTurnChanged(): void {
-        this._turnListeners.forEach((l) => l())
+        this._trigger(this._turnListeners)
     }
 
     setGame(game: Game | undefined): void {
         if (this.game == game) return
         this.game = game
-        this._gameListeners.forEach((l) => l())
-        if (!game && this.match) {
-            this.setMatch(undefined)
-        }
+        this._trigger(this._gameListeners)
+        this._trigger(this._matchListeners)
         this.onTurnChanged()
+    }
+
+    _trigger(listeners: (() => void)[]): void {
+        setTimeout(() => {
+            listeners.forEach((l) => l())
+        })
     }
 
     setMatch(match: Match | undefined): void {
@@ -91,8 +95,8 @@ class GameRunner {
             match.jumpToTurn(0)
         }
         this.paused = true
-        this._controlListeners.forEach((l) => l())
-        this._matchListeners.forEach((l) => l())
+        this._trigger(this._controlListeners)
+        this._trigger(this._matchListeners)
         this.updateEventLoop()
         this.onTurnChanged()
     }
@@ -102,7 +106,7 @@ class GameRunner {
         const scaled = this.targetUPS * multiplier
         const newMag = Math.max(1 / 4, Math.min(64, Math.abs(scaled)))
         this.targetUPS = Math.sign(scaled) * newMag
-        this._controlListeners.forEach((l) => l())
+        this._trigger(this._controlListeners)
     }
 
     setPaused(paused: boolean): void {
@@ -110,7 +114,7 @@ class GameRunner {
         this.paused = paused
         if (!paused && this.targetUPS == 0) this.targetUPS = 1
         this.updateEventLoop()
-        this._controlListeners.forEach((l) => l())
+        this._trigger(this._controlListeners)
     }
 
     stepTurn(delta: number) {

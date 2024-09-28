@@ -27,7 +27,6 @@ interface Props {
 }
 
 export const MapEditorPage: React.FC<Props> = (props) => {
-    const context = useAppContext()
     const turn = useTurn()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
@@ -102,7 +101,6 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            gameRunner.setGame(editGame.current)
             gameRunner.setMatch(editGame.current.currentMatch)
 
             const turn = editGame.current.currentMatch!.currentTurn
