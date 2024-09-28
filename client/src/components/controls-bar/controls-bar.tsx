@@ -12,7 +12,7 @@ export const ControlsBar: React.FC = () => {
     const turn = useTurn()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
-    const { paused, currentUPS, targetUPS } = useControls()
+    const { paused, targetUPS } = useControls()
 
     const hasNextMatch = turn && turn?.match.game.matches.indexOf(turn.match!) + 1 < turn.match.game.matches.length
 
@@ -82,7 +82,7 @@ export const ControlsBar: React.FC = () => {
                     ' flex bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
-                <ControlsBarTimeline currentUPS={currentUPS} targetUPS={targetUPS} />
+                <ControlsBarTimeline targetUPS={targetUPS} />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
                     tooltip="Reverse"

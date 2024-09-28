@@ -1,16 +1,16 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
-import { useMatch } from '../../playback/GameRunner'
+import { useCurrentUPS, useMatch } from '../../playback/GameRunner'
 
 const TIMELINE_WIDTH = 350
 interface Props {
-    currentUPS: number
     targetUPS: number
 }
 
-export const ControlsBarTimeline: React.FC<Props> = ({ currentUPS, targetUPS }) => {
+export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const appContext = useAppContext()
     const match = useMatch()
+    const currentUPS = useCurrentUPS()
 
     let down = useRef(false)
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

@@ -150,7 +150,7 @@ class GameRunner {
 
 const gameRunner = new GameRunner()
 
-function useGame(): Game | undefined {
+export function useGame(): Game | undefined {
     const [game, setGame] = React.useState(gameRunner.game)
     React.useEffect(() => {
         const listener = () => setGame(gameRunner.game)
@@ -162,7 +162,7 @@ function useGame(): Game | undefined {
     return game
 }
 
-function useMatch(): Match | undefined {
+export function useMatch(): Match | undefined {
     const [match, setMatch] = React.useState(gameRunner.match)
     React.useEffect(() => {
         const listener = () => setMatch(gameRunner.match)
@@ -174,7 +174,7 @@ function useMatch(): Match | undefined {
     return match
 }
 
-function useTurn(): Turn | undefined {
+export function useTurn(): Turn | undefined {
     const [turn, setTurn] = React.useState(gameRunner.match?.currentTurn)
     // since turn objects are reused, we need to update when the turn number changes to force a re-render
     const [turnNumber, setTurnNumber] = React.useState(gameRunner.match?.currentTurn?.turnNumber)
@@ -191,7 +191,7 @@ function useTurn(): Turn | undefined {
     return turn
 }
 
-function useControls(): {
+export function useControls(): {
     targetUPS: number
     currentUPS: number
     paused: boolean
@@ -213,5 +213,18 @@ function useControls(): {
     return { targetUPS, currentUPS, paused }
 }
 
+export function useCurrentUPS(): number {
+    const [currentUPS, setCurrentUPS] = React.useState(gameRunner.currentUPSBuffer.length)
+    React.useEffect(() => {
+        const listener = () => setCurrentUPS(gameRunner.currentUPSBuffer.length)
+        gameRunner._controlListeners.push(listener)
+        gameRunner._turnListeners.push(listener)
+        return () => {
+            gameRunner._controlListeners = gameRunner._controlListeners.filter((l) => l !== listener)
+            gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
+        }
+    }, [])
+    return currentUPS
+}
+
 export default gameRunner
-export { useGame, useMatch, useTurn, useControls }
