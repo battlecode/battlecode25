@@ -772,13 +772,6 @@ public strictfp class GameWorld {
     // ****** DESTROYING ***************
     // *********************************
 
-    // public void despawnRobot(int id) {
-    //     InternalRobot robot = objectInfo.getRobotByID(id);
-    //     removeRobot(robot.getLocation());
-    //     robot.despawn();
-    //     matchMaker.addDied(id);
-    // }
-
     /**
      * Permanently destroy a robot; left for internal purposes.
      */
