@@ -330,27 +330,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health += healthAmount;
         this.health = Math.min(this.health, GameConstants.DEFAULT_HEALTH);
         if (this.health <= 0) {
-            this.gameWorld.despawnRobot(this.ID);
-        }
-    }
-
-    /**
-     * Removes exp from a robot when it is jailed
-     */
-    public void jailedPenalty() {
-        if (this.buildExp == 0 && this.attackExp == 0 && this.healExp == 0)
-            return;
-        int attackLevel = getLevel(SkillType.ATTACK), buildLevel = getLevel(SkillType.BUILD),
-                healLevel = getLevel(SkillType.HEAL);
-        if (attackLevel >= buildLevel && attackLevel >= healLevel) {
-            this.attackExp += SkillType.ATTACK.getPenalty(attackLevel);
-            this.attackExp = Math.max(0, this.attackExp);
-        } else if (buildLevel >= attackLevel && buildLevel >= healLevel) {
-            this.buildExp += SkillType.BUILD.getPenalty(buildLevel);
-            this.buildExp = Math.max(0, this.buildExp);
-        } else {
-            this.healExp += SkillType.HEAL.getPenalty(healLevel);
-            this.healExp = Math.max(0, this.healExp);
+            this.gameWorld.destroyRobot(this.ID);
         }
     }
 
@@ -391,19 +371,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health = GameConstants.DEFAULT_HEALTH;
         // this.actionCooldownTurns = GameConstants.COOLDOWN_LIMIT;
         // this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
-    }
-
-    public void despawn() {
-        this.spawnCooldownTurns = GameConstants.COOLDOWNS_PER_TURN * GameConstants.JAILED_ROUNDS;
-        jailedPenalty();
-        if (flag != null) {
-            this.gameWorld.addFlag(location, flag);
-            this.gameWorld.getMatchMaker().addAction(flag.getId(), Action.PLACE_FLAG, locationToInt(location));
-            removeFlag();
-        }
-        this.spawned = false;
-        this.diedLocation = this.location;
-        this.location = null;
     }
 
     public boolean isSpawned() {
@@ -528,7 +495,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void die_exception() {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
-        this.gameWorld.despawnRobot(getID());
+        this.gameWorld.destroyRobot(getID());
     }
 
     // *****************************************

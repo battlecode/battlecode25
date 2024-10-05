@@ -210,10 +210,12 @@ public strictfp class GameWorld {
         // If the robot terminates but the death signal has not yet
         // been visited:
 
-        // NOTE: changed this from destroy to despawn; double check that this change is correct
-        //allowing despawned robots to continue throwing errors may be cause of gc overhead errors
-        if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null && robot.getLocation() != null)
-            despawnRobot(robot.getID());
+        if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null
+            && robot.getLocation() != null)
+        {
+            destroyRobot(robot.getID());
+        }
+
         return true;
     }
 
@@ -770,24 +772,26 @@ public strictfp class GameWorld {
     // ****** DESTROYING ***************
     // *********************************
 
-    public void despawnRobot(int id) {
-        InternalRobot robot = objectInfo.getRobotByID(id);
-        removeRobot(robot.getLocation());
-        robot.despawn();
-        matchMaker.addDied(id);
-    }
+    // public void despawnRobot(int id) {
+    //     InternalRobot robot = objectInfo.getRobotByID(id);
+    //     removeRobot(robot.getLocation());
+    //     robot.despawn();
+    //     matchMaker.addDied(id);
+    // }
 
     /**
      * Permanently destroy a robot; left for internal purposes.
      */
     public void destroyRobot(int id) {
         InternalRobot robot = objectInfo.getRobotByID(id);
+        
         if (robot.getLocation() != null)
-        removeRobot(robot.getLocation());
+        {
+            removeRobot(robot.getLocation());
+        }
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-
         matchMaker.addDied(id);
     }
 

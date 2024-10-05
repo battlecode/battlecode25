@@ -272,7 +272,7 @@ public strictfp class GameMaker {
             GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
             GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
             GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
-            GameplayConstants.addJailedRounds(builder, GameConstants.JAILED_ROUNDS);
+            // GameplayConstants.addJailedRounds(builder, GameConstants.JAILED_ROUNDS);
             GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
             GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
             int constantsOffset = GameplayConstants.endGameplayConstants(builder);
@@ -298,7 +298,7 @@ public strictfp class GameMaker {
                 SpecializationMetadata.startSpecializationMetadata(builder);
                 SpecializationMetadata.addType(builder, skillTypeToSpecializationType(type));
                 SpecializationMetadata.addLevel(builder, l);
-                SpecializationMetadata.addActionJailedPenalty(builder, type.getPenalty(l));
+                // SpecializationMetadata.addActionJailedPenalty(builder, type.getPenalty(l));
                 SpecializationMetadata.addCooldownReduction(builder, type.getCooldown(l));
                 int effect = type.getSkillEffect(l);
                 if (type == SkillType.ATTACK) {
