@@ -19,6 +19,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private int buildExp;
     private int healExp;
     private int attackExp;
+    private int paintAmount;
 
     private final int ID;
     private Team team;
@@ -71,6 +72,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.buildExp = 0;
         this.healExp = 0;
         this.attackExp = 0;
+        this.paintAmount = 0;
 
         this.controlBits = 0;
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
@@ -137,6 +139,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
         return 6;
     }
+
+    
 
     public int getResource() {
         return this.gameWorld.getTeamInfo().getBread(this.team);
