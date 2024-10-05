@@ -2,6 +2,7 @@ package battlecode.world;
 
 import battlecode.common.*;
 import battlecode.schema.Action;
+import battlecode.schema.GameplayConstants;
 
 import java.util.ArrayList;
 
@@ -141,13 +142,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     
+    public int getPaint() {
+        return paintAmount;
+    }    
 
-    public int getResource() {
-        return this.gameWorld.getTeamInfo().getBread(this.team);
-    }
-
-    public void addResourceAmount(int amount) {
-        this.gameWorld.getTeamInfo().addBread(this.team, amount);
+    public void addPaint(int amount) {
+        paintAmount += amount;
     }
 
     public boolean canAddFlag() {
@@ -197,6 +197,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 && cachedRobotInfo.ID == ID
                 && cachedRobotInfo.team == team
                 && cachedRobotInfo.health == health
+                && cachedRobotInfo.paintAmount == paintAmount
                 && cachedRobotInfo.location.equals(location)
                 && cachedRobotInfo.hasFlag == (flag != null)
                 && cachedRobotInfo.attackLevel == SkillType.ATTACK.getLevel(attackExp)
@@ -297,14 +298,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     /**
      * Resets the movement cooldown.
      */
+    //TODO: check amount of paint and apply corresponding cooldown
+    // add new game constants
     public void addMovementCooldownTurns() {
-        if (hasFlag() && this.gameWorld.getTeamInfo().getGlobalUpgrades(team)[1]) {
-            setMovementCooldownTurns(this.movementCooldownTurns + GameConstants.FLAG_MOVEMENT_COOLDOWN
-                    + GlobalUpgrade.CAPTURING.movementDelayChange);
-        } else {
-            setMovementCooldownTurns(this.movementCooldownTurns
-                    + (hasFlag() ? GameConstants.FLAG_MOVEMENT_COOLDOWN : GameConstants.MOVEMENT_COOLDOWN));
-        }
+        int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
+      if (paintAmount < GameConstants.PAINT_COOLDOWN) {
+        movementCooldown = GameConstants.MOVEMENT_COOLDOWN * (GameConstants.PAINT_COOLDOWN_INTERCEPT + GameConstants.PAINT_COOLDOWN_SLOPE * paintAmount) / 100;
+      }
+       this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
     }
 
     /**

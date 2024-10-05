@@ -95,6 +95,15 @@ public class GameConstants {
     /** The end of the setup rounds in the game */
     public static final int SETUP_ROUNDS = 200;
 
+    /** Maximum percent amount of paint to start cooldown */
+    public static final int PAINT_COOLDOWN = 50;
+
+    /** Intercept in the formula for the cooldown */
+    public static final int PAINT_COOLDOWN_INTERCEPT = 100;
+
+    /** Slope in the formula for the cooldown */
+    public static final int PAINT_COOLDOWN_SLOPE = -2;
+
     /** Number of rounds between adding a global upgrade point */
     public static final int GLOBAL_UPGRADE_ROUNDS = 600;
 

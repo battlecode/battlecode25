@@ -28,6 +28,11 @@ public class RobotInfo {
     public final MapLocation location;
 
     /**
+     * The current paint amount of the robot.
+     */
+    public final int paintAmount;
+
+    /**
      * Whether or not the robot is holding a flag.
      */
     public final boolean hasFlag;
