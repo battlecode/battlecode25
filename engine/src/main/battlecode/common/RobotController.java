@@ -534,66 +534,73 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Checks if a robot can dig (create water) at the specified location.
+     * Checks if a {@link RobotOrTowerType} is a robot type.
      * 
-     * @param loc the location to check
-     * @return true if a robot can dig, false otherwise
+     * @param type the enum item to check
+     * @return true if type is a robot type
      */
-    boolean canDig(MapLocation loc);
+    boolean isRobotType(RobotOrTowerType type);
 
     /**
-     * Removes land and creates water in a location.
+     * Checks if a {@link RobotOrTowerType} is a tower type.
      * 
-     * @param loc Location to dig
-     * @throws GameActionException if loc is not diggable
-     * 
-     * @battlecode.doc.costlymethod
+     * @param type the enum item to check
+     * @return true if type is a tower type
      */
-    void dig(MapLocation loc) throws GameActionException;;
+    boolean isTowerType(RobotOrTowerType type);
 
     /**
-     * Checks if a location can be filled.
+     * Checks if a tower can spawn a robot at the given location.
+     * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
-     * @param loc location to check if fillable
-     * 
-     * @return true if can fill in that location
-     * 
-     * @battlecode.doc.costlymethod
+     * @param type the type of robot to spawn
+     * @param loc the location to spawn the robot at
+     * @return true if robot can be built at loc
      */
-    boolean canFill(MapLocation loc);
+    boolean canBuildRobot(RobotOrTowerType type, MapLocation loc);
 
     /**
-     * Fills a water location with land.
+     * Spawns a robot at the given location.
+     * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
-     * @param loc location to fill
-     * @throws GameActionException if loc is not fillable
-     * 
-     * @battlecode.doc.costlymethod
+     * @param type the type of robot to spawn
+     * @param loc the location to spawn the robot at
      */
-    void fill(MapLocation loc) throws GameActionException;;
+    void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException;
 
     /**
-     * Checks if a trap can be built at the given location.
+     * Checks if the robot can build a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
      * 
-     * @param building TrapType of trap to build at that location
-     * @param loc location to aquaform
-     * 
-     * @return true if trap can be built at loc
-     * 
-     * @battlecode.doc.costlymethod
+     * @param type the type of tower to build
+     * @param loc the location to build at
+     * @return true if tower can be built at loc
      */
-    boolean canBuild(TrapType building, MapLocation loc);
+    boolean canMarkTowerPattern(RobotOrTowerType type, MapLocation loc);
 
     /**
-     * Builds a trap at the given location.
+     * Builds a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
      * 
-     * @param building type of trap to build
-     * @param loc location for trap type to build
-     * @throws GameActionException if trap cannot be built at loc
-     * 
-     * @battlecode.doc.costlymethod
+     * @param type the type of tower to build
+     * @param loc the location to build at
      */
-    void build(TrapType building, MapLocation loc) throws GameActionException;;
+    void markTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if the robot can mark a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc the location to build at
+     * @return true if an SRP can be marked at loc
+     */
+    boolean canMarkResourcePattern(MapLocation loc);
+
+    /**
+     * Marks a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc the location to build at
+     */
+    void markResourcePattern(MapLocation loc) throws GameActionException;
 
     // ****************************
     // ***** ATTACK / HEAL ******** 

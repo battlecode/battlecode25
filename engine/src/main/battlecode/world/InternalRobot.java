@@ -5,6 +5,8 @@ import battlecode.schema.Action;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
@@ -418,6 +420,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             incrementSkill(SkillType.ATTACK);
             this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
+    }
+
+    public void buildRobot(RobotOrTowerType type, MapLocation loc) {
+        throw new NotImplementedException();
+        // TODO not implemented
     }
 
     public int getHeal() {

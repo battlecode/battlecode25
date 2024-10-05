@@ -9,6 +9,8 @@ import battlecode.util.FlatHelpers;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 /**
  * The actual implementation of RobotController. Its methods *must* be called
  * from a player thread.
@@ -575,150 +577,98 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     // ***********************************
-    // ****** BUILDING METHODS ********
+    // ******** BUILDING METHODS *********
     // ***********************************
 
-    private void assertCanBuild(TrapType trap, MapLocation loc) throws GameActionException{
-        assertNotNull(trap);
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
-        assertIsActionReady();
-        int resources = (int) Math.round(trap.buildCost*(1+0.01*SkillType.BUILD.getSkillEffect(this.robot.getLevel(SkillType.BUILD))));
-        if (getCrumbs() < resources){
-            throw new GameActionException(NOT_ENOUGH_RESOURCE, "Insufficient resources");
-        }
-        if(this.gameWorld.getAllRobotsWithinRadiusSquared(loc, 2, getTeam().opponent()).length != 0) {
-            throw new GameActionException(CANT_DO_THAT, "Cannot place a trap directly on or next to an enemy robot.");
-        }
-        if (trap.equals(TrapType.EXPLOSIVE)){
-            if (!this.gameWorld.isPassable(loc) && !this.gameWorld.getWater(loc))
-                throw new GameActionException(CANT_DO_THAT, "Can only place explosive traps on land or water tiles");
-        }
-        else{
-            if (!this.gameWorld.isPassable(loc))
-                throw new GameActionException(CANT_DO_THAT, "Can only place this trap on land tiles.");
-        }
-        if (this.gameWorld.hasTrap(loc) && this.gameWorld.getTrap(loc).getTeam() == getTeam()){
-            throw new GameActionException(CANT_DO_THAT, "Cannot place a trap on a tile with a friendly trap already on it.");
-        }
-        if(this.robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "Can't build while holding a flag");
-        }
+    private void assertIsRobotType(RobotOrTowerType type) throws GameActionException {
+        throw new NotImplementedException();
+        // TODO not implemented
     }
 
     @Override
-    public boolean canBuild(TrapType trap, MapLocation loc){
-        try{
-            assertCanBuild(trap, loc);
+    public boolean isRobotType(RobotOrTowerType type) {
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
+    private void assertIsTowerType(RobotOrTowerType type) {
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
+    @Override
+    public boolean isTowerType(RobotOrTowerType type) {
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
+    private void assertCanBuildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+        assertNotNull(loc);
+        assertCanActLocation(loc, GameConstants.BUILD_ROBOT_RADIUS_SQUARED);
+        assertIsActionReady();
+        assertIsRobotType(type);
+
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
+    @Override
+    public boolean canBuildRobot(RobotOrTowerType type, MapLocation loc) {
+        try {
+            assertCanBuildRobot(type, loc);
             return true;
-        }
-        catch (GameActionException e){
+        } catch (GameActionException e) {
             return false;
         }
     }
 
     @Override
-    public void build(TrapType trap, MapLocation loc) throws GameActionException{
-        assertCanBuild(trap, loc);
-        int buildLevel = this.robot.getLevel(SkillType.BUILD);
-        int cooldownIncrease = (int) Math.round(trap.actionCooldownIncrease*(1+.01*SkillType.BUILD.getCooldown(buildLevel)));
-        int resources = (int) -Math.round(trap.buildCost*(1+0.01*SkillType.BUILD.getSkillEffect(buildLevel)));
-        this.robot.addActionCooldownTurns(cooldownIncrease);
-        this.robot.addResourceAmount(resources);
-        
-        if (this.gameWorld.hasTrap(loc) && this.gameWorld.getTrap(loc).getTeam() != getTeam() && this.gameWorld.getTrap(loc).getType() == TrapType.EXPLOSIVE){
-            this.robot.addTrapTrigger(this.gameWorld.getTrap(loc), false);
-            return;
-        }
-
-        this.gameWorld.placeTrap(loc, trap, this.getTeam());
-        this.robot.incrementSkill(SkillType.BUILD);
+    public void buildRobot(RobotOrTowerType type, MapLocation loc)  throws GameActionException {
+        assertCanBuildRobot(type, loc);
+        this.robot.addActionCooldownTurns(GameConstants.BUILD_ROBOT_COOLDOWN);
+        this.robot.buildRobot(type, loc);
     }
 
-    private void assertCanFill(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
-        assertIsActionReady();
-        if (!this.gameWorld.getWater(loc))
-            throw new GameActionException(CANT_DO_THAT, "Can't fill a tile that is not water!");
-        int resources = (int) Math.round(GameConstants.FILL_COST*(1+0.01*SkillType.BUILD.getSkillEffect(this.robot.getLevel(SkillType.BUILD))));
-        if (getCrumbs() < resources)
-            throw new GameActionException(NOT_ENOUGH_RESOURCE, "Insufficient resources to fill.");
-        if(this.robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "Can't fill while holding a flag");
-        }
+    private void assertCanMarkTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+        throw new NotImplementedException();
+        // TODO not implemented
     }
 
     @Override
-    public boolean canFill(MapLocation loc) {
+    public boolean canMarkTowerPattern(RobotOrTowerType type, MapLocation loc) {
         try {
-            assertCanFill(loc);
+            assertCanMarkTowerPattern(type, loc);
             return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public void fill(MapLocation loc) throws GameActionException{
-        assertCanFill(loc);
-        int buildLevel = this.robot.getLevel(SkillType.BUILD);
-        int cooldownIncrease = (int) Math.round(GameConstants.FILL_COOLDOWN*(1+.01*SkillType.BUILD.getCooldown(buildLevel)));
-        int resources = (int) -Math.round(GameConstants.FILL_COST*(1+0.01*SkillType.BUILD.getSkillEffect(buildLevel)));
-        this.robot.addActionCooldownTurns(cooldownIncrease);
-        this.robot.addResourceAmount(resources);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.FILL, locationToInt(loc));
-        this.gameWorld.getMatchMaker().addFillLocation(loc);
-        this.gameWorld.setLand(loc);
-
-        if (this.gameWorld.hasTrap(loc) && this.gameWorld.getTrap(loc).getTeam() != getTeam() && this.gameWorld.getTrap(loc).getType() == TrapType.EXPLOSIVE){
-            this.robot.addTrapTrigger(this.gameWorld.getTrap(loc), false);
+        } catch (GameActionException e) {
+            return false;
         }
     }
 
-    private void assertCanDig(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
-        assertIsActionReady();
-        if (this.gameWorld.getWater(loc))
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig on a tile that is already water.");
-        if (this.gameWorld.getWall(loc))
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig on a tile that has a wall.");
-        if (this.gameWorld.getSpawnZone(loc) != 0)
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig on a tile that has a spawn zone");
-        if (isLocationOccupied(loc))
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig on a tile that has a robot on it!");
-        int resources = (int) Math.round(GameConstants.DIG_COST*(1+0.01*SkillType.BUILD.getSkillEffect(this.robot.getLevel(SkillType.BUILD))));
-        if (getCrumbs() < resources)
-            throw new GameActionException(NOT_ENOUGH_RESOURCE, "Insufficient resources to dig.");
-        if (this.gameWorld.hasFlag(loc))
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig under a tile with a flag currently on it.");
-        if(this.robot.hasFlag())
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig while holding a flag");
-        if (this.gameWorld.hasTrap(loc) && this.gameWorld.getTrap(loc).getTeam() == getTeam())
-            throw new GameActionException(CANT_DO_THAT, "Cannot dig on a tile with one of your team's traps on it.");
+    @Override
+    public void markTowerPattern(RobotOrTowerType type, MapLocation loc) {
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
+    private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
+        throw new NotImplementedException();
+        // TODO not implemented
     }
 
     @Override
-    public boolean canDig(MapLocation loc) {
+    public boolean canMarkResourcePattern(MapLocation loc) {
         try {
-            assertCanDig(loc);
+            assertCanMarkResourcePattern(loc);
             return true;
-        } catch (GameActionException e) { return false; }
+        } catch (GameActionException e) {
+            return false;
+        }
     }
 
     @Override
-    public void dig(MapLocation loc) throws GameActionException{
-        assertCanDig(loc);
-        int buildLevel = this.robot.getLevel(SkillType.BUILD);
-        int cooldownIncrease = (int) Math.round(GameConstants.DIG_COOLDOWN*(1+.01*SkillType.BUILD.getCooldown(buildLevel)));
-        int resources = (int) -Math.round(GameConstants.DIG_COST*(1+0.01*SkillType.BUILD.getSkillEffect(buildLevel)));
-        this.robot.addActionCooldownTurns(cooldownIncrease);
-        this.robot.addResourceAmount(resources);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.DIG, locationToInt(loc));
-        this.gameWorld.getMatchMaker().addDigLocation(loc);
-        this.gameWorld.setWater(loc);
-
-        if (this.gameWorld.hasTrap(loc) && this.gameWorld.getTrap(loc).getTeam() != getTeam() && this.gameWorld.getTrap(loc).getType() == TrapType.EXPLOSIVE){
-            this.robot.addTrapTrigger(this.gameWorld.getTrap(loc), false);
-        }
-
-        this.robot.incrementSkill(SkillType.BUILD);
+    public void markResourcePattern(MapLocation loc) {
+        throw new NotImplementedException();
+        // TODO not implemented
     }
 
     // *****************************

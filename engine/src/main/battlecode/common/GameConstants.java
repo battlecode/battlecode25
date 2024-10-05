@@ -110,6 +110,9 @@ public class GameConstants {
     /** The maximum distnace for picking up / dropping flags, building traps, digging, and filling */
     public static final int INTERACT_RADIUS_SQUARED = 2;
 
+    /** The maximum distance from a tower for building robots */
+    public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
+
     // *********************************
     // ****** COOLDOWNS ****************
     // *********************************
@@ -128,6 +131,9 @@ public class GameConstants {
 
     /** The amount added to the action cooldown counter after picking up or dropping a flag */
     public static final int PICKUP_DROP_COOLDOWN = 10;
+
+    /** The amount added to the action cooldown counter after a tower builds a robot */
+    public static final int BUILD_ROBOT_COOLDOWN = 10;
 
     /** The amount added to the action cooldown counter after attacking */
     public static final int ATTACK_COOLDOWN = 20;
