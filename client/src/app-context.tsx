@@ -6,26 +6,18 @@ import { ClientConfig, getDefaultConfig } from './client-config'
 
 export interface AppState {
     queue: Game[]
-    activeGame: Game | undefined
-    activeMatch: Match | undefined
     tournament: Tournament | undefined
     tournamentState: TournamentState
     loadingRemoteContent: string
-    updatesPerSecond: number
-    paused: boolean
     disableHotkeys: boolean
     config: ClientConfig
 }
 
 const DEFAULT_APP_STATE: AppState = {
     queue: [],
-    activeGame: undefined,
-    activeMatch: undefined,
     tournament: undefined,
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',
-    updatesPerSecond: 1,
-    paused: true,
     disableHotkeys: false,
     config: getDefaultConfig()
 }

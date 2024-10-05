@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import Game from '../../../playback/Game'
-import Match from '../../../playback/Match'
 import { useAppContext } from '../../../app-context'
 import { IconContext } from 'react-icons'
 import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'
 import { schema } from 'battlecode-schema'
+import gameRunner from '../../../playback/GameRunner'
+import { useMatch } from '../../../playback/GameRunner'
 
 interface Props {
     game: Game
@@ -12,26 +13,17 @@ interface Props {
 
 export const QueuedGame: React.FC<Props> = (props) => {
     const context = useAppContext()
+    const activeMatch = useMatch()
     const isTournamentMode = context.state.tournament !== undefined
     const [hoveredClose, setHoveredClose] = useState(false)
-
-    const setMatch = (match: Match) => {
-        match.jumpToTurn(0)
-        props.game.currentMatch = match
-        context.setState((prevState) => ({
-            ...prevState,
-            activeGame: match.game,
-            activeMatch: match
-        }))
-    }
 
     const close = () => {
         context.setState((prevState) => ({
             ...prevState,
-            queue: context.state.queue.filter((v) => v !== props.game),
-            activeGame: context.state.activeGame === props.game ? undefined : context.state.activeGame,
-            activeMatch: context.state.activeGame === props.game ? undefined : context.state.activeMatch
+            queue: context.state.queue.filter((v) => v !== props.game)
         }))
+
+        if (gameRunner.game === props.game) gameRunner.setGame(undefined)
     }
 
     const getWinText = (winType: schema.WinType) => {
@@ -66,9 +58,9 @@ export const QueuedGame: React.FC<Props> = (props) => {
                     className={
                         'leading-4 rounded-sm border-gray-500 border my-1.5 py-1 px-2 ' +
                         'bg-light hover:bg-lightHighlight cursor-pointer ' +
-                        (context.state.activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
+                        (activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
                     }
-                    onClick={() => setMatch(match)}
+                    onClick={() => gameRunner.setMatch(match)}
                 >
                     <span className="text-xxs font-bold">{match.map.name}</span>
                     {!isTournamentMode && (

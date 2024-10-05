@@ -1,22 +1,16 @@
 import React from 'react'
-import { AppContext, useAppContext } from '../../../app-context'
-import { useListenEvent, EventType } from '../../../app-events'
-import { useForceUpdate } from '../../../util/react-util'
 import { CanvasHistogram } from './quick-histogram'
-import { ATTACK_COLOR, SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
+import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
+import { useTurn } from '../../../playback/GameRunner'
+import Turn from '../../../playback/Turn'
 
-function getChartData(appContext: AppContext): number[][][] {
-    const match = appContext.state.activeMatch
-    if (match === undefined) {
-        return []
-    }
-
+function getChartData(turn: Turn): number[][][] {
     const emptyHist = Array(7).fill(0)
     const totals = [
         [[...emptyHist], [...emptyHist], [...emptyHist]],
         [[...emptyHist], [...emptyHist], [...emptyHist]]
     ]
-    for (const [id, body] of match.currentTurn.bodies.bodies) {
+    for (const [id, body] of turn.bodies.bodies) {
         const teamIdx = body.team.id - 1
         totals[teamIdx][0][body.attackLevel] += 1
         totals[teamIdx][1][body.buildLevel] += 1
@@ -31,13 +25,8 @@ interface SpecialtyHistogramProps {
 }
 
 export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => {
-    const appContext = useAppContext()
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, () => {
-        if (props.active) forceUpdate()
-    })
-
-    const data = getChartData(appContext)
+    const turn = useTurn()
+    const data = props.active && turn ? getChartData(turn) : []
 
     const getData = (team: number, specialty: number) => {
         return data.length === 0 ? [] : data[team][specialty]

@@ -8,6 +8,7 @@ import { useAppContext } from '../../../app-context'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import { RingBuffer } from '../../../util/ring-buffer'
+import gameRunner from '../../../playback/GameRunner'
 
 export type JavaInstall = {
     display: string
@@ -138,35 +139,22 @@ export function useScaffold(): Scaffold {
         const onGameCreated = (game: Game) => {
             appContext.setState((prevState) => ({
                 ...prevState,
-                queue: prevState.queue.concat([game]),
-                activeGame: game,
-                activeMatch: game.currentMatch
+                queue: prevState.queue.concat([game])
             }))
+            gameRunner.setGame(game)
+            gameRunner.setMatch(game.currentMatch)
         }
 
         const onMatchCreated = (match: Match) => {
-            appContext.setState((prevState) => ({
-                ...prevState,
-                activeGame: match.game,
-                activeMatch: match
-            }))
+            gameRunner.setMatch(match)
         }
 
         const onGameComplete = (game: Game) => {
-            // Reset all matches to beginning
-            for (const match of game.matches) {
-                match.jumpToTurn(0, true)
-            }
-
-            // Start at first match
-            game.currentMatch = game.matches[0]
-
             appContext.setState((prevState) => ({
                 ...prevState,
-                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game]),
-                activeGame: game,
-                activeMatch: game.currentMatch
+                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
             }))
+            if (game.matches.length > 0) gameRunner.setMatch(game.matches[0])
         }
 
         setWebSocketListener(

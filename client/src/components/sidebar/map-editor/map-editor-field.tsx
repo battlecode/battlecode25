@@ -1,6 +1,6 @@
 import React from 'react'
 import { MapEditorBrushField, MapEditorBrushFieldType } from './MapEditorBrush'
-import { TEAM_COLORS, TEAM_COLOR_NAMES } from '../../../constants'
+import { TEAM_COLOR_NAMES } from '../../../constants'
 import { Toggle } from '../../toggle'
 import { Select, NumInput } from '../../forms'
 
