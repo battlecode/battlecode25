@@ -1,4 +1,4 @@
-package battlecode.instrumenter.sample.instrumentertest;
+package instrumentertest;
 
 /**
  * Used to test hashCode instrumentation.
@@ -7,7 +7,8 @@ package battlecode.instrumenter.sample.instrumentertest;
  */
 @SuppressWarnings("unused")
 public class DoesntOverrideHashCode {
-    // We need to be able to make sure that calls to hashcode are instrumented correctly.
+    // We need to be able to make sure that calls to hashcode are instrumented
+    // correctly.
     public int getHashCode() {
         return this.hashCode();
     }
