@@ -38,10 +38,12 @@ public strictfp class GameWorld {
     private ArrayList<Trap>[] trapTriggers;
     private Trap[] trapLocations;
     private int trapId;
+    private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
     private final TeamInfo teamInfo;
     private final ObjectInfo objectInfo;
+
     
     //List of all flags, not indexed by location
     private ArrayList<Flag> allFlags;
@@ -69,6 +71,7 @@ public strictfp class GameWorld {
         this.gameStats = new GameStats();
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
+        this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
         teamSides = new int[gameMap.getWidth() * gameMap.getHeight()];
 
         this.profilerCollections = new HashMap<>();
@@ -251,6 +254,10 @@ public strictfp class GameWorld {
         return this.gameStats.getWinner();
     }
 
+    public int getPaint(MapLocation loc) {
+        return this.colorLocations[locationToIndex(loc)];
+    }
+
     public boolean isRunning() {
         return this.running;
     }
@@ -273,6 +280,10 @@ public strictfp class GameWorld {
 
     public void setLand(MapLocation loc) {
         this.water[locationToIndex(loc)] = false;
+    }
+
+    public void setPaint(MapLocation loc, int paint) {
+        this.colorLocations[locationToIndex(loc)] = paint;
     }
 
     public int getBreadAmount(MapLocation loc) {
@@ -326,6 +337,19 @@ public strictfp class GameWorld {
 
     public boolean hasFlag(MapLocation loc) {
         return placedFlags[locationToIndex(loc)].size() > 0;
+    }
+
+    public Team getTeam(MapLocation loc) {
+        int paint = this.gameWorld.getPaint(loc);
+        if (paint == 1 || paint == 2) {
+            return Team.A;
+        }
+        else if (paint == 3 || paint == 4){
+            return Team.B;
+        }
+        else {
+            return Team.NEUTRAL;
+        }
     }
 
     /**

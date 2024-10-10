@@ -58,6 +58,12 @@ public class GameConstants {
     /** health each robot starts with */
     public static final int DEFAULT_HEALTH = 1000;
 
+    /** paint penalty for moving into enemy territory */
+    public static final int PENALTY_ENEMY_TERRITORY = 2;
+
+    /** paint penalty for moving into neutral territory */
+    public static final int PENALTY_NEUTRAL_TERRITORY = 1;
+
     /** The total number of robots a team has (both despawned or spawned). */
     public static final int ROBOT_CAPACITY = 50;
 
