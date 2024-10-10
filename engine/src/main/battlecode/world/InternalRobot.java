@@ -298,12 +298,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     /**
      * Resets the movement cooldown.
      */
-    //TODO: check amount of paint and apply corresponding cooldown
-    // add new game constants
     public void addMovementCooldownTurns() {
         int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
-      if (paintAmount < GameConstants.PAINT_COOLDOWN) {
-        movementCooldown = GameConstants.MOVEMENT_COOLDOWN * (GameConstants.PAINT_COOLDOWN_INTERCEPT + GameConstants.PAINT_COOLDOWN_SLOPE * paintAmount) / 100;
+      if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
+        movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount) / 100.0);
       }
        this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
     }
