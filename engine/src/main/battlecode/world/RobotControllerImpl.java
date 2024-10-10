@@ -969,27 +969,25 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void assertCanSendMessage(int robotID, Message message) throws GameActionException {
+    public void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
         assertNotNull(loc);
-        assertIsSpawned();
-        InternalRobot robot = getRobotByID(robotID);
-        robot.getController.assertIsSpawned();
+        assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
         assertNotNull(message);
         //TODO: assert that the distance between the robots is < sqrt(20?) and they are connected by paint once that functionality is available
     }
 
     @Override
-    public boolean canSendMessage(int robotID, Message message){
+    public boolean canSendMessage(MapLocation loc, Message message){
         try {
-            assertCanSendMessage(robotID, message);
+            assertCanSendMessage(loc, message);
             return true;
         } catch (GameActionException e) { return false; }  
     }
 
     @Override
-    public void sendMessage(int robotID, Message message) throws GameActionException {
-        assertCanSendMessage(robotID, message);
-        InternalRobot robot = getRobotByID(robotID);
+    public void sendMessage(MapLocation loc, Message message) throws GameActionException {
+        assertCanSendMessage(loc, message);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
     }
 

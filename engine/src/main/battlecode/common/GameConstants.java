@@ -147,4 +147,7 @@ public class GameConstants {
     /** The maximum amount of bytes that can be encoded in a message  */
     public static final int MAX_MESSAGE_BYTES = 4;
 
+    /** The maximum squared radius a robot can send a message to  */
+    public static final int MESSAGE_RADIUS_SQUARED = 20;
+    
 }

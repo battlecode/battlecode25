@@ -466,12 +466,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             incomingMessages.remove();
     }
 
-    public void addMessage(Message message) {
+    private void addMessage(Message message) {
         incomingMessages.add(message);
     }
 
     public void sendMessage(InternalRobot robot, Message message) {
-        robot.addMessage(message);
+        robot.addMessage(message.copy());
     }
 
     // ****************************
