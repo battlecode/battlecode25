@@ -141,13 +141,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     
+    public int getPaint() {
+        return paintAmount;
+    }    
 
-    public int getResource() {
-        return this.gameWorld.getTeamInfo().getBread(this.team);
-    }
-
-    public void addResourceAmount(int amount) {
-        this.gameWorld.getTeamInfo().addBread(this.team, amount);
+    public void addPaint(int amount) {
+        paintAmount += amount;
     }
 
     public boolean canAddFlag() {
@@ -197,6 +196,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 && cachedRobotInfo.ID == ID
                 && cachedRobotInfo.team == team
                 && cachedRobotInfo.health == health
+                && cachedRobotInfo.paintAmount == paintAmount
                 && cachedRobotInfo.location.equals(location)
                 && cachedRobotInfo.hasFlag == (flag != null)
                 && cachedRobotInfo.attackLevel == SkillType.ATTACK.getLevel(attackExp)
@@ -207,7 +207,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.cachedRobotInfo = new RobotInfo(ID, team, health, location, flag != null,
                 SkillType.ATTACK.getLevel(attackExp), SkillType.HEAL.getLevel(healExp),
-                SkillType.BUILD.getLevel(buildExp));
+                SkillType.BUILD.getLevel(buildExp), paintAmount);
         return this.cachedRobotInfo;
     }
 
@@ -298,13 +298,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * Resets the movement cooldown.
      */
     public void addMovementCooldownTurns() {
-        if (hasFlag() && this.gameWorld.getTeamInfo().getGlobalUpgrades(team)[1]) {
-            setMovementCooldownTurns(this.movementCooldownTurns + GameConstants.FLAG_MOVEMENT_COOLDOWN
-                    + GlobalUpgrade.CAPTURING.movementDelayChange);
-        } else {
-            setMovementCooldownTurns(this.movementCooldownTurns
-                    + (hasFlag() ? GameConstants.FLAG_MOVEMENT_COOLDOWN : GameConstants.MOVEMENT_COOLDOWN));
-        }
+        int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
+      if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
+        movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount) / 100.0);
+      }
+       this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
     }
 
     /**
