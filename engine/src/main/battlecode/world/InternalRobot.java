@@ -2,7 +2,6 @@ package battlecode.world;
 
 import battlecode.common.*;
 import battlecode.schema.Action;
-import battlecode.schema.GameplayConstants;
 
 import java.util.ArrayList;
 
@@ -208,7 +207,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.cachedRobotInfo = new RobotInfo(ID, team, health, location, flag != null,
                 SkillType.ATTACK.getLevel(attackExp), SkillType.HEAL.getLevel(healExp),
-                SkillType.BUILD.getLevel(buildExp));
+                SkillType.BUILD.getLevel(buildExp), paintAmount);
         return this.cachedRobotInfo;
     }
 
