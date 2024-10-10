@@ -921,6 +921,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** COMMUNICATION METHODS ****** 
     // ***********************************
 
+    // BOBBY TODO: method for robot to robot message (nearby)
+    //             queue of incoming messages in each internal robot
+    //             methods to read from queue and clear and pop and whatever
+    //             method for canSendMessage (check general structure of other functions)
+    //             auto format on save
+    //             put on branch and make pr
+    //
+    //             OPTIONAL
+    //             make mostly empty tower class and make functions using that too
+    //             robots send message, they specify a tower, tower is basically robot thats stationary
+
     private void assertValidIndex(int index) throws GameActionException {
         if (index < 0 || index >= GameConstants.SHARED_ARRAY_LENGTH)
             throw new GameActionException(CANT_DO_THAT, "You can't access this index as it is not within the shared array.");
@@ -955,6 +966,31 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void writeSharedArray(int index, int value) throws GameActionException {
         assertCanWriteSharedArray(index, value);
         this.gameWorld.getTeamInfo().writeSharedArray(getTeam(), index, value);
+    }
+
+    @Override
+    public void assertCanSendMessage(int robotID, Message message) throws GameActionException {
+        assertNotNull(loc);
+        assertIsSpawned();
+        InternalRobot robot = getRobotByID(robotID);
+        robot.getController.assertIsSpawned();
+        assertNotNull(message);
+        //TODO: assert that the distance between the robots is < sqrt(20?) and they are connected by paint once that functionality is available
+    }
+
+    @Override
+    public boolean canSendMessage(int robotID, Message message){
+        try {
+            assertCanSendMessage(robotID, message);
+            return true;
+        } catch (GameActionException e) { return false; }  
+    }
+
+    @Override
+    public void sendMessage(int robotID, Message message) throws GameActionException {
+        assertCanSendMessage(robotID, message);
+        InternalRobot robot = getRobotByID(robotID);
+        this.robot.sendMessage(robot, message);
     }
 
     // ***********************************

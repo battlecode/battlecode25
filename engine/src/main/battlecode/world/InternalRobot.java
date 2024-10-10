@@ -4,6 +4,8 @@ import battlecode.common.*;
 import battlecode.schema.Action;
 
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
 
 /**
  * The representation of a robot used by the server.
@@ -39,6 +41,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private Flag flag;
     private ArrayList<Trap> trapsToTrigger;
     private ArrayList<Boolean> enteredTraps;
+    private Queue<Message> incomingMessages;
 
     /**
      * Used to avoid recreating the same RobotInfo object over and over.
@@ -67,6 +70,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.spawned = false;
         this.trapsToTrigger = new ArrayList<>();
         this.enteredTraps = new ArrayList<>();
+        this.incomingMessages = new LinkedList<>();
 
         this.buildExp = 0;
         this.healExp = 0;
@@ -448,6 +452,31 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
     }
+
+    // *********************************
+    // ***** COMMUNICATION METHODS *****
+    // *********************************
+
+    public Message getFrontMessage() {
+        return incomingMessages.peek();
+    }
+
+    public void popMessage() {
+        if(!incomingMessages.empty())
+            incomingMessages.remove();
+    }
+
+    public void addMessage(Message message) {
+        incomingMessages.add(message);
+    }
+
+    public void sendMessage(InternalRobot robot, Message message) {
+        robot.addMessage(message);
+    }
+
+    // ****************************
+    // ****** GETTER METHODS ******
+    // ****************************
 
     public int getHeal() {
         int base_heal = SkillType.HEAL.skillEffect;

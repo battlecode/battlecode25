@@ -144,4 +144,7 @@ public class GameConstants {
     /** The amount added to the action cooldown counter after filling */
     public static final int FILL_COOLDOWN = 30;
 
+    /** The maximum amount of bytes that can be encoded in a message  */
+    public static final int MAX_MESSAGE_BYTES = 4;
+
 }
