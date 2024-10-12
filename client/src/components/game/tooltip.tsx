@@ -8,25 +8,17 @@ import { useTurn } from '../../playback/GameRunner'
 type TooltipProps = {
     overlayCanvas: HTMLCanvasElement | null
     selectedBodyID: number | undefined
-    hoveredBodyID: number | undefined
-    hoveredSquare: Vector | undefined
-    selectedSquare: Vector | undefined
+    hoveredTile: Vector | undefined
+    selectedTile: Vector | undefined
     wrapperRef: HTMLDivElement | null
 }
 
-export const Tooltip = ({
-    overlayCanvas,
-    selectedBodyID,
-    hoveredBodyID,
-    hoveredSquare,
-    selectedSquare,
-    wrapperRef
-}: TooltipProps) => {
+export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTile, wrapperRef }: TooltipProps) => {
     const appContext = useAppContext()
     const turn = useTurn()
 
     const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
-    const hoveredBody = hoveredBodyID !== undefined ? turn?.bodies.bodies.get(hoveredBodyID) : undefined
+    const hoveredBody = hoveredTile ? turn?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
 
     const tooltipRef = React.useRef<HTMLDivElement>(null)
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
@@ -41,7 +33,7 @@ export const Tooltip = ({
         return () => {
             if (tooltipRef.current) observer.unobserve(tooltipRef.current)
         }
-    }, [hoveredBody, hoveredSquare])
+    }, [hoveredBody, hoveredTile])
 
     const map = turn?.map
     if (!overlayCanvas || !wrapperRef || !map) return <></>
@@ -57,13 +49,13 @@ export const Tooltip = ({
 
         let tooltipStyle: React.CSSProperties = {}
 
-        if (!hoveredBody && !hoveredSquare) return tooltipStyle
+        if (!hoveredBody && !hoveredTile) return tooltipStyle
 
         let tipPos: Vector
         if (hoveredBody) {
             tipPos = getRenderCoords(hoveredBody.pos.x, hoveredBody.pos.y, map.dimension, true)
         } else {
-            tipPos = getRenderCoords(hoveredSquare!.x, hoveredSquare!.y, map.dimension, true)
+            tipPos = getRenderCoords(hoveredTile!.x, hoveredTile!.y, map.dimension, true)
         }
         const distanceFromBotCenterX = 0.75 * tileWidth
         const distanceFromBotCenterY = 0.75 * tileHeight
@@ -87,11 +79,11 @@ export const Tooltip = ({
         return tooltipStyle
     }
 
-    let showFloatingTooltip = !!((hoveredBody && hoveredBody != selectedBody) || hoveredSquare)
+    let showFloatingTooltip = !!((hoveredBody && hoveredBody != selectedBody) || hoveredTile)
     const tooltipContent = hoveredBody
         ? hoveredBody.onHoverInfo()
-        : hoveredSquare
-          ? map.getTooltipInfo(hoveredSquare, turn!.match)
+        : hoveredTile
+          ? map.getTooltipInfo(hoveredTile, turn!.match)
           : []
 
     if (tooltipContent.length === 0) showFloatingTooltip = false
@@ -125,9 +117,9 @@ export const Tooltip = ({
                 )}
             </Draggable>
 
-            {appContext.state.config.showMapXY && hoveredSquare && (
+            {appContext.state.config.showMapXY && hoveredTile && (
                 <div className="absolute right-[5px] top-[5px] bg-black/70 z-20 text-white p-2 rounded-md text-xs opacity-50 pointer-events-none">
-                    {`(X: ${hoveredSquare.x}, Y: ${hoveredSquare.y})`}
+                    {`(X: ${hoveredTile.x}, Y: ${hoveredTile.y})`}
                 </div>
             )}
         </div>

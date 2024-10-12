@@ -4,7 +4,7 @@ import { useAppContext } from '../../../app-context'
 import { IconContext } from 'react-icons'
 import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'
 import { schema } from 'battlecode-schema'
-import gameRunner from '../../../playback/GameRunner'
+import GameRunner from '../../../playback/GameRunner'
 import { useMatch } from '../../../playback/GameRunner'
 
 interface Props {
@@ -23,7 +23,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
             queue: context.state.queue.filter((v) => v !== props.game)
         }))
 
-        if (gameRunner.game === props.game) gameRunner.setGame(undefined)
+        if (GameRunner.game === props.game) GameRunner.setGame(undefined)
     }
 
     const getWinText = (winType: schema.WinType) => {
@@ -60,7 +60,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
                         'bg-light hover:bg-lightHighlight cursor-pointer ' +
                         (activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
                     }
-                    onClick={() => gameRunner.setMatch(match)}
+                    onClick={() => GameRunner.setMatch(match)}
                 >
                     <span className="text-xxs font-bold">{match.map.name}</span>
                     {!isTournamentMode && (

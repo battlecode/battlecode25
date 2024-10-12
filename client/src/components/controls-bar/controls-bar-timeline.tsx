@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
-import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner'
+import GameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner'
 
 const TIMELINE_WIDTH = 350
 interface Props {
@@ -37,9 +37,9 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
             if (x <= 0) {
-                gameRunner.jumpToTurn(0)
+                GameRunner.jumpToTurn(0)
             } else if (x >= rect.width) {
-                gameRunner.jumpToEnd()
+                GameRunner.jumpToEnd()
             }
         }
         timelineUp(e)
@@ -52,7 +52,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
         const turn = Math.floor((x / TIMELINE_WIDTH) * maxTurn)
-        gameRunner.jumpToTurn(turn)
+        GameRunner.jumpToTurn(turn)
     }
 
     if (!match)
