@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
-import { useCurrentUPS, useMatch } from '../../playback/GameRunner'
+import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner'
 
 const TIMELINE_WIDTH = 350
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 
 export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const appContext = useAppContext()
-    const match = useMatch()
     const currentUPS = useCurrentUPS()
+    const match = useMatch()
 
     let down = useRef(false)
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -37,9 +37,9 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
             if (x <= 0) {
-                match!.jumpToTurn(0)
+                gameRunner.jumpToTurn(0)
             } else if (x >= rect.width) {
-                match!.jumpToEnd()
+                gameRunner.jumpToEnd()
             }
         }
         timelineUp(e)
@@ -52,7 +52,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
         const turn = Math.floor((x / TIMELINE_WIDTH) * maxTurn)
-        match!.jumpToTurn(turn)
+        gameRunner.jumpToTurn(turn)
     }
 
     if (!match)
