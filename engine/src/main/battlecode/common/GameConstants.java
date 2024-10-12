@@ -27,8 +27,8 @@ public class GameConstants {
     /** The maximum possible map width. */
     public static final int MAP_MAX_WIDTH = 60;
 
-    /** The minimum distance between ally flags in the initial map and at the end of the seutp phase */
-    public static final int MIN_FLAG_SPACING_SQUARED = 36;
+    /** The minimum distance between ruins on the map */
+    public static final int MIN_RUIN_SPACING_SQUARED = 25;
 
     // *********************************
     // ****** GAME PARAMETERS **********
@@ -61,12 +61,15 @@ public class GameConstants {
     /** The total number of robots a team has (both despawned or spawned). */
     public static final int ROBOT_CAPACITY = 50;
 
+    /** The percent of the map which a team needs to paint to win. */
+    public static final int PAINT_PERCENT_TO_WIN = 70;
+
     // *********************************
     // ****** GAME MECHANICS ***********
     // *********************************
 
-    /** The number of flags a player starts with. */
-    public static final int NUMBER_FLAGS = 3;
+    /** The number of towers a player starts with. */
+    public static final int NUMBER_INITIAL_TOWERS = 3;
 
     /** Crumbs cost for digging. */
     public static final int DIG_COST = 20;

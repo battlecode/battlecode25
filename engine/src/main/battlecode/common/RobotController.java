@@ -344,50 +344,28 @@ public strictfp interface RobotController {
     MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
 
     /**
-     * Returns the location of all nearby flags that are visible to the robot, including picked up flags.
+     * Returns the location of all nearby ruins that are visible to the robot.
      * If radiusSquared is greater than the robot's vision radius, uses the robot's vision radius instead.
      * 
      * @param radiusSquared squared radius of all locations to be returned, -1 for max radius
-     * @return all locations containing flags
+     * @return all locations containing ruins
      * @throws GameActionException if a radius less than -1 is provided
      * 
      * @battlecode.doc.costlymethod
      **/
-    FlagInfo[] senseNearbyFlags(int radiusSquared) throws GameActionException; 
+    MapLocation[] senseNearbyRuins(int radiusSquared) throws GameActionException; 
 
     /**
-     * Returns the location of all nearby flags that are visible to the robot, including picked up flags.
-     * If radiusSquared is greater than the robot's vision radius, uses the robot's vision radius instead.
-     * 
-     * @param radiusSquared squared radius of all locations to be returned
-     * @param team the team to find flags for
-     * @return all locations containing flags
-     * @throws GameActionException if a radius less than -1 is provided
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    FlagInfo[] senseNearbyFlags(int radiusSquared, Team team) throws GameActionException; 
-
-    /**
-     * Returns the locations of all invisible dropped enemy flags, accurate within a radius of sqrt(100) cells.
-     * 
-     * @return all location ranges containing invisible flags
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    MapLocation[] senseBroadcastFlagLocations();
-
-    /**
-     * Checks if the given location within vision radius is a legal starting flag placement. This is true when the
-     * location is passable and is far enough away from other placed friendly flags.
+     * Checks if the given location within vision radius is a legal starting ruin placement. This is true when the
+     * location is passable and is far enough away from other placed ruins.
      * 
      * @param loc The location to check
-     * @return Whether the location is a valid flag placement
+     * @return Whether the location is a valid ruin placement
      * @throws GameActionException if the location is out of sensing range
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean senseLegalStartingFlagPlacement(MapLocation loc) throws GameActionException;
+    boolean senseLegalStartingRuinPlacement(MapLocation loc) throws GameActionException;
 
     /**
      * Returns the location adjacent to current location in the given direction.
@@ -654,69 +632,6 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void heal(MapLocation loc) throws GameActionException;
-
-
-    // ***************************
-    // ******* FLAG METHODS ******
-    // ***************************
-
-    /**
-     * Checks whether robot is currently holding a flag.
-     * 
-     * @return whether the robot is holding a flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean hasFlag();
-
-    /**
-     * Tests whether robot can pickup a flag at the current location.
-     * 
-     * Checks that the flag is within range and that the flag is a friendly flag
-     * during setup phase or an enemy flag during attack phase. Also checks that
-     * there are no cooldown turns remaining. 
-     * 
-     * @param loc the flag location
-     * @return whether it is possible to pick up the flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean canPickupFlag(MapLocation loc);
-
-    /**
-     * Picks up flag at the specified location.
-     * 
-     * @param loc the flag location
-     * @throws GameActionException if conditions for picking up flags are not satisfied
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void pickupFlag(MapLocation loc) throws GameActionException;
-
-    /**
-     * Tests whether the robot can drop a flag at the current location.
-     * 
-     * Checks that the flag is within range (at most sqrt(2) cells away from robot) and 
-     * that the flag is a friendly flag during setup phase or an enemy flag during attack phase. 
-     * Also checks that there are no cooldown turns remaining. 
-     * 
-     * @param loc target flag location
-     * @return whether it is possible to drop the flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean canDropFlag(MapLocation loc);
-    
-    /**
-     * Places a flag at the current location on the map.
-     *
-     * @param loc location on the map 
-     * @throws GameActionException if a flag cannot be dropped at this location
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    void dropFlag(MapLocation loc) throws GameActionException;
-
 
     // ***********************************
     // ****** COMMUNICATION METHODS ****** 

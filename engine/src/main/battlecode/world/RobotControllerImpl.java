@@ -292,48 +292,41 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanSenseLocation(loc);
         return this.gameWorld.isPassable(loc);
     }
-
-    @Override
-    public FlagInfo[] senseNearbyFlags(int radiusSquared) throws GameActionException {
-        return senseNearbyFlags(radiusSquared, null);
-    }
   
     @Override
-    public FlagInfo[] senseNearbyFlags(int radiusSquared, Team team) throws GameActionException {
+    public MapLocation[] senseNearbyRuins(int radiusSquared) throws GameActionException {
         assertRadiusNonNegative(radiusSquared);
         assertIsSpawned();
-        int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
-        ArrayList<FlagInfo> flagInfos = new ArrayList<>();
-        for(Flag x : gameWorld.getAllFlags()) {
-            if(x.getLoc().distanceSquaredTo(robot.getLocation()) <= actualRadiusSquared && (team == null || team == x.getTeam())) {
-                flagInfos.add(new FlagInfo(x.getLoc(), x.getTeam(), x.isPickedUp(), x.getId()));
+        int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
+            : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
+        ArrayList<MapLocation> ruinInfos = new ArrayList<>();
+
+        for (MapLocation loc : gameWorld.getAllRuins()) {
+            if (loc.distanceSquaredTo(robot.getLocation()) <= actualRadiusSquared) {
+                ruinInfos.add(loc);
             }
         }
-        return flagInfos.toArray(new FlagInfo[flagInfos.size()]);
+
+        return ruinInfos.toArray(new MapLocation[ruinInfos.size()]);
     }
 
     @Override
-    public MapLocation[] senseBroadcastFlagLocations() {
-        List<MapLocation> locations = new ArrayList<MapLocation>();
-        for(Flag x: gameWorld.getAllFlags()) {
-            if(x.getTeam() != robot.getTeam() && !x.isPickedUp() && !canSenseLocation(x.getLoc())) locations.add(x.getBroadcastLoc());
-        }
-        return locations.toArray(new MapLocation[locations.size()]);
-    }
-
-    @Override
-    public boolean senseLegalStartingFlagPlacement(MapLocation loc) throws GameActionException{
+    public boolean senseLegalStartingRuinPlacement(MapLocation loc) throws GameActionException {
         assertCanSenseLocation(loc);
-        if(!gameWorld.isPassable(loc)) return false;
-        boolean hasFlag = robot.hasFlag();
+
+        if(!gameWorld.isPassable(loc)) {
+            return false;
+        }
+
         boolean valid = true;
-        for(Flag x : gameWorld.getAllFlags()) {
-            if((!hasFlag || x.getId() != robot.getFlag().getId()) && x.getTeam() == robot.getTeam() && 
-                    x.getLoc().distanceSquaredTo(loc) <= GameConstants.MIN_FLAG_SPACING_SQUARED && !x.isPickedUp()) {
+
+        for (MapLocation ruin : gameWorld.getAllRuins()) {
+            if (ruin.distanceSquaredTo(loc) <= GameConstants.MIN_RUIN_SPACING_SQUARED) {
                 valid = false;
                 break;
             }
         }
+
         return valid;
     }
 
@@ -508,15 +501,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             }
             this.robot.addTrapTrigger(trap, true);
-        }
-        
-        if (this.robot.hasFlag() && this.robot.getFlag().getTeam() != this.robot.getTeam() 
-                && allSpawnZones[this.gameWorld.getSpawnZone(nextLoc)] == this.getTeam()) {
-            this.gameWorld.getTeamInfo().captureFlag(this.getTeam());
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.CAPTURE_FLAG, robot.getFlag().getId());
-            robot.getFlag().setLoc(null);
-            gameWorld.getAllFlags().remove(robot.getFlag());
-            this.robot.removeFlag();
         }
     }
 
@@ -719,117 +703,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         bot.addHealth(healAmt);
         this.robot.incrementSkill(SkillType.HEAL);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.HEAL, bot.getID());
-    }
-
-    // ***************************
-    // ******* FLAG METHODS ******
-    // ***************************
-    
-    @Override
-    public boolean hasFlag(){
-        return this.robot.hasFlag();
-    }
-
-    private void assertCanDropFlag(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
-        assertIsSpawned();
-        assertIsActionReady();
-        if (!robot.hasFlag())
-            throw new GameActionException(CANT_DO_THAT, 
-                "This robot is not holding a flag.");
-        
-        if(!this.gameWorld.isPassable(loc))
-        throw new GameActionException(CANT_DO_THAT, 
-                "A flag can't be placed at this location.");
-    }
-
-    @Override
-    public boolean canDropFlag(MapLocation loc) {
-        try {
-            assertCanDropFlag(loc);
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public void dropFlag(MapLocation loc) throws GameActionException{
-        assertCanDropFlag(loc);
-        Flag flag = robot.getFlag();
-        this.gameWorld.addFlag(loc, flag);
-        this.gameWorld.getMatchMaker().addAction(flag.getId(), Action.PLACE_FLAG, locationToInt(flag.getLoc()));
-        this.robot.addActionCooldownTurns(GameConstants.PICKUP_DROP_COOLDOWN);
-        robot.removeFlag();   
-        this.robot.addMovementCooldownTurns();
-    }
-
-    private void assertCanPickupFlag(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
-        assertIsSpawned();
-        assertIsActionReady();
-        if(robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "This robot is already holding flag.");
-        }
-        if(this.gameWorld.getFlags(loc).size() == 0) {
-            throw new GameActionException(CANT_DO_THAT, "There aren't any flags at this location.");
-        }
-        Team team = getTeam();
-        if (!this.gameWorld.isSetupPhase()) team = team.opponent();
-        boolean validFlagTeamExists = false;
-        boolean validFlagRoundsExists = false;
-        for (Flag f : this.gameWorld.getFlags(loc)){
-            if (f.getTeam() == team){
-                validFlagTeamExists = true;
-            }
-            if(gameWorld.isSetupPhase() || f.getLoc() == f.getStartLoc() || f.getDroppedRounds() != 0) {
-                validFlagRoundsExists = true;
-            }
-        }
-        if (!validFlagTeamExists && gameWorld.isSetupPhase()){
-            throw new GameActionException(CANT_DO_THAT, "Cannot pick up enemy team flags during setup phase");
-        }
-        if (!validFlagTeamExists && !gameWorld.isSetupPhase()){
-            throw new GameActionException(CANT_DO_THAT, "Cannot pick up ally flags after setup phase");
-        }
-        if(!validFlagRoundsExists) {
-            throw new GameActionException(CANT_DO_THAT, "Cannot pick up an enemy flag in the same round it was dropped");
-        }
-    }
-
-    @Override
-    public boolean canPickupFlag(MapLocation loc) {
-        try {
-            assertCanPickupFlag(loc);
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public void pickupFlag(MapLocation loc) throws GameActionException {
-        assertCanPickupFlag(loc);
-        int idx = 0;
-        Team team = getTeam();
-        if (!this.gameWorld.isSetupPhase()) team = team.opponent();
-        Flag tempflag = this.gameWorld.getFlags(loc).get(idx);
-        while (tempflag.getTeam() != team){
-            idx += 1;
-            tempflag = this.gameWorld.getFlags(loc).get(idx);
-        }
-        this.gameWorld.removeFlag(loc, tempflag);
-        robot.addFlag(tempflag);
-        robot.addActionCooldownTurns(GameConstants.PICKUP_DROP_COOLDOWN);
-        gameWorld.getMatchMaker().addAction(robot.getID(), Action.PICKUP_FLAG, tempflag.getId());
-        this.gameWorld.getTeamInfo().pickupFlag(getTeam());
-
-        Team[] allSpawnZones = {null, Team.A, Team.B};
-        if (tempflag.getTeam() != this.robot.getTeam() && allSpawnZones[this.gameWorld.getSpawnZone(getLocation())] == this.getTeam()) {
-            this.gameWorld.getTeamInfo().captureFlag(this.getTeam());
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.CAPTURE_FLAG, robot.getFlag().getId());
-            robot.getFlag().setLoc(null);
-            gameWorld.getAllFlags().remove(robot.getFlag());
-            this.robot.removeFlag();
-        }
     }
 
     // ***********************************
