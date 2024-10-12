@@ -4,7 +4,6 @@ import { Tooltip } from './tooltip'
 import { CurrentMap } from '../../playback/Map'
 import { useTurn } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
-import { Space } from 'react-zoomable-ui'
 
 export const GameRendererPanel: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -22,25 +21,25 @@ export const GameRendererPanel: React.FC = () => {
             {!turn ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
-                <div
-                    ref={(e) => {
-                        GameRenderer.addCanvasesToDOM(e)
-                    }}
-                >
-                    <Tooltip
-                        overlayCanvas={overlayCanvas}
-                        selectedBodyID={selectedBodyID}
-                        hoveredTile={hoveredTile}
-                        selectedTile={selectedTile}
-                        wrapperRef={wrapperRef.current}
-                    />
-                    <HighlightedSquare
-                        hoveredTile={hoveredTile}
-                        map={turn.map}
-                        wrapperRef={wrapperRef.current}
-                        overlayCanvasRef={overlayCanvas}
-                    />
-                </div>
+                    <div
+                        ref={(e) => {
+                            GameRenderer.addCanvasesToDOM(e)
+                        }}
+                    >
+                        <Tooltip
+                            overlayCanvas={overlayCanvas}
+                            selectedBodyID={selectedBodyID}
+                            hoveredTile={hoveredTile}
+                            selectedTile={selectedTile}
+                            wrapperRef={wrapperRef.current}
+                        />
+                        <HighlightedSquare
+                            hoveredTile={hoveredTile}
+                            map={turn.map}
+                            wrapperRef={wrapperRef.current}
+                            overlayCanvasRef={overlayCanvas}
+                        />
+                    </div>
             )}
         </div>
     )

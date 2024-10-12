@@ -1,9 +1,7 @@
 import React from 'react'
 import Game from './playback/Game'
-import Match from './playback/Match'
 import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playback/Tournament'
 import { ClientConfig, getDefaultConfig } from './client-config'
-import { GameRenderer } from './playback/GameRenderer'
 
 export interface AppState {
     queue: Game[]
