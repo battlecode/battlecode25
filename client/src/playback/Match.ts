@@ -119,8 +119,9 @@ export default class Match {
 
     /**
      * Change the simulation step to the current step + delta. If the step reaches the max simulation steps, the turn counter is increased accordingly
+     * Returns true if the turn has changed as a result of the simulation step
      */
-    public stepSimulation(delta_updates: number): void {
+    public _stepSimulation(delta_updates: number): boolean {
         assert(this.game.playable, "Can't step simulation when not playing")
 
         const delta = delta_updates * MAX_SIMULATION_STEPS
@@ -130,53 +131,58 @@ export default class Match {
             // still render animation at the end of the game until all units are done moving
             if (this.currentSimulationStep - delta < MAX_SIMULATION_STEPS) this.rerender()
             this.currentSimulationStep = Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)
-            return
+            return false
         }
         if (this.currentTurn.turnNumber == 0 && delta < 0) {
             // still render animation at the beginning of the game until all units are done moving
             if (this.currentSimulationStep - delta > 0) this.rerender()
             this.currentSimulationStep = Math.max(0, this.currentSimulationStep)
-            return
+            return false
         }
 
+        let turnStepped = false
         if (this.currentSimulationStep < 0) {
-            this.stepTurn(-1, false)
+            this._stepTurn(-1, false)
             this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
+            turnStepped = true
         } else if (this.currentSimulationStep >= MAX_SIMULATION_STEPS) {
-            this.stepTurn(1, false)
+            this._stepTurn(1, false)
             this.currentSimulationStep = 0
+            turnStepped = true
         } else {
             this.currentSimulationStep = (this.currentSimulationStep + MAX_SIMULATION_STEPS) % MAX_SIMULATION_STEPS
         }
 
         this.rerender()
+
+        return turnStepped
     }
 
     /**
      * Clear any excess simulation steps and round it to the nearest turn
      */
-    public roundSimulation(): void {
+    public _roundSimulation(): void {
         this.currentSimulationStep = 0
     }
 
     /**
      * Change the rounds current turn to the current turn + delta.
      */
-    public stepTurn(delta: number, rerender: boolean = true): void {
-        this.jumpToTurn(this.currentTurn.turnNumber + delta, rerender)
+    public _stepTurn(delta: number, rerender: boolean = true): void {
+        this._jumpToTurn(this.currentTurn.turnNumber + delta, rerender)
     }
 
     /**
      * Sets the current turn to the last turn.
      */
-    public jumpToEnd(rerender: boolean = true): void {
-        this.jumpToTurn(this.maxTurn, rerender)
+    public _jumpToEnd(rerender: boolean = true): void {
+        this._jumpToTurn(this.maxTurn, rerender)
     }
 
     /**
      * Sets the current turn to the turn at the given turn number.
      */
-    public jumpToTurn(turnNumber: number, rerender: boolean = true): void {
+    public _jumpToTurn(turnNumber: number, rerender: boolean = true): void {
         if (!this.game.playable) return
 
         turnNumber = Math.max(0, Math.min(turnNumber, this.deltas.length))
@@ -210,7 +216,6 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        gameRunner.onTurnChanged()
         if (rerender) this.rerender()
     }
 }
