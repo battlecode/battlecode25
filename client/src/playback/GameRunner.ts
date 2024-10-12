@@ -88,6 +88,7 @@ class GameRunner {
     }
 
     setMatch(match: Match | undefined): void {
+        this._trigger(this._matchListeners)
         if (this.match == match) return
         if (match) {
             match.game.currentMatch = match
@@ -96,7 +97,6 @@ class GameRunner {
         }
         this.paused = true
         this._trigger(this._controlListeners)
-        this._trigger(this._matchListeners)
         this.updateEventLoop()
         this.onTurnChanged()
     }

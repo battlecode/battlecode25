@@ -142,7 +142,6 @@ export function useScaffold(): Scaffold {
                 queue: prevState.queue.concat([game])
             }))
             gameRunner.setGame(game)
-            gameRunner.setMatch(game.currentMatch)
         }
 
         const onMatchCreated = (match: Match) => {
