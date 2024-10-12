@@ -530,52 +530,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     }
 
-    private void assertCanSpawn(MapLocation loc) throws GameActionException {
-        if (isSpawned())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot cannot call spawn when already spawned in.");
-
-        if (!this.robot.canSpawnCooldown())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is not ready to be spawned.");
-        
-        assertNotNull(loc);
-        if (!onTheMap(loc)){
-            throw new GameActionException(CANT_MOVE_THERE, "given location is not on the map");
-        }
-
-        if (this.gameWorld.getSpawnZone(loc) != getTeam().ordinal()+1)
-            throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot spawn in a non-spawn location; " + loc + " is not a spawn location for your team");
-
-        if (this.gameWorld.getRobot(loc) != null){
-            throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot spawn to an occupied location; " + loc + " is occupied.");
-        }
-
-        if (!this.gameWorld.isPassable(loc)){
-            throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot spawn to " + loc + "; It is not passable ");
-        }
-    }
-
-    @Override
-    public boolean canSpawn(MapLocation loc) {
-        try {
-            assertCanSpawn(loc);
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public void spawn(MapLocation loc) throws GameActionException {
-        assertCanSpawn(loc);
-        this.gameWorld.addRobot(loc, robot);
-        this.gameWorld.getObjectInfo().addRobotIndex(robot, loc);
-        this.robot.spawn(loc);
-        this.gameWorld.getMatchMaker().addSpawned(this.robot.getID(), this.robot.getTeam(), this.robot.getLocation());
-    }
-
     // ***********************************
     // ******** BUILDING METHODS *********
     // ***********************************
@@ -606,6 +560,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.BUILD_ROBOT_RADIUS_SQUARED);
         assertIsActionReady();
+        assertIsTowerType(this.robot.getType());
         assertIsRobotType(type);
 
         throw new NotImplementedException();
@@ -630,6 +585,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void assertCanMarkTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+        assertIsRobotType(this.robot.getType());
+        assertIsTowerType(type);
         throw new NotImplementedException();
         // TODO not implemented
     }
@@ -651,8 +608,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
-        throw new NotImplementedException();
-        // TODO not implemented
+        assertIsRobotType(this.robot.getType());
+
+        if (loc.x < GameConstants.PATTERN_SIZE / 2
+         || loc.y < GameConstants.PATTERN_SIZE / 2
+         || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
+         || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
+                + ") because it is too close to the edge of the map");
+        }
     }
 
     @Override

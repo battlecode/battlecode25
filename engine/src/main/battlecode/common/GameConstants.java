@@ -74,6 +74,9 @@ public class GameConstants {
     /** Crumbs cost for filling */
     public static final int FILL_COST = 30;
 
+    /** The width and height of the patterns that robots can draw */
+    public static final int PATTERN_SIZE = 5;
+
     /** Number of rounds between updating the random noisy flag broadcast location */
     public static final int FLAG_BROADCAST_UPDATE_INTERVAL = 100;
 
