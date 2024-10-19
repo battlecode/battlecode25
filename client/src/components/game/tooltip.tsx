@@ -4,16 +4,25 @@ import { ThreeBarsIcon } from '../../icons/three-bars'
 import { getRenderCoords } from '../../util/RenderUtil'
 import { Vector } from '../../playback/Vector'
 import { useTurn } from '../../playback/GameRunner'
+import { Pressable, VirtualSpaceRect } from 'react-zoomable-ui'
 
 type TooltipProps = {
-    overlayCanvas: HTMLCanvasElement | null
+    gameAreaRect?: VirtualSpaceRect
+    originalGameAreaSize?: { width: number; height: number }
     selectedBodyID: number | undefined
     hoveredTile: Vector | undefined
     selectedTile: Vector | undefined
-    wrapperRef: HTMLDivElement | null
+    clientToVirtualSpace?: (clientX: number, clientY: number) => { x: number; y: number }
 }
 
-export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTile, wrapperRef }: TooltipProps) => {
+export const Tooltip = ({
+    gameAreaRect,
+    originalGameAreaSize,
+    selectedBodyID,
+    hoveredTile,
+    selectedTile,
+    clientToVirtualSpace
+}: TooltipProps) => {
     const appContext = useAppContext()
     const turn = useTurn()
 
@@ -36,16 +45,13 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
     }, [hoveredBody, hoveredTile])
 
     const map = turn?.map
-    if (!overlayCanvas || !wrapperRef || !map) return <></>
-
-    const wrapperRect = wrapperRef.getBoundingClientRect()
+    if (!gameAreaRect || !map || !originalGameAreaSize) return <></>
 
     const getTooltipStyle = () => {
-        const overlayCanvasRect = overlayCanvas.getBoundingClientRect()
-        const tileWidth = overlayCanvasRect.width / map.width
-        const tileHeight = overlayCanvasRect.height / map.height
-        const mapLeft = overlayCanvasRect.left - wrapperRect.left
-        const mapTop = overlayCanvasRect.top - wrapperRect.top
+        const tileWidth = gameAreaRect.width / map.width
+        const tileHeight = gameAreaRect.height / map.height
+        const mapLeft = gameAreaRect.left
+        const mapTop = gameAreaRect.top
 
         let tooltipStyle: React.CSSProperties = {}
 
@@ -60,7 +66,7 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
         const distanceFromBotCenterX = 0.75 * tileWidth
         const distanceFromBotCenterY = 0.75 * tileHeight
         const clearanceLeft = mapLeft + tipPos.x * tileWidth - distanceFromBotCenterX
-        const clearanceRight = wrapperRect.width - clearanceLeft - 2 * distanceFromBotCenterX
+        const clearanceRight = originalGameAreaSize.width - clearanceLeft - 2 * distanceFromBotCenterX
         const clearanceTop = mapTop + tipPos.y * tileHeight - distanceFromBotCenterY
 
         if (clearanceTop > tooltipSize.height) {
@@ -104,16 +110,23 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
                 ))}
             </div>
 
-            <Draggable width={wrapperRect.width} height={wrapperRect.height}>
+            <Draggable
+                width={originalGameAreaSize.width}
+                height={originalGameAreaSize.height}
+                clientToVirtualSpace={clientToVirtualSpace}
+                margin={10}
+            >
                 {selectedBody && (
-                    <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative">
-                        {selectedBody.onHoverInfo().map((v, i) => (
-                            <p key={i}>{v}</p>
-                        ))}
-                        <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
-                            <ThreeBarsIcon />
+                    <Pressable capturePressThresholdMs={0}>
+                        <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative">
+                            {selectedBody.onHoverInfo().map((v, i) => (
+                                <p key={i}>{v}</p>
+                            ))}
+                            <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
+                                <ThreeBarsIcon />
+                            </div>
                         </div>
-                    </div>
+                    </Pressable>
                 )}
             </Draggable>
 
@@ -131,43 +144,55 @@ interface DraggableProps {
     width: number
     height: number
     margin?: number
+    clientToVirtualSpace?: (clientX: number, clientY: number) => { x: number; y: number }
 }
 
-const Draggable = ({ children, width, height, margin = 0 }: DraggableProps) => {
+const Draggable = ({ children, width, height, clientToVirtualSpace, margin = 0 }: DraggableProps) => {
     const [dragging, setDragging] = React.useState(false)
     const [pos, setPos] = React.useState({ x: 20, y: 20 })
     const [offset, setOffset] = React.useState({ x: 0, y: 0 })
     const ref = React.useRef<HTMLDivElement>(null)
+    const realSize = clientToVirtualSpace ? clientToVirtualSpace(width, height) : { x: width, y: height }
 
     const mouseDown = (e: React.MouseEvent) => {
         setDragging(true)
-        setOffset({ x: e.clientX - pos.x, y: e.clientY - pos.y })
+        const mouse = clientToVirtualSpace ? clientToVirtualSpace(e.clientX, e.clientY) : { x: e.clientX, y: e.clientY }
+        setOffset({ x: mouse.x - pos.x, y: mouse.x - pos.y })
     }
 
     const mouseUp = () => {
         setDragging(false)
     }
 
-    const mouseMove = (e: React.MouseEvent) => {
+    const mouseMove = (e: MouseEvent) => {
         if (dragging && ref.current) {
-            const targetX = e.clientX - offset.x
-            const targetY = e.clientY - offset.y
-            const realX = Math.min(Math.max(targetX, margin), width - ref.current.clientWidth - margin)
-            const realY = Math.min(Math.max(targetY, margin), height - ref.current.clientHeight - margin)
+            const mouse = clientToVirtualSpace
+                ? clientToVirtualSpace(e.clientX, e.clientY)
+                : { x: e.clientX, y: e.clientY }
+            const targetX = mouse.x - offset.x
+            const targetY = mouse.y - offset.y
+            const realInnerSize = clientToVirtualSpace ? clientToVirtualSpace(ref.current.clientWidth, ref.current.clientHeight) : { x: ref.current.clientWidth, y: ref.current.clientHeight }
+            const realX = Math.min(Math.max(targetX, margin), realSize.x - realInnerSize.x - margin)
+            const realY = Math.min(Math.max(targetY, margin), realSize.y - realInnerSize.y - margin)
             setPos({ x: realX, y: realY })
         }
     }
+
+    React.useEffect(() => {
+        if (dragging) {
+            window.addEventListener('mousemove', mouseMove)
+            window.addEventListener('mouseup', mouseUp)
+        }
+        return () => {
+            window.removeEventListener('mousemove', mouseMove)
+            window.removeEventListener('mouseup', mouseUp)
+        }
+    }, [dragging])
 
     return (
         <div
             ref={ref}
             onMouseDown={mouseDown}
-            onMouseUp={mouseUp}
-            onMouseLeave={mouseUp}
-            onMouseEnter={(e) => {
-                if (e.buttons === 1) mouseDown(e)
-            }}
-            onMouseMove={mouseMove}
             className="absolute z-20"
             style={{
                 left: pos.x + 'px',
