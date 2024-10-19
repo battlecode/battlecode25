@@ -22,6 +22,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private int healExp;
     private int attackExp;
     private int paintAmount;
+    private RobotOrTowerType type;
 
     private final int ID;
     private Team team;
@@ -58,11 +59,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team) {
+    public InternalRobot(GameWorld gw, int id, Team team, RobotOrTowerType type) {
         this.gameWorld = gw;
 
         this.ID = id;
         this.team = team;
+        this.type = type;
 
         this.location = null;
         this.diedLocation = null;
@@ -148,7 +150,16 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }    
 
     public void addPaint(int amount) {
-        paintAmount += amount;
+        int newPaintAmount = this.paintAmount + amount;
+        if (newPaintAmount > this.type.paintCapacity){
+            this.paintAmount = this.type.paintCapacity;
+        }
+        else if (newPaintAmount < 0){
+            this.paintAmount = 0;
+        } 
+        else {
+            this.paintAmount = newPaintAmount; 
+        }
     }
 
     public boolean canAddFlag() {

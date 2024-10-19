@@ -317,8 +317,7 @@ public strictfp class GameWorld {
         allRuins.remove(loc);
     }
 
-    public Team getTeam(MapLocation loc) {
-        int paint = this.gameWorld.getPaint(loc);
+    public Team teamFromPaint(int paint) {
         if (paint == 1 || paint == 2) {
             return Team.A;
         }

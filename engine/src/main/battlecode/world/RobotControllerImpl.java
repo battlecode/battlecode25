@@ -495,13 +495,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.addMovementCooldownTurns();
 
         Team nextTeam = this.gameWorld.getTeam(nextLoc);
-        if (nextTeam != this.robot.getTeam()) {
-            if (nextTeam == Team.NEUTRAL) {
-                this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
-            }
-            else {
-                this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
-            }
+        if (nextTeam == Team.NEUTRAL) {
+            this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
+        }
+        else if (nextTeam == this.robot.getTeam().opponent()) {
+            this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
         }
 
 
