@@ -6,7 +6,7 @@ import { GameRenderer } from './GameRenderer'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 
-class GameRunnerClass {
+class gameRunnerClass {
     targetUPS: number = 1
     currentUPSBuffer: number[] = []
     paused: boolean = true
@@ -153,15 +153,15 @@ class GameRunnerClass {
     }
 }
 
-const GameRunner = new GameRunnerClass()
+const gameRunner = new gameRunnerClass()
 
 export function useGame(): Game | undefined {
-    const [game, setGame] = React.useState(GameRunner.game)
+    const [game, setGame] = React.useState(gameRunner.game)
     React.useEffect(() => {
-        const listener = () => setGame(GameRunner.game)
-        GameRunner._gameListeners.push(listener)
+        const listener = () => setGame(gameRunner.game)
+        gameRunner._gameListeners.push(listener)
         return () => {
-            GameRunner._gameListeners = GameRunner._gameListeners.filter((l) => l !== listener)
+            gameRunner._gameListeners = gameRunner._gameListeners.filter((l) => l !== listener)
         }
     }, [])
     return game
@@ -179,9 +179,9 @@ export function useMatch(): Match | undefined {
             setMaxTurn(game?.currentMatch?.maxTurn)
             setWinner(game?.currentMatch?.winner)
         }
-        GameRunner._matchListeners.push(listener)
+        gameRunner._matchListeners.push(listener)
         return () => {
-            GameRunner._matchListeners = GameRunner._matchListeners.filter((l) => l !== listener)
+            gameRunner._matchListeners = gameRunner._matchListeners.filter((l) => l !== listener)
         }
     }, [game])
     return game?.currentMatch
@@ -197,9 +197,9 @@ export function useTurn(): Turn | undefined {
             setTurn(match?.currentTurn)
             setTurnNumber(match?.currentTurn?.turnNumber)
         }
-        GameRunner._turnListeners.push(listener)
+        gameRunner._turnListeners.push(listener)
         return () => {
-            GameRunner._turnListeners = GameRunner._turnListeners.filter((l) => l !== listener)
+            gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
         }
     }, [match])
     return match?.currentTurn
@@ -209,33 +209,33 @@ export function useControls(): {
     targetUPS: number
     paused: boolean
 } {
-    const [targetUPS, setTargetUPS] = React.useState(GameRunner.targetUPS)
-    const [paused, setPaused] = React.useState(GameRunner.paused)
+    const [targetUPS, setTargetUPS] = React.useState(gameRunner.targetUPS)
+    const [paused, setPaused] = React.useState(gameRunner.paused)
     React.useEffect(() => {
         const listener = () => {
-            setTargetUPS(GameRunner.targetUPS)
-            setPaused(GameRunner.paused)
+            setTargetUPS(gameRunner.targetUPS)
+            setPaused(gameRunner.paused)
         }
-        GameRunner._controlListeners.push(listener)
+        gameRunner._controlListeners.push(listener)
         return () => {
-            GameRunner._controlListeners = GameRunner._controlListeners.filter((l) => l !== listener)
+            gameRunner._controlListeners = gameRunner._controlListeners.filter((l) => l !== listener)
         }
     }, [])
     return { targetUPS, paused }
 }
 
 export function useCurrentUPS(): number {
-    const [currentUPS, setCurrentUPS] = React.useState(GameRunner.currentUPSBuffer.length)
+    const [currentUPS, setCurrentUPS] = React.useState(gameRunner.currentUPSBuffer.length)
     React.useEffect(() => {
-        const listener = () => setCurrentUPS(GameRunner.currentUPSBuffer.length)
-        GameRunner._controlListeners.push(listener)
-        GameRunner._turnListeners.push(listener)
+        const listener = () => setCurrentUPS(gameRunner.currentUPSBuffer.length)
+        gameRunner._controlListeners.push(listener)
+        gameRunner._turnListeners.push(listener)
         return () => {
-            GameRunner._controlListeners = GameRunner._controlListeners.filter((l) => l !== listener)
-            GameRunner._turnListeners = GameRunner._turnListeners.filter((l) => l !== listener)
+            gameRunner._controlListeners = gameRunner._controlListeners.filter((l) => l !== listener)
+            gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
         }
     }, [])
     return currentUPS
 }
 
-export default GameRunner
+export default gameRunner

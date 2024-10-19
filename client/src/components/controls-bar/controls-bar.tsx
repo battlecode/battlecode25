@@ -5,7 +5,7 @@ import { useAppContext } from '../../app-context'
 import { useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
-import GameRunner, { useControls, useTurn } from '../../playback/GameRunner'
+import gameRunner, { useControls, useTurn } from '../../playback/GameRunner'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
@@ -24,23 +24,23 @@ export const ControlsBar: React.FC = () => {
         // specific accessibility features that mess with these shortcuts.
         if (keyboard.targetElem instanceof HTMLButtonElement) keyboard.targetElem.blur()
 
-        if (keyboard.keyCode === 'Space') GameRunner.setPaused(!paused)
+        if (keyboard.keyCode === 'Space') gameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
 
         const applyArrows = () => {
             if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') GameRunner.stepTurn(1)
-                if (keyboard.keyCode === 'ArrowLeft') GameRunner.stepTurn(-1)
+                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepTurn(1)
+                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepTurn(-1)
             } else {
-                if (keyboard.keyCode === 'ArrowRight') GameRunner.multiplyUpdatesPerSecond(2)
-                if (keyboard.keyCode === 'ArrowLeft') GameRunner.multiplyUpdatesPerSecond(0.5)
+                if (keyboard.keyCode === 'ArrowRight') gameRunner.multiplyUpdatesPerSecond(2)
+                if (keyboard.keyCode === 'ArrowLeft') gameRunner.multiplyUpdatesPerSecond(0.5)
             }
         }
         applyArrows()
 
-        if (keyboard.keyCode === 'Comma') GameRunner.jumpToTurn(0)
-        if (keyboard.keyCode === 'Period') GameRunner.jumpToEnd()
+        if (keyboard.keyCode === 'Comma') gameRunner.jumpToTurn(0)
+        if (keyboard.keyCode === 'Period') gameRunner.jumpToEnd()
 
         const initalDelay = 250
         const repeatDelay = 100
@@ -86,18 +86,18 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
                     tooltip="Reverse"
-                    onClick={() => GameRunner.multiplyUpdatesPerSecond(-1)}
+                    onClick={() => gameRunner.multiplyUpdatesPerSecond(-1)}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.SkipBackwardsIcon />}
                     tooltip={'Decrease Speed'}
-                    onClick={() => GameRunner.multiplyUpdatesPerSecond(0.5)}
+                    onClick={() => gameRunner.multiplyUpdatesPerSecond(0.5)}
                     disabled={Math.abs(targetUPS) <= 0.25}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.GoPreviousIcon />}
                     tooltip="Step Backwards"
-                    onClick={() => GameRunner.stepTurn(-1)}
+                    onClick={() => gameRunner.stepTurn(-1)}
                     disabled={atStart}
                 />
                 {paused ? (
@@ -105,7 +105,7 @@ export const ControlsBar: React.FC = () => {
                         icon={<ControlIcons.PlaybackPlayIcon />}
                         tooltip="Play"
                         onClick={() => {
-                            GameRunner.setPaused(false)
+                            gameRunner.setPaused(false)
                         }}
                     />
                 ) : (
@@ -113,32 +113,32 @@ export const ControlsBar: React.FC = () => {
                         icon={<ControlIcons.PlaybackPauseIcon />}
                         tooltip="Pause"
                         onClick={() => {
-                            GameRunner.setPaused(true)
+                            gameRunner.setPaused(true)
                         }}
                     />
                 )}
                 <ControlsBarButton
                     icon={<ControlIcons.GoNextIcon />}
                     tooltip="Next Turn"
-                    onClick={() => GameRunner.stepTurn(1)}
+                    onClick={() => gameRunner.stepTurn(1)}
                     disabled={atEnd}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.SkipForwardsIcon />}
                     tooltip={'Increase Speed'}
-                    onClick={() => GameRunner.multiplyUpdatesPerSecond(2)}
+                    onClick={() => gameRunner.multiplyUpdatesPerSecond(2)}
                     disabled={Math.abs(targetUPS) >= 64}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
                     tooltip="Jump To Start"
-                    onClick={() => GameRunner.jumpToTurn(0)}
+                    onClick={() => gameRunner.jumpToTurn(0)}
                     disabled={atStart}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.GoEndIcon />}
                     tooltip="Jump To End"
-                    onClick={() => GameRunner.jumpToEnd()}
+                    onClick={() => gameRunner.jumpToEnd()}
                     disabled={atEnd}
                 />
                 {appState.tournament && (
@@ -146,13 +146,13 @@ export const ControlsBar: React.FC = () => {
                         <ControlsBarButton
                             icon={<ControlIcons.NextMatch />}
                             tooltip="Next Match"
-                            onClick={() => GameRunner.nextMatch()}
+                            onClick={() => gameRunner.nextMatch()}
                             disabled={!hasNextMatch}
                         />
                         <ControlsBarButton
                             icon={<ControlIcons.CloseGame />}
                             tooltip="Close Game"
-                            onClick={() => GameRunner.setGame(undefined)}
+                            onClick={() => gameRunner.setGame(undefined)}
                         />
                     </>
                 )}

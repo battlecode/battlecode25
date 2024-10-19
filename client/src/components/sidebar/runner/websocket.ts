@@ -2,7 +2,7 @@ import { schema, flatbuffers } from 'battlecode-schema'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import assert from 'assert'
-import GameRunner from '../../../playback/GameRunner'
+import gameRunner from '../../../playback/GameRunner'
 
 export type FakeGameWrapper = {
     events: (index: number, unusedEventSlot: any) => schema.EventWrapper | null
@@ -57,7 +57,7 @@ export default class WebSocketListener {
         if (!this.activeGame) return
 
         const match = this.activeGame.matches[this.activeGame.matches.length - 1]
-        if (match && match === GameRunner.match) {
+        if (match && match === gameRunner.match) {
             // Auto progress the turn if the user hasn't done it themselves
             // We only want to do this if the currently selected match is the one being updated
 
@@ -65,11 +65,11 @@ export default class WebSocketListener {
                 // Jump to the second to last turn so that we ensure nextDelta always
                 // exists (fixes bug where snapshot rounds don't have nextDelta which
                 // causes a visual jump)
-                GameRunner.jumpToTurn(match.maxTurn - 1)
+                gameRunner.jumpToTurn(match.maxTurn - 1)
                 this.lastSetTurn = match.currentTurn.turnNumber
             } else {
                 // Trigger match update so anyone accessing turns/max turn gets updated
-                GameRunner.setMatch(match)
+                gameRunner.setMatch(match)
             }
         }
 

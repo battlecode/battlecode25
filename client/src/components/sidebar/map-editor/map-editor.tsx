@@ -12,7 +12,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import GameRunner, { useTurn } from '../../../playback/GameRunner'
+import gameRunner, { useTurn } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
 
 type MapParams = {
@@ -104,7 +104,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            GameRunner.setMatch(editGame.current.currentMatch)
+            gameRunner.setMatch(editGame.current.currentMatch)
 
             const turn = editGame.current.currentMatch!.currentTurn
             const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
@@ -112,7 +112,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             setBrushes(brushes)
             setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
         } else {
-            GameRunner.setGame(undefined)
+            gameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 

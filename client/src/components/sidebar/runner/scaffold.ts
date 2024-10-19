@@ -8,7 +8,7 @@ import { useAppContext } from '../../../app-context'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import { RingBuffer } from '../../../util/ring-buffer'
-import GameRunner from '../../../playback/GameRunner'
+import gameRunner from '../../../playback/GameRunner'
 
 export type JavaInstall = {
     display: string
@@ -141,11 +141,11 @@ export function useScaffold(): Scaffold {
                 ...prevState,
                 queue: prevState.queue.concat([game])
             }))
-            GameRunner.setGame(game)
+            gameRunner.setGame(game)
         }
 
         const onMatchCreated = (match: Match) => {
-            GameRunner.setMatch(match)
+            gameRunner.setMatch(match)
         }
 
         const onGameComplete = (game: Game) => {
@@ -153,7 +153,7 @@ export function useScaffold(): Scaffold {
                 ...prevState,
                 queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
             }))
-            if (game.matches.length > 0) GameRunner.setMatch(game.matches[0])
+            if (game.matches.length > 0) gameRunner.setMatch(game.matches[0])
         }
 
         setWebSocketListener(
