@@ -344,50 +344,16 @@ public strictfp interface RobotController {
     MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
 
     /**
-     * Returns the location of all nearby flags that are visible to the robot, including picked up flags.
+     * Returns the location of all nearby ruins that are visible to the robot.
      * If radiusSquared is greater than the robot's vision radius, uses the robot's vision radius instead.
      * 
      * @param radiusSquared squared radius of all locations to be returned, -1 for max radius
-     * @return all locations containing flags
+     * @return all locations containing ruins
      * @throws GameActionException if a radius less than -1 is provided
      * 
      * @battlecode.doc.costlymethod
      **/
-    FlagInfo[] senseNearbyFlags(int radiusSquared) throws GameActionException; 
-
-    /**
-     * Returns the location of all nearby flags that are visible to the robot, including picked up flags.
-     * If radiusSquared is greater than the robot's vision radius, uses the robot's vision radius instead.
-     * 
-     * @param radiusSquared squared radius of all locations to be returned
-     * @param team the team to find flags for
-     * @return all locations containing flags
-     * @throws GameActionException if a radius less than -1 is provided
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    FlagInfo[] senseNearbyFlags(int radiusSquared, Team team) throws GameActionException; 
-
-    /**
-     * Returns the locations of all invisible dropped enemy flags, accurate within a radius of sqrt(100) cells.
-     * 
-     * @return all location ranges containing invisible flags
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    MapLocation[] senseBroadcastFlagLocations();
-
-    /**
-     * Checks if the given location within vision radius is a legal starting flag placement. This is true when the
-     * location is passable and is far enough away from other placed friendly flags.
-     * 
-     * @param loc The location to check
-     * @return Whether the location is a valid flag placement
-     * @throws GameActionException if the location is out of sensing range
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean senseLegalStartingFlagPlacement(MapLocation loc) throws GameActionException;
+    MapLocation[] senseNearbyRuins(int radiusSquared) throws GameActionException; 
 
     /**
      * Returns the location adjacent to current location in the given direction.
@@ -501,99 +467,93 @@ public strictfp interface RobotController {
     void move(Direction dir) throws GameActionException;
 
     // ***********************************
-    // *********** SPAWNING **************
-    // ***********************************
-
-    /**
-     * Returns a MapLocation array of all locations with an ally spawn zone on them.
-     * A robot must spawn inside one of these spawn zones.
-     * 
-     * @return a list of locations with an ally spawn zone
-     */
-    MapLocation[] getAllySpawnLocations();
-
-    /**
-     * Checks if the robot is allowed to spawn at the given location.
-     * A robot can spawn only inside the spawn zones.
-     * 
-     * @param loc the location to spawn the robot
-     * @return whether the robot can spawn at the location
-     */
-    boolean canSpawn(MapLocation loc);
-
-    /**
-     * Spawns the robot at the given location.
-     * 
-     * @param loc the location to spawn the robot
-     * @throws GameActionException if the robot is not allowed to spawn at this location
-     */
-    void spawn(MapLocation loc) throws GameActionException;
-
-    // ***********************************
     // *********** BUILDING **************
     // ***********************************
 
     /**
-     * Checks if a robot can dig (create water) at the specified location.
+     * Checks if a {@link RobotOrTowerType} is a robot type.
      * 
-     * @param loc the location to check
-     * @return true if a robot can dig, false otherwise
-     */
-    boolean canDig(MapLocation loc);
-
-    /**
-     * Removes land and creates water in a location.
-     * 
-     * @param loc Location to dig
-     * @throws GameActionException if loc is not diggable
+     * @param type the enum item to check
+     * @return true if type is a robot type
      * 
      * @battlecode.doc.costlymethod
      */
-    void dig(MapLocation loc) throws GameActionException;;
+    boolean isRobotType(RobotOrTowerType type);
 
     /**
-     * Checks if a location can be filled.
+     * Checks if a {@link RobotOrTowerType} is a tower type.
      * 
-     * @param loc location to check if fillable
-     * 
-     * @return true if can fill in that location
+     * @param type the enum item to check
+     * @return true if type is a tower type
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canFill(MapLocation loc);
+    boolean isTowerType(RobotOrTowerType type);
 
     /**
-     * Fills a water location with land.
+     * Checks if a tower can spawn a robot at the given location.
+     * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
-     * @param loc location to fill
-     * @throws GameActionException if loc is not fillable
+     * @param type the type of robot to spawn
+     * @param loc the location to spawn the robot at
+     * @return true if robot can be built at loc
      * 
      * @battlecode.doc.costlymethod
      */
-    void fill(MapLocation loc) throws GameActionException;;
+    boolean canBuildRobot(RobotOrTowerType type, MapLocation loc);
 
     /**
-     * Checks if a trap can be built at the given location.
+     * Spawns a robot at the given location.
+     * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
-     * @param building TrapType of trap to build at that location
-     * @param loc location to aquaform
-     * 
-     * @return true if trap can be built at loc
+     * @param type the type of robot to spawn
+     * @param loc the location to spawn the robot at
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canBuild(TrapType building, MapLocation loc);
+    void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException;
 
     /**
-     * Builds a trap at the given location.
+     * Checks if the robot can build a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
      * 
-     * @param building type of trap to build
-     * @param loc location for trap type to build
-     * @throws GameActionException if trap cannot be built at loc
+     * @param type the type of tower to build
+     * @param loc the location to build at
+     * @return true if tower can be built at loc
      * 
      * @battlecode.doc.costlymethod
      */
-    void build(TrapType building, MapLocation loc) throws GameActionException;;
+    boolean canMarkTowerPattern(RobotOrTowerType type, MapLocation loc);
+
+    /**
+     * Builds a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
+     * 
+     * @param type the type of tower to build
+     * @param loc the location to build at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if the robot can mark a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc the location to build at
+     * @return true if an SRP can be marked at loc
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canMarkResourcePattern(MapLocation loc);
+
+    /**
+     * Marks a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc the location to build at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markResourcePattern(MapLocation loc) throws GameActionException;
 
     // ****************************
     // ***** ATTACK / HEAL ******** 
@@ -660,69 +620,6 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void heal(MapLocation loc) throws GameActionException;
-
-
-    // ***************************
-    // ******* FLAG METHODS ******
-    // ***************************
-
-    /**
-     * Checks whether robot is currently holding a flag.
-     * 
-     * @return whether the robot is holding a flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean hasFlag();
-
-    /**
-     * Tests whether robot can pickup a flag at the current location.
-     * 
-     * Checks that the flag is within range and that the flag is a friendly flag
-     * during setup phase or an enemy flag during attack phase. Also checks that
-     * there are no cooldown turns remaining. 
-     * 
-     * @param loc the flag location
-     * @return whether it is possible to pick up the flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean canPickupFlag(MapLocation loc);
-
-    /**
-     * Picks up flag at the specified location.
-     * 
-     * @param loc the flag location
-     * @throws GameActionException if conditions for picking up flags are not satisfied
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void pickupFlag(MapLocation loc) throws GameActionException;
-
-    /**
-     * Tests whether the robot can drop a flag at the current location.
-     * 
-     * Checks that the flag is within range (at most sqrt(2) cells away from robot) and 
-     * that the flag is a friendly flag during setup phase or an enemy flag during attack phase. 
-     * Also checks that there are no cooldown turns remaining. 
-     * 
-     * @param loc target flag location
-     * @return whether it is possible to drop the flag
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean canDropFlag(MapLocation loc);
-    
-    /**
-     * Places a flag at the current location on the map.
-     *
-     * @param loc location on the map 
-     * @throws GameActionException if a flag cannot be dropped at this location
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    void dropFlag(MapLocation loc) throws GameActionException;
-
 
     // ***********************************
     // ****** COMMUNICATION METHODS ****** 
