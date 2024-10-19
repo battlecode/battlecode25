@@ -28,7 +28,8 @@ public class URLUtils {
      * Take a list of resources, package them into a temp jar, and return
      * the URL of the jar.
      *
-     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class", ...}
+     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class",
+     *                  ...}
      * @return the URL of the new jar file
      * @throws IOException
      */
@@ -36,16 +37,16 @@ public class URLUtils {
         return toTempJar(
                 resources,
                 Arrays.stream(resources)
-                      .map(URLUtils.class.getClassLoader()::getResource)
-                      .toArray(URL[]::new)
-        );
+                        .map(URLUtils.class.getClassLoader()::getResource)
+                        .toArray(URL[]::new));
     }
 
     /**
      * Take a list of resources, package them into a temp jar, and return
      * the URL of the jar.
      *
-     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class", ...}
+     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class",
+     *                  ...}
      * @return the URL of the new folder.
      * @throws IOException
      */
@@ -53,16 +54,16 @@ public class URLUtils {
         return toTempFolder(
                 resources,
                 Arrays.stream(resources)
-                      .map(URLUtils.class.getClassLoader()::getResource)
-                      .toArray(URL[]::new)
-        );
+                        .map(URLUtils.class.getClassLoader()::getResource)
+                        .toArray(URL[]::new));
     }
 
     /**
      * Take a list of resources, package them into a temp jar, and return
      * the URL of the jar.
      *
-     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class", ...}
+     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class",
+     *                  ...}
      * @return the URL of the new folder.
      * @throws IOException
      */
@@ -78,11 +79,9 @@ public class URLUtils {
             try (FileOutputStream out = new FileOutputStream(resFile)) {
                 IOUtils.copy(
                         resources[i].openStream(),
-                        out
-                );
+                        out);
             }
         }
-
         return folder.getPath();
     }
 
@@ -90,7 +89,8 @@ public class URLUtils {
      * Take a list of resources, package them into a temp jar, and return
      * the URL of the jar.
      *
-     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class", ...}
+     * @param resources in the form {"instrumentertest/CallsIllegalMethods.class",
+     *                  ...}
      * @return the URL of the new jar file
      * @throws IOException
      */
@@ -106,8 +106,7 @@ public class URLUtils {
             jarOutput.putNextEntry(new ZipEntry(paths[i]));
             IOUtils.copy(
                     resources[i].openStream(),
-                    jarOutput
-            );
+                    jarOutput);
             jarOutput.closeEntry();
         }
         jarOutput.close();
