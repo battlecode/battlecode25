@@ -110,30 +110,24 @@ export default class Match {
 
     /**
      * Change the simulation step to the current step + delta. If the step reaches the max simulation steps, the turn counter is increased accordingly
-     * Returns whether anything changed and whether the turn changed
+     * Returns whether the turn was stepped
      */
-    public _stepSimulation(delta_updates: number): { anythingChanged: boolean; turnChanged: boolean } {
+    public _stepSimulation(deltaUpdates: number): boolean {
         assert(this.game.playable, "Can't step simulation when not playing")
 
-        let anythingChanged = false
-        let turnChanged = false
-
-        const delta = delta_updates * MAX_SIMULATION_STEPS
+        const delta = deltaUpdates * MAX_SIMULATION_STEPS
         this.currentSimulationStep += delta
 
         if (this.currentTurn.turnNumber == this.maxTurn && delta > 0) {
-            // still render animation at the end of the game until all units are done moving
-            if (this.currentSimulationStep - delta < MAX_SIMULATION_STEPS) anythingChanged = true
             this.currentSimulationStep = Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)
-            return { anythingChanged, turnChanged }
+            return false
         }
         if (this.currentTurn.turnNumber == 0 && delta < 0) {
-            // still render animation at the beginning of the game until all units are done moving
-            if (this.currentSimulationStep - delta > 0) anythingChanged = true
             this.currentSimulationStep = Math.max(0, this.currentSimulationStep)
-            return { anythingChanged, turnChanged }
+            return false
         }
 
+        let turnChanged = false
         if (this.currentSimulationStep < 0) {
             this._stepTurn(-1)
             this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
@@ -146,7 +140,7 @@ export default class Match {
             this.currentSimulationStep = (this.currentSimulationStep + MAX_SIMULATION_STEPS) % MAX_SIMULATION_STEPS
         }
 
-        return { anythingChanged: true, turnChanged }
+        return turnChanged
     }
 
     /**

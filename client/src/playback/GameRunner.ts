@@ -28,7 +28,7 @@ class gameRunnerClass {
 
         this.eventLoop = setInterval(() => {
             if (!this.match || this.paused) {
-                this.shutDownEventLoop()
+                this.stopEventLoop()
                 return
             }
 
@@ -37,9 +37,15 @@ class gameRunnerClass {
             const msPerUpdate = 1000 / this.targetUPS
             const updatesPerInterval = SIMULATION_UPDATE_INTERVAL_MS / msPerUpdate
 
-            const { anythingChanged, turnChanged } = this.match!._stepSimulation(updatesPerInterval)
-            if (anythingChanged) GameRenderer.render()
-            if (turnChanged) this._trigger(this._turnListeners)
+            const turnChanged = this.match!._stepSimulation(updatesPerInterval)
+
+            // Always rerender, so this assumes the simulation pauses when the simulation
+            // is over
+            GameRenderer.render()
+
+            if (turnChanged) {
+                this._trigger(this._turnListeners)
+            }
 
             if (prevTurn != this.match.currentTurn.turnNumber) {
                 this.currentUPSBuffer.push(Date.now())
@@ -49,11 +55,13 @@ class gameRunnerClass {
 
             if (this.match.currentTurn.isEnd() && this.targetUPS > 0) {
                 this.setPaused(true)
+            } else if (this.match.currentTurn.isStart() && this.targetUPS < 0) {
+                this.setPaused(true)
             }
         }, SIMULATION_UPDATE_INTERVAL_MS)
     }
 
-    private shutDownEventLoop(): void {
+    private stopEventLoop(): void {
         if (!this.eventLoop) return
 
         // Snap bots to their actual position when paused by rounding simulation to the true turn
@@ -67,7 +75,7 @@ class gameRunnerClass {
 
     private updateEventLoop(): void {
         if (!this.match || this.paused) {
-            this.shutDownEventLoop()
+            this.stopEventLoop()
         } else {
             this.startEventLoop()
         }

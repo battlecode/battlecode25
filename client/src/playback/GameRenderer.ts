@@ -67,11 +67,10 @@ class GameRendererClass {
         if (!match || !ctx || !overlayCtx) return
 
         const currentTurn = match.currentTurn
-        const map = currentTurn.map
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height)
-        map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+        currentTurn.map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
         currentTurn.bodies.draw(match, ctx, overlayCtx, GameConfig.config, this.selectedBodyID, this.mouseTile)
         currentTurn.actions.draw(match, ctx)
     }
