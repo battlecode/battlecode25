@@ -277,11 +277,18 @@ export default class Bodies {
         overlayCtx: CanvasRenderingContext2D,
         config: ClientConfig,
         selectedBodyID?: number,
-        hoveredBodyID?: number
+        hoveredTile?: Vector
     ): void {
         for (const body of this.bodies.values())
             if (!body.jailed)
-                body.draw(match, ctx, overlayCtx, config, body.id === selectedBodyID, body.id === hoveredBodyID)
+                body.draw(
+                    match,
+                    ctx,
+                    overlayCtx,
+                    config,
+                    body.id === selectedBodyID,
+                    body.pos.x === hoveredTile?.x && body.pos.y === hoveredTile?.y
+                )
     }
 
     getNextID(): number {

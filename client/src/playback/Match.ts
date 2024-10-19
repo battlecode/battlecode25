@@ -6,8 +6,6 @@ import TurnStat from './TurnStat'
 import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
-import { publishEvent, EventType } from '../app-events'
-import gameRunner from './GameRunner'
 
 // Amount of turns before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
@@ -111,51 +109,38 @@ export default class Match {
     }
 
     /**
-     * Force a rerender by publishing a RENDER event
-     */
-    public rerender(): void {
-        publishEvent(EventType.RENDER, {})
-    }
-
-    /**
      * Change the simulation step to the current step + delta. If the step reaches the max simulation steps, the turn counter is increased accordingly
-     * Returns true if the turn has changed as a result of the simulation step
+     * Returns whether the turn was stepped
      */
-    public _stepSimulation(delta_updates: number): boolean {
+    public _stepSimulation(deltaUpdates: number): boolean {
         assert(this.game.playable, "Can't step simulation when not playing")
 
-        const delta = delta_updates * MAX_SIMULATION_STEPS
+        const delta = deltaUpdates * MAX_SIMULATION_STEPS
         this.currentSimulationStep += delta
 
         if (this.currentTurn.turnNumber == this.maxTurn && delta > 0) {
-            // still render animation at the end of the game until all units are done moving
-            if (this.currentSimulationStep - delta < MAX_SIMULATION_STEPS) this.rerender()
             this.currentSimulationStep = Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)
             return false
         }
         if (this.currentTurn.turnNumber == 0 && delta < 0) {
-            // still render animation at the beginning of the game until all units are done moving
-            if (this.currentSimulationStep - delta > 0) this.rerender()
             this.currentSimulationStep = Math.max(0, this.currentSimulationStep)
             return false
         }
 
-        let turnStepped = false
+        let turnChanged = false
         if (this.currentSimulationStep < 0) {
-            this._stepTurn(-1, false)
+            this._stepTurn(-1)
             this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
-            turnStepped = true
+            turnChanged = true
         } else if (this.currentSimulationStep >= MAX_SIMULATION_STEPS) {
-            this._stepTurn(1, false)
+            this._stepTurn(1)
             this.currentSimulationStep = 0
-            turnStepped = true
+            turnChanged = true
         } else {
             this.currentSimulationStep = (this.currentSimulationStep + MAX_SIMULATION_STEPS) % MAX_SIMULATION_STEPS
         }
 
-        this.rerender()
-
-        return turnStepped
+        return turnChanged
     }
 
     /**
@@ -168,21 +153,21 @@ export default class Match {
     /**
      * Change the rounds current turn to the current turn + delta.
      */
-    public _stepTurn(delta: number, rerender: boolean = true): void {
-        this._jumpToTurn(this.currentTurn.turnNumber + delta, rerender)
+    public _stepTurn(delta: number): void {
+        this._jumpToTurn(this.currentTurn.turnNumber + delta)
     }
 
     /**
      * Sets the current turn to the last turn.
      */
-    public _jumpToEnd(rerender: boolean = true): void {
-        this._jumpToTurn(this.maxTurn, rerender)
+    public _jumpToEnd(): void {
+        this._jumpToTurn(this.maxTurn)
     }
 
     /**
      * Sets the current turn to the turn at the given turn number.
      */
-    public _jumpToTurn(turnNumber: number, rerender: boolean = true): void {
+    public _jumpToTurn(turnNumber: number): void {
         if (!this.game.playable) return
 
         turnNumber = Math.max(0, Math.min(turnNumber, this.deltas.length))
@@ -216,6 +201,5 @@ export default class Match {
         }
 
         this.currentTurn = updatingTurn
-        if (rerender) this.rerender()
     }
 }

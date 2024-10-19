@@ -160,7 +160,7 @@ export class CurrentMap {
         ctx: CanvasRenderingContext2D,
         config: ClientConfig,
         selectedBodyID?: number,
-        hoveredBodyID?: number
+        hoveredTile?: Vector
     ) {
         const dimension = this.dimension
         for (let i = 0; i < dimension.width; i++) {

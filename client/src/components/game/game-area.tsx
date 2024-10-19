@@ -1,5 +1,5 @@
 import React from 'react'
-import { GameRenderer } from './game-renderer'
+import { GameRendererPanel } from './game-renderer'
 import { useAppContext } from '../../app-context'
 import { TournamentRenderer } from './tournament-renderer/tournament-renderer'
 import { useGame } from '../../playback/GameRunner'
@@ -20,5 +20,5 @@ export const GameArea: React.FC = () => {
         return <TournamentRenderer />
     }
 
-    return <GameRenderer />
+    return <GameRendererPanel />
 }

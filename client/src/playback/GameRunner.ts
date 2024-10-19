@@ -2,11 +2,11 @@ import React from 'react'
 import Game from './Game'
 import Match from './Match'
 import Turn from './Turn'
-import { EventType } from '../app-events'
+import { GameRenderer } from './GameRenderer'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 
-class GameRunner {
+class gameRunnerClass {
     targetUPS: number = 1
     currentUPSBuffer: number[] = []
     paused: boolean = true
@@ -28,7 +28,7 @@ class GameRunner {
 
         this.eventLoop = setInterval(() => {
             if (!this.match || this.paused) {
-                this.shutDownEventLoop()
+                this.stopEventLoop()
                 return
             }
 
@@ -36,7 +36,14 @@ class GameRunner {
 
             const msPerUpdate = 1000 / this.targetUPS
             const updatesPerInterval = SIMULATION_UPDATE_INTERVAL_MS / msPerUpdate
-            if (this.match!._stepSimulation(updatesPerInterval)) {
+
+            const turnChanged = this.match!._stepSimulation(updatesPerInterval)
+
+            // Always rerender, so this assumes the simulation pauses when the simulation
+            // is over
+            GameRenderer.render()
+
+            if (turnChanged) {
                 this._trigger(this._turnListeners)
             }
 
@@ -48,17 +55,19 @@ class GameRunner {
 
             if (this.match.currentTurn.isEnd() && this.targetUPS > 0) {
                 this.setPaused(true)
+            } else if (this.match.currentTurn.isStart() && this.targetUPS < 0) {
+                this.setPaused(true)
             }
         }, SIMULATION_UPDATE_INTERVAL_MS)
     }
 
-    private shutDownEventLoop(): void {
+    private stopEventLoop(): void {
         if (!this.eventLoop) return
 
         // Snap bots to their actual position when paused by rounding simulation to the true turn
         if (this.match) {
             this.match._roundSimulation()
-            this.match.rerender()
+            GameRenderer.render()
         }
         clearInterval(this.eventLoop)
         this.eventLoop = undefined
@@ -66,7 +75,7 @@ class GameRunner {
 
     private updateEventLoop(): void {
         if (!this.match || this.paused) {
-            this.shutDownEventLoop()
+            this.stopEventLoop()
         } else {
             this.startEventLoop()
         }
@@ -91,8 +100,11 @@ class GameRunner {
             match.game.currentMatch = match
             this.setGame(match.game)
             match._jumpToTurn(0)
+            match._roundSimulation()
+            GameRenderer.render()
         }
         this.setPaused(true)
+        GameRenderer.onMatchChange()
     }
 
     multiplyUpdatesPerSecond(multiplier: number) {
@@ -114,27 +126,27 @@ class GameRunner {
     stepTurn(delta: number) {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
-        this.match._stepTurn(delta, false)
+        this.match._stepTurn(delta)
         this.match._roundSimulation()
-        this.match.rerender()
+        GameRenderer.render()
         this._trigger(this._turnListeners)
     }
 
     jumpToTurn(turn: number) {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
-        this.match._jumpToTurn(turn, false)
+        this.match._jumpToTurn(turn)
         this.match._roundSimulation()
-        this.match.rerender()
+        GameRenderer.render()
         this._trigger(this._turnListeners)
     }
 
     jumpToEnd() {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
-        this.match._jumpToEnd(false)
+        this.match._jumpToEnd()
         this.match._roundSimulation()
-        this.match.rerender()
+        GameRenderer.render()
         this._trigger(this._turnListeners)
     }
 
@@ -149,7 +161,7 @@ class GameRunner {
     }
 }
 
-const gameRunner = new GameRunner()
+const gameRunner = new gameRunnerClass()
 
 export function useGame(): Game | undefined {
     const [game, setGame] = React.useState(gameRunner.game)

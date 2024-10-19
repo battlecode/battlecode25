@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useAppContext } from './app-context'
-import { EventType, publishEvent } from './app-events'
+import { GameRenderer } from './playback/GameRenderer'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -67,7 +67,7 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
                     }))
                     localStorage.setItem('config' + configKey, JSON.stringify(e.target.checked))
                     // hopefully after the setState is done
-                    setTimeout(() => publishEvent(EventType.RENDER, {}), 10)
+                    setTimeout(GameRenderer.render, 10)
                 }}
             />
             <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>

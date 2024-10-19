@@ -57,6 +57,10 @@ export default class Turn {
         )
     }
 
+    public isStart() {
+        return this.turnNumber === 0
+    }
+
     public isEnd() {
         return this.turnNumber === this.match.maxTurn
     }

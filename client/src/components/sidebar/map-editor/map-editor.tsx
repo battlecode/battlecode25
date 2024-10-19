@@ -7,13 +7,13 @@ import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
 import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
-import { EventType, publishEvent, useListenEvent } from '../../../app-events'
 import { MapEditorBrush } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
 import gameRunner, { useTurn } from '../../../playback/GameRunner'
+import { GameRenderer } from '../../../playback/GameRenderer'
 
 type MapParams = {
     width: number
@@ -50,7 +50,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!openBrush) return
 
         openBrush.apply(point.x, point.y, openBrush.fields)
-        publishEvent(EventType.INITIAL_RENDER, {})
+        GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
 
@@ -83,8 +83,11 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setMapParams({ ...mapParams, imported: null })
     }
 
-    useListenEvent(EventType.TILE_CLICK, applyBrush, [brushes])
-    useListenEvent(EventType.TILE_DRAG, applyBrush, [brushes])
+    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
+
+    useEffect(() => {
+        if (canvasMouseDown && hoveredTile) applyBrush(hoveredTile)
+    }, [canvasMouseDown, hoveredTile])
 
     useEffect(() => {
         if (props.open) {

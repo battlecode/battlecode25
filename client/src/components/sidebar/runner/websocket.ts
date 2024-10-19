@@ -2,7 +2,6 @@ import { schema, flatbuffers } from 'battlecode-schema'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import assert from 'assert'
-import { EventType, publishEvent } from '../../../app-events'
 import gameRunner from '../../../playback/GameRunner'
 
 export type FakeGameWrapper = {
