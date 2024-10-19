@@ -621,30 +621,6 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-
-        if(currentRound == GameConstants.SETUP_ROUNDS) processEndOfSetupPhase();
-
-        //Reset dropped flags if necessary
-        if (!isSetupPhase()) {
-            for(Flag flag : allRuins) {
-                if(!flag.isPickedUp() && flag.getLoc() != flag.getStartLoc()){ 
-                    Team this_team = flag.getTeam();
-                    Team opponent_team = this_team.opponent();
-                    int additional_delay = 0;
-                    
-                    //check if the opponent team has the additional flag return delay upgrade
-                    if(this.teamInfo.getGlobalUpgrades(opponent_team)[1]){
-                        additional_delay = GlobalUpgrade.CAPTURING.flagReturnDelayChange;
-                    }
-                    
-                    if(flag.getDroppedRounds() >= GameConstants.FLAG_DROPPED_RESET_ROUNDS + additional_delay)
-                        moveFlagSetStartLoc(flag, flag.getStartLoc());
-                    else
-                        flag.incrementDroppedRounds();
-                }
-            }
-        }
-
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getBread(Team.A), this.teamInfo.getSharedArray(Team.A));
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getBread(Team.B), this.teamInfo.getSharedArray(Team.B));
         this.teamInfo.processEndOfRound();
@@ -660,40 +636,17 @@ public strictfp class GameWorld {
             running = false;
     }
 
-    private void processEndOfSetupPhase() {
-        ArrayList<Flag> teamAFlags = new ArrayList<>();
-        ArrayList<Flag> teamBFlags = new ArrayList<>();
-        for (Flag flag : allRuins) {
-            if(flag.getTeam() == Team.A) teamAFlags.add(flag);
-            else teamBFlags.add(flag);
-        }
-        confirmFlagPlacements(teamAFlags);
-        confirmFlagPlacements(teamBFlags);
-    }
-
-    private void confirmFlagPlacements(ArrayList<Flag> teamFlags) {
+    private void confirmRuinPlacements(ArrayList<MapLocation> ruins) {
         boolean validPlacements = true;
-        for(int i = 0; i < teamFlags.size(); i++){
-            for(int j = i + 1; j < teamFlags.size(); j++){
-                Flag a = teamFlags.get(i), b = teamFlags.get(j);
-                if(a.getLoc().distanceSquaredTo(b.getLoc()) < GameConstants.MIN_FLAG_SPACING_SQUARED) {
+
+        for (MapLocation a : ruins) {
+            for (MapLocation b : ruins) {
+                if (a.distanceSquaredTo(b) < GameConstants.MIN_RUIN_SPACING_SQUARED) {
                     validPlacements = false;
                     break;
                 }
             }
         }
-        if(validPlacements)
-            for(Flag flag : teamFlags) moveFlagSetStartLoc(flag, flag.getLoc());
-        else
-            for(Flag flag : teamFlags) moveFlagSetStartLoc(flag, flag.getStartLoc());
-    }
-
-    private void moveFlagSetStartLoc(Flag flag, MapLocation location){
-        if(flag.isPickedUp()) flag.getCarryingRobot().removeFlag();
-        removeFlag(flag.getLoc(), flag);
-        addFlag(location, flag);
-        matchMaker.addAction(flag.getId(), Action.PLACE_FLAG, locationToIndex(location));
-        flag.setStartLoc(location);
     }
 
     private void floodFillTeam(int teamVal, MapLocation start) {

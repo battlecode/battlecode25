@@ -356,18 +356,6 @@ public strictfp interface RobotController {
     MapLocation[] senseNearbyRuins(int radiusSquared) throws GameActionException; 
 
     /**
-     * Checks if the given location within vision radius is a legal starting ruin placement. This is true when the
-     * location is passable and is far enough away from other placed ruins.
-     * 
-     * @param loc The location to check
-     * @return Whether the location is a valid ruin placement
-     * @throws GameActionException if the location is out of sensing range
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean senseLegalStartingRuinPlacement(MapLocation loc) throws GameActionException;
-
-    /**
      * Returns the location adjacent to current location in the given direction.
      *
      * @param dir the given direction
