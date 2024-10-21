@@ -48,6 +48,7 @@ public strictfp class GameWorld {
     //List of flags on each tile, indexed by location
     private ArrayList<Flag>[] placedFlags;
 
+
     private Map<Team, ProfilerCollection> profilerCollections;
 
     private final RobotControlProvider controlProvider;
@@ -804,5 +805,5 @@ public strictfp class GameWorld {
     public boolean isSetupPhase() {
         return currentRound <= GameConstants.SETUP_ROUNDS;
     }
-
+    
 }
