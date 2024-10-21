@@ -972,8 +972,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
+        assertNotNull(this.gameWorld.getRobot(loc));
+        assert(getTeam() == this.gameWorld.getRobot(loc).getTeam());
         assertNotNull(message);
         //TODO: assert that the distance between the robots is < sqrt(20?) and they are connected by paint once that functionality is available
+        //TODO: assert that robot -> tower and tower -> robot only
     }
 
     @Override

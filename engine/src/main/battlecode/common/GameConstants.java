@@ -149,5 +149,8 @@ public class GameConstants {
 
     /** The maximum squared radius a robot can send a message to  */
     public static final int MESSAGE_RADIUS_SQUARED = 20;
+
+    /** The maximum number of rounds a message will exist for */
+    public static final int MESSAGE_ROUND_DURATION = 10;
     
 }

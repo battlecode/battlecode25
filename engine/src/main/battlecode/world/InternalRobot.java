@@ -471,7 +471,9 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void sendMessage(InternalRobot robot, Message message) {
-        robot.addMessage(message.copy());
+        Message copiedMessage = message.copy();
+        robot.addMessage(copiedMessage);
+        this.gameWorld.addMessage(copiedMessage);
     }
 
     // ****************************
