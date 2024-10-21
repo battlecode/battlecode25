@@ -465,6 +465,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public Message getFrontMessage() {
+        if(incomingMessages.isEmpty())
+            return null;
         return incomingMessages.peek();
     }
 
@@ -482,8 +484,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     private void cleanMessages() {
-        while(!incomingMessages.isEmpty() && incomingMessages.peek().getRound() <= this.gameWorld.getCurrentRound() - GameConstants.MESSAGE_ROUND_DURATION) {
-            incomingMessages.remove();
+        while(!incomingMessages.isEmpty() && this.getFrontMessage().getRound() <= this.gameWorld.getCurrentRound() - GameConstants.MESSAGE_ROUND_DURATION) {
+            this.popMessage();
         }
     }
 
