@@ -152,5 +152,11 @@ public class GameConstants {
 
     /** The maximum number of rounds a message will exist for */
     public static final int MESSAGE_ROUND_DURATION = 5;
+
+    /** The maximum number of messages a robot can send per turn */
+    public static final int MAX_MESSAGES_SENT_ROBOT = 1;
+
+    /** The maximum number of messages a tower can send per turn */
+    public static final int MAX_MESSAGES_SENT_TOWER = 20;
     
 }

@@ -43,6 +43,9 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private ArrayList<Boolean> enteredTraps;
     private Queue<Message> incomingMessages;
 
+    // the number of messages this robot/tower has sent this turn
+    private int sentMessagesCount;
+
     /**
      * Used to avoid recreating the same RobotInfo object over and over.
      */
@@ -457,6 +460,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ***** COMMUNICATION METHODS *****
     // *********************************
 
+    public int getSentMessagesCount() {
+        return sentMessagesCount;
+    }
+
     public Message getFrontMessage() {
         return incomingMessages.peek();
     }
@@ -522,6 +529,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void processBeginningOfTurn() {
+        this.sentMessagesCount = 0;
         this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
