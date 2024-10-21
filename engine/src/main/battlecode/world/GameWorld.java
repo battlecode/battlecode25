@@ -48,10 +48,6 @@ public strictfp class GameWorld {
     //List of flags on each tile, indexed by location
     private ArrayList<Flag>[] placedFlags;
 
-    // List of active messages
-    private static LinkedList<Message> allMessages;
-
-
     private Map<Team, ProfilerCollection> profilerCollections;
 
     private final RobotControlProvider controlProvider;
@@ -75,8 +71,6 @@ public strictfp class GameWorld {
         teamSides = new int[gameMap.getWidth() * gameMap.getHeight()];
 
         this.profilerCollections = new HashMap<>();
-
-        this.allMessages = new LinkedList<Message>();
 
         this.controlProvider = cp;
         this.rand = new Random(this.gameMap.getSeed());
@@ -181,9 +175,6 @@ public strictfp class GameWorld {
             this.teamInfo.addBread(Team.A, GameConstants.PASSIVE_CRUMBS_INCREASE);
             this.teamInfo.addBread(Team.B, GameConstants.PASSIVE_CRUMBS_INCREASE);
             this.processEndOfRound();
-
-            // delete messages that are too old
-            this.cleanMessages();
 
             if (!this.isRunning()) {
                 this.controlProvider.matchEnded();
@@ -814,18 +805,4 @@ public strictfp class GameWorld {
         return currentRound <= GameConstants.SETUP_ROUNDS;
     }
 
-    // *********************************
-    // ********* MESSAGES **************
-    // *********************************
-
-    public void addMessage(Message message) {
-        allMessages.add(message);
-    }
-
-    public void cleanMessages() {
-        while(!allMessages.isEmpty() && allMessages.getFirst().getRound() <= this.currentRound - GameConstants.MESSAGE_ROUND_DURATION) {
-            allMessages.getFirst().delete();
-            allMessages.removeFirst();
-        }
-    }
 }

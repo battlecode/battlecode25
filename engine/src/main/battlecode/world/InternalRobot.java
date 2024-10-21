@@ -471,9 +471,13 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void sendMessage(InternalRobot robot, Message message) {
-        Message copiedMessage = message.copy();
-        robot.addMessage(copiedMessage);
-        this.gameWorld.addMessage(copiedMessage);
+        robot.addMessage(message.copy());
+    }
+
+    private void cleanMessages() {
+        while(!incomingMessages.isEmpty() && incomingMessages.peek().getRound() <= this.gameWorld.getCurrentRound() - GameConstants.MESSAGE_ROUND_DURATION) {
+            incomingMessages.remove();
+        }
     }
 
     // ****************************
@@ -512,6 +516,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // should be called at the beginning of every round
     public void processBeginningOfRound() {
+        this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
     }

@@ -6,13 +6,11 @@ public class Message {
     private int senderID;
     private int round;
     private int bytes;
-    private boolean isDeleted;
 
     public Message(int bytes, int senderID, int round){
         this.senderID = senderID;
         this.round = round;
         this.bytes = bytes;
-        this.isDeleted = false;
     }
 
     public int getSenderID() {
@@ -33,12 +31,5 @@ public class Message {
 
     public Message copy() {
         return new Message(bytes, senderID, round);
-    }
-
-    public void delete() {
-        this.isDeleted = true;
-        this.senderID = -1;
-        this.bytes = -1;
-        this.round = -1;
     }
 }
