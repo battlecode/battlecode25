@@ -520,6 +520,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
+        addPaint(this.type.paintPerTurn);
+        this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
     }
 
     public void processBeginningOfTurn() {

@@ -147,8 +147,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public int getCrumbs() {
-        return this.gameWorld.getTeamInfo().getBread(getTeam());
+    public int getMoney() {
+        return this.gameWorld.getTeamInfo().getMoney(getTeam());
     }
 
     // ***********************************
