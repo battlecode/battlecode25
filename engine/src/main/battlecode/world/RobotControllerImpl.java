@@ -993,7 +993,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void sendMessage(MapLocation loc, Message message) throws GameActionException {
+    public void sendMessage(MapLocation loc, int messageContent) throws GameActionException {
+        Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
         assertCanSendMessage(loc, message);
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
