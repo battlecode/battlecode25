@@ -119,6 +119,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return team;
     }
 
+    public RobotOrTowerType getType() {
+        return type;
+    }
+
     public MapLocation getLocation() {
         return location;
     }
@@ -151,21 +155,18 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return 6;
     }
 
-    
     public int getPaint() {
         return paintAmount;
-    }    
+    }
 
     public void addPaint(int amount) {
         int newPaintAmount = this.paintAmount + amount;
-        if (newPaintAmount > this.type.paintCapacity){
+        if (newPaintAmount > this.type.paintCapacity) {
             this.paintAmount = this.type.paintCapacity;
-        }
-        else if (newPaintAmount < 0){
+        } else if (newPaintAmount < 0) {
             this.paintAmount = 0;
-        } 
-        else {
-            this.paintAmount = newPaintAmount; 
+        } else {
+            this.paintAmount = newPaintAmount;
         }
     }
 
@@ -313,16 +314,18 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
         setActionCooldownTurns(this.actionCooldownTurns + numActionCooldownToAdd);
     }
-    
+
     /**
      * Resets the movement cooldown.
      */
     public void addMovementCooldownTurns() {
         int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
-      if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
-        movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount) / 100.0);
-      }
-       this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
+        if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
+            movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN
+                    * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount)
+                    / 100.0);
+        }
+        this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
     }
 
     /**
@@ -447,13 +450,13 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public Message getFrontMessage() {
-        if(incomingMessages.isEmpty())
+        if (incomingMessages.isEmpty())
             return null;
         return incomingMessages.peek();
     }
 
     public void popMessage() {
-        if(!incomingMessages.empty())
+        if (!incomingMessages.empty())
             incomingMessages.remove();
     }
 
@@ -463,11 +466,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void sendMessage(InternalRobot robot, Message message) {
         robot.addMessage(message.copy());
-        this.sentMessagesCount ++;
+        this.sentMessagesCount++;
     }
 
     private void cleanMessages() {
-        while(!incomingMessages.isEmpty() && this.getFrontMessage().getRound() <= this.gameWorld.getCurrentRound() - GameConstants.MESSAGE_ROUND_DURATION) {
+        while (!incomingMessages.isEmpty() && this.getFrontMessage().getRound() <= this.gameWorld.getCurrentRound()
+                - GameConstants.MESSAGE_ROUND_DURATION) {
             this.popMessage();
         }
     }
