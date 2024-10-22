@@ -31,23 +31,23 @@ public strictfp class GameWorld {
     private boolean[] walls;
     private boolean[] water;
     private boolean[] dams;
-    private int[] spawnZones; // Team A = 1, Team B = 2, not spawn zone = 0
+    private int[] initialTowers; // Team A = 1, Team B = 2, not spawn zone = 0
     private int[] teamSides; //Team A territory = 1, Team B territory = 2, dam = 0
-    private MapLocation[][] spawnLocations;
+    private MapLocation[][] initialTowerLocations;
     private int[] breadAmounts;
     private ArrayList<Trap>[] trapTriggers;
     private Trap[] trapLocations;
     private int trapId;
+    private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
     private final TeamInfo teamInfo;
     private final ObjectInfo objectInfo;
     
-    //List of all flags, not indexed by location
-    private ArrayList<Flag> allFlags;
-    //List of flags on each tile, indexed by location
-    private ArrayList<Flag>[] placedFlags;
-
+    // List of all ruins, not indexed by location
+    private ArrayList<MapLocation> allRuins;
+    // Whether there is a ruin on each tile, indexed by location
+    private boolean[] allRuinsByLoc;
 
     private Map<Team, ProfilerCollection> profilerCollections;
 
@@ -57,19 +57,24 @@ public strictfp class GameWorld {
 
     @SuppressWarnings("unchecked")
     public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) {
+        int width = gm.getWidth();
+        int height = gm.getHeight();
+        int numSquares = width * height;
+
         this.walls = gm.getWallArray();
         this.water = gm.getWaterArray();
-        this.spawnZones = gm.getSpawnZoneArray();
+        this.initialTowers = gm.getInitialTowers();
         this.dams = gm.getDamArray();
         this.breadAmounts = gm.getBreadArray();
-        this.robots = new InternalRobot[gm.getWidth()][gm.getHeight()]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
+        this.robots = new InternalRobot[width][height]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
         this.trapId = 0;
         this.idGenerator = new IDGenerator(gm.getSeed());
         this.gameStats = new GameStats();
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
-        teamSides = new int[gameMap.getWidth() * gameMap.getHeight()];
+        this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
+        this.teamSides = new int[numSquares];
 
         this.profilerCollections = new HashMap<>();
 
@@ -87,59 +92,34 @@ public strictfp class GameWorld {
             createRobot(Team.B);
         }
 
-
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
-        this.trapLocations = new Trap[gm.getWidth()*gm.getHeight()];
+        this.trapLocations = new Trap[numSquares];
 
-        this.trapTriggers = new ArrayList[gm.getWidth()*gm.getHeight()];
+        this.trapTriggers = new ArrayList[numSquares];
         for (int i = 0; i < trapTriggers.length; i++){
             this.trapTriggers[i] = new ArrayList<Trap>();
         }
 
+        this.allRuins = gm.getRuinArray();
+        this.allRuinsByLoc = new boolean[numSquares];
 
-        //initialize flags
-        this.allFlags = new ArrayList<Flag>();
-        this.placedFlags = new ArrayList[gm.getWidth() * gm.getHeight()];
-
-        for (int i = 0; i < placedFlags.length; i++)
-            placedFlags[i] = new ArrayList<>();
-        
-        int[] flagArray = new int[this.walls.length];
-        int[][] spawnZoneCenters = gm.getSpawnZoneCenters();
-        for (int i = 0; i < spawnZoneCenters[0].length; i++){
-            MapLocation cur = new MapLocation(spawnZoneCenters[0][i], spawnZoneCenters[1][i]);
-            if (i % 2 == 0){
-                flagArray[locationToIndex(cur)] = 1;
-            }
-            else{
-                flagArray[locationToIndex(cur)] = 2;
-            }
-        }
-        for (int i = 0; i < flagArray.length; i++) {
-            int flagVal = flagArray[i];
-            if(flagVal == 0) continue;
-            Flag flag = new Flag(flagVal == 1 ? Team.A : Team.B, indexToLocation(i), i);
-            allFlags.add(flag);
-            placedFlags[i].add(flag);
+        for (MapLocation ruin : this.allRuins){
+            this.allRuinsByLoc[locationToIndex(ruin)] = true;
         }
       
-        this.spawnLocations = new MapLocation[2][9*GameConstants.NUMBER_FLAGS];
+        this.initialTowerLocations = new MapLocation[2][GameConstants.NUMBER_INITIAL_TOWERS];
         int curA = 0, curB = 0;
-        for (int i = 0; i < gm.getHeight()*gm.getWidth(); i++){
-            if (this.spawnZones[i] == 1){
-                this.spawnLocations[0][curA] = indexToLocation(i);
+
+        for (int i = 0; i < numSquares; i++) {
+            if (this.initialTowers[i] == 1) {
+                this.initialTowerLocations[0][curA] = indexToLocation(i);
                 curA += 1;
-            }
-            else if (this.spawnZones[i] == 2){
-                this.spawnLocations[1][curB] = indexToLocation(i);
+            } else if (this.initialTowers[i] == 2) {
+                this.initialTowerLocations[1][curB] = indexToLocation(i);
                 curB += 1;
             }
-        }
-
-        for(Flag flag : allFlags) {
-            floodFillTeam(flag.getTeam() == Team.A ? 1 : 2, flag.getLoc());
         }
     }
 
@@ -210,10 +190,12 @@ public strictfp class GameWorld {
         // If the robot terminates but the death signal has not yet
         // been visited:
 
-        // NOTE: changed this from destroy to despawn; double check that this change is correct
-        //allowing despawned robots to continue throwing errors may be cause of gc overhead errors
-        if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null && robot.getLocation() != null)
-            despawnRobot(robot.getID());
+        if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null
+            && robot.getLocation() != null)
+        {
+            destroyRobot(robot.getID());
+        }
+
         return true;
     }
 
@@ -249,6 +231,10 @@ public strictfp class GameWorld {
         return this.gameStats.getWinner();
     }
 
+    public int getPaint(MapLocation loc) {
+        return this.colorLocations[locationToIndex(loc)];
+    }
+
     public boolean isRunning() {
         return this.running;
     }
@@ -273,6 +259,10 @@ public strictfp class GameWorld {
         this.water[locationToIndex(loc)] = false;
     }
 
+    public void setPaint(MapLocation loc, int paint) {
+        this.colorLocations[locationToIndex(loc)] = paint;
+    }
+
     public int getBreadAmount(MapLocation loc) {
         return this.breadAmounts[locationToIndex(loc)];
     }
@@ -282,16 +272,16 @@ public strictfp class GameWorld {
     }
 
     /**
-     * Checks if a given location is a spawn zone.
-     * Returns 0 if not, 1 if it is a Team A spawn zone,
-     * and 2 if it is a Team B spawn zone.
+     * Checks if a given location is an initial tower location.
+     * Returns 0 if not, 1 if it is a Team A initial tower location,
+     * and 2 if it is a Team B initial tower location.
      * 
      * @param loc the location to check
-     * @return 0 if the location is not a spawn zone,
-     * 1 or 2 if it is a Team A or Team B spawn zone respectively
+     * @return 0 if the location is not an initial tower location,
+     * 1 or 2 if it is a Team A or Team B initial tower location respectively
      */
-    public int getSpawnZone(MapLocation loc) {
-        return this.spawnZones[locationToIndex(loc)];
+    public int getInitialTower(MapLocation loc) {
+        return this.initialTowers[locationToIndex(loc)];
     }
 
     public int getTeamSide(MapLocation loc) {
@@ -305,25 +295,38 @@ public strictfp class GameWorld {
         return !this.walls[locationToIndex(loc)] && !this.water[locationToIndex(loc)];
     }
 
-    public ArrayList<Flag> getAllFlags() {
-        return allFlags;
+    public ArrayList<MapLocation> getAllRuins() {
+        return allRuins;
     }
 
-    public void addFlag(MapLocation loc, Flag flag) {
-        placedFlags[locationToIndex(loc)].add(flag);
-        flag.setLoc(loc);
+    public void addRuin(MapLocation loc) {
+        int index = locationToIndex(loc);
+
+        if (!allRuinsByLoc[index]) {
+            allRuinsByLoc[index] = true;
+            allRuins.add(loc);
+        }
     }
 
-    public ArrayList<Flag> getFlags(MapLocation loc) {
-        return placedFlags[locationToIndex(loc)];
+    public boolean hasRuin(MapLocation loc) {
+        return allRuinsByLoc[locationToIndex(loc)];
     }
 
-    public void removeFlag(MapLocation loc, Flag flag){
-        placedFlags[locationToIndex(loc)].remove(flag);
+    public void removeFlag(MapLocation loc) {
+        allRuinsByLoc[locationToIndex(loc)] = false;
+        allRuins.remove(loc);
     }
 
-    public boolean hasFlag(MapLocation loc) {
-        return placedFlags[locationToIndex(loc)].size() > 0;
+    public Team teamFromPaint(int paint) {
+        if (paint == 1 || paint == 2) {
+            return Team.A;
+        }
+        else if (paint == 3 || paint == 4){
+            return Team.B;
+        }
+        else {
+            return Team.NEUTRAL;
+        }
     }
 
     /**
@@ -466,12 +469,14 @@ public strictfp class GameWorld {
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
-    public Flag[] getAllFlagsWithinRadiusSquared(MapLocation center, int radiusSquared) {
-        ArrayList<Flag> returnFlags = new ArrayList<Flag>();
-        for (MapLocation newLocation : getAllLocationsWithinRadiusSquared(center, radiusSquared))
-            if (getFlags(newLocation) != null)
-                returnFlags.addAll(getFlags(newLocation));
-        return returnFlags.toArray(new Flag[returnFlags.size()]);
+    public MapLocation[] getAllRuinsWithinRadiusSquared(MapLocation center, int radiusSquared) {
+        ArrayList<MapLocation> returnRuins = new ArrayList<MapLocation>();
+        for (MapLocation newLocation : getAllLocationsWithinRadiusSquared(center, radiusSquared)) {
+            if (hasRuin(newLocation)) {
+                returnRuins.add(newLocation);
+            }
+        }
+        return returnRuins.toArray(new MapLocation[returnRuins.size()]);
     }
 
     public MapLocation[] getAllLocationsWithinRadiusSquared(MapLocation center, int radiusSquared) {
@@ -518,10 +523,9 @@ public strictfp class GameWorld {
     // *********************************
 
     public void processBeginningOfRound() {
-        //Update flag broadcast locations after a certain number of rounds
-        if(currentRound % GameConstants.FLAG_BROADCAST_UPDATE_INTERVAL == 0) updateFlagBroadcastLocations();
         currentRound++;
-        if(currentRound != 0 && currentRound % GameConstants.GLOBAL_UPGRADE_ROUNDS == 0) {
+
+        if (currentRound != 0 && currentRound % GameConstants.GLOBAL_UPGRADE_ROUNDS == 0) {
             teamInfo.incrementGlobalUpgradePoints(Team.A);
             teamInfo.incrementGlobalUpgradePoints(Team.B);
         }
@@ -533,39 +537,29 @@ public strictfp class GameWorld {
         });
     }
 
-    private void updateFlagBroadcastLocations() {
-        for(Flag flag : allFlags) {
-            updateFlagBroadcastLocation(flag);
-        }
-    }
-
-    private void updateFlagBroadcastLocation(Flag flag) {
-        MapLocation[] nearLocs = getAllLocationsWithinRadiusSquared(flag.getLoc(), GameConstants.FLAG_BROADCAST_NOISE_RADIUS);
-        flag.setBroadcastLoc(nearLocs[rand.nextInt(nearLocs.length)]);
-    }
-
     public void setWinner(Team t, DominationFactor d) {
         gameStats.setWinner(t);
         gameStats.setDominationFactor(d);
     }
 
     /**
-     * @return whether a team has more flags
+     * @return whether a team painted more of the map than the other team
      */
-    public boolean setWinnerIfMoreFlags(){
-        int[] totalFlagsCaptured = new int[2];
+    public boolean setWinnerIfMorePaint(){
+        int[] totalSquaresPainted = new int[2];
 
         // consider team reserves
-        totalFlagsCaptured[Team.A.ordinal()] += this.teamInfo.getFlagsCaptured(Team.A);
-        totalFlagsCaptured[Team.B.ordinal()] += this.teamInfo.getFlagsCaptured(Team.B);
+        totalSquaresPainted[Team.A.ordinal()] += this.teamInfo.getSquaresPainted(Team.A);
+        totalSquaresPainted[Team.B.ordinal()] += this.teamInfo.getSquaresPainted(Team.B);
         
-        if (totalFlagsCaptured[Team.A.ordinal()] > totalFlagsCaptured[Team.B.ordinal()]) {
-            setWinner(Team.A, DominationFactor.MORE_FLAG_CAPTURES);
+        if (totalSquaresPainted[Team.A.ordinal()] > totalSquaresPainted[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_PAINT);
             return true;
-        } else if (totalFlagsCaptured[Team.B.ordinal()] > totalFlagsCaptured[Team.A.ordinal()]) {
-            setWinner(Team.B, DominationFactor.MORE_FLAG_CAPTURES);
+        } else if (totalSquaresPainted[Team.B.ordinal()] > totalSquaresPainted[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_PAINT);
             return true;
         }
+
         return false;
     }
 
@@ -641,7 +635,7 @@ public strictfp class GameWorld {
      */
     public void checkEndOfMatch() {
         if (timeLimitReached() && gameStats.getWinner() == null) {
-            if (setWinnerIfMoreFlags()) return;
+            if (setWinnerIfMorePaint()) return;
             if (setWinnerIfGreaterLevelSum()) return;
             if (setWinnerIfMoreBread()) return;
             setWinnerArbitrary();
@@ -649,30 +643,6 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-
-        if(currentRound == GameConstants.SETUP_ROUNDS) processEndOfSetupPhase();
-
-        //Reset dropped flags if necessary
-        if (!isSetupPhase()) {
-            for(Flag flag : allFlags) {
-                if(!flag.isPickedUp() && flag.getLoc() != flag.getStartLoc()){ 
-                    Team this_team = flag.getTeam();
-                    Team opponent_team = this_team.opponent();
-                    int additional_delay = 0;
-                    
-                    //check if the opponent team has the additional flag return delay upgrade
-                    if(this.teamInfo.getGlobalUpgrades(opponent_team)[1]){
-                        additional_delay = GlobalUpgrade.CAPTURING.flagReturnDelayChange;
-                    }
-                    
-                    if(flag.getDroppedRounds() >= GameConstants.FLAG_DROPPED_RESET_ROUNDS + additional_delay)
-                        moveFlagSetStartLoc(flag, flag.getStartLoc());
-                    else
-                        flag.incrementDroppedRounds();
-                }
-            }
-        }
-
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getBread(Team.A), this.teamInfo.getSharedArray(Team.A));
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getBread(Team.B), this.teamInfo.getSharedArray(Team.B));
         this.teamInfo.processEndOfRound();
@@ -688,40 +658,17 @@ public strictfp class GameWorld {
             running = false;
     }
 
-    private void processEndOfSetupPhase() {
-        ArrayList<Flag> teamAFlags = new ArrayList<>();
-        ArrayList<Flag> teamBFlags = new ArrayList<>();
-        for (Flag flag : allFlags) {
-            if(flag.getTeam() == Team.A) teamAFlags.add(flag);
-            else teamBFlags.add(flag);
-        }
-        confirmFlagPlacements(teamAFlags);
-        confirmFlagPlacements(teamBFlags);
-    }
-
-    private void confirmFlagPlacements(ArrayList<Flag> teamFlags) {
+    private void confirmRuinPlacements(ArrayList<MapLocation> ruins) {
         boolean validPlacements = true;
-        for(int i = 0; i < teamFlags.size(); i++){
-            for(int j = i + 1; j < teamFlags.size(); j++){
-                Flag a = teamFlags.get(i), b = teamFlags.get(j);
-                if(a.getLoc().distanceSquaredTo(b.getLoc()) < GameConstants.MIN_FLAG_SPACING_SQUARED) {
+
+        for (MapLocation a : ruins) {
+            for (MapLocation b : ruins) {
+                if (a.distanceSquaredTo(b) < GameConstants.MIN_RUIN_SPACING_SQUARED) {
                     validPlacements = false;
                     break;
                 }
             }
         }
-        if(validPlacements)
-            for(Flag flag : teamFlags) moveFlagSetStartLoc(flag, flag.getLoc());
-        else
-            for(Flag flag : teamFlags) moveFlagSetStartLoc(flag, flag.getStartLoc());
-    }
-
-    private void moveFlagSetStartLoc(Flag flag, MapLocation location){
-        if(flag.isPickedUp()) flag.getCarryingRobot().removeFlag();
-        removeFlag(flag.getLoc(), flag);
-        addFlag(location, flag);
-        matchMaker.addAction(flag.getId(), Action.PLACE_FLAG, locationToIndex(location));
-        flag.setStartLoc(location);
     }
 
     private void floodFillTeam(int teamVal, MapLocation start) {
@@ -770,24 +717,19 @@ public strictfp class GameWorld {
     // ****** DESTROYING ***************
     // *********************************
 
-    public void despawnRobot(int id) {
-        InternalRobot robot = objectInfo.getRobotByID(id);
-        removeRobot(robot.getLocation());
-        robot.despawn();
-        matchMaker.addDied(id);
-    }
-
     /**
      * Permanently destroy a robot; left for internal purposes.
      */
     public void destroyRobot(int id) {
         InternalRobot robot = objectInfo.getRobotByID(id);
+        
         if (robot.getLocation() != null)
-        removeRobot(robot.getLocation());
+        {
+            removeRobot(robot.getLocation());
+        }
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-
         matchMaker.addDied(id);
     }
 

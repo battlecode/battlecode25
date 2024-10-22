@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
@@ -21,6 +23,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private int buildExp;
     private int healExp;
     private int attackExp;
+    private int paintAmount;
+    private RobotOrTowerType type;
 
     private final int ID;
     private Team team;
@@ -61,11 +65,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team) {
+    public InternalRobot(GameWorld gw, int id, Team team, RobotOrTowerType type) {
         this.gameWorld = gw;
 
         this.ID = id;
         this.team = team;
+        this.type = type;
 
         this.location = null;
         this.diedLocation = null;
@@ -78,6 +83,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.buildExp = 0;
         this.healExp = 0;
         this.attackExp = 0;
+        this.paintAmount = 0;
 
         this.controlBits = 0;
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
@@ -145,12 +151,22 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return 6;
     }
 
-    public int getResource() {
-        return this.gameWorld.getTeamInfo().getBread(this.team);
-    }
+    
+    public int getPaint() {
+        return paintAmount;
+    }    
 
-    public void addResourceAmount(int amount) {
-        this.gameWorld.getTeamInfo().addBread(this.team, amount);
+    public void addPaint(int amount) {
+        int newPaintAmount = this.paintAmount + amount;
+        if (newPaintAmount > this.type.paintCapacity){
+            this.paintAmount = this.type.paintCapacity;
+        }
+        else if (newPaintAmount < 0){
+            this.paintAmount = 0;
+        } 
+        else {
+            this.paintAmount = newPaintAmount; 
+        }
     }
 
     public boolean canAddFlag() {
@@ -200,6 +216,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 && cachedRobotInfo.ID == ID
                 && cachedRobotInfo.team == team
                 && cachedRobotInfo.health == health
+                && cachedRobotInfo.paintAmount == paintAmount
                 && cachedRobotInfo.location.equals(location)
                 && cachedRobotInfo.hasFlag == (flag != null)
                 && cachedRobotInfo.attackLevel == SkillType.ATTACK.getLevel(attackExp)
@@ -210,7 +227,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.cachedRobotInfo = new RobotInfo(ID, team, health, location, flag != null,
                 SkillType.ATTACK.getLevel(attackExp), SkillType.HEAL.getLevel(healExp),
-                SkillType.BUILD.getLevel(buildExp));
+                SkillType.BUILD.getLevel(buildExp), paintAmount);
         return this.cachedRobotInfo;
     }
 
@@ -301,13 +318,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * Resets the movement cooldown.
      */
     public void addMovementCooldownTurns() {
-        if (hasFlag() && this.gameWorld.getTeamInfo().getGlobalUpgrades(team)[1]) {
-            setMovementCooldownTurns(this.movementCooldownTurns + GameConstants.FLAG_MOVEMENT_COOLDOWN
-                    + GlobalUpgrade.CAPTURING.movementDelayChange);
-        } else {
-            setMovementCooldownTurns(this.movementCooldownTurns
-                    + (hasFlag() ? GameConstants.FLAG_MOVEMENT_COOLDOWN : GameConstants.MOVEMENT_COOLDOWN));
-        }
+        int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
+      if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
+        movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount) / 100.0);
+      }
+       this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
     }
 
     /**
@@ -337,27 +352,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health += healthAmount;
         this.health = Math.min(this.health, GameConstants.DEFAULT_HEALTH);
         if (this.health <= 0) {
-            this.gameWorld.despawnRobot(this.ID);
-        }
-    }
-
-    /**
-     * Removes exp from a robot when it is jailed
-     */
-    public void jailedPenalty() {
-        if (this.buildExp == 0 && this.attackExp == 0 && this.healExp == 0)
-            return;
-        int attackLevel = getLevel(SkillType.ATTACK), buildLevel = getLevel(SkillType.BUILD),
-                healLevel = getLevel(SkillType.HEAL);
-        if (attackLevel >= buildLevel && attackLevel >= healLevel) {
-            this.attackExp += SkillType.ATTACK.getPenalty(attackLevel);
-            this.attackExp = Math.max(0, this.attackExp);
-        } else if (buildLevel >= attackLevel && buildLevel >= healLevel) {
-            this.buildExp += SkillType.BUILD.getPenalty(buildLevel);
-            this.buildExp = Math.max(0, this.buildExp);
-        } else {
-            this.healExp += SkillType.HEAL.getPenalty(healLevel);
-            this.healExp = Math.max(0, this.healExp);
+            this.gameWorld.destroyRobot(this.ID);
         }
     }
 
@@ -398,19 +393,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health = GameConstants.DEFAULT_HEALTH;
         // this.actionCooldownTurns = GameConstants.COOLDOWN_LIMIT;
         // this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
-    }
-
-    public void despawn() {
-        this.spawnCooldownTurns = GameConstants.COOLDOWNS_PER_TURN * GameConstants.JAILED_ROUNDS;
-        jailedPenalty();
-        if (flag != null) {
-            this.gameWorld.addFlag(location, flag);
-            this.gameWorld.getMatchMaker().addAction(flag.getId(), Action.PLACE_FLAG, locationToInt(location));
-            removeFlag();
-        }
-        this.spawned = false;
-        this.diedLocation = this.location;
-        this.location = null;
     }
 
     public boolean isSpawned() {
@@ -494,6 +476,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****** GETTER METHODS ******
     // ****************************
 
+    public void buildRobot(RobotOrTowerType type, MapLocation loc) {
+        throw new NotImplementedException();
+        // TODO not implemented
+    }
+
     public int getHeal() {
         int base_heal = SkillType.HEAL.skillEffect;
         // check for upgrade
@@ -575,7 +562,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void die_exception() {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
-        this.gameWorld.despawnRobot(getID());
+        this.gameWorld.destroyRobot(getID());
     }
 
     // *****************************************

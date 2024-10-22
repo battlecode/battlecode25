@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
-
+//TODO: readd RobotType counters for tiebreakers
 /**
  * This class is used to hold information about the robots
  * in the game world.
@@ -159,9 +159,8 @@ public strictfp class ObjectInfo {
 
         dynamicBodyExecOrder.add(id);
 
-        //because initial loc is now null
-      //  MapLocation loc = robot.getLocation();
-       // robotIndex.add(fromPoint(loc),robot.getID());
+       MapLocation loc = robot.getLocation();
+       robotIndex.add(fromPoint(loc),robot.getID());
     }
 
     // ****************************

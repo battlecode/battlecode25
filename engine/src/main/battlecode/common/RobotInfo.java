@@ -28,6 +28,11 @@ public class RobotInfo {
     public final MapLocation location;
 
     /**
+     * The current paint amount of the robot.
+     */
+    public final int paintAmount;
+
+    /**
      * Whether or not the robot is holding a flag.
      */
     public final boolean hasFlag;
@@ -47,7 +52,7 @@ public class RobotInfo {
      */
     public final int buildLevel;
 
-    public RobotInfo(int ID, Team team, int health, MapLocation location, boolean hasFlag, int attackLevel, int healLevel, int buildLevel) {
+    public RobotInfo(int ID, Team team, int health, MapLocation location, boolean hasFlag, int attackLevel, int healLevel, int buildLevel, int paintAmount) {
         super();
         this.ID = ID;
         this.team = team;
@@ -57,6 +62,7 @@ public class RobotInfo {
         this.attackLevel = attackLevel;
         this.healLevel = healLevel;
         this.buildLevel = buildLevel;
+        this.paintAmount = paintAmount;
     }
 
     /**
@@ -131,6 +137,16 @@ public class RobotInfo {
         return this.buildLevel;
     }
 
+    /**
+     * Returns the paint amount of this robot. 
+     * 
+     * @return the paint amount of the robot
+     */
+    public int getPaintAmount(){
+        return this.paintAmount;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -161,6 +177,7 @@ public class RobotInfo {
                 ", team=" + team +
                 ", health=" + health +
                 ", location=" + location +
+                ", paint amount=" + paintAmount +
                 '}';
     }
 }
