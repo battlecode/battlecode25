@@ -1,4 +1,4 @@
-package battlecode.instrumenter.sample.instrumentertest;
+package instrumentertest;
 
 /**
  * @author james
@@ -8,6 +8,7 @@ public class OverridesHashCode {
     public int getHashCode() {
         return this.hashCode();
     }
+
     @Override
     public int hashCode() {
         return 57;

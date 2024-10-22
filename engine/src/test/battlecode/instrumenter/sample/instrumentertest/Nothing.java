@@ -1,6 +1,7 @@
-package battlecode.instrumenter.sample.instrumentertest;
+package instrumentertest;
 
 /**
  * @author james
  */
-public class Nothing {}
+public class Nothing {
+}
