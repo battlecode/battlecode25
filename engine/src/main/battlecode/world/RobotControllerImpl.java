@@ -985,8 +985,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canSendMessage(MapLocation loc, Message message){
+    public boolean canSendMessage(MapLocation loc, int message){
         try {
+            Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
             assertCanSendMessage(loc, message);
             return true;
         } catch (GameActionException e) { return false; }  
