@@ -4,6 +4,8 @@ import battlecode.common.*;
 import battlecode.schema.Action;
 
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -43,6 +45,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private Flag flag;
     private ArrayList<Trap> trapsToTrigger;
     private ArrayList<Boolean> enteredTraps;
+    private Queue<Message> incomingMessages;
+
+    // the number of messages this robot/tower has sent this turn
+    private int sentMessagesCount;
 
     /**
      * Used to avoid recreating the same RobotInfo object over and over.
@@ -72,6 +78,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.spawned = false;
         this.trapsToTrigger = new ArrayList<>();
         this.enteredTraps = new ArrayList<>();
+        this.incomingMessages = new LinkedList<>();
 
         this.buildExp = 0;
         this.healExp = 0;
@@ -431,6 +438,44 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
     }
 
+    // *********************************
+    // ***** COMMUNICATION METHODS *****
+    // *********************************
+
+    public int getSentMessagesCount() {
+        return sentMessagesCount;
+    }
+
+    public Message getFrontMessage() {
+        if(incomingMessages.isEmpty())
+            return null;
+        return incomingMessages.peek();
+    }
+
+    public void popMessage() {
+        if(!incomingMessages.empty())
+            incomingMessages.remove();
+    }
+
+    private void addMessage(Message message) {
+        incomingMessages.add(message);
+    }
+
+    public void sendMessage(InternalRobot robot, Message message) {
+        robot.addMessage(message.copy());
+        this.sentMessagesCount ++;
+    }
+
+    private void cleanMessages() {
+        while(!incomingMessages.isEmpty() && this.getFrontMessage().getRound() <= this.gameWorld.getCurrentRound() - GameConstants.MESSAGE_ROUND_DURATION) {
+            this.popMessage();
+        }
+    }
+
+    // ****************************
+    // ****** GETTER METHODS ******
+    // ****************************
+
     public void buildRobot(RobotOrTowerType type, MapLocation loc) {
         throw new NotImplementedException();
         // TODO not implemented
@@ -468,11 +513,13 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // should be called at the beginning of every round
     public void processBeginningOfRound() {
+        this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
     }
 
     public void processBeginningOfTurn() {
+        this.sentMessagesCount = 0;
         this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);

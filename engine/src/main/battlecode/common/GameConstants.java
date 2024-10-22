@@ -177,4 +177,19 @@ public class GameConstants {
     /** The amount added to the action cooldown counter after filling */
     public static final int FILL_COOLDOWN = 30;
 
+    /** The maximum amount of bytes that can be encoded in a message  */
+    public static final int MAX_MESSAGE_BYTES = 4;
+
+    /** The maximum squared radius a robot can send a message to  */
+    public static final int MESSAGE_RADIUS_SQUARED = 20;
+
+    /** The maximum number of rounds a message will exist for */
+    public static final int MESSAGE_ROUND_DURATION = 5;
+
+    /** The maximum number of messages a robot can send per turn */
+    public static final int MAX_MESSAGES_SENT_ROBOT = 1;
+
+    /** The maximum number of messages a tower can send per turn */
+    public static final int MAX_MESSAGES_SENT_TOWER = 20;
+    
 }

@@ -718,6 +718,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** COMMUNICATION METHODS ****** 
     // ***********************************
 
+    // BOBBY TODO: method for robot to robot message (nearby)
+    //             queue of incoming messages in each internal robot
+    //             methods to read from queue and clear and pop and whatever
+    //             method for canSendMessage (check general structure of other functions)
+    //             auto format on save
+    //             put on branch and make pr
+    //
+    //             OPTIONAL
+    //             make mostly empty tower class and make functions using that too
+    //             robots send message, they specify a tower, tower is basically robot thats stationary
+
     private void assertValidIndex(int index) throws GameActionException {
         if (index < 0 || index >= GameConstants.SHARED_ARRAY_LENGTH)
             throw new GameActionException(CANT_DO_THAT, "You can't access this index as it is not within the shared array.");
@@ -752,6 +763,39 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void writeSharedArray(int index, int value) throws GameActionException {
         assertCanWriteSharedArray(index, value);
         this.gameWorld.getTeamInfo().writeSharedArray(getTeam(), index, value);
+    }
+
+    @Override
+    private void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
+        assertNotNull(loc);
+        assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
+        assertNotNull(this.gameWorld.getRobot(loc));
+        assert(getTeam() == this.gameWorld.getRobot(loc).getTeam());
+        assertNotNull(message);
+        if(true) { //TODO: replace this with isRobot (as opposed to isTower)
+            assert(this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_ROBOT);
+        } else {
+            assert(this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_TOWER);
+        }
+        //TODO: assert that the distance between the robots is < sqrt(20?) and they are connected by paint once that functionality is available
+        //TODO: assert that robot -> tower and tower -> robot only
+    }
+
+    @Override
+    public boolean canSendMessage(MapLocation loc, int messageContent){
+        try {
+            Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
+            assertCanSendMessage(loc, message);
+            return true;
+        } catch (GameActionException e) { return false; }  
+    }
+
+    @Override
+    public void sendMessage(MapLocation loc, int messageContent) throws GameActionException {
+        Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
+        assertCanSendMessage(loc, message);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
+        this.robot.sendMessage(robot, message);
     }
 
     // ***********************************
