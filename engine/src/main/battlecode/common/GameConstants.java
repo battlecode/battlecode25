@@ -55,11 +55,26 @@ public class GameConstants {
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
 
-    /** health each robot starts with */
+    /** Health each robot starts with */
     public static final int DEFAULT_HEALTH = 1000;
+
+    /** Paint penalty for moving into enemy territory */
+    public static final int PENALTY_ENEMY_TERRITORY = 2;
+
+    /** Paint penalty for moving into neutral territory */
+    public static final int PENALTY_NEUTRAL_TERRITORY = 1;
 
     /** The total number of robots a team has (both despawned or spawned). */
     public static final int ROBOT_CAPACITY = 50;
+
+    /** Paint capacity for soldier robots */
+    public static final int PAINT_CAPACITY_SOLDIER = 200;
+
+    /** Paint capacity for splasher robots */
+    public static final int PAINT_CAPACITY_SPLASHER = 300;
+
+    /** Paint capacity for mopper robots */
+    public static final int PAINT_CAPACITY_MOPPER = 100;
 
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;

@@ -38,6 +38,7 @@ public strictfp class GameWorld {
     private ArrayList<Trap>[] trapTriggers;
     private Trap[] trapLocations;
     private int trapId;
+    private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
     private final TeamInfo teamInfo;
@@ -72,6 +73,7 @@ public strictfp class GameWorld {
         this.gameStats = new GameStats();
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
+        this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
         this.teamSides = new int[numSquares];
 
         this.profilerCollections = new HashMap<>();
@@ -229,6 +231,10 @@ public strictfp class GameWorld {
         return this.gameStats.getWinner();
     }
 
+    public int getPaint(MapLocation loc) {
+        return this.colorLocations[locationToIndex(loc)];
+    }
+
     public boolean isRunning() {
         return this.running;
     }
@@ -251,6 +257,10 @@ public strictfp class GameWorld {
 
     public void setLand(MapLocation loc) {
         this.water[locationToIndex(loc)] = false;
+    }
+
+    public void setPaint(MapLocation loc, int paint) {
+        this.colorLocations[locationToIndex(loc)] = paint;
     }
 
     public int getBreadAmount(MapLocation loc) {
@@ -305,6 +315,18 @@ public strictfp class GameWorld {
     public void removeFlag(MapLocation loc) {
         allRuinsByLoc[locationToIndex(loc)] = false;
         allRuins.remove(loc);
+    }
+
+    public Team teamFromPaint(int paint) {
+        if (paint == 1 || paint == 2) {
+            return Team.A;
+        }
+        else if (paint == 3 || paint == 4){
+            return Team.B;
+        }
+        else {
+            return Team.NEUTRAL;
+        }
     }
 
     /**

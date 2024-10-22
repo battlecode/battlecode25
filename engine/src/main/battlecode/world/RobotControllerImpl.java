@@ -494,6 +494,15 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.removeBread(nextLoc);
         this.robot.addMovementCooldownTurns();
 
+        Team nextTeam = this.gameWorld.getTeam(nextLoc);
+        if (nextTeam == Team.NEUTRAL) {
+            this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
+        }
+        else if (nextTeam == this.robot.getTeam().opponent()) {
+            this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+        }
+
+
         // trap trigger methods
         for(int i = this.gameWorld.getTrapTriggers(nextLoc).size()-1; i >= 0; i--){
             Trap trap = this.gameWorld.getTrapTriggers(nextLoc).get(i);
