@@ -969,7 +969,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
+    private void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
         assertNotNull(this.gameWorld.getRobot(loc));
@@ -985,7 +985,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canSendMessage(MapLocation loc, int message){
+    public boolean canSendMessage(MapLocation loc, int messageContent){
         try {
             Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
             assertCanSendMessage(loc, message);
