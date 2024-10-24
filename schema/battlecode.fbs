@@ -10,51 +10,10 @@ table VecTable {
     ys: [int];
 }
 
-table RGBTable {
-    red: [int];
-    green: [int];
-    blue: [int];
-}
-
 table TeamData {
     name: string;
     packageName: string;
     teamId: byte;
-}
-
-table CommTable {
-    team1: [int];
-    team2: [int];
-}
-
-enum SpecializationType: byte {
-    ATTACK,
-    BUILD,
-    HEAL
-}
-
-table SpecializationMetadata {
-    type: SpecializationType;
-    level: int;
-    actionCost: int;
-    actionJailedPenalty: int;
-    cooldownReduction: int;
-    damageIncrease: int;
-    healIncrease: int;
-}
-
-enum BuildActionType: byte {
-    EXPLOSIVE_TRAP,
-    WATER_TRAP,
-    STUN_TRAP,
-    DIG,
-    FILL
-}
-
-table BuildActionMetadata {
-    type: BuildActionType;
-    cost: int;
-    buildCooldown: int;
 }
 
 table GameplayConstants {
@@ -68,19 +27,22 @@ table GameplayConstants {
     actionRadius: int;
 }
 
-enum GlobalUpgradeType: byte {
-    ACTION_UPGRADE,
-    HEALING_UPGRADE,
-    CAPTURING_UPGRADE
+enum RobotType: byte {
+    PAINT_TOWER,
+    MONEY_TOWER,
+    DEFENSE_TOWER,
+    SOLDIER,
+    SPLASHER,
+    MOPPER
 }
 
 enum WinType: byte {
-    CAPTURE,
-    MORE_FLAG_CAPTURES,
-    LEVEL_SUM,
-    MORE_BREAD,
-    COIN_FLIP,
-    RESIGNATION
+    AREA_PAINTED,
+    MORE_TOWERS,
+    MORE_MONEY,
+    MORE_STORED_PAINT,
+    MORE_ROBOTS,
+    RANDOM
 }
 
 table GlobalUpgradeMetadata {
@@ -109,6 +71,7 @@ table GameMap {
     resourcePileAmounts: [int];
 }
 
+/*
 enum Action : byte {
     // Target: ID of hit robot
     ATTACK,
@@ -136,8 +99,79 @@ enum Action : byte {
     /// Target: none
     DIE_EXCEPTION,
 }
+*/
 
+/// Generic action representing damage to a robot
+struct DamageAction {
+    id: ushort;
+    damage: ushort; 
+}
 
+// Visually indicate a tile has been painted
+struct PaintAction {
+    loc: ushort;
+}
+
+// Visually indicate a tile's paint has been removed
+struct UnpaintAction {
+    loc: ushort;
+}
+
+// Visually indicate an attack
+struct AttackAction {
+    id: ushort;
+}
+
+struct MopAction {
+    loc: ushort;
+}
+
+struct BuildAction {
+    
+}
+
+struct TransferAction {
+    
+}
+
+struct MessageAction {
+    
+}
+
+struct SpawnAction {
+    x: ushort;
+    y: ushort;
+    team: byte;
+    robotType: RobotType;
+}
+
+struct UpgradeAction {
+    
+}
+
+struct IndicatorStringAction {
+    value: string;
+}
+
+struct IndicatorDotAction {
+    loc: ushort;
+    colorHex: int;
+}
+
+struct IndicatorLineAction {
+    startLoc: ushort;
+    endLoc: ushort;
+    colorHex: int;
+}
+
+union Action {
+    AttackAction,
+    PaintAction,
+    MopAction,
+    BuildAction,
+    TransferAction, 
+    MessageAction,
+}
 
 //========================================================================================
 // Profiler tables
@@ -204,9 +238,6 @@ table GameHeader {
     specVersion: string;
     teams: [TeamData];
 
-    specializationMetadata: [SpecializationMetadata];
-    buildActionMetadata: [BuildActionMetadata];
-    globalUpgradeMetadata: [GlobalUpgradeMetadata];
     constants: GameplayConstants;
 }
 
@@ -234,75 +265,44 @@ table MatchFooter {
     profilerFiles: [ProfilerFile];
 }
 
+table RobotTurn {
+    robotId: int;
+    health: int;
+    paint: int;
+    moveCooldown: int;
+    actionCooldown: int;
+    x: ubyte;
+    y: ubyte;
+    actions: [Action];
+}
+
 /// A single time-step in a Game.
 /// The bulk of the data in the file is stored in tables like this.
 /// Note that a struct-of-arrays format is more space efficient than an array-
 /// of-structs.
 table Round {
     /// The IDs of teams in the Game.
-    teamIds: [int]; //done
+    teamIds: [int];
     /// The total amount of resource this round per team
-    teamResourceAmounts: [int]; //done
-    teamCommunication: CommTable; //done
+    teamResourceAmounts: [int];
 
-    robotIds: [int]; //done
-    robotLocs: VecTable; //done
-    robotMoveCooldowns: [int]; //done
-    robotActionCooldowns: [int]; //done
-    robotHealths: [int]; //done
-    attacksPerformed: [int]; //done
-    attackLevels: [int]; //done
-    buildsPerformed: [int]; //done
-    buildLevels: [int]; //done
-    healsPerformed: [int]; //done
-    healLevels: [int]; //done
-
-    /// New bodies.
-    spawnedBodies: SpawnedBodyTable;
+    /// Ordered turn data for each robot during the round
+    turns: [RobotTurn]
 
     /// The IDs of bodies that died.
-    diedIds: [int]; //done
+    diedIds: [int];
 
-    /// The IDs of robots that performed actions.
-    /// IDs may repeat.
-    actionIds: [int]; //done
-    /// The actions performed. These actions allow us to track many things about the current state.
-    actions: [Action]; //done
-    /// The 'targets' of the performed actions. Actions without targets may have any value
-    actionTargets: [int]; //done
+    /*
+    trapAddedIds: [int];
+    trapAddedLocations: VecTable;
+    trapAddedTypes: [BuildActionType];
+    trapAddedTeams: [byte];
 
-    claimedResourcePiles: VecTable;
+    trapTriggeredIds: [int];
 
-    trapAddedIds: [int]; //done
-    trapAddedLocations: VecTable; //done
-    trapAddedTypes: [BuildActionType]; //done
-    trapAddedTeams: [byte]; //done
-
-    trapTriggeredIds: [int]; //done
-
-    digLocations: VecTable; //done
-    fillLocations: VecTable; //done
-
-    /// The IDs of the robots who changed their indicator strings
-    indicatorStringIds: [int];
-    /// The messages of the robots who changed their indicator strings
-    indicatorStrings: [string];
-
-    /// The IDs of bodies that set indicator dots
-    indicatorDotIds: [int];
-    /// The location of the indicator dots
-    indicatorDotLocs: VecTable;
-    /// The RGB values of the indicator dots
-    indicatorDotRGBs: RGBTable;
-
-    /// The IDs of bodies that set indicator lines
-    indicatorLineIds: [int];
-    /// The start location of the indicator lines
-    indicatorLineStartLocs: VecTable;
-    /// The end location of the indicator lines
-    indicatorLineEndLocs: VecTable;
-    /// The RGB values of the indicator lines
-    indicatorLineRGBs: RGBTable;
+    digLocations: VecTable;
+    fillLocations: VecTable;
+    */
 
     // logs have been replaced with indicator strings
 
