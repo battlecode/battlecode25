@@ -50,18 +50,17 @@ table GlobalUpgradeMetadata {
     upgradeAmount: int;
 }
 
-// A list of new bodies to be placed on the map.
-table SpawnedBodyTable {
+// A list of initial bodies to be placed on the map.
+table InitialBodyTable {
     robotIds: [int];
-    teamIds: [byte];
-    locs: VecTable;
+    spawnActions: [SpawnAction];
 }
 
 table GameMap {
     name: string;
     size: Vec;
     symmetry: int; // The map symmetry: 0 for rotation, 1 for horizontal, 2 for vertical.
-    bodies: SpawnedBodyTable;
+    initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
     water: [bool];
