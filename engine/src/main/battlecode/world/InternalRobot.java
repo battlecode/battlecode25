@@ -449,7 +449,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
     public void soldierAttack(MapLocation loc) {
-        soldierAttack(loc, teamToPrimaryPaintType(this.team));
+        soldierAttack(loc, false);
     }
 
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
@@ -480,7 +480,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
     public void splasherAttack(MapLocation loc) {
-        splasherAttack(loc, teamToPrimaryPaintType(this.team));
+        splasherAttack(loc, false);
     }
 
     // This is the first kind of attack for moppers which only targets one location
@@ -508,7 +508,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
     public void mopperAttack(MapLocation loc) {
-        mopperAttack(loc, teamToPrimaryPaintType(this.team));
+        mopperAttack(loc, false);
     }
 
     public void mopperSwing(Direction dir) {
