@@ -19,6 +19,7 @@ public class TeamInfo {
     private int[][] sharedArrays;
     private int[] totalFlagsCaptured;
     private int[] totalFlagsPickedUp;
+    private int[] totalPaintedSquares;
 
     private int[] oldMoneyCounts;
     private boolean[][] globalUpgrades;
@@ -38,6 +39,7 @@ public class TeamInfo {
         this.globalUpgrades = new boolean[2][GlobalUpgrade.values().length];
         this.globalUpgradePoints = new int[2];
         this.totalFlagsPickedUp = new int[2];
+        this.totalPaintedSquares = new int[2];
     }
 
     // *********************************
@@ -66,6 +68,16 @@ public class TeamInfo {
         return this.totalFlagsCaptured[team.ordinal()];
     }
 
+    /**
+     * Get the total number of squares painted by the team over the game
+     * @param team the team to query
+     * @return the number of squares painted
+     */
+
+     public int getNumberOfPaintedSquares(Team team) {
+        return this.totalPaintedSquares[team.ordinal()];
+    }
+    
     /**
      * Reads the shared array value.
      *
@@ -154,7 +166,8 @@ public class TeamInfo {
     }
 
     private void checkWin(Team team) {
-        if (this.totalFlagsCaptured[team.ordinal()] < GameConstants.NUMBER_FLAGS) {
+        int totalSquares = this.gameWorld.getGameMap().getHeight() * this.gameWorld.getGameMap().getWidth();
+        if (this.totalPaintedSquares[team.ordinal()] / (double) totalSquares * 100 < GameConstants.PAINT_PERCENT_TO_WIN) {
             throw new InternalError("Reporting incorrect win");
         }
         this.gameWorld.gameStats.setWinner(team);

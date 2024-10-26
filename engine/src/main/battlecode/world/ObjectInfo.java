@@ -2,6 +2,7 @@ package battlecode.world;
 
 import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotOrTowerType;
 import battlecode.common.Team;
 
 import gnu.trove.list.array.TIntArrayList;
@@ -36,8 +37,8 @@ public strictfp class ObjectInfo {
 
     private final TIntArrayList dynamicBodyExecOrder;
 
-    // private Map<Team, Map<RobotType, Integer>> robotTypeCount = new EnumMap<>(
-    //         Team.class);
+    private Map<Team, Map<RobotOrTowerType, Integer>> robotTypeCount = new EnumMap<>(
+            Team.class);
     private int[] robotCount = new int[3];
 
     public ObjectInfo(LiveMap gm) {
@@ -53,21 +54,21 @@ public strictfp class ObjectInfo {
 
         robotIndex.init(null);
 
-        // robotTypeCount.put(Team.A, new EnumMap<>(
-        //         RobotType.class));
-        // robotTypeCount.put(Team.B, new EnumMap<>(
-        //         RobotType.class));
-        // robotTypeCount.put(Team.NEUTRAL, new EnumMap<>(
-        //         RobotType.class));
+        robotTypeCount.put(Team.A, new EnumMap<>(
+            RobotOrTowerType.class));
+        robotTypeCount.put(Team.B, new EnumMap<>(
+                RobotOrTowerType.class));
+        robotTypeCount.put(Team.NEUTRAL, new EnumMap<>(
+            RobotOrTowerType.class));
     }
 
-    // public int getRobotTypeCount(Team team, RobotType type) {
-    //     if (robotTypeCount.get(team).containsKey(type)) {
-    //         return robotTypeCount.get(team).get(type);
-    //     } else {
-    //         return 0;
-    //     }
-    // }
+    public int getRobotTypeCount(Team team, RobotOrTowerType type) {
+        if (robotTypeCount.get(team).containsKey(type)) {
+            return robotTypeCount.get(team).get(type);
+        } else {
+            return 0;
+        }
+    }
 
     /**
      * Apply an operation for every robot, ordered based on robot ID hash (effectively random).
