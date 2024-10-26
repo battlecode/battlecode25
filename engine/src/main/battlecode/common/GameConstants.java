@@ -149,6 +149,15 @@ public class GameConstants {
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
 
+    /** The amount of paint depleted from enemy in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_DEPLETION = 10;
+
+    /** The amount of paint added to self in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_ADDITION = 5;
+
+    /** The amount of paint depleted from enemies in a swing mopper attack */
+    public static final int MOPPER_SWING_PAINT_DEPLETION = 5;
+
     // *********************************
     // ****** COOLDOWNS ****************
     // *********************************

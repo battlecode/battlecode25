@@ -495,8 +495,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if(this.gameWorld.getRobot(loc) != null && this.controller.isRobotType(this.gameWorld.getRobot(loc).getType())) {
             InternalRobot robot = this.gameWorld.getRobot(loc);
             if(this.team != robot.getTeam()) {
-                robot.addPaint(-10);
-                addPaint(5); //TODO: maybe don't leave these constants floating around
+                robot.addPaint(-GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
+                addPaint(GameConstants.MOPPER_ATTACK_PAINT_ADDITION);
             }
         }
         
@@ -533,7 +533,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             if(this.gameWorld.getRobot(newLoc) != null && this.controller.isRobotType(this.gameWorld.getRobot(newLoc).getType())) {
                 InternalRobot robot = this.gameWorld.getRobot(newLoc);
                 if(this.team != robot.getTeam())
-                    robot.addPaint(-5);
+                    robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
             }
         }
 
