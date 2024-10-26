@@ -634,17 +634,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, GameConstants.ATTACK_SOLDIER_RADIUS_SQUARED);
+        assertCanActLocation(loc, RobotOrTowerType.SOLDIER.attackRadiusSquared);
         assert(this.robot.getPaint() >= RobotOrTowerType.SOLDIER.attackPaintCost);
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, GameConstants.ATTACK_SPLASHER_RADIUS_SQUARED);
+        assertCanActLocation(loc, RobotOrTowerType.SPLASHER.attackRadiusSquared);
         assert(this.robot.getPaint() >= RobotOrTowerType.SPLASHER.attackPaintCost);
     }
 
     private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, GameConstants.ATTACK_MOPPER_RADIUS_SQUARED);
+        assertCanActLocation(loc, RobotOrTowerType.MOPPER.attackRadiusSquared);
         assert(this.robot.getPaint() >= RobotOrTowerType.MOPPER.attackPaintCost);
     }
 
@@ -688,14 +688,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
-        int attackCooldown = ((this.robot.getType() == RobotOrTowerType.SOLDIER) ? GameConstants.ATTACK_SOLDIER_COOLDOWN : ((this.robot.getType() == RobotOrTowerType.SPLASHER) ? GameConstants.ATTACK_SPLASHER_COOLDOWN : GameConstants.ATTACK_MOPPER_COOLDOWN));
-        this.robot.addActionCooldownTurns(attackCooldown);
+        this.robot.addActionCooldownTurns(this.robot.getType().attackCooldown);
         this.robot.attack(loc, useSecondaryColor);
     }
-    
+
     @Override
     public void attack(MapLocation loc) throws GameActionException {
-        attack(loc, this.robot.teamToPrimaryPaintType(this.robot.getTeam()));
+        attack(loc, false);
     }
 
     @Override

@@ -228,24 +228,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return this.cachedRobotInfo;
     }
 
-    public Team getTeamFromPaintType(int paintType) {
-        if(paintType == 1 || paintType == 2) return Team.A;
-        else if(paintType == 3 || paintType == 4) return Team.B;
-        return Team.NEUTRAL;
-    }
-
-    public int teamToPrimaryPaintType(Team team) {
-        if(team == Team.A) return 1;
-        else if(team == Team.B) return 3;
-        return 0;
-    }
-
-    public int teamToSecondaryPaintType(Team team) {
-        if(team == Team.A) return 2;
-        else if(team == Team.B) return 4;
-        return 0;
-    }
-
     // **********************************
     // ****** CHECK METHODS *************
     // **********************************
@@ -429,7 +411,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void soldierAttack(MapLocation loc, boolean useSecondaryColor) {
         assert(this.type == RobotOrTowerType.SOLDIER);
-        int paintType = (useSecondaryColor ? teamToSecondaryPaintType(this.team) : teamToPrimaryPaintType(this.team));
+        int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
         
         // This attack costs some paint
         addPaint(-RobotOrTowerType.SOLDIER.attackPaintCost);
@@ -441,7 +423,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 tower.addHealth(-RobotOrTowerType.SOLDIER.attackDamage);
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
-            if(this.gameWorld.getPaint(loc) == 0 || getTeamFromPaintType(paintType) == getTeamFromPaintType(this.gameWorld.getPaint(loc))) {
+            if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                 this.gameWorld.setPaint(loc, paintType);
             }
         }
@@ -454,7 +436,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
         assert(this.type == RobotOrTowerType.SPLASHER);
-        int paintType = (useSecondaryColor ? teamToSecondaryPaintType(this.team) : teamToPrimaryPaintType(this.team));
+        int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
         addPaint(-RobotOrTowerType.SPLASHER.attackPaintCost);
@@ -468,7 +450,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                     tower.addHealth(-RobotOrTowerType.SPLASHER.attackDamage);
             } else { // otherwise, maybe paint
                 // If the tile is empty or same team paint, paint it
-                if(this.gameWorld.getPaint(loc) == 0 || getTeamFromPaintType(paintType) == getTeamFromPaintType(this.gameWorld.getPaint(loc))) {
+                if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                     this.gameWorld.setPaint(loc, paintType);
                 } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
                     if(loc.isWithinDistanceSquared(newLoc, 2))
@@ -486,7 +468,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // This is the first kind of attack for moppers which only targets one location
     public void mopperAttack(MapLocation loc, boolean useSecondaryColor) {
         assert(this.type == RobotOrTowerType.MOPPER);
-        int paintType = (useSecondaryColor ? teamToSecondaryPaintType(this.team) : teamToPrimaryPaintType(this.team));
+        int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack should be free (but this is here just in case)
         addPaint(-RobotOrTowerType.MOPPER.attackPaintCost);
@@ -501,7 +483,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
         
         // Either way, mop this tile if it has enemy paint
-        if(getTeamFromPaintType(paintType) != getTeamFromPaintType(this.gameWorld.getPaint(loc))) {
+        if(this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
             this.gameWorld.setPaint(loc, 0);
         }
 
