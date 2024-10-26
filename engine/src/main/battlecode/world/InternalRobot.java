@@ -5,10 +5,6 @@ import battlecode.schema.Action;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.NotImplementedException;
-
-import apple.laf.JRSUIConstants.Direction;
-
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
