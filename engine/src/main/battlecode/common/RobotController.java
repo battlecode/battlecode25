@@ -467,8 +467,6 @@ public strictfp interface RobotController {
     void move(Direction dir) throws GameActionException;
 
     // ***********************************
-<<<<<<< HEAD
-=======
     // *********** SPAWNING **************
     // ***********************************
 
@@ -501,7 +499,6 @@ public strictfp interface RobotController {
     boolean isRobotType(RobotOrTowerType type); // TODO: use Max's versions
 
     // ***********************************
->>>>>>> 5156e8dd0 (some changes)
     // *********** BUILDING **************
     // ***********************************
 
