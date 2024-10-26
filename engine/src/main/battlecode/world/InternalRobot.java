@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import apple.laf.JRSUIConstants.Direction;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
@@ -98,6 +100,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public RobotControllerImpl getController() {
         return controller;
+    }
+
+    public RobotOrTowerType getType() {
+        return type;
     }
 
     public GameWorld getGameWorld() {
@@ -405,19 +411,142 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return this.gameWorld.locationToIndex(loc);
     }
 
+    public void soldierAttack(MapLocation loc, int paintType) {
+        assert(((paintType == 1 || paintType == 2) && this.team == Team.A) || ((paintType == 3 || paintType == 4) && this.team == Team.B));
+        assert(this.type == RobotOrTowerType.SOLDIER);
+        
+        // This attack costs some paint
+        addPaint(-RobotOrTowerType.SOLDIER.attackPaintCost);
+
+        // Attack if it's a tower
+        if(this.gameWorld.getRobot(loc) != null && this.controller.isTowerType(this.gameWorld.getRobot(loc).getType())) {
+            InternalRobot tower = this.gameWorld.getRobot(loc);
+            if(this.team != tower.getTeam())
+                tower.addHealth(-RobotOrTowerType.SOLDIER.attackDamage);
+        } else { // otherwise, maybe paint
+            // If the tile is empty or same team paint, paint it
+            if(this.gameWorld.getPaint(loc) == 0 || paintType / 3 == this.gameWorld.getPaint(loc) / 3) {
+                this.gameWorld.setPaint(loc, paintType);
+            }
+        }
+
+        incrementSkill(SkillType.ATTACK);
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+    }
+    public void soldierAttack(MapLocation loc) {
+        soldierAttack(loc, ((this.team == Team.A) ? 1 : 3));
+    }
+
+    public void splasherAttack(MapLocation loc, int paintType) {
+        assert(((paintType == 1 || paintType == 2) && this.team == Team.A) || ((paintType == 3 || paintType == 4) && this.team == Team.B));
+        assert(this.type == RobotOrTowerType.SPLASHER);
+
+        // This attack costs some paint
+        addPaint(-RobotOrTowerType.SPLASHER.attackPaintCost);
+
+        for(int x = loc.x - 2; x <= loc.x + 2; x ++) {
+            for(int y = loc.y - 2; y <= loc.y + 2; y ++) {
+                MapLocation newLoc = new MapLocation(x, y);
+                if(!this.gameWorld.getGameMap().onTheMap(newLoc) || !loc.isWithinDistanceSquared(newLoc, 4)) continue;
+
+                // Attack if it's a tower (only if different team)
+                if(this.gameWorld.getRobot(newLoc) != null && this.controller.isTowerType(this.gameWorld.getRobot(newLoc).getType())) {
+                    InternalRobot tower = this.gameWorld.getRobot(newLoc);
+                    if(this.team != tower.getTeam())
+                        tower.addHealth(-RobotOrTowerType.SPLASHER.attackDamage);
+                } else { // otherwise, maybe paint
+                    // If the tile is empty or same team paint, paint it
+                    if(this.gameWorld.getPaint(loc) == 0 || paintType / 3 == this.gameWorld.getPaint(loc) / 3) {
+                        this.gameWorld.setPaint(loc, paintType);
+                    } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
+                        if(loc.isWithinDistanceSquared(newLoc, 2))
+                            this.gameWorld.setPaint(loc, paintType);
+                    }
+                }
+            }
+        }
+
+        incrementSkill(SkillType.ATTACK);
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+    }
+    public void splasherAttack(MapLocation loc) {
+        splasherAttack(loc, ((this.team == Team.A) ? 1 : 3));
+    }
+
+    // This is the first kind of attack for moppers which only targets one location
+    public void mopperAttack(MapLocation loc, int paintType) {
+        assert(((paintType == 1 || paintType == 2) && this.team == Team.A) || ((paintType == 3 || paintType == 4) && this.team == Team.B));
+        assert(this.type == RobotOrTowerType.MOPPER);
+
+        // This attack costs some paint
+        addPaint(-RobotOrTowerType.MOPPER.attackPaintCost);
+
+        // If there's a robot on the tile, remove 10 from their paint stash and add 5 to ours
+        if(this.gameWorld.getRobot(loc) != null && this.controller.isRobotType(this.gameWorld.getRobot(loc).getType())) {
+            InternalRobot robot = this.gameWorld.getRobot(loc);
+            if(this.team != robot.getTeam()) {
+                robot.addPaint(-10);
+                addPaint(5); //TODO: maybe don't leave these constants floating around
+            }
+        }
+        
+        // Either way, mop this tile if it has enemy paint
+        if(this.gameWorld.getPaint(loc) != 0 && paintType / 3 != this.gameWorld.getPaint(loc) / 3) {
+            this.gameWorld.setPaint(loc, 0);
+        }
+
+        incrementSkill(SkillType.ATTACK);
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+    }
+    public void mopperAttack(MapLocation loc) {
+        mopperAttack(loc, ((this.team == Team.A) ? 1 : 3));
+    }
+
+    //TODO: for mopper second kind of attack make a mopSwing method that takes in a direction and only works for moppers
+    public void mopperSwing(Direction dir) {
+        // swing even if there's not 3 robots there, just remove from existing
+        assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
+        assert(this.type == RobotOrTowerType.MOPPER);
+
+        // NORTH, SOUTH, EAST, WEST
+        int[][] dx = {{-1, 0, 1}, {-1, 0, 1}, {1, 1, 1}, {-1, -1, -1}};
+        int[][] dy = {{1, 1, 1}, {-1, -1, -1}, {-1, 0, 1}, {-1, 0, 1}};
+        int dirIdx = 0;
+        if(dir == Direction.SOUTH) dirIdx = 1;
+        else if(dir == Direction.EAST) dirIdx = 2;
+        else if(dir == Direction.WEST) dirIdx = 3;
+
+        for(int i = 0; i < 3; i ++) { // check all three spots
+            int x = this.getLocation().x + dx[dirIdx][i], y = this.getLocation().y + dy[dirIdx][i];
+            MapLocation newLoc = new MapLocation(x, y);
+            if(!this.gameWorld.getGameMap().onTheMap(newLoc)) continue;
+
+            // Attack if it's a robot (only if different team)
+            if(this.gameWorld.getRobot(newLoc) != null && this.controller.isRobotType(this.gameWorld.getRobot(newLoc).getType())) {
+                InternalRobot tower = this.gameWorld.getRobot(newLoc);
+                if(this.team != tower.getTeam())
+                    tower.addHealth(-RobotOrTowerType.MOPPER.attackDamage);
+            }
+        }
+
+        incrementSkill(SkillType.ATTACK);
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+    }
+
     /**
      * Attacks another location if there is an opponent robot.
+     * The type of attack is based on the robot type (specific methods above)
      * 
      * @param loc the location of the bot
      */
     public void attack(MapLocation loc) {
         InternalRobot bot = this.gameWorld.getRobot(loc);
-        if (bot == null || bot.getTeam() == this.getTeam()) {
+        if (bot == null || bot.getTeam() == this.getTeam() || getController().isRobotType(bot.getType())) {
             // If robot is null or of your team, no damage; otherwise do damage
             this.getGameWorld().getMatchMaker().addAction(getID(), Action.ATTACK, -locationToInt(loc) - 1);
         } else {
             int dmg = getDamage();
-
+            
             int newEnemyHealth = bot.getHealth() - dmg;
             if (newEnemyHealth <= 0) {
                 if (gameWorld.getTeamSide(getLocation()) == (team.opponent() == Team.A ? 1 : 2)) {
