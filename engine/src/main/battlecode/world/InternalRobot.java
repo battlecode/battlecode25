@@ -428,7 +428,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        incrementSkill(SkillType.ATTACK);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
     }
     public void soldierAttack(MapLocation loc) {
@@ -464,7 +463,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        incrementSkill(SkillType.ATTACK);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
     }
     public void splasherAttack(MapLocation loc) {
@@ -476,7 +474,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         assert(((paintType == 1 || paintType == 2) && this.team == Team.A) || ((paintType == 3 || paintType == 4) && this.team == Team.B));
         assert(this.type == RobotOrTowerType.MOPPER);
 
-        // This attack costs some paint
+        // This attack should be free (but this is here just in case)
         addPaint(-RobotOrTowerType.MOPPER.attackPaintCost);
 
         // If there's a robot on the tile, remove 10 from their paint stash and add 5 to ours
@@ -493,14 +491,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             this.gameWorld.setPaint(loc, 0);
         }
 
-        incrementSkill(SkillType.ATTACK);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
     }
     public void mopperAttack(MapLocation loc) {
         mopperAttack(loc, ((this.team == Team.A) ? 1 : 3));
     }
 
-    //TODO: for mopper second kind of attack make a mopSwing method that takes in a direction and only works for moppers
     public void mopperSwing(Direction dir) {
         // swing even if there's not 3 robots there, just remove from existing
         assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
@@ -527,7 +523,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        incrementSkill(SkillType.ATTACK);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
     }
 

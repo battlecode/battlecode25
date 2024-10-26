@@ -131,8 +131,14 @@ public class GameConstants {
     /** The maximum distance from a robot where information can be sensed */
     public static final int VISION_RADIUS_SQUARED = 20;
 
-    /** The maximum distance for attacking an enemy robot */
-    public static final int ATTACK_RADIUS_SQUARED = 4;
+    /** The maximum distance for attacking an enemy robot (as a soldier) */
+    public static final int ATTACK_SOLDIER_RADIUS_SQUARED = 20;
+
+    /** The maximum distance for attacking an enemy robot (as a splasher) */
+    public static final int ATTACK_SPLASHER_RADIUS_SQUARED = 9;
+
+    /** The maximum distance for attacking an enemy robot (as a mopper) */
+    public static final int ATTACK_MOPPER_RADIUS_SQUARED = 2;
 
     /** The maximum distance for healing an ally robot */
     public static final int HEAL_RADIUS_SQUARED = 4;
@@ -165,8 +171,17 @@ public class GameConstants {
     /** The amount added to the action cooldown counter after a tower builds a robot */
     public static final int BUILD_ROBOT_COOLDOWN = 10;
 
-    /** The amount added to the action cooldown counter after attacking */
-    public static final int ATTACK_COOLDOWN = 20;
+    /** The amount added to the action cooldown counter after attacking (as a soldier) */
+    public static final int ATTACK_SOLDIER_COOLDOWN = 10;
+
+    /** The amount added to the action cooldown counter after attacking (as a splasher) */
+    public static final int ATTACK_SPLASHER_COOLDOWN = 50;
+
+    /** The amount added to the action cooldown counter after attacking (as a mopper) */
+    public static final int ATTACK_MOPPER_COOLDOWN = 30;
+
+    /** The amount added to the action cooldown counter after attacking (as a mopper for the swing attack) */
+    public static final int ATTACK_MOPPER_SWING_COOLDOWN = 40;
 
     /** The amount added to the action cooldown counter after healing */
     public static final int HEAL_COOLDOWN = 30;

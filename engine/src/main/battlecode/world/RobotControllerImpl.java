@@ -633,19 +633,42 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** ATTACK / HEAL ******** 
     // *****************************
 
+    private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, GameConstants.ATTACK_SOLDIER_RADIUS_SQUARED);
+        assert(this.robot.getPaint() >= RobotOrTowerType.SOLDIER.attackPaintCost);
+    }
+
+    private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, GameConstants.ATTACK_SPLASHER_RADIUS_SQUARED);
+        assert(this.robot.getPaint() >= RobotOrTowerType.SPLASHER.attackPaintCost);
+    }
+
+    private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, GameConstants.ATTACK_MOPPER_RADIUS_SQUARED);
+        assert(this.robot.getPaint() >= RobotOrTowerType.MOPPER.attackPaintCost);
+    }
+
     private void assertCanAttack(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        assertCanActLocation(loc, GameConstants.ATTACK_RADIUS_SQUARED);
         assertIsActionReady();
-        InternalRobot bot = gameWorld.getRobot(loc);
-        if (bot == null || bot.getTeam() == this.getTeam()) {
-            throw new GameActionException(CANT_DO_THAT, "No enemy robot to attack at this location"); 
-        }
-        if(this.robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "Can't attack while holding a flag");
-        }
+
         if(gameWorld.isSetupPhase()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
+        }
+
+        // note: paint type is irrelevant for checking attack validity
+        switch(this.robot.getType()) {
+            case RobotOrTowerType.SOLDIER:
+                assertCanAttackSoldier(loc);
+                break;
+            case RobotOrTowerType.SPLASHER:
+                assertCanAttackSplasher(loc);
+                break;
+            case RobotOrTowerType.MOPPER:
+                assertCanAttackMopper(loc);
+                break; 
+            default:
+                break;
         }
     }
 
@@ -663,10 +686,15 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void attack(MapLocation loc) throws GameActionException {
+    public void attack(MapLocation loc, int paintType) throws GameActionException {
         assertCanAttack(loc);
-        this.robot.addActionCooldownTurns((int) Math.round(GameConstants.ATTACK_COOLDOWN*(1+.01*SkillType.ATTACK.getCooldown(this.robot.getLevel(SkillType.ATTACK)))));
-        this.robot.attack(loc);
+        int attackCooldown = ((this.robot.getType() == RobotOrTowerType.SOLDIER) ? GameConstants.ATTACK_SOLDIER_COOLDOWN : ((this.robot.getType() == RobotOrTowerType.SPLASHER) ? GameConstants.ATTACK_SPLASHER_COOLDOWN : GameConstants.ATTACK_MOPPER_COOLDOWN));
+        this.robot.addActionCooldownTurns(attackCooldown);
+        this.robot.attack(loc, paintType);
+    }
+    @Override
+    public void attack(MapLocation loc) throws GameActionException {
+        attack(loc, ((this.robot.getTeam() == Team.A) ? 1 : 3));
     }
 
     @Override
