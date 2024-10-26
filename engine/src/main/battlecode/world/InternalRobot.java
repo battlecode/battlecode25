@@ -5,6 +5,8 @@ import battlecode.schema.Action;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
