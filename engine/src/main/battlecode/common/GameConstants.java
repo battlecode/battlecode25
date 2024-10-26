@@ -37,13 +37,16 @@ public class GameConstants {
     /** The default game seed. **/
     public static final int GAME_DEFAULT_SEED = 6370;
 
-    /** The maximum number of rounds in a game.  **/
+    /** The maximum number of rounds in a game. **/
     public static final int GAME_MAX_NUMBER_OF_ROUNDS = 2000;
 
     /** The maximum number of bytecodes a bot is allow to use in one turn */
     public static final int BYTECODE_LIMIT = 25000;
 
-    /** The maximum length of indicator strings that a player can associate with a robot. */
+    /**
+     * The maximum length of indicator strings that a player can associate with a
+     * robot.
+     */
     public static final int INDICATOR_STRING_MAX_LENGTH = 64;
 
     /** The length of each team's shared communication array. */
@@ -88,20 +91,28 @@ public class GameConstants {
 
     /** Crumbs cost for digging. */
     public static final int DIG_COST = 20;
-    
+
     /** Crumbs cost for filling */
     public static final int FILL_COST = 30;
 
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
 
-    /** Number of rounds between updating the random noisy flag broadcast location */
+    /**
+     * Number of rounds between updating the random noisy flag broadcast location
+     */
     public static final int FLAG_BROADCAST_UPDATE_INTERVAL = 100;
 
-    /** The maximum squared distance bewteen the actual flag location and the noisy broadcast location */
+    /**
+     * The maximum squared distance bewteen the actual flag location and the noisy
+     * broadcast location
+     */
     public static final int FLAG_BROADCAST_NOISE_RADIUS = 100;
 
-    /** The default number of rounds before dropped flags reset to their default locations */
+    /**
+     * The default number of rounds before dropped flags reset to their default
+     * locations
+     */
     public static final int FLAG_DROPPED_RESET_ROUNDS = 4;
 
     /** The initial amount of crumbs each team starts with. */
@@ -110,7 +121,10 @@ public class GameConstants {
     /** The amount of crumbs each team gains per turn. */
     public static final int PASSIVE_CRUMBS_INCREASE = 10;
 
-    /** The amount of crumbs you gain if your bot kills an enemy while in enemy territory */
+    /**
+     * The amount of crumbs you gain if your bot kills an enemy while in enemy
+     * territory
+     */
     public static final int KILL_CRUMB_REWARD = 30;
 
     /** The end of the setup rounds in the game */
@@ -137,7 +151,15 @@ public class GameConstants {
     /** The maximum distance for healing an ally robot */
     public static final int HEAL_RADIUS_SQUARED = 4;
 
-    /** The maximum distnace for picking up / dropping flags, building traps, digging, and filling */
+    /**
+     * The maximum distance for transferring paint from/to an ally robot or tower
+     */
+    public static final int PAINT_TRANSFER_RADIUS_SQUARED = 2;
+
+    /**
+     * The maximum distnace for picking up / dropping flags, building traps,
+     * digging, and filling
+     */
     public static final int INTERACT_RADIUS_SQUARED = 2;
 
     /** The maximum distance from a tower for building robots */
@@ -153,16 +175,26 @@ public class GameConstants {
     /** The number of cooldown turns reduced per turn. */
     public static final int COOLDOWNS_PER_TURN = 10;
 
-    /** The amount added to the movement cooldown counter when moving without a flag */
+    /**
+     * The amount added to the movement cooldown counter when moving without a flag
+     */
     public static final int MOVEMENT_COOLDOWN = 10;
 
-    /** The amount added to the movement cooldown counter when moving while carrying a flag  */
+    /**
+     * The amount added to the movement cooldown counter when moving while carrying
+     * a flag
+     */
     public static final int FLAG_MOVEMENT_COOLDOWN = 20;
 
-    /** The amount added to the action cooldown counter after picking up or dropping a flag */
+    /**
+     * The amount added to the action cooldown counter after picking up or dropping
+     * a flag
+     */
     public static final int PICKUP_DROP_COOLDOWN = 10;
 
-    /** The amount added to the action cooldown counter after a tower builds a robot */
+    /**
+     * The amount added to the action cooldown counter after a tower builds a robot
+     */
     public static final int BUILD_ROBOT_COOLDOWN = 10;
 
     /** The amount added to the action cooldown counter after attacking */
@@ -177,10 +209,13 @@ public class GameConstants {
     /** The amount added to the action cooldown counter after filling */
     public static final int FILL_COOLDOWN = 30;
 
-    /** The maximum amount of bytes that can be encoded in a message  */
+    /** THe amount added to the action cooldown counter after transferring paint */
+    public static final int PAINT_TRANSFER_COOLDOWN = 10;
+
+    /** The maximum amount of bytes that can be encoded in a message */
     public static final int MAX_MESSAGE_BYTES = 4;
 
-    /** The maximum squared radius a robot can send a message to  */
+    /** The maximum squared radius a robot can send a message to */
     public static final int MESSAGE_RADIUS_SQUARED = 20;
 
     /** The maximum number of rounds a message will exist for */
@@ -191,5 +226,5 @@ public class GameConstants {
 
     /** The maximum number of messages a tower can send per turn */
     public static final int MAX_MESSAGES_SENT_TOWER = 20;
-    
+
 }
