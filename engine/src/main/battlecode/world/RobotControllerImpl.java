@@ -697,6 +697,30 @@ public final strictfp class RobotControllerImpl implements RobotController {
         attack(loc, false);
     }
 
+    private void assertCanMopSwing(Direction dir) throws GameActionException {
+        assertNotNull(dir);
+        assertIsActionReady();
+        assert(this.robot.getType() == RobotOrTowerType.MOPPER);
+
+        if(gameWorld.isSetupPhase()) {
+            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
+        }
+    }
+
+    @Override
+    public boolean canMopSwing(Direction dir) {
+        try {
+            assertCanMopSwing(dir);
+            return true;
+        } catch (GameActionException e) { return false; }  
+    }
+
+    @Override
+    public void mopSwing(Direction dir) throws GameActionException {
+        this.robot.addActionCooldownTurns(GameConstants.ATTACK_MOPPER_SWING_COOLDOWN);
+        this.robot.mopSwing(dir);
+    }
+
     @Override
     public int getHealAmount() {
         return this.robot.getHeal();

@@ -493,7 +493,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         mopperAttack(loc, false);
     }
 
-    public void mopperSwing(Direction dir) {
+    public void mopSwing(Direction dir) { // NOTE: only works for moppers!
         // swing even if there's not 3 robots there, just remove from existing
         assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
         assert(this.type == RobotOrTowerType.MOPPER);

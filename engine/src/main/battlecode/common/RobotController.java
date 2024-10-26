@@ -583,11 +583,34 @@ public strictfp interface RobotController {
      * Attack a given location.
      *
      * @param loc the target location to attack
+     * @param useSecondaryColor whether or not the attack should use a secondary color
      * @throws GameActionException if conditions for attacking are not satisfied
      *
      * @battlecode.doc.costlymethod
      */
+    void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException;
     void attack(MapLocation loc) throws GameActionException;
+
+    /**
+     * Tests whether this robot (which must be a mopper) can perform
+     * a mop swing in a specific direction
+     *
+     * @param dir the direction in which to mop swing
+     * @return whether it is possible to mop swing in the given direction
+     *
+     * @battlecode.doc.costlymethod
+     */
+    boolean canMopSwing(Direction dir);
+
+    /**
+     * Performs a mop swing in the given direction (only for moppers!)
+     *
+     * @param dir the direction in which to mop swing
+     * @throws GameActionException if conditions for attacking are not satisfied
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void mopSwing(Direction dir) throws GameActionException;
 
     /**
      * Gets the true healing amount of this robot accounting for all effects.
