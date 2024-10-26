@@ -467,38 +467,6 @@ public strictfp interface RobotController {
     void move(Direction dir) throws GameActionException;
 
     // ***********************************
-    // *********** SPAWNING **************
-    // ***********************************
-
-    /**
-     * Returns a MapLocation array of all locations with an ally spawn zone on them.
-     * A robot must spawn inside one of these spawn zones.
-     * 
-     * @return a list of locations with an ally spawn zone
-     */
-    MapLocation[] getAllySpawnLocations();
-
-    /**
-     * Checks if the robot is allowed to spawn at the given location.
-     * A robot can spawn only inside the spawn zones.
-     * 
-     * @param loc the location to spawn the robot
-     * @return whether the robot can spawn at the location
-     */
-    boolean canSpawn(MapLocation loc);
-
-    /**
-     * Spawns the robot at the given location.
-     * 
-     * @param loc the location to spawn the robot
-     * @throws GameActionException if the robot is not allowed to spawn at this location
-     */
-    void spawn(MapLocation loc) throws GameActionException;
-
-    boolean isTowerType(RobotOrTowerType type);
-    boolean isRobotType(RobotOrTowerType type); // TODO: use Max's versions
-
-    // ***********************************
     // *********** BUILDING **************
     // ***********************************
 
