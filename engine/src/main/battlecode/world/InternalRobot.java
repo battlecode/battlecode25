@@ -501,7 +501,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
         
         // Either way, mop this tile if it has enemy paint
-        if(this.gameWorld.getPaint(loc) != 0 && getTeamFromPaintType(paintType) != getTeamFromPaintType(this.gameWorld.getPaint(loc))) {
+        if(getTeamFromPaintType(paintType) != getTeamFromPaintType(this.gameWorld.getPaint(loc))) {
             this.gameWorld.setPaint(loc, 0);
         }
 
@@ -565,7 +565,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
     }
     public void attack(MapLocation loc) {
-        attack(loc, ((this.team == Team.A) ? 1 : 3));
+        attack(loc, false);
     }
 
     public void buildRobot(RobotOrTowerType type, MapLocation loc) {
