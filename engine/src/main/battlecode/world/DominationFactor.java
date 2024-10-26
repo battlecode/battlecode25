@@ -5,27 +5,31 @@ package battlecode.world;
  */
 public enum DominationFactor {
     /**
-     * Win by capturing all opponent flags.
+     * Win by painting more than {@value battlecode.common.GameConstants#PAINT_PERCENT_TO_WIN}% of the map.
      */
-    CAPTURE,
+    PAINT_ENOUGH_AREA,
     /**
-     * Win by capturing more flags (tiebreak 1).
+     * Win by having more squares painted than the other team at the end of the game (tiebreak 1).
      */
-    MORE_FLAG_CAPTURES,
+    MORE_SQUARES_PAINTED,
     /**
-     * Win by having a higher cumulative robot level (tiebreak 2)
+     * Win by having more allied towers alive at the end of the game (tiebreak 2).
      */
-    LEVEL_SUM,
+    MORE_TOWERS_ALIVE,
     /**
-     * Win by having more break (tiebreak 3)
+     * Win by having more money at the end of the game (tiebreak 3).
      */
-    MORE_BREAD,
+    MORE_MONEY,
     /**
-     * Win by picking up more flags (even if not retrieved successfully) (tiebreak 4).
+     * Win by having more paint stored in robots and towers (tiebreak 4).
      */
-    MORE_FLAGS_PICKED, 
+    MORE_PAINT_IN_UNITS,
     /**
-     * Win by coinflip (tiebreak 5).
+     * Win by having more units currently alive at the end of the game (tiebreak 5).
+     */
+    MORE_UNITS,
+    /**
+     * Win by coinflip (tiebreak 6).
      */
     WON_BY_DUBIOUS_REASONS,
     /**
