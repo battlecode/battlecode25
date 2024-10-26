@@ -532,30 +532,31 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     /**
-     * Attacks another location if there is an opponent robot.
+     * Attacks another location.
      * The type of attack is based on the robot type (specific methods above)
      * 
      * @param loc the location of the bot
+     * @param paintType the type of paint to use (must be valid for the team)
      */
-    public void attack(MapLocation loc) {
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        if (bot == null || bot.getTeam() == this.getTeam() || getController().isRobotType(bot.getType())) {
-            // If robot is null or of your team, no damage; otherwise do damage
-            this.getGameWorld().getMatchMaker().addAction(getID(), Action.ATTACK, -locationToInt(loc) - 1);
-        } else {
-            int dmg = getDamage();
-            
-            int newEnemyHealth = bot.getHealth() - dmg;
-            if (newEnemyHealth <= 0) {
-                if (gameWorld.getTeamSide(getLocation()) == (team.opponent() == Team.A ? 1 : 2)) {
-                    addResourceAmount(GameConstants.KILL_CRUMB_REWARD);
-                }
+    public void attack(MapLocation loc, int paintType) {
+        if(getController().isRobotType(this.getType())) { // if we are robot
+            switch(this.getType()) {
+                case RobotOrTowerType.SOLDIER:
+                    soldierAttack(loc, paintType);
+                    break;
+                case RobotOrTowerType.SPLASHER:
+                    splasherAttack(loc, paintType);
+                    break;
+                case RobotOrTowerType.MOPPER:
+                    mopperAttack(loc, paintType);
+                    break; 
+                default:
+                    break;
             }
-
-            bot.addHealth(-dmg);
-            incrementSkill(SkillType.ATTACK);
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
+    }
+    public void attack(MapLocation loc) {
+        attack(loc, ((this.team == Team.A) ? 1 : 3));
     }
 
     public void buildRobot(RobotOrTowerType type, MapLocation loc) {
