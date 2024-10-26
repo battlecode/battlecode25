@@ -686,15 +686,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void attack(MapLocation loc, int paintType) throws GameActionException {
+    public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
         int attackCooldown = ((this.robot.getType() == RobotOrTowerType.SOLDIER) ? GameConstants.ATTACK_SOLDIER_COOLDOWN : ((this.robot.getType() == RobotOrTowerType.SPLASHER) ? GameConstants.ATTACK_SPLASHER_COOLDOWN : GameConstants.ATTACK_MOPPER_COOLDOWN));
         this.robot.addActionCooldownTurns(attackCooldown);
-        this.robot.attack(loc, paintType);
+        this.robot.attack(loc, useSecondaryColor);
     }
+    
     @Override
     public void attack(MapLocation loc) throws GameActionException {
-        attack(loc, ((this.robot.getTeam() == Team.A) ? 1 : 3));
+        attack(loc, this.robot.teamToPrimaryPaintType(this.robot.getTeam()));
     }
 
     @Override
