@@ -312,7 +312,7 @@ public strictfp class GameWorld {
         return allRuinsByLoc[locationToIndex(loc)];
     }
 
-    public void removeFlag(MapLocation loc) {
+    public void removeRuin(MapLocation loc) {
         allRuinsByLoc[locationToIndex(loc)] = false;
         allRuins.remove(loc);
     }
@@ -514,10 +514,6 @@ public strictfp class GameWorld {
         return getAllLocationsWithinRadiusSquared(new MapLocation(0, 0), Integer.MAX_VALUE);
     }
 
-    public MapLocation[] getSpawnLocations(Team team){
-        return this.spawnLocations[team.ordinal()];
-    }
-
     // *********************************
     // ****** GAMEPLAY *****************
     // *********************************
@@ -553,10 +549,10 @@ public strictfp class GameWorld {
         totalSquaresPainted[Team.B.ordinal()] += this.teamInfo.getNumberOfPaintedSquares(Team.B);
         
         if (totalSquaresPainted[Team.A.ordinal()] > totalSquaresPainted[Team.B.ordinal()]) {
-            setWinner(Team.A, DominationFactor.MORE_PAINT);
+            setWinner(Team.A, DominationFactor.MORE_SQUARES_PAINTED);
             return true;
         } else if (totalSquaresPainted[Team.B.ordinal()] > totalSquaresPainted[Team.A.ordinal()]) {
-            setWinner(Team.B, DominationFactor.MORE_PAINT);
+            setWinner(Team.B, DominationFactor.MORE_SQUARES_PAINTED);
             return true;
         }
 
