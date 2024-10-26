@@ -549,8 +549,8 @@ public strictfp class GameWorld {
         int[] totalSquaresPainted = new int[2];
 
         // consider team reserves
-        totalSquaresPainted[Team.A.ordinal()] += this.teamInfo.getSquaresPainted(Team.A);
-        totalSquaresPainted[Team.B.ordinal()] += this.teamInfo.getSquaresPainted(Team.B);
+        totalSquaresPainted[Team.A.ordinal()] += this.teamInfo.getNumberOfPaintedSquares(Team.A);
+        totalSquaresPainted[Team.B.ordinal()] += this.teamInfo.getNumberOfPaintedSquares(Team.B);
         
         if (totalSquaresPainted[Team.A.ordinal()] > totalSquaresPainted[Team.B.ordinal()]) {
             setWinner(Team.A, DominationFactor.MORE_PAINT);
@@ -618,6 +618,74 @@ public strictfp class GameWorld {
         }
         return false;
     }
+
+    /**
+     * @return whether a team has more allied towers alive
+     */
+    public boolean setWinnerIfMoreTowersAlive(){
+        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.ROBOT3, RobotOrTowerType.ROBOT4}
+        int[] totalTowersAlive = new int[2];
+
+        for (RobotOrTowerType type: types){
+            if (isTowerType(type)){
+                totalTowersAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
+                totalTowersAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
+            }
+        }
+        
+        if (totalTowersAlive[Team.A.ordinal()] > totalTowersAlive[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_TOWERS_ALIVE);
+            return true;
+        } else if (totalTowersAlive[Team.B.ordinal()] > totalTowersAlive[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_TOWERS_ALIVE);
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * @return whether a team has more allied robots alive
+     */
+    public boolean setWinnerIfMoreRobotsAlive(){
+        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.ROBOT3, RobotOrTowerType.ROBOT4};
+        int[] totalRobotsAlive = new int[2];
+
+        for (RobotOrTowerType type: types){
+            if (isRobotType(type)){
+                totalRobotsAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
+                totalRobotsAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
+            }
+        }
+        
+        if (totalRobotsAlive[Team.A.ordinal()] > totalRobotsAlive[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_ROBOTS_ALIVE);
+            return true;
+        } else if (totalRobotsAlive[Team.B.ordinal()] > totalRobotsAlive[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_ROBOTS_ALIVE);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return whether a team has more paint stored in robots and towers
+     */
+    public boolean setWinnerIfMorePaintInUnits(){
+        int[] paintInUnits = new int[2];
+
+        // TODO: count paint quantity accross all units
+        
+        if (paintInUnits[Team.A.ordinal()] > paintInUnits[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_PAINT_IN_UNITS);
+            return true;
+        } else if (paintInUnits[Team.B.ordinal()] > paintInUnits[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_PAINT_IN_UNITS);
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Sets a winner arbitrarily. Hopefully this is actually random.

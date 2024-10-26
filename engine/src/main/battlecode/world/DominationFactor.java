@@ -25,7 +25,19 @@ public enum DominationFactor {
      */
     MORE_FLAGS_PICKED, 
     /**
-     * Win by coinflip (tiebreak 5).
+     * Win by having more towers alive (tiebreak 5).
+     */
+    MORE_TOWERS_ALIVE, 
+    /**
+     * Win by having more robots alive (tiebreak 6).
+     */
+    MORE_ROBOTS_ALIVE, 
+    /**
+     * Win by having more paint in robots and towers (tiebreak 7).
+     */
+    MORE_PAINT_IN_UNITS, 
+    /**
+     * Win by coinflip (tiebreak 8).
      */
     WON_BY_DUBIOUS_REASONS,
     /**
