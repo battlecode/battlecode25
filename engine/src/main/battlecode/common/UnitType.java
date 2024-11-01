@@ -1,6 +1,6 @@
 package battlecode.common;
 
-public enum RobotOrTowerType {
+public enum UnitType {
     SOLDIER(100, 250, 5, 250, -1, 200, 10, 20, 20, -1, 0, 0),
     SPLASHER(150, 400, 50, 150, -1, 300, 50, 9, -1, 50, 0, 0),
     MOPPER(50, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
@@ -56,7 +56,7 @@ public enum RobotOrTowerType {
 
     
 
-    RobotOrTowerType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
+    UnitType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
         this.paintCost = paintCost;
         this.moneyCost = moneyCost;
         this.attackCost = attackCost;
