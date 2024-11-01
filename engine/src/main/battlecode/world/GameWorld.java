@@ -228,7 +228,7 @@ public strictfp class GameWorld {
         return true;
     }
 
-    public void markResourcePattern(Team team, MapLocation center) {
+    public void completeResourcePattern(Team team, MapLocation center) {
         this.resourcePatternCenters.add(center);
         this.resourcePatternCentersByLoc[locationToIndex(center)] = team;
     }
