@@ -1,21 +1,21 @@
 package battlecode.common;
 
 public enum RobotOrTowerType {
-    SOLDIER(100, 250, -1, 5, 250, -1, 200, 10, 20, 20, -1, -1, -1),
-    SPLASHER(150, 400, -1, 50, 150, -1, 300, 50, 9, -1, 50, -1, -1),
-    MOPPER(50, 300, -1, 0, 50, -1, 100, 30, 2, -1, -1, -1, -1),
+    SOLDIER(100, 250, 5, 250, -1, 200, 10, 20, 20, -1, 0, 0),
+    SPLASHER(150, 400, 50, 150, -1, 300, 50, 9, -1, 50, 0, 0),
+    MOPPER(50, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
     
-    LEVEL_ONE_PAINT_TOWER(0, 25, 100, 0, 1000, 1, -1, 0, 9, 20, 10, 5, 0),
-    LEVEL_TWO_PAINT_TOWER(0, 100, 100, 0, 1500, 2, -1, 0, 9, 20, 10, 10, 0),
-    LEVEL_THREE_PAINT_TOWER(0, 100, -1, 0, 2000, 3, -1, 0, 9, 20, 10, 15, 0),
+    LEVEL_ONE_PAINT_TOWER(0, 25,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0),
+    LEVEL_TWO_PAINT_TOWER(0, 100, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
+    LEVEL_THREE_PAINT_TOWER(0, 100, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
 
-    LEVEL_ONE_MONEY_TOWER(0, 25, 100, 0, 1000, 1, -1, 0, 9, 20, 10, 0, 10),
-    LEVEL_TWO_MONEY_TOWER(0, 100, 100, 0, 1500, 2, -1, 0, 9, 20, 10, 0, 15),
-    LEVEL_THREE_MONEY_TOWER(0, 100, -1, 0, 2000, 3, -1, 0, 9, 20, 10, 0, 20),
+    LEVEL_ONE_MONEY_TOWER(0, 25,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 10),
+    LEVEL_TWO_MONEY_TOWER(0, 100,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 15),
+    LEVEL_THREE_MONEY_TOWER(0, 100, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 20),
 
-    LEVEL_ONE_DEFENSE_TOWER(0, 25, 50, 0, 2500, 1, -1, 0, 9, 60, 30, 0, 0),
-    LEVEL_TWO_DEFENSE_TOWER(0, 50, 50, 0, 3000, 2, -1, 0, 9, 65, 35, 0, 0),
-    LEVEL_THREE_DEFENSE_TOWER(0, 50, -1, 0, 3500, 3, -1, 0, 9, 70, 40, 0, 0);
+    LEVEL_ONE_DEFENSE_TOWER(0, 25,  0, 2500, 1, 1000, 10, 25, 60, 30, 0, 0),
+    LEVEL_TWO_DEFENSE_TOWER(0, 50,  0, 3000, 2, 1000, 10, 25, 65, 35, 0, 0),
+    LEVEL_THREE_DEFENSE_TOWER(0, 50, 0, 3500, 3, 1000, 10, 25, 70, 40, 0, 0);
 
 
     // the paint cost to build the unit
@@ -23,9 +23,6 @@ public enum RobotOrTowerType {
 
     // the money cost to build the unit
     public final int moneyCost;
-
-    // the money cost to upgrade the unit
-    public final int upgradeCost;
 
     // the paint cost of the unit's attack
     public final int attackCost;
@@ -59,10 +56,9 @@ public enum RobotOrTowerType {
 
     
 
-    RobotOrTowerType(int paintCost, int moneyCost, int upgradeCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
+    RobotOrTowerType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
         this.paintCost = paintCost;
         this.moneyCost = moneyCost;
-        this.upgradeCost = upgradeCost;
         this.attackCost = attackCost;
         this.health = health;
         this.level = level;
