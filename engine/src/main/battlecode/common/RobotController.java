@@ -579,7 +579,7 @@ public strictfp interface RobotController {
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
      * given location.
      * 
-     * @param loc the location to build at
+     * @param loc the center of the resource pattern
      * @return true if an SRP can be marked at loc
      * 
      * @battlecode.doc.costlymethod
@@ -589,7 +589,7 @@ public strictfp interface RobotController {
     /**
      * Marks a 5x5 special resource pattern centered at the given location.
      * 
-     * @param loc the location to build at
+     * @param loc the center of the resource pattern
      * 
      * @battlecode.doc.costlymethod
      */

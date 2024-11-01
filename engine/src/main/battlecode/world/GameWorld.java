@@ -28,6 +28,7 @@ public strictfp class GameWorld {
 
     protected final IDGenerator idGenerator;
     protected final GameStats gameStats;
+
     private boolean[] walls;
     private boolean[] water;
     private boolean[] dams;
@@ -43,7 +44,11 @@ public strictfp class GameWorld {
     private final LiveMap gameMap;
     private final TeamInfo teamInfo;
     private final ObjectInfo objectInfo;
-    
+
+    private int resourcePattern;
+    private ArrayList<MapLocation> resourcePatternCenters;
+    private Team[] resourcePatternCentersByLoc;
+
     // List of all ruins, not indexed by location
     private ArrayList<MapLocation> allRuins;
     // Whether there is a ruin on each tile, indexed by location
@@ -102,6 +107,14 @@ public strictfp class GameWorld {
             this.trapTriggers[i] = new ArrayList<Trap>();
         }
 
+        this.resourcePattern = gm.getResourcePattern();
+        this.resourcePatternCenters = new ArrayList<MapLocation>();
+        this.resourcePatternCentersByLoc = new Team[numSquares];
+
+        for (int i = 0; i < numSquares; i++) {
+            this.resourcePatternCentersByLoc[i] = Team.NEUTRAL;
+        }
+
         this.allRuins = gm.getRuinArray();
         this.allRuinsByLoc = new boolean[numSquares];
 
@@ -150,6 +163,7 @@ public strictfp class GameWorld {
                 this.teamInfo.addBread(Team.B, GameConstants.INITIAL_CRUMBS_AMOUNT);
             }
 
+            updateResourcePatterns();
             updateDynamicBodies();
 
             this.controlProvider.roundEnded();
@@ -160,12 +174,12 @@ public strictfp class GameWorld {
             if (!this.isRunning()) {
                 this.controlProvider.matchEnded();
             }
-
         } catch (Exception e) {
             ErrorReporter.report(e);
             // TODO throw out file?
             return GameState.DONE;
         }
+        
         // Write out round data
         matchMaker.makeRound(currentRound);
         return GameState.RUNNING;
@@ -179,6 +193,44 @@ public strictfp class GameWorld {
                 throw new RuntimeException("non-robot body registered as dynamic");
             }
         });
+    }
+
+    private void updateResourcePatterns() {
+        for (MapLocation center : resourcePatternCenters) {
+            Team team = resourcePatternCentersByLoc[locationToIndex(center)];
+            boolean stillActive = checkResourcePattern(team, center);
+
+            if (!stillActive) {
+                resourcePatternCenters.remove(center);
+                resourcePatternCentersByLoc[locationToIndex(center)] = Team.NEUTRAL;
+            }
+        }
+    }
+
+    public boolean checkResourcePattern(Team team, MapLocation center) {
+        int primary = getPrimaryPaint(team);
+        int secondary = getSecondaryPaint(team);
+
+        for (int i = 0; i < GameConstants.PATTERN_SIZE; i++) {
+            for (int j = 0; j < GameConstants.PATTERN_SIZE; j++) {
+                int dx = i - GameConstants.PATTERN_SIZE / 2;
+                int dy = j - GameConstants.PATTERN_SIZE / 2;
+                int bitNum = 5 * i + j;
+                int bit = (this.resourcePattern >> bitNum) & 1;
+                int paint = getPaint(center.translate(dx, dy));
+                
+                if (paint != (bit == 1 ? primary : secondary)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void markResourcePattern(Team team, MapLocation center) {
+        this.resourcePatternCenters.add(center);
+        this.resourcePatternCentersByLoc[locationToIndex(center)] = team;
     }
 
     private boolean updateRobot(InternalRobot robot) {
@@ -282,6 +334,17 @@ public strictfp class GameWorld {
      */
     public int getInitialTower(MapLocation loc) {
         return this.initialTowers[locationToIndex(loc)];
+    }
+
+    /**
+     * Returns the resource pattern corresponding to the map,
+     * stored as the bits of an int between 0 and 2^25.
+     * The bit at (a, b) (zero-indexed) in the resource pattern
+     * is stored in the place value 2^(5a + b).
+     * @return the resource pattern for this map
+     */
+    public int getResourcePattern() {
+        return this.resourcePattern;
     }
 
     public int getTeamSide(MapLocation loc) {
@@ -389,7 +452,7 @@ public strictfp class GameWorld {
     public void triggerTrap(Trap trap, InternalRobot robot, boolean entered){
         MapLocation loc = trap.getLocation();
         TrapType type = trap.getType();
-        switch(type){
+        switch(type) {
             case STUN:
                 for (InternalRobot rob : getAllRobotsWithinRadiusSquared(loc, type.enterRadius, trap.getTeam().opponent())){
                     rob.setMovementCooldownTurns(type.opponentCooldown);

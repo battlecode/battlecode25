@@ -321,26 +321,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean senseLegalStartingRuinPlacement(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
-
-        if (!gameWorld.isPassable(loc)) {
-            return false;
-        }
-
-        boolean valid = true;
-
-        for (MapLocation ruin : gameWorld.getAllRuins()) {
-            if (ruin.distanceSquaredTo(loc) <= GameConstants.MIN_RUIN_SPACING_SQUARED) {
-                valid = false;
-                break;
-            }
-        }
-
-        return valid;
-    }
-
-    @Override
     public MapInfo senseMapInfo(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
         assertCanSenseLocation(loc);
@@ -509,14 +489,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.setLocation(nextLoc);
 
         int amtBread = this.gameWorld.getBreadAmount(nextLoc);
+
         if (amtBread != 0) {
             this.robot.addResourceAmount(amtBread);
             this.gameWorld.getMatchMaker().addClaimedResource(nextLoc);
         }
+
         this.gameWorld.removeBread(nextLoc);
         this.robot.addMovementCooldownTurns();
 
         Team nextTeam = this.gameWorld.getTeam(nextLoc);
+
         if (nextTeam == Team.NEUTRAL) {
             this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
         } else if (nextTeam == this.robot.getTeam().opponent()) {
@@ -526,9 +509,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // trap trigger methods
         for (int i = this.gameWorld.getTrapTriggers(nextLoc).size() - 1; i >= 0; i--) {
             Trap trap = this.gameWorld.getTrapTriggers(nextLoc).get(i);
+
             if (trap.getTeam() == this.robot.getTeam()) {
                 continue;
             }
+
             this.robot.addTrapTrigger(trap, true);
         }
     }
@@ -631,6 +616,14 @@ public final strictfp class RobotControllerImpl implements RobotController {
                     "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
         }
+
+        boolean valid = this.gameWorld.checkResourcePattern(this.robot.getTeam(), loc);
+
+        if (!valid) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the paint pattern is wrong");
+        }
     }
 
     @Override
@@ -644,9 +637,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void markResourcePattern(MapLocation loc) {
-        throw new NotImplementedException();
-        // TODO not implemented
+    public void markResourcePattern(MapLocation loc) throws GameActionException {
+        assertCanMarkResourcePattern(loc);
+        this.gameWorld.markResourcePattern(getTeam(), loc);
     }
 
     // *****************************
@@ -658,13 +651,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanActLocation(loc, GameConstants.ATTACK_RADIUS_SQUARED);
         assertIsActionReady();
         InternalRobot bot = gameWorld.getRobot(loc);
+
         if (bot == null || bot.getTeam() == this.getTeam()) {
             throw new GameActionException(CANT_DO_THAT, "No enemy robot to attack at this location");
         }
-        if (this.robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "Can't attack while holding a flag");
-        }
-        if (gameWorld.isSetupPhase()) {
+
+        if (this.gameWorld.isSetupPhase()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
         }
     }
