@@ -295,7 +295,7 @@ public strictfp class GameWorld {
         return true;
     }
 
-    public void completeTowerPattern(Team team, RobotOrTowerType type, MapLocation center) {
+    public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
         InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type);

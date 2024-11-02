@@ -626,7 +626,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // TODO not implemented
     }
 
-    private void assertCanCompleteTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
 
@@ -658,7 +658,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canCompleteTowerPattern(RobotOrTowerType type, MapLocation loc) {
+    public boolean canCompleteTowerPattern(UnitType type, MapLocation loc) {
         try {
             assertCanCompleteTowerPattern(type, loc);
             return true;
@@ -668,7 +668,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void completeTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    public void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
     }

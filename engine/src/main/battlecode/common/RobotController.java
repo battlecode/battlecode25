@@ -586,7 +586,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canCompleteTowerPattern(RobotOrTowerType type, MapLocation loc);
+    boolean canCompleteTowerPattern(UnitType type, MapLocation loc);
 
     /**
      * Builds a tower at the given location.
@@ -598,7 +598,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void completeTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+    void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can complete a 5x5 special resource pattern centered at the
