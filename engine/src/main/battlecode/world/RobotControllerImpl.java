@@ -644,18 +644,18 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, RobotOrTowerType.SOLDIER.attackRadiusSquared);
-        assert(this.robot.getPaint() >= RobotOrTowerType.SOLDIER.attackPaintCost);
+        assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.SOLDIER.attackCost);
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, RobotOrTowerType.SPLASHER.attackRadiusSquared);
-        assert(this.robot.getPaint() >= RobotOrTowerType.SPLASHER.attackPaintCost);
+        assertCanActLocation(loc, UnitType.SPLASHER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.SPLASHER.attackCost);
     }
 
     private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
-        assertCanActLocation(loc, RobotOrTowerType.MOPPER.attackRadiusSquared);
-        assert(this.robot.getPaint() >= RobotOrTowerType.MOPPER.attackPaintCost);
+        assertCanActLocation(loc, UnitType.MOPPER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.MOPPER.attackCost);
     }
 
     private void assertCanAttack(MapLocation loc) throws GameActionException {
@@ -668,13 +668,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
-            case RobotOrTowerType.SOLDIER:
+            case UnitType.SOLDIER:
                 assertCanAttackSoldier(loc);
                 break;
-            case RobotOrTowerType.SPLASHER:
+            case UnitType.SPLASHER:
                 assertCanAttackSplasher(loc);
                 break;
-            case RobotOrTowerType.MOPPER:
+            case UnitType.MOPPER:
                 assertCanAttackMopper(loc);
                 break; 
             default:
@@ -713,7 +713,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(dir);
         assertIsActionReady();
         assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
-        assert(this.robot.getType() == RobotOrTowerType.MOPPER);
+        assert(this.robot.getType() == UnitType.MOPPER);
 
         if(gameWorld.isSetupPhase()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
