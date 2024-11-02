@@ -57,13 +57,13 @@ public enum UnitType {
     public static boolean isRobotType(UnitType type){
         return type == SOLDIER || type == SPLASHER || type == MOPPER;
     }
-    
+
     public static boolean isTowerType(UnitType type){
         return !isRobotType(type);
     }
 
     public static boolean canUpgradeType(UnitType type){
-        return type.level == 1 || type.level == 2;
+        return (type.level == 1 || type.level == 2) && isTowerType(type);
     }
 
     public static UnitType getNextLevel(UnitType type){
