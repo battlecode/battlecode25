@@ -217,7 +217,6 @@ public strictfp class ObjectInfo {
     }
 
     private void incrementRobotTypeCount(Team team, UnitType type) {
-        robotTypeCount.get(team);
         if (robotTypeCount.get(team).containsKey(type)) {
             robotTypeCount.get(team).put(type,
                     robotTypeCount.get(team).get(type) + 1);
