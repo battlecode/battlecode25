@@ -54,7 +54,29 @@ public enum UnitType {
     // how much money the unit generates per turn
     public final int moneyPerTurn;
 
+    public static boolean isRobotType(UnitType type){
+        return type == SOLDIER || type == SPLASHER || type == MOPPER;
+    }
     
+    public static boolean isTowerType(UnitType type){
+        return !isRobotType(type);
+    }
+
+    public static boolean canUpgradeType(UnitType type){
+        return type.level == 1 || type.level == 2;
+    }
+
+    public static UnitType getNextLevel(UnitType type){
+        switch (type){
+            case LEVEL_ONE_DEFENSE_TOWER: return LEVEL_TWO_DEFENSE_TOWER;
+            case LEVEL_TWO_DEFENSE_TOWER: return LEVEL_THREE_DEFENSE_TOWER;
+            case LEVEL_ONE_MONEY_TOWER: return LEVEL_TWO_MONEY_TOWER;
+            case LEVEL_TWO_MONEY_TOWER: return LEVEL_THREE_MONEY_TOWER;
+            case LEVEL_ONE_PAINT_TOWER: return LEVEL_TWO_PAINT_TOWER;
+            case LEVEL_TWO_PAINT_TOWER: return LEVEL_THREE_PAINT_TOWER;
+            default: return null;
+        }
+    }
 
     UnitType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
         this.paintCost = paintCost;
