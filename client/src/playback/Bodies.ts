@@ -388,7 +388,7 @@ export class Body {
         hovered: boolean
     ): void {
         const pos = this.getInterpolatedCoords(match)
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentTurn.map.staticMap.dimension)
+        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
         if (this.dead) ctx.globalAlpha = 0.5
         renderUtils.renderCenteredImageOrLoadingIndicator(
             ctx,
@@ -460,7 +460,7 @@ export class Body {
     private drawRadii(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean) {
         const pos = this.getInterpolatedCoords(match)
         if (lightly) ctx.globalAlpha = 0.5
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentTurn.map.staticMap.dimension)
+        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
@@ -476,7 +476,7 @@ export class Body {
     }
 
     private drawIndicators(match: Match, ctx: CanvasRenderingContext2D, lighter: boolean): void {
-        const dimension = match.currentTurn.map.staticMap.dimension
+        const dimension = match.currentRound.map.staticMap.dimension
         // Render indicator dots
         for (const data of this.indicatorDots) {
             ctx.globalAlpha = lighter ? 0.5 : 1
@@ -503,7 +503,7 @@ export class Body {
     }
 
     private drawHealthBar(match: Match, ctx: CanvasRenderingContext2D): void {
-        const dimension = match.currentTurn.map.staticMap.dimension
+        const dimension = match.currentRound.map.staticMap.dimension
         const interpCoords = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(interpCoords.x, interpCoords.y, dimension)
         const hpBarWidth = 0.8
@@ -644,7 +644,7 @@ export const BODY_DEFINITIONS: Record<number, typeof Body> = {
             y: number
         ): void {
             if (level == 0) return
-            const drawCoords = renderUtils.getRenderCoords(x, y, match.currentTurn.map.staticMap.dimension)
+            const drawCoords = renderUtils.getRenderCoords(x, y, match.currentRound.map.staticMap.dimension)
 
             ctx.fillStyle = color
             ctx.strokeStyle = 'black'

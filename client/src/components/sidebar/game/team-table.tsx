@@ -5,7 +5,7 @@ import { schema } from 'battlecode-schema'
 import { TeamRoundStat } from '../../../playback/RoundStat'
 import { DoubleChevronUpIcon } from '../../../icons/chevron'
 import { CurrentMap } from '../../../playback/Map'
-import { useTurn } from '../../../playback/GameRunner'
+import { useRound } from '../../../playback/GameRunner'
 
 interface UnitsIconProps {
     teamIdx: 0 | 1
@@ -28,9 +28,9 @@ interface TeamTableProps {
 }
 
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
-    const turn = useTurn()
-    const teamStat = turn?.stat.getTeamStat(turn?.match.game.teams[props.teamIdx])
-    const map = turn?.map
+    const round = useRound()
+    const teamStat = round?.stat.getTeamStat(round?.match.game.teams[props.teamIdx])
+    const map = round?.map
 
     return (
         <div className="flex flex-col">
