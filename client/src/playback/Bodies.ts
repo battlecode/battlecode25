@@ -68,18 +68,18 @@ export default class Bodies {
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
-    applyDelta(turn: Round, delta: schema.Round, nextDelta: schema.Round | null): void {
+    applyDelta(round: Round, delta: schema.Round, nextDelta: schema.Round | null): void {
         for (const body of this.bodies.values()) if (body.dead) body.jailed = true
         //this.bodies.delete(body.id) in most games
 
         const bodies = delta.spawnedBodies()
-        if (bodies) this.insertBodies(bodies, turn.stat.completed ? undefined : turn.stat)
+        if (bodies) this.insertBodies(bodies, round.stat.completed ? undefined : round.stat)
 
         // Update positions with respect to interpolation. The first call to update will set the body's
         // target location to the value in delta. This is important when the body eventually gets removed
         // because it should still interpolate to its final position. The second call to update will set the
         // target position to the body's true next position iff it exists. In this case, we allow null
-        // bodies and skip them since they may not exist in the next turn. Most of the updates here are extra
+        // bodies and skip them since they may not exist in the next round. Most of the updates here are extra
         // since the first call is really only necessary for bodies that die, so there is potential for
         // optimization.
         this.updateBodyPositions(delta, false)
@@ -137,15 +137,15 @@ export default class Bodies {
             diedBody.hp = 0
         }
 
-        // Calculate some stats that do not need to recalculate every turn if they have
+        // Calculate some stats that do not need to recalculate every round if they have
         // not already been calculated
-        if (!turn.stat.completed) {
-            turn.stat.getTeamStat(this.game.teams[0]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[1]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[0]).robots = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[1]).robots = [0, 0, 0, 0, 0]
+        if (!round.stat.completed) {
+            round.stat.getTeamStat(this.game.teams[0]).specializationTotalLevels = [0, 0, 0, 0, 0]
+            round.stat.getTeamStat(this.game.teams[1]).specializationTotalLevels = [0, 0, 0, 0, 0]
+            round.stat.getTeamStat(this.game.teams[0]).robots = [0, 0, 0, 0, 0]
+            round.stat.getTeamStat(this.game.teams[1]).robots = [0, 0, 0, 0, 0]
             for (const body of this.bodies.values()) {
-                const teamStat = turn.stat.getTeamStat(body.team)
+                const teamStat = round.stat.getTeamStat(body.team)
                 if (body.dead || body.jailed) {
                     teamStat.robots[4] += 1
                     teamStat.specializationTotalLevels[4] += (body.healLevel + body.buildLevel + body.attackLevel) / 3
