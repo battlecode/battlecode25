@@ -700,6 +700,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMopSwing(Direction dir) throws GameActionException {
         assertNotNull(dir);
         assertIsActionReady();
+        assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
         assert(this.robot.getType() == RobotOrTowerType.MOPPER);
 
         if(gameWorld.isSetupPhase()) {

@@ -580,15 +580,25 @@ public strictfp interface RobotController {
     boolean canAttack(MapLocation loc);
 
     /** 
-     * Attack a given location.
+     * Performs the specific attack for this robot type.
      *
-     * @param loc the target location to attack
+     * @param loc the target location to attack (for splashers, the center location)
      * @param useSecondaryColor whether or not the attack should use a secondary color
      * @throws GameActionException if conditions for attacking are not satisfied
      *
      * @battlecode.doc.costlymethod
      */
     void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException;
+    
+    /** 
+     * Performs the specific attack for this robot type, defaulting to the
+     * primary color
+     *
+     * @param loc the target location to attack (for splashers, the center location)
+     * @throws GameActionException if conditions for attacking are not satisfied
+     *
+     * @battlecode.doc.costlymethod
+     */
     void attack(MapLocation loc) throws GameActionException;
 
     /**
