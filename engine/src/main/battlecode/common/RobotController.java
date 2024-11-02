@@ -604,6 +604,7 @@ public strictfp interface RobotController {
      * Performs the specific attack for this robot type.
      *
      * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
      * @param useSecondaryColor whether or not the attack should use a secondary color
      * @throws GameActionException if conditions for attacking are not satisfied
      *
@@ -616,6 +617,7 @@ public strictfp interface RobotController {
      * primary color
      *
      * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
      * @throws GameActionException if conditions for attacking are not satisfied
      *
      * @battlecode.doc.costlymethod

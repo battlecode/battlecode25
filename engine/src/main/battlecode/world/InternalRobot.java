@@ -46,6 +46,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private ArrayList<Trap> trapsToTrigger;
     private ArrayList<Boolean> enteredTraps;
     private Queue<Message> incomingMessages;
+    private boolean towerHasSingleAttacked;
+    private boolean towerHasAreaAttacked;
 
     // the number of messages this robot/tower has sent this turn
     private int sentMessagesCount;
@@ -79,6 +81,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.trapsToTrigger = new ArrayList<>();
         this.enteredTraps = new ArrayList<>();
         this.incomingMessages = new LinkedList<>();
+        this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
 
         this.buildExp = 0;
         this.healExp = 0;
@@ -168,6 +171,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         } else {
             this.paintAmount = newPaintAmount;
         }
+    }
+
+    public boolean hasTowerSingleAttacked() {
+        return this.towerHasSingleAttacked;
+    }
+
+    public boolean hasTowerAreaAttacked() {
+        return this.towerHasAreaAttacked;
     }
 
     public boolean canAddFlag() {
@@ -499,6 +510,34 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         mopperAttack(loc, false);
     }
 
+    public void towerAttack(MapLocation loc) {
+        assert(UnitType.isTowerType(this.type));
+
+        if(loc == null) { // area attack
+            this.towerHasAreaAttacked = true;
+
+            MapLocation[] allLocs = this.gameWorld.getAllLocationsWithinRadiusSquared(this.getLocation(), this.type.actionRadiusSquared);
+            for(MapLocation newLoc : allLocs) {
+                // Attack if there is a unit (only if different team)
+                if(this.gameWorld.getRobot(newLoc) != null) {
+                    InternalRobot unit = this.gameWorld.getRobot(newLoc);
+                    if(this.team != unit.getTeam())
+                        unit.addHealth(-this.type.aoeAttackStrength);
+                }
+            }
+        } else { // single attack
+            this.towerHasSingleAttacked = true;
+
+            if(this.gameWorld.getRobot(loc) != null) {
+                InternalRobot unit = this.gameWorld.getRobot(loc);
+                if(this.team != unit.getTeam())
+                    unit.addHealth(-this.type.attackStrength);
+            }
+        }
+
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
+    }
+
     public void mopSwing(Direction dir) { // NOTE: only works for moppers!
         // swing even if there's not 3 robots there, just remove from existing
         assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
@@ -536,20 +575,19 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param useSecondaryColor whether to use secondary color or not
      */
     public void attack(MapLocation loc, boolean useSecondaryColor) {
-        if(UnitType.isRobotType(this.getType())) { // if we are robot
-            switch(this.getType()) {
-                case UnitType.SOLDIER:
-                    soldierAttack(loc, useSecondaryColor);
-                    break;
-                case UnitType.SPLASHER:
-                    splasherAttack(loc, useSecondaryColor);
-                    break;
-                case UnitType.MOPPER:
-                    mopperAttack(loc, useSecondaryColor);
-                    break; 
-                default:
-                    break;
-            }
+        switch(this.getType()) {
+            case UnitType.SOLDIER:
+                soldierAttack(loc, useSecondaryColor);
+                break;
+            case UnitType.SPLASHER:
+                splasherAttack(loc, useSecondaryColor);
+                break;
+            case UnitType.MOPPER:
+                mopperAttack(loc, useSecondaryColor);
+                break; 
+            default:
+                towerAttack(loc);
+                break;
         }
     }
     public void attack(MapLocation loc) {
@@ -641,6 +679,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void processBeginningOfTurn() {
         this.sentMessagesCount = 0;
+        this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
         this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);

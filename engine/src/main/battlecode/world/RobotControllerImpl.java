@@ -658,8 +658,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assert(this.robot.getPaint() >= UnitType.MOPPER.attackCost);
     }
 
+    private void assertCanAttackTower(MapLocation loc) throws GameActionException {
+        if(loc == null) { // area attack
+            assert(!this.robot.hasTowerAreaAttacked());
+        } else { // single attack
+            assert(!this.robot.hasTowerSingleAttacked());
+            assertCanActLocation(loc, this.robot.getType().actionRadiusSquared);
+        }
+    }
+
     private void assertCanAttack(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
+        assert(loc != null || UnitType.isTowerType(this.robot.getType()));
         assertIsActionReady();
 
         if(gameWorld.isSetupPhase()) {
@@ -678,6 +687,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 assertCanAttackMopper(loc);
                 break; 
             default:
+                assertCanAttackTower(loc);
                 break;
         }
     }
