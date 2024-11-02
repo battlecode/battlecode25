@@ -309,15 +309,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertIsSpawned();
         int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
                 : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
-        ArrayList<MapLocation> ruinInfos = new ArrayList<>();
-
-        for (MapLocation loc : gameWorld.getAllRuins()) {
-            if (loc.distanceSquaredTo(robot.getLocation()) <= actualRadiusSquared) {
-                ruinInfos.add(loc);
-            }
-        }
-
-        return ruinInfos.toArray(new MapLocation[ruinInfos.size()]);
+        return this.gameWorld.getAllRuinsWithinRadiusSquared(getLocation(), actualRadiusSquared);
     }
 
     @Override
@@ -585,19 +577,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
 
-        if (loc.x < GameConstants.PATTERN_SIZE / 2
-                || loc.y < GameConstants.PATTERN_SIZE / 2
-                || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
-                || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
-            throw new GameActionException(CANT_DO_THAT,
-                    "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
-        }
-
         if (!this.gameWorld.hasRuin(loc)) {
             throw new GameActionException(CANT_DO_THAT,
-                    "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
+                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because the center is not a ruin");
+        }
+
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because it is too close to the edge of the map");
         }
     }
 
@@ -622,12 +611,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
 
-        if (loc.x < GameConstants.PATTERN_SIZE / 2
-                || loc.y < GameConstants.PATTERN_SIZE / 2
-                || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
-                || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
-                    "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
+                    "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
         }
     }
@@ -654,23 +640,31 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
 
-        if (loc.x < GameConstants.PATTERN_SIZE / 2
-                || loc.y < GameConstants.PATTERN_SIZE / 2
-                || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
-                || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
+        if (this.gameWorld.hasTower(loc)) {
             throw new GameActionException(CANT_DO_THAT,
-                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                        + ") because the center already contains a tower");
         }
 
         if (!this.gameWorld.hasRuin(loc)) {
             throw new GameActionException(CANT_DO_THAT,
-                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because the center is not a ruin");
         }
 
-        throw new NotImplementedException();
-        // TODO not implemented
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because it is too close to the edge of the map");
+        }
+
+        boolean valid = this.gameWorld.checkTowerPattern(getTeam(), loc);
+
+        if (!valid) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the paint pattern is wrong");
+        }
     }
 
     @Override
@@ -686,18 +680,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void completeTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
         assertCanCompleteTowerPattern(type, loc);
-
-        throw new NotImplementedException();
-        // TODO not implemented
+        this.gameWorld.completeTowerPattern(getTeam(), type, loc);
     }
 
     private void assertCanCompleteResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
 
-        if (loc.x < GameConstants.PATTERN_SIZE / 2
-                || loc.y < GameConstants.PATTERN_SIZE / 2
-                || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
-                || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
