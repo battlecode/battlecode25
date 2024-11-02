@@ -426,7 +426,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if(this.gameWorld.getRobot(loc) != null && UnitType.isTowerType(this.gameWorld.getRobot(loc).getType())) {
             InternalRobot tower = this.gameWorld.getRobot(loc);
             if(this.team != tower.getTeam())
-                tower.addHealth(-UnitType.SOLDIER.attackDamage);
+                tower.addHealth(-UnitType.SOLDIER.attackStrength);
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
             if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
@@ -453,7 +453,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             if(this.gameWorld.getRobot(newLoc) != null && UnitType.isTowerType(this.gameWorld.getRobot(newLoc).getType())) {
                 InternalRobot tower = this.gameWorld.getRobot(newLoc);
                 if(this.team != tower.getTeam())
-                    tower.addHealth(-UnitType.SPLASHER.attackDamage);
+                    tower.addHealth(-UnitType.SPLASHER.attackStrength);
             } else { // otherwise, maybe paint
                 // If the tile is empty or same team paint, paint it
                 if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
