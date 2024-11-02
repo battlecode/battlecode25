@@ -4,7 +4,7 @@ import { Tooltip } from './tooltip'
 import { CurrentMap } from '../../playback/Map'
 import { useMatch, useTurn } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
-import { Pressable, PressEventCoordinates, Space, VirtualSpaceRect } from 'react-zoomable-ui'
+import { Pressable, PressEventCoordinates, Space, ViewPortCamera, VirtualSpaceRect } from 'react-zoomable-ui'
 import { ResetZoomIcon } from '../../icons/resetzoom'
 
 const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -43,6 +43,19 @@ export const GameRendererPanel: React.FC = () => {
         ? { width: spaceRef.current.viewPort.containerWidth, height: spaceRef.current.viewPort.containerHeight }
         : undefined
 
+    React.useEffect(() => {
+        if (spaceRef.current && spaceRef.current.viewPort) {
+            if (!match?.game.playable) {
+                // disable zooming and panning in map editor
+                const vp = spaceRef.current.viewPort
+                vp.setBounds({ x: [0, vp.containerWidth], y: [0, vp.containerHeight], zoom: [1, 1] })
+            } else {
+                const vp = spaceRef.current.viewPort
+                vp.setBounds({ x: [-10000, 10000], y: [-10000, 10000], zoom: [0.1, 10] })
+            }
+        }
+    }, [match?.game.playable])
+
     return (
         <div
             className="relative w-full h-screen flex items-center justify-center"
@@ -58,19 +71,7 @@ export const GameRendererPanel: React.FC = () => {
             {!turn ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
-                <Space
-                    ref={spaceRef}
-                    onUpdated={() => setCanResetCamera(true)}
-                    // onDecideHowToHandlePress={() => {
-                    //     return {
-                    //         potentialTapBounds: 5,
-                    //         onTap: (e: MouseEvent, coords: PressEventCoordinates) => {
-                    //             e.preventDefault()
-                    //         }
-                    //     }
-                    // }}
-                    // onCreate={(vp) => vp.setBounds({ x: [0, 10000], y: [0, 10000], zoom: [1, 10] })}
-                >
+                <Space ref={spaceRef} onUpdated={() => setCanResetCamera(true)}>
                     <GameRendererCanvases>
                         <Tooltip
                             gameAreaRect={gameAreaRect}
@@ -78,7 +79,9 @@ export const GameRendererPanel: React.FC = () => {
                             selectedBodyID={selectedBodyID}
                             hoveredTile={hoveredTile}
                             selectedTile={selectedTile}
-                            clientToVirtualSpace={spaceRef.current?.viewPort?.translateClientXYCoordinatesToVirtualSpace}
+                            clientToVirtualSpace={
+                                spaceRef.current?.viewPort?.translateClientXYCoordinatesToVirtualSpace
+                            }
                         />
                         <HighlightedSquare hoveredTile={hoveredTile} map={turn.map} gameAreaRect={gameAreaRect} />
                     </GameRendererCanvases>

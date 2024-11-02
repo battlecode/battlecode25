@@ -81,7 +81,6 @@ export const Tooltip = ({
         } else {
             tooltipStyle.left = mapLeft + tipPos.x * tileWidth - tooltipSize.width / 2 + 'px'
         }
-
         return tooltipStyle
     }
 
@@ -96,7 +95,7 @@ export const Tooltip = ({
 
     // Check for the default empty size and don't show before the resize observer
     // has updated
-    if (tooltipSize.width == 16 || tooltipSize.height == 16) showFloatingTooltip = false
+    if (tooltipSize.width < 20 || tooltipSize.height < 20) showFloatingTooltip = false
 
     return (
         <div style={{ WebkitUserSelect: 'none', userSelect: 'none' }}>
