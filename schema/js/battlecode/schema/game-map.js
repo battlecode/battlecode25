@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameMap = void 0;
 var flatbuffers = require("flatbuffers");
-var spawned_body_table_1 = require("../../battlecode/schema/spawned-body-table");
+var initial_body_table_1 = require("../../battlecode/schema/initial-body-table");
 var vec_1 = require("../../battlecode/schema/vec");
 var vec_table_1 = require("../../battlecode/schema/vec-table");
 var GameMap = /** @class */ (function () {
@@ -35,9 +35,9 @@ var GameMap = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 8);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
-    GameMap.prototype.bodies = function (obj) {
+    GameMap.prototype.initialBodies = function (obj) {
         var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? (obj || new spawned_body_table_1.SpawnedBodyTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+        return offset ? (obj || new initial_body_table_1.InitialBodyTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
     GameMap.prototype.randomSeed = function () {
         var offset = this.bb.__offset(this.bb_pos, 12);
@@ -111,8 +111,8 @@ var GameMap = /** @class */ (function () {
     GameMap.addSymmetry = function (builder, symmetry) {
         builder.addFieldInt32(2, symmetry, 0);
     };
-    GameMap.addBodies = function (builder, bodiesOffset) {
-        builder.addFieldOffset(3, bodiesOffset, 0);
+    GameMap.addInitialBodies = function (builder, initialBodiesOffset) {
+        builder.addFieldOffset(3, initialBodiesOffset, 0);
     };
     GameMap.addRandomSeed = function (builder, randomSeed) {
         builder.addFieldInt32(4, randomSeed, 0);

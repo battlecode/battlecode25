@@ -40,7 +40,7 @@ winner():number {
  */
 winType():WinType {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.readInt8(this.bb_pos + offset) : WinType.CAPTURE;
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : WinType.AREA_PAINTED;
 }
 
 /**
@@ -73,7 +73,7 @@ static addWinner(builder:flatbuffers.Builder, winner:number) {
 }
 
 static addWinType(builder:flatbuffers.Builder, winType:WinType) {
-  builder.addFieldInt8(1, winType, WinType.CAPTURE);
+  builder.addFieldInt8(1, winType, WinType.AREA_PAINTED);
 }
 
 static addTotalRounds(builder:flatbuffers.Builder, totalRounds:number) {

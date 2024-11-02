@@ -2,10 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { BuildActionMetadata } from '../../battlecode/schema/build-action-metadata';
 import { GameplayConstants } from '../../battlecode/schema/gameplay-constants';
-import { GlobalUpgradeMetadata } from '../../battlecode/schema/global-upgrade-metadata';
-import { SpecializationMetadata } from '../../battlecode/schema/specialization-metadata';
 import { TeamData } from '../../battlecode/schema/team-data';
 
 
@@ -47,43 +44,13 @@ teamsLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-specializationMetadata(index: number, obj?:SpecializationMetadata):SpecializationMetadata|null {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? (obj || new SpecializationMetadata()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-}
-
-specializationMetadataLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-buildActionMetadata(index: number, obj?:BuildActionMetadata):BuildActionMetadata|null {
-  const offset = this.bb!.__offset(this.bb_pos, 10);
-  return offset ? (obj || new BuildActionMetadata()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-}
-
-buildActionMetadataLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 10);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-globalUpgradeMetadata(index: number, obj?:GlobalUpgradeMetadata):GlobalUpgradeMetadata|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? (obj || new GlobalUpgradeMetadata()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-}
-
-globalUpgradeMetadataLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
 constants(obj?:GameplayConstants):GameplayConstants|null {
-  const offset = this.bb!.__offset(this.bb_pos, 14);
+  const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? (obj || new GameplayConstants()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 static startGameHeader(builder:flatbuffers.Builder) {
-  builder.startObject(6);
+  builder.startObject(3);
 }
 
 static addSpecVersion(builder:flatbuffers.Builder, specVersionOffset:flatbuffers.Offset) {
@@ -106,56 +73,8 @@ static startTeamsVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
-static addSpecializationMetadata(builder:flatbuffers.Builder, specializationMetadataOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, specializationMetadataOffset, 0);
-}
-
-static createSpecializationMetadataVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startSpecializationMetadataVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
-}
-
-static addBuildActionMetadata(builder:flatbuffers.Builder, buildActionMetadataOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, buildActionMetadataOffset, 0);
-}
-
-static createBuildActionMetadataVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startBuildActionMetadataVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
-}
-
-static addGlobalUpgradeMetadata(builder:flatbuffers.Builder, globalUpgradeMetadataOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(4, globalUpgradeMetadataOffset, 0);
-}
-
-static createGlobalUpgradeMetadataVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startGlobalUpgradeMetadataVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
-}
-
 static addConstants(builder:flatbuffers.Builder, constantsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(5, constantsOffset, 0);
+  builder.addFieldOffset(2, constantsOffset, 0);
 }
 
 static endGameHeader(builder:flatbuffers.Builder):flatbuffers.Offset {

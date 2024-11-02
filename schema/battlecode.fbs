@@ -45,11 +45,6 @@ enum WinType: byte {
     RANDOM
 }
 
-table GlobalUpgradeMetadata {
-    type: GlobalUpgradeType;
-    upgradeAmount: int;
-}
-
 // A list of initial bodies to be placed on the map.
 table InitialBodyTable {
     robotIds: [int];
@@ -126,15 +121,16 @@ struct MopAction {
 }
 
 struct BuildAction {
-    
+    id: ushort;
 }
 
 struct TransferAction {
-    
+    id: ushort;
 }
 
 struct MessageAction {
-    
+    id: ushort;
+    data: int;
 }
 
 struct SpawnAction {
@@ -145,10 +141,10 @@ struct SpawnAction {
 }
 
 struct UpgradeAction {
-    
+    id: ushort;
 }
 
-struct IndicatorStringAction {
+table IndicatorStringAction {
     value: string;
 }
 
@@ -164,12 +160,19 @@ struct IndicatorLineAction {
 }
 
 union Action {
-    AttackAction,
+    DamageAction,
     PaintAction,
+    UnpaintAction,
+    AttackAction,
     MopAction,
     BuildAction,
     TransferAction, 
     MessageAction,
+    SpawnAction,
+    UpgradeAction,
+    IndicatorStringAction,
+    IndicatorDotAction,
+    IndicatorLineAction
 }
 
 //========================================================================================
@@ -264,7 +267,7 @@ table MatchFooter {
     profilerFiles: [ProfilerFile];
 }
 
-table RobotTurn {
+table Turn {
     robotId: int;
     health: int;
     paint: int;
@@ -275,10 +278,7 @@ table RobotTurn {
     actions: [Action];
 }
 
-/// A single time-step in a Game.
-/// The bulk of the data in the file is stored in tables like this.
-/// Note that a struct-of-arrays format is more space efficient than an array-
-/// of-structs.
+/// A single time-step in a Game, which contains a list of robot turns
 table Round {
     /// The IDs of teams in the Game.
     teamIds: [int];
@@ -286,7 +286,7 @@ table Round {
     teamResourceAmounts: [int];
 
     /// Ordered turn data for each robot during the round
-    turns: [RobotTurn]
+    turns: [Turn];
 
     /// The IDs of bodies that died.
     diedIds: [int];

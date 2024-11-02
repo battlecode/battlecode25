@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { SpawnedBodyTable } from '../../battlecode/schema/spawned-body-table';
+import { InitialBodyTable } from '../../battlecode/schema/initial-body-table';
 import { Vec } from '../../battlecode/schema/vec';
 import { VecTable } from '../../battlecode/schema/vec-table';
 
@@ -42,9 +42,9 @@ symmetry():number {
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
-bodies(obj?:SpawnedBodyTable):SpawnedBodyTable|null {
+initialBodies(obj?:InitialBodyTable):InitialBodyTable|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
-  return offset ? (obj || new SpawnedBodyTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? (obj || new InitialBodyTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 randomSeed():number {
@@ -138,8 +138,8 @@ static addSymmetry(builder:flatbuffers.Builder, symmetry:number) {
   builder.addFieldInt32(2, symmetry, 0);
 }
 
-static addBodies(builder:flatbuffers.Builder, bodiesOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, bodiesOffset, 0);
+static addInitialBodies(builder:flatbuffers.Builder, initialBodiesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, initialBodiesOffset, 0);
 }
 
 static addRandomSeed(builder:flatbuffers.Builder, randomSeed:number) {

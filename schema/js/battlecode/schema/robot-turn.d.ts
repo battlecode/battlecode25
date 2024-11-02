@@ -1,0 +1,37 @@
+import * as flatbuffers from 'flatbuffers';
+import { Action } from '../../battlecode/schema/action';
+export declare class RobotTurn {
+    bb: flatbuffers.ByteBuffer | null;
+    bb_pos: number;
+    __init(i: number, bb: flatbuffers.ByteBuffer): RobotTurn;
+    static getRootAsRobotTurn(bb: flatbuffers.ByteBuffer, obj?: RobotTurn): RobotTurn;
+    static getSizePrefixedRootAsRobotTurn(bb: flatbuffers.ByteBuffer, obj?: RobotTurn): RobotTurn;
+    robotId(): number;
+    health(): number;
+    paint(): number;
+    moveCooldown(): number;
+    actionCooldown(): number;
+    x(): number;
+    y(): number;
+    actionsType(index: number): Action | null;
+    actionsTypeLength(): number;
+    actionsTypeArray(): Uint8Array | null;
+    actions(index: number, obj: any): any | null;
+    actionsLength(): number;
+    static startRobotTurn(builder: flatbuffers.Builder): void;
+    static addRobotId(builder: flatbuffers.Builder, robotId: number): void;
+    static addHealth(builder: flatbuffers.Builder, health: number): void;
+    static addPaint(builder: flatbuffers.Builder, paint: number): void;
+    static addMoveCooldown(builder: flatbuffers.Builder, moveCooldown: number): void;
+    static addActionCooldown(builder: flatbuffers.Builder, actionCooldown: number): void;
+    static addX(builder: flatbuffers.Builder, x: number): void;
+    static addY(builder: flatbuffers.Builder, y: number): void;
+    static addActionsType(builder: flatbuffers.Builder, actionsTypeOffset: flatbuffers.Offset): void;
+    static createActionsTypeVector(builder: flatbuffers.Builder, data: Action[]): flatbuffers.Offset;
+    static startActionsTypeVector(builder: flatbuffers.Builder, numElems: number): void;
+    static addActions(builder: flatbuffers.Builder, actionsOffset: flatbuffers.Offset): void;
+    static createActionsVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
+    static startActionsVector(builder: flatbuffers.Builder, numElems: number): void;
+    static endRobotTurn(builder: flatbuffers.Builder): flatbuffers.Offset;
+    static createRobotTurn(builder: flatbuffers.Builder, robotId: number, health: number, paint: number, moveCooldown: number, actionCooldown: number, x: number, y: number, actionsTypeOffset: flatbuffers.Offset, actionsOffset: flatbuffers.Offset): flatbuffers.Offset;
+}

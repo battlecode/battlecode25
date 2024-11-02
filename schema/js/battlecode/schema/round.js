@@ -3,15 +3,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Round = void 0;
 var flatbuffers = require("flatbuffers");
-var comm_table_1 = require("../../battlecode/schema/comm-table");
-var rgbtable_1 = require("../../battlecode/schema/rgbtable");
-var spawned_body_table_1 = require("../../battlecode/schema/spawned-body-table");
-var vec_table_1 = require("../../battlecode/schema/vec-table");
+var turn_1 = require("../../battlecode/schema/turn");
 /**
- * A single time-step in a Game.
- * The bulk of the data in the file is stored in tables like this.
- * Note that a struct-of-arrays format is more space efficient than an array-
- * of-structs.
+ * A single time-step in a Game, which contains a list of robot turns
  */
 var Round = /** @class */ (function () {
     function Round() {
@@ -60,353 +54,31 @@ var Round = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 6);
         return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
-    Round.prototype.teamCommunication = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 8);
-        return offset ? (obj || new comm_table_1.CommTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    Round.prototype.robotIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.robotIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.robotIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.robotLocs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 12);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    Round.prototype.robotMoveCooldowns = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 14);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.robotMoveCooldownsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 14);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.robotMoveCooldownsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 14);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.robotActionCooldowns = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.robotActionCooldownsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.robotActionCooldownsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.robotHealths = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 18);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.robotHealthsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 18);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.robotHealthsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 18);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.attacksPerformed = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 20);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.attacksPerformedLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 20);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.attacksPerformedArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 20);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.attackLevels = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 22);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.attackLevelsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 22);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.attackLevelsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 22);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.buildsPerformed = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 24);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.buildsPerformedLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 24);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.buildsPerformedArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 24);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.buildLevels = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 26);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.buildLevelsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 26);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.buildLevelsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 26);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.healsPerformed = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 28);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.healsPerformedLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 28);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.healsPerformedArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 28);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.healLevels = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 30);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.healLevelsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 30);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.healLevelsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 30);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
     /**
-     * New bodies.
+     * Ordered turn data for each robot during the round
      */
-    Round.prototype.spawnedBodies = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 32);
-        return offset ? (obj || new spawned_body_table_1.SpawnedBodyTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+    Round.prototype.turns = function (index, obj) {
+        var offset = this.bb.__offset(this.bb_pos, 8);
+        return offset ? (obj || new turn_1.Turn()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+    };
+    Round.prototype.turnsLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 8);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
     /**
      * The IDs of bodies that died.
      */
     Round.prototype.diedIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 34);
+        var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
     Round.prototype.diedIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 34);
+        var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
     Round.prototype.diedIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 34);
+        var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    /**
-     * The IDs of robots that performed actions.
-     * IDs may repeat.
-     */
-    Round.prototype.actionIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 36);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.actionIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 36);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.actionIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 36);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    /**
-     * The actions performed. These actions allow us to track many things about the current state.
-     */
-    Round.prototype.actions = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 38);
-        return offset ? this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-    };
-    Round.prototype.actionsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 38);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.actionsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 38);
-        return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    /**
-     * The 'targets' of the performed actions. Actions without targets may have any value
-     */
-    Round.prototype.actionTargets = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 40);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.actionTargetsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 40);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.actionTargetsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 40);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.claimedResourcePiles = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 42);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    Round.prototype.trapAddedIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 44);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.trapAddedIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 44);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.trapAddedIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 44);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.trapAddedLocations = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 46);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    Round.prototype.trapAddedTypes = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 48);
-        return offset ? this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-    };
-    Round.prototype.trapAddedTypesLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 48);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.trapAddedTypesArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 48);
-        return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.trapAddedTeams = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 50);
-        return offset ? this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-    };
-    Round.prototype.trapAddedTeamsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 50);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.trapAddedTeamsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 50);
-        return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.trapTriggeredIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 52);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.trapTriggeredIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 52);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.trapTriggeredIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 52);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.digLocations = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 54);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    Round.prototype.fillLocations = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 56);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    /**
-     * The IDs of the robots who changed their indicator strings
-     */
-    Round.prototype.indicatorStringIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 58);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.indicatorStringIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 58);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.indicatorStringIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 58);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    Round.prototype.indicatorStrings = function (index, optionalEncoding) {
-        var offset = this.bb.__offset(this.bb_pos, 60);
-        return offset ? this.bb.__string(this.bb.__vector(this.bb_pos + offset) + index * 4, optionalEncoding) : null;
-    };
-    Round.prototype.indicatorStringsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 60);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    /**
-     * The IDs of bodies that set indicator dots
-     */
-    Round.prototype.indicatorDotIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 62);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.indicatorDotIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 62);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.indicatorDotIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 62);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    /**
-     * The location of the indicator dots
-     */
-    Round.prototype.indicatorDotLocs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 64);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    /**
-     * The RGB values of the indicator dots
-     */
-    Round.prototype.indicatorDotRgbs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 66);
-        return offset ? (obj || new rgbtable_1.RGBTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    /**
-     * The IDs of bodies that set indicator lines
-     */
-    Round.prototype.indicatorLineIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 68);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    Round.prototype.indicatorLineIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 68);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    Round.prototype.indicatorLineIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 68);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    /**
-     * The start location of the indicator lines
-     */
-    Round.prototype.indicatorLineStartLocs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 70);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    /**
-     * The end location of the indicator lines
-     */
-    Round.prototype.indicatorLineEndLocs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 72);
-        return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
-    };
-    /**
-     * The RGB values of the indicator lines
-     */
-    Round.prototype.indicatorLineRgbs = function (obj) {
-        var offset = this.bb.__offset(this.bb_pos, 74);
-        return offset ? (obj || new rgbtable_1.RGBTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
     /**
      * The first sent Round in a match should have index 1. (The starting state,
@@ -414,41 +86,41 @@ var Round = /** @class */ (function () {
      * It should increase by one for each following round.
      */
     Round.prototype.roundId = function () {
-        var offset = this.bb.__offset(this.bb_pos, 76);
+        var offset = this.bb.__offset(this.bb_pos, 12);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
     /**
      * The IDs of player bodies.
      */
     Round.prototype.bytecodeIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 78);
+        var offset = this.bb.__offset(this.bb_pos, 14);
         return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
     Round.prototype.bytecodeIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 78);
+        var offset = this.bb.__offset(this.bb_pos, 14);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
     Round.prototype.bytecodeIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 78);
+        var offset = this.bb.__offset(this.bb_pos, 14);
         return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
     /**
      * The bytecodes used by the player bodies.
      */
     Round.prototype.bytecodesUsed = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 80);
+        var offset = this.bb.__offset(this.bb_pos, 16);
         return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
     Round.prototype.bytecodesUsedLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 80);
+        var offset = this.bb.__offset(this.bb_pos, 16);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
     Round.prototype.bytecodesUsedArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 80);
+        var offset = this.bb.__offset(this.bb_pos, 16);
         return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
     Round.startRound = function (builder) {
-        builder.startObject(39);
+        builder.startObject(7);
     };
     Round.addTeamIds = function (builder, teamIdsOffset) {
         builder.addFieldOffset(0, teamIdsOffset, 0);
@@ -476,147 +148,21 @@ var Round = /** @class */ (function () {
     Round.startTeamResourceAmountsVector = function (builder, numElems) {
         builder.startVector(4, numElems, 4);
     };
-    Round.addTeamCommunication = function (builder, teamCommunicationOffset) {
-        builder.addFieldOffset(2, teamCommunicationOffset, 0);
+    Round.addTurns = function (builder, turnsOffset) {
+        builder.addFieldOffset(2, turnsOffset, 0);
     };
-    Round.addRobotIds = function (builder, robotIdsOffset) {
-        builder.addFieldOffset(3, robotIdsOffset, 0);
-    };
-    Round.createRobotIdsVector = function (builder, data) {
+    Round.createTurnsVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
         for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
+            builder.addOffset(data[i]);
         }
         return builder.endVector();
     };
-    Round.startRobotIdsVector = function (builder, numElems) {
+    Round.startTurnsVector = function (builder, numElems) {
         builder.startVector(4, numElems, 4);
-    };
-    Round.addRobotLocs = function (builder, robotLocsOffset) {
-        builder.addFieldOffset(4, robotLocsOffset, 0);
-    };
-    Round.addRobotMoveCooldowns = function (builder, robotMoveCooldownsOffset) {
-        builder.addFieldOffset(5, robotMoveCooldownsOffset, 0);
-    };
-    Round.createRobotMoveCooldownsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startRobotMoveCooldownsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addRobotActionCooldowns = function (builder, robotActionCooldownsOffset) {
-        builder.addFieldOffset(6, robotActionCooldownsOffset, 0);
-    };
-    Round.createRobotActionCooldownsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startRobotActionCooldownsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addRobotHealths = function (builder, robotHealthsOffset) {
-        builder.addFieldOffset(7, robotHealthsOffset, 0);
-    };
-    Round.createRobotHealthsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startRobotHealthsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addAttacksPerformed = function (builder, attacksPerformedOffset) {
-        builder.addFieldOffset(8, attacksPerformedOffset, 0);
-    };
-    Round.createAttacksPerformedVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startAttacksPerformedVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addAttackLevels = function (builder, attackLevelsOffset) {
-        builder.addFieldOffset(9, attackLevelsOffset, 0);
-    };
-    Round.createAttackLevelsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startAttackLevelsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addBuildsPerformed = function (builder, buildsPerformedOffset) {
-        builder.addFieldOffset(10, buildsPerformedOffset, 0);
-    };
-    Round.createBuildsPerformedVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startBuildsPerformedVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addBuildLevels = function (builder, buildLevelsOffset) {
-        builder.addFieldOffset(11, buildLevelsOffset, 0);
-    };
-    Round.createBuildLevelsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startBuildLevelsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addHealsPerformed = function (builder, healsPerformedOffset) {
-        builder.addFieldOffset(12, healsPerformedOffset, 0);
-    };
-    Round.createHealsPerformedVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startHealsPerformedVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addHealLevels = function (builder, healLevelsOffset) {
-        builder.addFieldOffset(13, healLevelsOffset, 0);
-    };
-    Round.createHealLevelsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startHealLevelsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addSpawnedBodies = function (builder, spawnedBodiesOffset) {
-        builder.addFieldOffset(14, spawnedBodiesOffset, 0);
     };
     Round.addDiedIds = function (builder, diedIdsOffset) {
-        builder.addFieldOffset(15, diedIdsOffset, 0);
+        builder.addFieldOffset(3, diedIdsOffset, 0);
     };
     Round.createDiedIdsVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
@@ -628,181 +174,11 @@ var Round = /** @class */ (function () {
     Round.startDiedIdsVector = function (builder, numElems) {
         builder.startVector(4, numElems, 4);
     };
-    Round.addActionIds = function (builder, actionIdsOffset) {
-        builder.addFieldOffset(16, actionIdsOffset, 0);
-    };
-    Round.createActionIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startActionIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addActions = function (builder, actionsOffset) {
-        builder.addFieldOffset(17, actionsOffset, 0);
-    };
-    Round.createActionsVector = function (builder, data) {
-        builder.startVector(1, data.length, 1);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt8(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startActionsVector = function (builder, numElems) {
-        builder.startVector(1, numElems, 1);
-    };
-    Round.addActionTargets = function (builder, actionTargetsOffset) {
-        builder.addFieldOffset(18, actionTargetsOffset, 0);
-    };
-    Round.createActionTargetsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startActionTargetsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addClaimedResourcePiles = function (builder, claimedResourcePilesOffset) {
-        builder.addFieldOffset(19, claimedResourcePilesOffset, 0);
-    };
-    Round.addTrapAddedIds = function (builder, trapAddedIdsOffset) {
-        builder.addFieldOffset(20, trapAddedIdsOffset, 0);
-    };
-    Round.createTrapAddedIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startTrapAddedIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addTrapAddedLocations = function (builder, trapAddedLocationsOffset) {
-        builder.addFieldOffset(21, trapAddedLocationsOffset, 0);
-    };
-    Round.addTrapAddedTypes = function (builder, trapAddedTypesOffset) {
-        builder.addFieldOffset(22, trapAddedTypesOffset, 0);
-    };
-    Round.createTrapAddedTypesVector = function (builder, data) {
-        builder.startVector(1, data.length, 1);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt8(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startTrapAddedTypesVector = function (builder, numElems) {
-        builder.startVector(1, numElems, 1);
-    };
-    Round.addTrapAddedTeams = function (builder, trapAddedTeamsOffset) {
-        builder.addFieldOffset(23, trapAddedTeamsOffset, 0);
-    };
-    Round.createTrapAddedTeamsVector = function (builder, data) {
-        builder.startVector(1, data.length, 1);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt8(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startTrapAddedTeamsVector = function (builder, numElems) {
-        builder.startVector(1, numElems, 1);
-    };
-    Round.addTrapTriggeredIds = function (builder, trapTriggeredIdsOffset) {
-        builder.addFieldOffset(24, trapTriggeredIdsOffset, 0);
-    };
-    Round.createTrapTriggeredIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startTrapTriggeredIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addDigLocations = function (builder, digLocationsOffset) {
-        builder.addFieldOffset(25, digLocationsOffset, 0);
-    };
-    Round.addFillLocations = function (builder, fillLocationsOffset) {
-        builder.addFieldOffset(26, fillLocationsOffset, 0);
-    };
-    Round.addIndicatorStringIds = function (builder, indicatorStringIdsOffset) {
-        builder.addFieldOffset(27, indicatorStringIdsOffset, 0);
-    };
-    Round.createIndicatorStringIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startIndicatorStringIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addIndicatorStrings = function (builder, indicatorStringsOffset) {
-        builder.addFieldOffset(28, indicatorStringsOffset, 0);
-    };
-    Round.createIndicatorStringsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addOffset(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startIndicatorStringsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addIndicatorDotIds = function (builder, indicatorDotIdsOffset) {
-        builder.addFieldOffset(29, indicatorDotIdsOffset, 0);
-    };
-    Round.createIndicatorDotIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startIndicatorDotIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addIndicatorDotLocs = function (builder, indicatorDotLocsOffset) {
-        builder.addFieldOffset(30, indicatorDotLocsOffset, 0);
-    };
-    Round.addIndicatorDotRgbs = function (builder, indicatorDotRgbsOffset) {
-        builder.addFieldOffset(31, indicatorDotRgbsOffset, 0);
-    };
-    Round.addIndicatorLineIds = function (builder, indicatorLineIdsOffset) {
-        builder.addFieldOffset(32, indicatorLineIdsOffset, 0);
-    };
-    Round.createIndicatorLineIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    Round.startIndicatorLineIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    Round.addIndicatorLineStartLocs = function (builder, indicatorLineStartLocsOffset) {
-        builder.addFieldOffset(33, indicatorLineStartLocsOffset, 0);
-    };
-    Round.addIndicatorLineEndLocs = function (builder, indicatorLineEndLocsOffset) {
-        builder.addFieldOffset(34, indicatorLineEndLocsOffset, 0);
-    };
-    Round.addIndicatorLineRgbs = function (builder, indicatorLineRgbsOffset) {
-        builder.addFieldOffset(35, indicatorLineRgbsOffset, 0);
-    };
     Round.addRoundId = function (builder, roundId) {
-        builder.addFieldInt32(36, roundId, 0);
+        builder.addFieldInt32(4, roundId, 0);
     };
     Round.addBytecodeIds = function (builder, bytecodeIdsOffset) {
-        builder.addFieldOffset(37, bytecodeIdsOffset, 0);
+        builder.addFieldOffset(5, bytecodeIdsOffset, 0);
     };
     Round.createBytecodeIdsVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
@@ -815,7 +191,7 @@ var Round = /** @class */ (function () {
         builder.startVector(4, numElems, 4);
     };
     Round.addBytecodesUsed = function (builder, bytecodesUsedOffset) {
-        builder.addFieldOffset(38, bytecodesUsedOffset, 0);
+        builder.addFieldOffset(6, bytecodesUsedOffset, 0);
     };
     Round.createBytecodesUsedVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
@@ -830,6 +206,17 @@ var Round = /** @class */ (function () {
     Round.endRound = function (builder) {
         var offset = builder.endObject();
         return offset;
+    };
+    Round.createRound = function (builder, teamIdsOffset, teamResourceAmountsOffset, turnsOffset, diedIdsOffset, roundId, bytecodeIdsOffset, bytecodesUsedOffset) {
+        Round.startRound(builder);
+        Round.addTeamIds(builder, teamIdsOffset);
+        Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
+        Round.addTurns(builder, turnsOffset);
+        Round.addDiedIds(builder, diedIdsOffset);
+        Round.addRoundId(builder, roundId);
+        Round.addBytecodeIds(builder, bytecodeIdsOffset);
+        Round.addBytecodesUsed(builder, bytecodesUsedOffset);
+        return Round.endRound(builder);
     };
     return Round;
 }());

@@ -38,56 +38,26 @@ public final class GameHeader extends Table {
   public int teamsLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
   public battlecode.schema.TeamData.Vector teamsVector() { return teamsVector(new battlecode.schema.TeamData.Vector()); }
   public battlecode.schema.TeamData.Vector teamsVector(battlecode.schema.TeamData.Vector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
-  public battlecode.schema.SpecializationMetadata specializationMetadata(int j) { return specializationMetadata(new battlecode.schema.SpecializationMetadata(), j); }
-  public battlecode.schema.SpecializationMetadata specializationMetadata(battlecode.schema.SpecializationMetadata obj, int j) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int specializationMetadataLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
-  public battlecode.schema.SpecializationMetadata.Vector specializationMetadataVector() { return specializationMetadataVector(new battlecode.schema.SpecializationMetadata.Vector()); }
-  public battlecode.schema.SpecializationMetadata.Vector specializationMetadataVector(battlecode.schema.SpecializationMetadata.Vector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
-  public battlecode.schema.BuildActionMetadata buildActionMetadata(int j) { return buildActionMetadata(new battlecode.schema.BuildActionMetadata(), j); }
-  public battlecode.schema.BuildActionMetadata buildActionMetadata(battlecode.schema.BuildActionMetadata obj, int j) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int buildActionMetadataLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
-  public battlecode.schema.BuildActionMetadata.Vector buildActionMetadataVector() { return buildActionMetadataVector(new battlecode.schema.BuildActionMetadata.Vector()); }
-  public battlecode.schema.BuildActionMetadata.Vector buildActionMetadataVector(battlecode.schema.BuildActionMetadata.Vector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
-  public battlecode.schema.GlobalUpgradeMetadata globalUpgradeMetadata(int j) { return globalUpgradeMetadata(new battlecode.schema.GlobalUpgradeMetadata(), j); }
-  public battlecode.schema.GlobalUpgradeMetadata globalUpgradeMetadata(battlecode.schema.GlobalUpgradeMetadata obj, int j) { int o = __offset(12); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int globalUpgradeMetadataLength() { int o = __offset(12); return o != 0 ? __vector_len(o) : 0; }
-  public battlecode.schema.GlobalUpgradeMetadata.Vector globalUpgradeMetadataVector() { return globalUpgradeMetadataVector(new battlecode.schema.GlobalUpgradeMetadata.Vector()); }
-  public battlecode.schema.GlobalUpgradeMetadata.Vector globalUpgradeMetadataVector(battlecode.schema.GlobalUpgradeMetadata.Vector obj) { int o = __offset(12); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
   public battlecode.schema.GameplayConstants constants() { return constants(new battlecode.schema.GameplayConstants()); }
-  public battlecode.schema.GameplayConstants constants(battlecode.schema.GameplayConstants obj) { int o = __offset(14); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public battlecode.schema.GameplayConstants constants(battlecode.schema.GameplayConstants obj) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
   public static int createGameHeader(FlatBufferBuilder builder,
       int specVersionOffset,
       int teamsOffset,
-      int specializationMetadataOffset,
-      int buildActionMetadataOffset,
-      int globalUpgradeMetadataOffset,
       int constantsOffset) {
-    builder.startTable(6);
+    builder.startTable(3);
     GameHeader.addConstants(builder, constantsOffset);
-    GameHeader.addGlobalUpgradeMetadata(builder, globalUpgradeMetadataOffset);
-    GameHeader.addBuildActionMetadata(builder, buildActionMetadataOffset);
-    GameHeader.addSpecializationMetadata(builder, specializationMetadataOffset);
     GameHeader.addTeams(builder, teamsOffset);
     GameHeader.addSpecVersion(builder, specVersionOffset);
     return GameHeader.endGameHeader(builder);
   }
 
-  public static void startGameHeader(FlatBufferBuilder builder) { builder.startTable(6); }
+  public static void startGameHeader(FlatBufferBuilder builder) { builder.startTable(3); }
   public static void addSpecVersion(FlatBufferBuilder builder, int specVersionOffset) { builder.addOffset(0, specVersionOffset, 0); }
   public static void addTeams(FlatBufferBuilder builder, int teamsOffset) { builder.addOffset(1, teamsOffset, 0); }
   public static int createTeamsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
   public static void startTeamsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addSpecializationMetadata(FlatBufferBuilder builder, int specializationMetadataOffset) { builder.addOffset(2, specializationMetadataOffset, 0); }
-  public static int createSpecializationMetadataVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
-  public static void startSpecializationMetadataVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addBuildActionMetadata(FlatBufferBuilder builder, int buildActionMetadataOffset) { builder.addOffset(3, buildActionMetadataOffset, 0); }
-  public static int createBuildActionMetadataVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
-  public static void startBuildActionMetadataVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addGlobalUpgradeMetadata(FlatBufferBuilder builder, int globalUpgradeMetadataOffset) { builder.addOffset(4, globalUpgradeMetadataOffset, 0); }
-  public static int createGlobalUpgradeMetadataVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
-  public static void startGlobalUpgradeMetadataVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addConstants(FlatBufferBuilder builder, int constantsOffset) { builder.addOffset(5, constantsOffset, 0); }
+  public static void addConstants(FlatBufferBuilder builder, int constantsOffset) { builder.addOffset(2, constantsOffset, 0); }
   public static int endGameHeader(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

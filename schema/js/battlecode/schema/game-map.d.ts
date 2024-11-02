@@ -1,5 +1,5 @@
 import * as flatbuffers from 'flatbuffers';
-import { SpawnedBodyTable } from '../../battlecode/schema/spawned-body-table';
+import { InitialBodyTable } from '../../battlecode/schema/initial-body-table';
 import { Vec } from '../../battlecode/schema/vec';
 import { VecTable } from '../../battlecode/schema/vec-table';
 export declare class GameMap {
@@ -12,7 +12,7 @@ export declare class GameMap {
     name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     size(obj?: Vec): Vec | null;
     symmetry(): number;
-    bodies(obj?: SpawnedBodyTable): SpawnedBodyTable | null;
+    initialBodies(obj?: InitialBodyTable): InitialBodyTable | null;
     randomSeed(): number;
     walls(index: number): boolean | null;
     wallsLength(): number;
@@ -32,7 +32,7 @@ export declare class GameMap {
     static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset): void;
     static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset): void;
     static addSymmetry(builder: flatbuffers.Builder, symmetry: number): void;
-    static addBodies(builder: flatbuffers.Builder, bodiesOffset: flatbuffers.Offset): void;
+    static addInitialBodies(builder: flatbuffers.Builder, initialBodiesOffset: flatbuffers.Offset): void;
     static addRandomSeed(builder: flatbuffers.Builder, randomSeed: number): void;
     static addWalls(builder: flatbuffers.Builder, wallsOffset: flatbuffers.Offset): void;
     static createWallsVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;

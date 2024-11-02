@@ -33,8 +33,8 @@ public final class GameMap extends Table {
   public battlecode.schema.Vec size() { return size(new battlecode.schema.Vec()); }
   public battlecode.schema.Vec size(battlecode.schema.Vec obj) { int o = __offset(6); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
   public int symmetry() { int o = __offset(8); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public battlecode.schema.SpawnedBodyTable bodies() { return bodies(new battlecode.schema.SpawnedBodyTable()); }
-  public battlecode.schema.SpawnedBodyTable bodies(battlecode.schema.SpawnedBodyTable obj) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public battlecode.schema.InitialBodyTable initialBodies() { return initialBodies(new battlecode.schema.InitialBodyTable()); }
+  public battlecode.schema.InitialBodyTable initialBodies(battlecode.schema.InitialBodyTable obj) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
   public int randomSeed() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
   public boolean walls(int j) { int o = __offset(14); return o != 0 ? 0!=bb.get(__vector(o) + j * 1) : false; }
   public int wallsLength() { int o = __offset(14); return o != 0 ? __vector_len(o) : 0; }
@@ -69,7 +69,7 @@ public final class GameMap extends Table {
   public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(0, nameOffset, 0); }
   public static void addSize(FlatBufferBuilder builder, int sizeOffset) { builder.addStruct(1, sizeOffset, 0); }
   public static void addSymmetry(FlatBufferBuilder builder, int symmetry) { builder.addInt(2, symmetry, 0); }
-  public static void addBodies(FlatBufferBuilder builder, int bodiesOffset) { builder.addOffset(3, bodiesOffset, 0); }
+  public static void addInitialBodies(FlatBufferBuilder builder, int initialBodiesOffset) { builder.addOffset(3, initialBodiesOffset, 0); }
   public static void addRandomSeed(FlatBufferBuilder builder, int randomSeed) { builder.addInt(4, randomSeed, 0); }
   public static void addWalls(FlatBufferBuilder builder, int wallsOffset) { builder.addOffset(5, wallsOffset, 0); }
   public static int createWallsVector(FlatBufferBuilder builder, boolean[] data) { builder.startVector(1, data.length, 1); for (int i = data.length - 1; i >= 0; i--) builder.addBoolean(data[i]); return builder.endVector(); }

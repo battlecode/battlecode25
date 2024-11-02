@@ -1,8 +1,8 @@
 export declare enum WinType {
-    CAPTURE = 0,
-    MORE_FLAG_CAPTURES = 1,
-    LEVEL_SUM = 2,
-    MORE_BREAD = 3,
-    COIN_FLIP = 4,
-    RESIGNATION = 5
+    AREA_PAINTED = 0,
+    MORE_TOWERS = 1,
+    MORE_MONEY = 2,
+    MORE_STORED_PAINT = 3,
+    MORE_ROBOTS = 4,
+    RANDOM = 5
 }

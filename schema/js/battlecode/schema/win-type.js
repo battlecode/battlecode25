@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WinType = void 0;
 var WinType;
 (function (WinType) {
-    WinType[WinType["CAPTURE"] = 0] = "CAPTURE";
-    WinType[WinType["MORE_FLAG_CAPTURES"] = 1] = "MORE_FLAG_CAPTURES";
-    WinType[WinType["LEVEL_SUM"] = 2] = "LEVEL_SUM";
-    WinType[WinType["MORE_BREAD"] = 3] = "MORE_BREAD";
-    WinType[WinType["COIN_FLIP"] = 4] = "COIN_FLIP";
-    WinType[WinType["RESIGNATION"] = 5] = "RESIGNATION";
+    WinType[WinType["AREA_PAINTED"] = 0] = "AREA_PAINTED";
+    WinType[WinType["MORE_TOWERS"] = 1] = "MORE_TOWERS";
+    WinType[WinType["MORE_MONEY"] = 2] = "MORE_MONEY";
+    WinType[WinType["MORE_STORED_PAINT"] = 3] = "MORE_STORED_PAINT";
+    WinType[WinType["MORE_ROBOTS"] = 4] = "MORE_ROBOTS";
+    WinType[WinType["RANDOM"] = 5] = "RANDOM";
 })(WinType || (exports.WinType = WinType = {}));
