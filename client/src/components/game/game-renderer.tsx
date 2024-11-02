@@ -23,6 +23,7 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
 export const GameRendererPanel: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
     const spaceRef = useRef<Space | null>(null)
+    const hoveredTileRef = React.useRef<HTMLDivElement>(null)
     const [canResetCamera, setCanResetCamera] = React.useState(false)
 
     const resetCamera = () => {
@@ -39,9 +40,9 @@ export const GameRendererPanel: React.FC = () => {
     const gameAreaRect = spaceRef.current?.viewPort?.translateClientRectToVirtualSpace(
         GameRenderer.canvas(CanvasLayers.Overlay).getBoundingClientRect()
     )
-    const originalGameAreaSize = spaceRef.current?.viewPort
-        ? { width: spaceRef.current.viewPort.containerWidth, height: spaceRef.current.viewPort.containerHeight }
-        : undefined
+    // const originalGameAreaSize = spaceRef.current?.viewPort
+    //     ? { width: spaceRef.current.viewPort.containerWidth, height: spaceRef.current.viewPort.containerHeight }
+    //     : undefined
 
     React.useEffect(() => {
         if (spaceRef.current && spaceRef.current.viewPort) {
@@ -71,21 +72,23 @@ export const GameRendererPanel: React.FC = () => {
             {!turn ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
-                <Space ref={spaceRef} onUpdated={() => setCanResetCamera(true)}>
-                    <GameRendererCanvases>
-                        <Tooltip
-                            gameAreaRect={gameAreaRect}
-                            originalGameAreaSize={originalGameAreaSize}
-                            selectedBodyID={selectedBodyID}
-                            hoveredTile={hoveredTile}
-                            selectedTile={selectedTile}
-                            clientToVirtualSpace={
-                                spaceRef.current?.viewPort?.translateClientXYCoordinatesToVirtualSpace
-                            }
-                        />
-                        <HighlightedSquare hoveredTile={hoveredTile} map={turn.map} gameAreaRect={gameAreaRect} />
-                    </GameRendererCanvases>
-                </Space>
+                <>
+                    <Space ref={spaceRef} onUpdated={() => setCanResetCamera(true)}>
+                        <GameRendererCanvases>
+                            <HighlightedSquare
+                                hoveredTile={hoveredTile}
+                                map={turn.map}
+                                gameAreaRect={gameAreaRect}
+                                ref={hoveredTileRef}
+                            />
+                        </GameRendererCanvases>
+                    </Space>
+                    <Tooltip
+                        selectedBodyID={selectedBodyID}
+                        hoveredTile={hoveredTile}
+                        hoveredTileRef={hoveredTileRef}
+                    />
+                </>
             )}
         </div>
     )
@@ -97,24 +100,27 @@ interface HighlightedSquareProps {
     hoveredTile?: Vector
 }
 
-const HighlightedSquare: React.FC<HighlightedSquareProps> = ({ gameAreaRect, map, hoveredTile }) => {
-    if (!hoveredTile || !map || !gameAreaRect) return <></>
-    const mapLeft = gameAreaRect.left
-    const mapTop = gameAreaRect.top
-    const tileWidth = gameAreaRect.width / map.width
-    const tileHeight = gameAreaRect.height / map.height
-    const tileLeft = mapLeft + tileWidth * hoveredTile.x
-    const tileTop = mapTop + tileHeight * (map.height - hoveredTile.y - 1)
-    return (
-        <div
-            className="absolute border-2 border-black/70 z-10 cursor-pointer"
-            style={{
-                left: tileLeft + 'px',
-                top: tileTop + 'px',
-                width: gameAreaRect.width / map.width + 'px',
-                height: gameAreaRect.height / map.height + 'px',
-                pointerEvents: 'none'
-            }}
-        />
-    )
-}
+const HighlightedSquare = React.forwardRef<HTMLDivElement, HighlightedSquareProps>(
+    ({ gameAreaRect, map, hoveredTile }, ref) => {
+        if (!hoveredTile || !map || !gameAreaRect) return <></>
+        const mapLeft = gameAreaRect.left
+        const mapTop = gameAreaRect.top
+        const tileWidth = gameAreaRect.width / map.width
+        const tileHeight = gameAreaRect.height / map.height
+        const tileLeft = mapLeft + tileWidth * hoveredTile.x
+        const tileTop = mapTop + tileHeight * (map.height - hoveredTile.y - 1)
+        return (
+            <div
+                ref={ref}
+                className="absolute border-2 border-black/70 z-10 cursor-pointer"
+                style={{
+                    left: tileLeft + 'px',
+                    top: tileTop + 'px',
+                    width: gameAreaRect.width / map.width + 'px',
+                    height: gameAreaRect.height / map.height + 'px',
+                    pointerEvents: 'none'
+                }}
+            />
+        )
+    }
+)
