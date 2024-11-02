@@ -1,8 +1,8 @@
 import { flatbuffers, schema } from 'battlecode-schema'
 import assert from 'assert'
 import Game, { Team } from './Game'
-import Turn from './Turn'
-import TurnStat from './TurnStat'
+import Round from './Round'
+import RoundStat from './RoundStat'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
@@ -28,7 +28,7 @@ export default class Bodies {
     constructor(
         public readonly game: Game,
         initialBodies?: schema.SpawnedBodyTable,
-        initialStats?: TurnStat,
+        initialStats?: RoundStat,
         mapToVerify?: StaticMap
     ) {
         if (initialBodies) this.insertBodies(initialBodies, initialStats)
@@ -68,7 +68,7 @@ export default class Bodies {
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
-    applyDelta(turn: Turn, delta: schema.Round, nextDelta: schema.Round | null): void {
+    applyDelta(turn: Round, delta: schema.Round, nextDelta: schema.Round | null): void {
         for (const body of this.bodies.values()) if (body.dead) body.jailed = true
         //this.bodies.delete(body.id) in most games
 
@@ -206,7 +206,7 @@ export default class Bodies {
         }
     }
 
-    private insertBodies(bodies: schema.SpawnedBodyTable, stat?: TurnStat): void {
+    private insertBodies(bodies: schema.SpawnedBodyTable, stat?: RoundStat): void {
         const teams = bodies.teamIdsArray() ?? assert.fail('Initial body teams not found in header')
         const locs = bodies.locs() ?? assert.fail('Initial body locations not found in header')
         const xsArray = locs.xsArray() ?? assert.fail('Initial body x locations not found in header')

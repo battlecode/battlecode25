@@ -2,13 +2,13 @@ import React, { useRef } from 'react'
 import { Vector } from '../../playback/Vector'
 import { Tooltip } from './tooltip'
 import { CurrentMap } from '../../playback/Map'
-import { useTurn } from '../../playback/GameRunner'
+import { useRound } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
 
 export const GameRendererPanel: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
 
-    const turn = useTurn()
+    const round = useRound()
     const { selectedBodyID, hoveredTile, selectedTile } = GameRenderer.useCanvasEvents()
     const overlayCanvas = GameRenderer.canvas(CanvasLayers.Overlay)
 
@@ -18,7 +18,7 @@ export const GameRendererPanel: React.FC = () => {
             style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
             ref={wrapperRef}
         >
-            {!turn ? (
+            {!round ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
                 <div
@@ -35,7 +35,7 @@ export const GameRendererPanel: React.FC = () => {
                     />
                     <HighlightedSquare
                         hoveredTile={hoveredTile}
-                        map={turn.map}
+                        map={round.map}
                         wrapperRef={wrapperRef.current}
                         overlayCanvasRef={overlayCanvas}
                     />

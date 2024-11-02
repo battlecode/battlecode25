@@ -115,7 +115,7 @@ export default class Game {
                     'Cannot add Round event to Game if no MatchHeaders have been added first'
                 )
                 const round = event.e(new schema.Round()) as schema.Round
-                this.matches[this.matches.length - 1].addNewTurn(round)
+                this.matches[this.matches.length - 1].addNewRound(round)
                 return
             }
             case schema.Event.MatchFooter: {

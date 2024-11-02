@@ -66,27 +66,27 @@ class GameRendererClass {
         const match = gameRunner.match
         if (!match || !ctx || !overlayCtx) return
 
-        const currentTurn = match.currentTurn
+        const currentRound = match.currentRound
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height)
-        currentTurn.map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
-        currentTurn.bodies.draw(match, ctx, overlayCtx, GameConfig.config, this.selectedBodyID, this.mouseTile)
-        currentTurn.actions.draw(match, ctx)
+        currentRound.map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+        currentRound.bodies.draw(match, ctx, overlayCtx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+        currentRound.actions.draw(match, ctx)
     }
 
     fullRender() {
         const ctx = this.ctx(CanvasLayers.Background)
         const match = gameRunner.match
         if (!match || !ctx) return
-        match.currentTurn.map.staticMap.draw(ctx)
+        match.currentRound.map.staticMap.draw(ctx)
         this.render()
     }
 
     onMatchChange() {
         const match = gameRunner.match
         if (!match) return
-        const { width, height } = match.currentTurn.map
+        const { width, height } = match.currentRound.map
         this.updateCanvasDimensions({ x: width, y: height })
         this.selectedTile = undefined
         this.mouseTile = undefined
@@ -134,7 +134,7 @@ class GameRendererClass {
     }
     private canvasClick(e: MouseEvent) {
         this.selectedTile = eventToPoint(e)
-        const newSelectedBody = gameRunner.match?.currentTurn.bodies.getBodyAtLocation(
+        const newSelectedBody = gameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,
             this.selectedTile.y
         )?.id

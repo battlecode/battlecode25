@@ -3,7 +3,7 @@ import { useAppContext } from '../../app-context'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { getRenderCoords } from '../../util/RenderUtil'
 import { Vector } from '../../playback/Vector'
-import { useTurn } from '../../playback/GameRunner'
+import { useRound } from '../../playback/GameRunner'
 
 type TooltipProps = {
     overlayCanvas: HTMLCanvasElement | null
@@ -15,10 +15,10 @@ type TooltipProps = {
 
 export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTile, wrapperRef }: TooltipProps) => {
     const appContext = useAppContext()
-    const turn = useTurn()
+    const round = useRound()
 
-    const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
-    const hoveredBody = hoveredTile ? turn?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
+    const selectedBody = selectedBodyID !== undefined ? round?.bodies.bodies.get(selectedBodyID) : undefined
+    const hoveredBody = hoveredTile ? round?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
 
     const tooltipRef = React.useRef<HTMLDivElement>(null)
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
@@ -35,7 +35,7 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
         }
     }, [hoveredBody, hoveredTile])
 
-    const map = turn?.map
+    const map = round?.map
     if (!overlayCanvas || !wrapperRef || !map) return <></>
 
     const wrapperRect = wrapperRef.getBoundingClientRect()
@@ -83,7 +83,7 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
     const tooltipContent = hoveredBody
         ? hoveredBody.onHoverInfo()
         : hoveredTile
-          ? map.getTooltipInfo(hoveredTile, turn!.match)
+          ? map.getTooltipInfo(hoveredTile, round!.match)
           : []
 
     if (tooltipContent.length === 0) showFloatingTooltip = false

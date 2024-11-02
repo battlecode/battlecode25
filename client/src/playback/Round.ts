@@ -4,52 +4,52 @@ import Bodies from './Bodies'
 import { Team } from './Game'
 import { CurrentMap } from './Map'
 import Match from './Match'
-import TurnStat from './TurnStat'
+import RoundStat from './RoundStat'
 
-export default class Turn {
+export default class Round {
     get teams(): Team[] {
         return this.match.game.teams
     }
     constructor(
         public readonly match: Match,
-        public turnNumber: number = 0,
+        public roundNumber: number = 0,
         public map: CurrentMap,
         public bodies: Bodies,
         public actions: Actions,
-        public stat: TurnStat
+        public stat: RoundStat
     ) {}
 
     /**
-     * Mutates this turn to reflect the given delta.
+     * Mutates this round to reflect the given delta.
      */
     public applyDelta(delta: schema.Round, nextDelta: schema.Round | null): void {
-        this.turnNumber += 1
+        this.roundNumber += 1
 
-        const firstTimeComputingStat = this.match.stats.length <= this.turnNumber
+        const firstTimeComputingStat = this.match.stats.length <= this.roundNumber
         if (firstTimeComputingStat)
             this.stat.completed = false // mark that stat should be computed by bodies and actions below
-        else this.stat = this.match.stats[this.turnNumber].copy()
+        else this.stat = this.match.stats[this.roundNumber].copy()
 
         /*
             The ordering here is important. Actions needs to be before map because it reads from the map's traps and 
             they would be removed if map was before it. Bodies needs to come before maps so that actions have access
             to spawned bodies
         */
-        this.bodies.applyDelta(this, delta, nextDelta)
         this.actions.applyDelta(this, delta)
+        this.bodies.applyDelta(this, delta, nextDelta)
         this.map.applyDelta(delta)
 
         if (firstTimeComputingStat) {
             // finish computing stat and save to match
             this.stat.applyDelta(this, delta)
-            this.match.stats[this.turnNumber] = this.stat.copy()
+            this.match.stats[this.roundNumber] = this.stat.copy()
         }
     }
 
-    public copy(): Turn {
-        return new Turn(
+    public copy(): Round {
+        return new Round(
             this.match,
-            this.turnNumber,
+            this.roundNumber,
             this.map.copy(),
             this.bodies.copy(),
             this.actions.copy(),
@@ -58,10 +58,10 @@ export default class Turn {
     }
 
     public isStart() {
-        return this.turnNumber === 0
+        return this.roundNumber === 0
     }
 
     public isEnd() {
-        return this.turnNumber === this.match.maxTurn
+        return this.roundNumber === this.match.maxRound
     }
 }

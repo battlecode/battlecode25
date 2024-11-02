@@ -2,7 +2,7 @@ import { schema, flatbuffers } from 'battlecode-schema'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import { CurrentMap, StaticMap } from '../../../playback/Map'
-import Turn from '../../../playback/Turn'
+import Round from '../../../playback/Round'
 import Bodies from '../../../playback/Bodies'
 import { BATTLECODE_YEAR, DIRECTIONS } from '../../../constants'
 import { nativeAPI } from '../runner/native-api-wrapper'
@@ -22,19 +22,19 @@ export function loadFileAsMap(file: File): Promise<Game> {
     })
 }
 
-export function exportMap(turn: Turn, name: string) {
-    const mapError = verifyMapGuarantees(turn)
+export function exportMap(round: Round, name: string) {
+    const mapError = verifyMapGuarantees(round)
     if (mapError) return mapError
 
-    turn.map.staticMap.name = name
+    round.map.staticMap.name = name
 
-    const data = mapToFile(turn.map, turn.bodies)
+    const data = mapToFile(round.map, round.bodies)
     exportFile(data, name + `.map${BATTLECODE_YEAR % 100}`)
 
     return ''
 }
 
-function verifyMapGuarantees(turn: Turn) {
+function verifyMapGuarantees(turn: Round) {
     const staticMap = turn.map.staticMap
 
     if (turn.map.isEmpty() && turn.bodies.isEmpty()) {

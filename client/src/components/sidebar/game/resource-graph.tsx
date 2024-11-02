@@ -1,8 +1,8 @@
 import React from 'react'
 import { D3LineChart, LineChartDataPoint } from './d3-line-chart'
 import assert from 'assert'
-import { useTurn } from '../../../playback/GameRunner'
-import Turn from '../../../playback/Turn'
+import { useRound } from '../../../playback/GameRunner'
+import Round from '../../../playback/Round'
 
 interface Props {
     active: boolean
@@ -13,18 +13,18 @@ function hasKey<O extends Object>(obj: O, key: PropertyKey): key is keyof O {
     return key in obj
 }
 
-function getChartData(turn: Turn, property: string): LineChartDataPoint[] {
+function getChartData(round: Round, property: string): LineChartDataPoint[] {
     const values = [0, 1].map((index) =>
-        turn.match.stats.map((turnStat) => {
-            const teamStat = turnStat.getTeamStat(turn.match.game.teams[index])
+        round.match.stats.map((roundStat) => {
+            const teamStat = roundStat.getTeamStat(round.match.game.teams[index])
             assert(hasKey(teamStat, property), `TeamStat missing property '${property}' when rendering chart`)
             return teamStat[property]
         })
     )
 
-    return values[0].slice(0, turn.turnNumber).map((value, index) => {
+    return values[0].slice(0, round.roundNumber).map((value, index) => {
         return {
-            turn: index + 1,
+            round: index + 1,
             white: value as number,
             brown: values[1][index] as number
         }
@@ -32,8 +32,8 @@ function getChartData(turn: Turn, property: string): LineChartDataPoint[] {
 }
 
 export const ResourceGraph: React.FC<Props> = (props: Props) => {
-    const turn = useTurn()
-    const data = props.active && turn ? getChartData(turn, props.property) : []
+    const round = useRound()
+    const data = props.active && round ? getChartData(round, props.property) : []
 
     return (
         <div className="mt-2 px-2 w-full">

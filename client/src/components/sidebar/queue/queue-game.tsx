@@ -71,7 +71,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
                                     <span className={`font-bold text-team${match.winner.id - 1}`}>
                                         {match.winner.name}
                                     </span>
-                                    <span>{` wins ${getWinText(match.winType)}after ${match.maxTurn} rounds`}</span>
+                                    <span>{` wins ${getWinText(match.winType)}after ${match.maxRound} rounds`}</span>
                                 </>
                             ) : (
                                 <span>Winner not known</span>

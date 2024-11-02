@@ -2,7 +2,7 @@ import React from 'react'
 import { imageSource } from '../../../util/ImageLoader'
 import { TEAM_COLOR_NAMES } from '../../../constants'
 import { schema } from 'battlecode-schema'
-import { TeamTurnStat } from '../../../playback/TurnStat'
+import { TeamRoundStat } from '../../../playback/RoundStat'
 import { DoubleChevronUpIcon } from '../../../icons/chevron'
 import { CurrentMap } from '../../../playback/Map'
 import { useTurn } from '../../../playback/GameRunner'
@@ -42,7 +42,7 @@ export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
 }
 
 interface ResourceTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     map: CurrentMap | undefined
     teamIdx: 0 | 1
 }
@@ -91,7 +91,7 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, tea
 }
 
 interface UnitsTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     teamIdx: 0 | 1
 }
 
@@ -152,7 +152,7 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
     )
 }
 
-const GlobalUpgradeSection: React.FC<{ teamStat: TeamTurnStat | undefined }> = ({ teamStat }) => {
+const GlobalUpgradeSection: React.FC<{ teamStat: TeamRoundStat | undefined }> = ({ teamStat }) => {
     const upgradeTypes: Record<schema.GlobalUpgradeType, string> = {
         [schema.GlobalUpgradeType.ACTION_UPGRADE]: 'Global Attack Upgrade',
         [schema.GlobalUpgradeType.CAPTURING_UPGRADE]: 'Global Capturing Upgrade',

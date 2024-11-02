@@ -12,7 +12,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import gameRunner, { useTurn } from '../../../playback/GameRunner'
+import gameRunner, { useRound } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
 
 type MapParams = {
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const MapEditorPage: React.FC<Props> = (props) => {
-    const turn = useTurn()
+    const round = useRound()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
     const [brushes, setBrushes] = React.useState<MapEditorBrush[]>([])
@@ -44,7 +44,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setBrushes(brushes.map((b) => b.opened(b === brush)))
     }
 
-    const mapEmpty = () => !turn || (turn.map.isEmpty() && turn.bodies.isEmpty())
+    const mapEmpty = () => !round || (round.map.isEmpty() && round.bodies.isEmpty())
 
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
@@ -72,7 +72,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!e.target.files || e.target.files.length == 0) return
         const file = e.target.files[0]
         loadFileAsMap(file).then((game) => {
-            const map = game.currentMatch!.currentTurn!.map
+            const map = game.currentMatch!.currentRound!.map
             setMapParams({ width: map.width, height: map.height, symmetry: map.staticMap.symmetry, imported: game })
         })
     }
@@ -106,7 +106,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
 
             gameRunner.setMatch(editGame.current.currentMatch)
 
-            const turn = editGame.current.currentMatch!.currentTurn
+            const turn = editGame.current.currentMatch!.currentRound
             const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
             brushes[0].open = true
             setBrushes(brushes)
@@ -175,7 +175,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                 <div className="flex flex-row mt-8">
                     <BrightButton
                         onClick={() => {
-                            if (!turn) return
+                            if (!round) return
                             setMapNameOpen(true)
                         }}
                     >
@@ -193,7 +193,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                         setMapNameOpen(false)
                         return
                     }
-                    const error = exportMap(turn!, name)
+                    const error = exportMap(round!, name)
                     setMapError(error)
                     if (!error) setMapNameOpen(false)
                 }}
