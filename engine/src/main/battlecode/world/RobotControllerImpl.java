@@ -524,29 +524,19 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ******** BUILDING METHODS *********
     // ***********************************
 
-    private void assertIsRobotType(RobotOrTowerType type) throws GameActionException {
-        throw new NotImplementedException();
-        // TODO not implemented
+    private void assertIsRobotType(UnitType type) throws GameActionException {
+        if (!UnitType.isRobotType(type)){
+            throw new GameActionException(CANT_DO_THAT, "Given type " + type + " is not a robot type!");
+        }
     }
 
-    @Override
-    public boolean isRobotType(RobotOrTowerType type) {
-        throw new NotImplementedException();
-        // TODO not implemented
+    private void assertIsTowerType(UnitType type) throws GameActionException{
+        if (!UnitType.isTowerType(type)){
+            throw new GameActionException(CANT_DO_THAT, "Given type " + type + " is not a tower type!");
+        }
     }
 
-    private void assertIsTowerType(RobotOrTowerType type) {
-        throw new NotImplementedException();
-        // TODO not implemented
-    }
-
-    @Override
-    public boolean isTowerType(RobotOrTowerType type) {
-        throw new NotImplementedException();
-        // TODO not implemented
-    }
-
-    private void assertCanBuildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    private void assertCanBuildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.BUILD_ROBOT_RADIUS_SQUARED);
         assertIsActionReady();
@@ -558,7 +548,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canBuildRobot(RobotOrTowerType type, MapLocation loc) {
+    public boolean canBuildRobot(UnitType type, MapLocation loc) {
         try {
             assertCanBuildRobot(type, loc);
             return true;
@@ -568,7 +558,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    public void buildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertCanBuildRobot(type, loc);
         this.robot.addActionCooldownTurns(GameConstants.BUILD_ROBOT_COOLDOWN);
         this.robot.buildRobot(type, loc);
@@ -906,13 +896,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (robot.getTeam() != this.robot.getTeam()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot transfer resources to the enemy team!");
         }
-        if (isTowerType(this.robot.getType())) {
+        if (UnitType.isTowerType(this.robot.getType())) {
             throw new GameActionException(CANT_DO_THAT, "Towers cannot transfer paint!");
         }
-        if (amount > 0 && this.robot.getType() != RobotOrTowerType.MOPPER) {
+        if (amount > 0 && this.robot.getType() != UnitType.MOPPER) {
             throw new GameActionException(CANT_DO_THAT, "Only mopppers can give paint to allies!");
         }
-        if (isRobotType(robot.getType()) && amount < 0) {
+        if (UnitType.isRobotType(robot.getType()) && amount < 0) {
             throw new GameActionException(CANT_DO_THAT, "Moppers can only give paint to ally robots!");
         }
         if (-1 * amount > this.robot.getPaint()) {

@@ -509,26 +509,6 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Checks if a {@link RobotOrTowerType} is a robot type.
-     * 
-     * @param type the enum item to check
-     * @return true if type is a robot type
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isRobotType(RobotOrTowerType type);
-
-    /**
-     * Checks if a {@link RobotOrTowerType} is a tower type.
-     * 
-     * @param type the enum item to check
-     * @return true if type is a tower type
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isTowerType(RobotOrTowerType type);
-
-    /**
      * Checks if a tower can spawn a robot at the given location.
      * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
@@ -538,7 +518,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canBuildRobot(RobotOrTowerType type, MapLocation loc);
+    boolean canBuildRobot(UnitType type, MapLocation loc);
 
     /**
      * Spawns a robot at the given location.
@@ -549,7 +529,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+    void buildRobot(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can build a tower by marking a 5x5 pattern centered at

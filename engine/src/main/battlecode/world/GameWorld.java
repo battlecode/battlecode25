@@ -779,11 +779,10 @@ public strictfp class GameWorld {
      * @return whether a team has more allied towers alive
      */
     public boolean setWinnerIfMoreTowersAlive(){
-        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.ROBOT3, RobotOrTowerType.ROBOT4}
         int[] totalTowersAlive = new int[2];
 
-        for (RobotOrTowerType type: types){
-            if (isTowerType(type)){
+        for (UnitType type: UnitType.values()){
+            if (UnitType.isTowerType(type)){
                 totalTowersAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalTowersAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
@@ -804,11 +803,10 @@ public strictfp class GameWorld {
      * @return whether a team has more allied robots alive
      */
     public boolean setWinnerIfMoreRobotsAlive(){
-        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.ROBOT3, RobotOrTowerType.ROBOT4};
         int[] totalRobotsAlive = new int[2];
 
-        for (RobotOrTowerType type: types){
-            if (isRobotType(type)){
+        for (UnitType type: UnitType.values()){
+            if (UnitType.isRobotType(type)){
                 totalRobotsAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalRobotsAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
