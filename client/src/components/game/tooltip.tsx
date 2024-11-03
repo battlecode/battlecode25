@@ -6,7 +6,6 @@ import { useTurn } from '../../playback/GameRunner'
 
 type Rect = { x: number; y: number; width: number; height: number }
 type TooltipProps = {
-    originalGameAreaSize?: { width: number; height: number }
     selectedBodyID: number | undefined
     hoveredTile: Vector | undefined
     hoveredTileRect: Rect
