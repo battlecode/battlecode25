@@ -96,8 +96,8 @@ const ZoomableGameRenderer: React.FC<ZoomableGameRendererProps> = React.memo(
             <>
                 <Space
                     ref={spaceRef}
-                    onUpdated={() => {
-                        setCanResetCamera(true)
+                    onUpdated={(vp) => {
+                        setCanResetCamera(!(vp.left === 0 && vp.top === 0 && vp.zoomFactor === 1))
                         setHoveredTileRect(hoveredTileRef.current?.getBoundingClientRect())
                     }}
                 >
