@@ -1,28 +1,18 @@
-import React, { useEffect } from 'react'
-import { useAppContext } from '../../app-context'
+import React from 'react'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { Vector } from '../../playback/Vector'
-import { useTurn } from '../../playback/GameRunner'
 
 type Rect = { x: number; y: number; width: number; height: number }
-type TooltipProps = {
-    selectedBodyID: number | undefined
-    hoveredTile: Vector | undefined
-    hoveredTileRect: Rect
-}
 
-export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRect }: TooltipProps) => {
-    const appContext = useAppContext()
-    const turn = useTurn()
-
-    const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
-    const hoveredBody = hoveredTile ? turn?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
-
-    const wrapperRef = React.useRef<HTMLDivElement>(null)
-
-    const tooltipRef = React.useRef<HTMLDivElement>(null)
+export const FloatingTooltip: React.FC<{
+    container: Rect
+    target: Rect
+    content: React.ReactNode
+    margin?: number
+}> = ({ container, target, content, margin = 10 }) => {
+    const tooltipRef = React.useRef<HTMLDivElement | null>(null)
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
-    useEffect(() => {
+    React.useEffect(() => {
         const observer = new ResizeObserver((entries) => {
             if (entries[0]) {
                 const borderBox = entries[0].borderBoxSize[0]
@@ -33,95 +23,55 @@ export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRect }: Toolti
         return () => {
             if (tooltipRef.current) observer.unobserve(tooltipRef.current)
         }
-    }, [hoveredBody, hoveredTile])
+    }, [])
 
-    const map = turn?.map
-    if (!map) return <></>
-
-    const getTooltipStyle = (hoveredTileRect: Rect, container: Rect) => {
-        const tipPos: Vector = {
-            x: hoveredTileRect.x + hoveredTileRect.width / 2,
-            y: hoveredTileRect.y + hoveredTileRect.height / 2
-        }
-        const distanceFromBotCenterY = 0.75 * hoveredTileRect.height
-        const clearanceTop = tipPos.y - distanceFromBotCenterY - container.y
-
-        return {
-            top:
-                clearanceTop > tooltipSize.height
-                    ? tipPos.y - tooltipSize.height - distanceFromBotCenterY - container.y + 'px'
-                    : tipPos.y + distanceFromBotCenterY - container.y + 'px',
-            left:
-                Math.max(
-                    0,
-                    Math.min(tipPos.x - container.x - tooltipSize.width / 2, container.width - tooltipSize.width)
-                ) + 'px'
-        }
+    const tipPos: Vector = {
+        x: target.x + target.width / 2,
+        y: target.y + target.height / 2
+    }
+    const distanceFromBotCenterY = 0.75 * target.height
+    const clearanceTop = tipPos.y - distanceFromBotCenterY - container.y - margin
+    const tooltipStyle = {
+        top:
+            clearanceTop > tooltipSize.height
+                ? tipPos.y - tooltipSize.height - distanceFromBotCenterY - container.y + 'px'
+                : tipPos.y + distanceFromBotCenterY - container.y + 'px',
+        left:
+            Math.max(
+                margin,
+                Math.min(tipPos.x - container.x - tooltipSize.width / 2, container.width - tooltipSize.width - margin)
+            ) + 'px'
     }
 
-    let showFloatingTooltip = !!((hoveredBody && hoveredBody != selectedBody) || hoveredTile)
-    const tooltipContent = hoveredBody
-        ? hoveredBody.onHoverInfo()
-        : hoveredTile
-          ? map.getTooltipInfo(hoveredTile, turn!.match)
-          : []
-
-    if (tooltipContent.length === 0) showFloatingTooltip = false
-
-    // Check for the default empty size and don't show before the resize observer
-    // has updated
-    if (tooltipSize.width < 20 || tooltipSize.height < 20 || hoveredTileRect.width === 0) showFloatingTooltip = false
+    // we show even when the tooltip isnt ready because we need it to render invisibly to get the size
+    const showFloatingTooltip = tooltipSize.width > 20 && tooltipSize.height > 20 && target.width > 0
 
     return (
         <div
+            className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap"
             style={{
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                inset: 0,
-                position: 'absolute',
-                pointerEvents: 'none'
+                ...tooltipStyle,
+                visibility: showFloatingTooltip ? 'visible' : 'hidden'
             }}
-            ref={wrapperRef}
+            ref={tooltipRef}
         >
-            <div
-                className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap"
-                style={{
-                    ...getTooltipStyle(
-                        hoveredTileRect,
-                        wrapperRef.current?.getBoundingClientRect() || { x: 0, y: 0, width: 0, height: 0 }
-                    ),
-                    visibility: showFloatingTooltip ? 'visible' : 'hidden'
-                }}
-                ref={tooltipRef}
-            >
-                {tooltipContent.map((v, i) => (
-                    <p key={i}>{v}</p>
-                ))}
-            </div>
+            {content}
+        </div>
+    )
+}
 
-            <Draggable
-                width={wrapperRef.current?.clientWidth || 0}
-                height={wrapperRef.current?.clientHeight || 0}
-                margin={10}
-            >
-                {selectedBody && (
-                    <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative pointer-events-auto">
-                        {selectedBody.onHoverInfo().map((v, i) => (
-                            <p key={i}>{v}</p>
-                        ))}
-                        <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
-                            <ThreeBarsIcon />
-                        </div>
+export const DraggableTooltip: React.FC<{ container: Rect; content: React.ReactNode }> = ({ container, content }) => {
+    return (
+        <Draggable width={container.width} height={container.height}>
+            {content && (
+                <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative pointer-events-auto">
+                    {content}
+                    <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
+                        <ThreeBarsIcon />
                     </div>
-                )}
-            </Draggable>
-
-            {appContext.state.config.showMapXY && hoveredTile && (
-                <div className="absolute right-[5px] top-[5px] bg-black/70 z-20 text-white p-2 rounded-md text-xs opacity-50 pointer-events-none">
-                    {`(X: ${hoveredTile.x}, Y: ${hoveredTile.y})`}
                 </div>
             )}
-        </div>
+        </Draggable>
     )
 }
 
@@ -132,9 +82,9 @@ interface DraggableProps {
     margin?: number
 }
 
-const Draggable = ({ children, width, height, margin = 0 }: DraggableProps) => {
+const Draggable = ({ children, width, height, margin = 10 }: DraggableProps) => {
     const [dragging, setDragging] = React.useState(false)
-    const [pos, setPos] = React.useState({ x: 20, y: 20 })
+    const [pos, setPos] = React.useState({ x: margin, y: margin })
     const [offset, setOffset] = React.useState({ x: 0, y: 0 })
     const ref = React.useRef<HTMLDivElement>(null)
     const realSize = { x: width, y: height }

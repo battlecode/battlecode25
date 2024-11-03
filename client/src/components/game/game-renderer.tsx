@@ -1,12 +1,72 @@
 import React, { useRef } from 'react'
 import { Vector } from '../../playback/Vector'
-import { Tooltip } from './tooltip'
 import { CurrentMap } from '../../playback/Map'
 import { useMatch, useTurn } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
-import { Pressable, PressEventCoordinates, Space, ViewPortCamera, VirtualSpaceRect } from 'react-zoomable-ui'
+import { Space, VirtualSpaceRect } from 'react-zoomable-ui'
 import { ResetZoomIcon } from '../../icons/resetzoom'
 import Turn from '../../playback/Turn'
+import { DraggableTooltip, FloatingTooltip } from './tooltip'
+import { useAppContext } from '../../app-context'
+
+export const GameRendererPanel: React.FC = () => {
+    const wrapperRef = useRef<HTMLDivElement | null>(null)
+    const [hoveredTileRect, setHoveredTileRect] = React.useState<DOMRect | undefined>(undefined)
+
+    const appContext = useAppContext()
+    const turn = useTurn()
+
+    const { selectedBodyID, hoveredTile } = GameRenderer.useCanvasEvents()
+    const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
+    const hoveredBody = hoveredTile ? turn?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
+
+    const floatingTooltipContent = (
+        hoveredBody
+            ? hoveredBody.onHoverInfo()
+            : hoveredTile && turn
+              ? turn.map.getTooltipInfo(hoveredTile, turn!.match)
+              : []
+    ).map((v, i) => <p key={i}>{v}</p>)
+
+    const draggableTooltipContent = selectedBody
+        ? selectedBody.onHoverInfo().map((v, i) => <p key={i}>{v}</p>)
+        : undefined
+
+    const container = wrapperRef.current?.getBoundingClientRect() || { x: 0, y: 0, width: 0, height: 0 }
+
+    return (
+        <div
+            className="relative w-full h-screen flex items-center justify-center"
+            style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
+            ref={wrapperRef}
+        >
+            {!turn ? (
+                <p className="text-white text-center">Select a game from the queue</p>
+            ) : (
+                <>
+                    <ZoomableGameRenderer
+                        turn={turn}
+                        hoveredTile={hoveredTile}
+                        setHoveredTileRect={setHoveredTileRect}
+                    />
+                    {hoveredTileRect && wrapperRef.current && floatingTooltipContent.length > 0 && (
+                        <FloatingTooltip
+                            target={hoveredTileRect}
+                            container={container}
+                            content={floatingTooltipContent}
+                        />
+                    )}
+                    <DraggableTooltip content={draggableTooltipContent} container={container} />
+                    {appContext.state.config.showMapXY && hoveredTile && (
+                        <div className="absolute right-[5px] top-[5px] bg-black/70 z-20 text-white p-2 rounded-md text-xs opacity-50 pointer-events-none">
+                            {`(X: ${hoveredTile.x}, Y: ${hoveredTile.y})`}
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    )
+}
 
 const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     /**
@@ -21,116 +81,80 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
     return <div ref={divRef}>{children}</div>
 }
 
-export const GameRendererPanel: React.FC = () => {
-    const wrapperRef = useRef<HTMLDivElement | null>(null)
-    const [hoveredTileRect, setHoveredTileRect] = React.useState<DOMRect | undefined>(undefined)
-
-    const turn = useTurn()
-    const { selectedBodyID, hoveredTile, selectedTile } = GameRenderer.useCanvasEvents()
-
-    return (
-        <div
-            className="relative w-full h-screen flex items-center justify-center"
-            style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
-            ref={wrapperRef}
-        >
-            {!turn ? (
-                <p className="text-white text-center">Select a game from the queue</p>
-            ) : (
-                <>
-                    <ZoomableGameRenderer
-                        playable={turn.match.game.playable}
-                        turn={turn}
-                        hoveredTile={hoveredTile}
-                        setHoveredTileRect={setHoveredTileRect}
-                    />
-                    <Tooltip
-                        selectedBodyID={selectedBodyID}
-                        hoveredTile={hoveredTile}
-                        hoveredTileRect={hoveredTileRect || { x: 0, y: 0, width: 0, height: 0 }}
-                    />
-                </>
-            )}
-        </div>
-    )
-}
-
-interface ZoomableGameRendererProps {
-    playable: boolean
+const ZoomableGameRenderer: React.FC<{
     turn: Turn
     hoveredTile: Vector | undefined
     setHoveredTileRect: (rect: DOMRect | undefined) => void
-}
+}> = React.memo(({ turn, hoveredTile, setHoveredTileRect }) => {
+    const spaceRef = useRef<Space | null>(null)
 
-const ZoomableGameRenderer: React.FC<ZoomableGameRendererProps> = React.memo(
-    ({ playable, turn, hoveredTile, setHoveredTileRect }) => {
-        const spaceRef = useRef<Space | null>(null)
-        React.useEffect(() => {
-            if (spaceRef.current && spaceRef.current.viewPort) {
-                if (!playable) {
-                    // disable zooming and panning in map editor
-                    const vp = spaceRef.current.viewPort
-                    vp.setBounds({ x: [0, vp.containerWidth], y: [0, vp.containerHeight], zoom: [1, 1] })
-                } else {
-                    const vp = spaceRef.current.viewPort
-                    vp.setBounds({ x: [-10000, 10000], y: [-10000, 10000], zoom: [0.1, 10] })
-                }
+    const playable = turn.match.game.playable // playable unless we are in the map editor
+    React.useEffect(() => {
+        if (spaceRef.current && spaceRef.current.viewPort) {
+            if (!playable) {
+                // disable zooming and panning in map editor
+                const vp = spaceRef.current.viewPort
+                vp.setBounds({ x: [0, vp.containerWidth], y: [0, vp.containerHeight], zoom: [1, 1] })
+            } else {
+                const vp = spaceRef.current.viewPort
+                vp.setBounds({ x: [-10000, 10000], y: [-10000, 10000], zoom: [0.1, 10] })
             }
-        }, [playable])
-        const gameAreaRect = spaceRef.current?.viewPort?.translateClientRectToVirtualSpace(
-            GameRenderer.canvas(CanvasLayers.Overlay).getBoundingClientRect()
-        )
-
-        const [canResetCamera, setCanResetCamera] = React.useState(false)
-        const hoveredTileRef = React.useRef<HTMLDivElement | null>(null)
-
-        const resetCamera = () => {
-            if (spaceRef.current) spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
-            setCanResetCamera(false)
         }
+    }, [playable])
 
-        const match = useMatch()
-        React.useEffect(resetCamera, [match])
+    const gameAreaRect = spaceRef.current?.viewPort?.translateClientRectToVirtualSpace(
+        GameRenderer.canvas(CanvasLayers.Overlay).getBoundingClientRect()
+    )
 
-        return (
-            <>
-                <Space
-                    ref={spaceRef}
-                    onUpdated={(vp) => {
-                        setCanResetCamera(!(vp.left === 0 && vp.top === 0 && vp.zoomFactor === 1))
-                        setHoveredTileRect(hoveredTileRef.current?.getBoundingClientRect())
-                    }}
-                >
-                    <GameRendererCanvases>
-                        <HighlightedSquare
-                            hoveredTile={hoveredTile}
-                            map={turn.map}
-                            gameAreaRect={gameAreaRect}
-                            ref={(ref) => {
-                                hoveredTileRef.current = ref
-                                setHoveredTileRect(ref?.getBoundingClientRect())
-                            }}
-                        />
-                    </GameRendererCanvases>
-                </Space>
-                {canResetCamera && (
-                    <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-30" onClick={resetCamera}>
-                        <ResetZoomIcon />
-                    </button>
-                )}
-            </>
-        )
+    const [canResetCamera, setCanResetCamera] = React.useState(false)
+    const hoveredTileRef = React.useRef<HTMLDivElement | null>(null)
+
+    const resetCamera = () => {
+        if (spaceRef.current) spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
     }
-)
 
-interface HighlightedSquareProps {
-    gameAreaRect?: VirtualSpaceRect
-    map?: CurrentMap
-    hoveredTile?: Vector
-}
+    const match = useMatch()
+    React.useEffect(resetCamera, [match])
+
+    return (
+        <>
+            <Space
+                ref={spaceRef}
+                onUpdated={(vp) => {
+                    setCanResetCamera(!(vp.left === 0 && vp.top === 0 && vp.zoomFactor === 1))
+                    setHoveredTileRect(hoveredTileRef.current?.getBoundingClientRect())
+                }}
+            >
+                <GameRendererCanvases>
+                    <HighlightedSquare
+                        hoveredTile={hoveredTile}
+                        map={turn.map}
+                        gameAreaRect={gameAreaRect}
+                        ref={(ref) => {
+                            hoveredTileRef.current = ref
+                            setHoveredTileRect(ref?.getBoundingClientRect())
+                        }}
+                    />
+                </GameRendererCanvases>
+            </Space>
+            {canResetCamera && (
+                <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-30" onClick={resetCamera}>
+                    <ResetZoomIcon />
+                </button>
+            )}
+        </>
+    )
+})
 
 const HighlightedSquare = React.memo(
-    React.forwardRef<HTMLDivElement, HighlightedSquareProps>(({ gameAreaRect, map, hoveredTile }, ref) => {
+    React.forwardRef<
+        HTMLDivElement,
+        {
+            gameAreaRect?: VirtualSpaceRect
+            map?: CurrentMap
+            hoveredTile?: Vector
+        }
+    >(({ gameAreaRect, map, hoveredTile }, ref) => {
         if (!hoveredTile || !map || !gameAreaRect) return <></>
         const mapLeft = gameAreaRect.left
         const mapTop = gameAreaRect.top
