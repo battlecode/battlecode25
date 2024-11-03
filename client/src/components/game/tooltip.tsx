@@ -9,10 +9,10 @@ type TooltipProps = {
     originalGameAreaSize?: { width: number; height: number }
     selectedBodyID: number | undefined
     hoveredTile: Vector | undefined
-    hoveredTileRef: React.RefObject<HTMLDivElement>
+    hoveredTileRect: Rect
 }
 
-export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRef }: TooltipProps) => {
+export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRect }: TooltipProps) => {
     const appContext = useAppContext()
     const turn = useTurn()
 
@@ -40,31 +40,24 @@ export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRef }: Tooltip
     if (!map) return <></>
 
     const getTooltipStyle = (hoveredTileRect: Rect, container: Rect) => {
-        let tooltipStyle: React.CSSProperties = {}
         const tipPos: Vector = {
             x: hoveredTileRect.x + hoveredTileRect.width / 2,
             y: hoveredTileRect.y + hoveredTileRect.height / 2
         }
-        const distanceFromBotCenterX = 0.75 * hoveredTileRect.width
         const distanceFromBotCenterY = 0.75 * hoveredTileRect.height
-        const clearanceLeft = tipPos.x - distanceFromBotCenterX - container.x
-        const clearanceRight = container.x + container.width - (tipPos.x + distanceFromBotCenterX)
         const clearanceTop = tipPos.y - distanceFromBotCenterY - container.y
 
-        if (clearanceTop > tooltipSize.height) {
-            tooltipStyle.top = tipPos.y - tooltipSize.height - distanceFromBotCenterY - container.y + 'px'
-        } else {
-            tooltipStyle.top = tipPos.y + distanceFromBotCenterY - container.y + 'px'
+        return {
+            top:
+                clearanceTop > tooltipSize.height
+                    ? tipPos.y - tooltipSize.height - distanceFromBotCenterY - container.y + 'px'
+                    : tipPos.y + distanceFromBotCenterY - container.y + 'px',
+            left:
+                Math.max(
+                    0,
+                    Math.min(tipPos.x - container.x - tooltipSize.width / 2, container.width - tooltipSize.width)
+                ) + 'px'
         }
-
-        if (clearanceLeft < tooltipSize.width / 2) {
-            tooltipStyle.left = tipPos.x + distanceFromBotCenterX - container.x + 'px'
-        } else if (clearanceRight < tooltipSize.width / 2) {
-            tooltipStyle.left = tipPos.x - tooltipSize.width - distanceFromBotCenterX - container.x + 'px'
-        } else {
-            tooltipStyle.left = tipPos.x - tooltipSize.width / 2 - container.x + 'px'
-        }
-        return tooltipStyle
     }
 
     let showFloatingTooltip = !!((hoveredBody && hoveredBody != selectedBody) || hoveredTile)
@@ -78,7 +71,7 @@ export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRef }: Tooltip
 
     // Check for the default empty size and don't show before the resize observer
     // has updated
-    if (tooltipSize.width < 20 || tooltipSize.height < 20) showFloatingTooltip = false
+    if (tooltipSize.width < 20 || tooltipSize.height < 20 || hoveredTileRect.width === 0) showFloatingTooltip = false
 
     return (
         <div
@@ -92,10 +85,10 @@ export const Tooltip = ({ selectedBodyID, hoveredTile, hoveredTileRef }: Tooltip
             ref={wrapperRef}
         >
             <div
-                className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs"
+                className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap"
                 style={{
                     ...getTooltipStyle(
-                        hoveredTileRef.current?.getBoundingClientRect() || { x: 0, y: 0, width: 0, height: 0 },
+                        hoveredTileRect,
                         wrapperRef.current?.getBoundingClientRect() || { x: 0, y: 0, width: 0, height: 0 }
                     ),
                     visibility: showFloatingTooltip ? 'visible' : 'hidden'
