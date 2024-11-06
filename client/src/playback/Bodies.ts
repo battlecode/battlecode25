@@ -21,6 +21,7 @@ import {
 } from '../constants'
 import Match from './Match'
 import { ClientConfig } from '../client-config'
+import { render } from '@headlessui/react/dist/utils/render'
 
 export default class Bodies {
     public bodies: Map<number, Body> = new Map()
@@ -457,23 +458,84 @@ export class Body {
         }
     }
 
+
+    private getAllLocationsWithinRadiusSquared(match: Match, location: Vector, radius: number) {
+        const ceiledRadius = Math.ceil(Math.sqrt(radius)) + 1
+        const minX = Math.max(location.x - ceiledRadius, 0)
+        const minY = Math.max(location.y - ceiledRadius, 0)
+        const maxX = Math.min(location.x + ceiledRadius, match.map.width - 1)
+        const maxY = Math.min(location.y + ceiledRadius, match.map.height - 1)
+
+        const coords: Vector[] = []
+        for (let x = minX; x <= maxX; x++){
+            for (let y = minY; y <= maxY; y++){
+                const dx = x - location.x
+                const dy = y - location.y
+                if ((dx)*(dx) + (dy)*(dy) <= radius){
+                    coords.push({x,y})
+                }
+            }
+        }
+
+        return coords
+    }
+
+    private drawEdges(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean, squares: Array<Vector>) {
+        for (let i = 0; i < squares.length; ++i){
+            const squarePos = squares[i]
+            const renderCoords = renderUtils.getRenderCoords(squarePos.x, squarePos.y, match.currentTurn.map.staticMap.dimension)
+            
+            const hasTopNeighbor = squares.some(square => square.x === squarePos.x && square.y === squarePos.y + 1);
+            const hasBottomNeighbor = squares.some(square => square.x === squarePos.x && square.y === squarePos.y - 1);
+            const hasLeftNeighbor = squares.some(square => square.x === squarePos.x - 1 && square.y === squarePos.y);
+            const hasRightNeighbor = squares.some(square => square.x === squarePos.x + 1 && square.y === squarePos.y);
+
+            ctx.beginPath();
+
+            if (!hasTopNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y);
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y);
+            }
+
+            if (!hasBottomNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y + 1);
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1);
+            }
+
+            if (!hasLeftNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y);
+                ctx.lineTo(renderCoords.x, renderCoords.y + 1);
+            }
+
+            if (!hasRightNeighbor) {
+                ctx.moveTo(renderCoords.x + 1, renderCoords.y);
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1);
+            }
+
+            ctx.stroke();
+        }
+    }
+
     private drawRadii(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean) {
-        const pos = this.getInterpolatedCoords(match)
+        // const pos = this.getInterpolatedCoords(match)
+        const pos = this.pos
+
         if (lightly) ctx.globalAlpha = 0.5
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentTurn.map.staticMap.dimension)
+        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.actionRadius)
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.actionRadius), 0, 360)
-        ctx.stroke()
-
+        this.drawEdges(match, ctx, lightly, squares)
+        
         ctx.beginPath()
         ctx.strokeStyle = 'blue'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.visionRadius), 0, 360)
-        ctx.stroke()
+        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.visionRadius)
+        this.drawEdges(match, ctx, lightly, squares2)
+
         ctx.globalAlpha = 1
     }
+
 
     private drawIndicators(match: Match, ctx: CanvasRenderingContext2D, lighter: boolean): void {
         const dimension = match.currentTurn.map.staticMap.dimension
