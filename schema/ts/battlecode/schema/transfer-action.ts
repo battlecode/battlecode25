@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Visually indicate trasnferring paint from one robot to another
+ */
 export class TransferAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;

@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Visually indicate that a tower was upgraded
+ */
 @SuppressWarnings("unused")
 public final class UpgradeAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

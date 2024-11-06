@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Visually indicate an attack
+ */
 @SuppressWarnings("unused")
 public final class AttackAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

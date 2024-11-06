@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Visually indicate a tower being built
+ */
 export class BuildAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;

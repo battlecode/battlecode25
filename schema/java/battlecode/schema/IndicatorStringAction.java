@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Update the indicator string for this robot
+ */
 @SuppressWarnings("unused")
 public final class IndicatorStringAction extends Table {
   public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }

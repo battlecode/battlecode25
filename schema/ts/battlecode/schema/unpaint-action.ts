@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Visually indicate a tile's paint has been removed
+ */
 export class UnpaintAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;

@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Update the indicator line for this robot
+ */
 export class IndicatorLineAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;

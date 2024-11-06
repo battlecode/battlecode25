@@ -3,6 +3,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IndicatorStringAction = void 0;
 var flatbuffers = require("flatbuffers");
+/**
+ * Update the indicator string for this robot
+ */
 var IndicatorStringAction = /** @class */ (function () {
     function IndicatorStringAction() {
         this.bb = null;

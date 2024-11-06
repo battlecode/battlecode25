@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Visually indicate a tile has been painted
+ */
 export class PaintAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;

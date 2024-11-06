@@ -2,6 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+/**
+ * Visually indicate a mop attack
+ */
 export class MopAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
