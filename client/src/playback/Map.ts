@@ -55,7 +55,7 @@ export class CurrentMap {
     public readonly resourcePileData: Map<number, ResourcePileData>
     public readonly trapData: Map<number, TrapData>
     public readonly flagData: Map<number, FlagData>
-    public readonly water: Int8Array
+    public readonly paint: Int8Array
 
     get width(): number {
         return this.dimension.width
@@ -76,7 +76,7 @@ export class CurrentMap {
 
             this.staticMap = from
             this.trapData = new Map()
-            this.water = new Int8Array(from.initialWater)
+            this.paint = new Int8Array(from.initialPaint)
             for (let i = 0; i < from.initialResourcePileAmounts.length; i++) {
                 const id = this.locationToIndex(from.resourcePileLocations[i].x, from.resourcePileLocations[i].y)
                 this.resourcePileData.set(id, { amount: from.initialResourcePileAmounts[i] })
@@ -101,7 +101,7 @@ export class CurrentMap {
             for (let [key, value] of from.flagData) {
                 this.flagData.set(key, { ...value })
             }
-            this.water = new Int8Array(from.water)
+            this.paint = new Int8Array(from.paint)
         }
     }
 
@@ -168,14 +168,14 @@ export class CurrentMap {
                 const schemaIdx = this.locationToIndex(i, j)
                 const coords = renderUtils.getRenderCoords(i, j, dimension)
 
-                // Render rounded (clipped) water
-                if (this.water[schemaIdx]) {
+                // Render rounded (clipped) paint
+                if (this.paint[schemaIdx]) {
                     renderUtils.renderRounded(
                         ctx,
                         i,
                         j,
                         this,
-                        this.water,
+                        this.paint,
                         () => {
                             ctx.fillStyle = WATER_COLOR
                             ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
@@ -257,7 +257,7 @@ export class CurrentMap {
         const resourcePile = this.resourcePileData.get(schemaIdx)
         const trap = [...this.trapData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
         const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
-        const water = this.water[schemaIdx]
+        const paint = this.paint[schemaIdx]
         const divider = this.staticMap.divider[schemaIdx]
         const walls = this.staticMap.walls[schemaIdx]
         const info: string[] = []
@@ -270,8 +270,8 @@ export class CurrentMap {
         if (flag) {
             info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
         }
-        if (water) {
-            info.push(`Water`)
+        if (paint) {
+            info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
         }
         if (divider) {
             const dividerUp = !match.game.playable || match.currentRound.roundNumber < match.constants.setupPhaseLength()
@@ -296,7 +296,7 @@ export class CurrentMap {
     }
 
     isEmpty(): boolean {
-        return this.resourcePileData.size == 0 && this.water.every((x) => x == 0) && this.staticMap.isEmpty()
+        return this.resourcePileData.size == 0 && this.paint.every((x) => x == 0) && this.staticMap.isEmpty()
     }
 
     /**
@@ -308,9 +308,10 @@ export class CurrentMap {
             builder,
             Array.from(this.staticMap.walls).map((x) => !!x)
         )
+        //haven't changed this yet
         const waterOffset = schema.GameMap.createWaterVector(
             builder,
-            Array.from(this.staticMap.initialWater).map((x) => !!x)
+            Array.from(this.staticMap.initialPaint).map((x) => !!x)
         )
         const dividerOffset = schema.GameMap.createDividerVector(
             builder,
@@ -358,7 +359,7 @@ export class StaticMap {
         public readonly spawnLocations: Vector[],
         public readonly resourcePileLocations: Vector[],
         public readonly initialResourcePileAmounts: Int32Array,
-        public readonly initialWater: Int8Array
+        public readonly initialPaint: Int8Array
     ) {
         if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
 
@@ -390,7 +391,8 @@ export class StaticMap {
         const resourcePileLocations = parseVecTable(schemaMap.resourcePiles() ?? assert.fail('resourcePiles() is null'))
         const initialResourcePileAmounts =
             schemaMap.resourcePileAmountsArray() ?? assert.fail('resourcePileAmountsArray() is null')
-        const initialWater = schemaMap.waterArray() ?? assert.fail('waterArray() is null')
+        //!! have not changed below
+        const initialPaint = schemaMap.waterArray() ?? assert.fail('waterArray() is null')
         return new StaticMap(
             name,
             randomSeed,
@@ -401,7 +403,7 @@ export class StaticMap {
             spawnLocations,
             resourcePileLocations,
             initialResourcePileAmounts,
-            initialWater
+            initialPaint
         )
     }
 
@@ -423,7 +425,7 @@ export class StaticMap {
         const spawnLocations: Vector[] = []
         const resourcePileLocations: Vector[] = []
         const initialResourcePileAmounts = new Int32Array()
-        const initialWater = new Int8Array(width * height)
+        const initialPaint = new Int8Array(width * height)
         return new StaticMap(
             name,
             randomSeed,
@@ -434,7 +436,7 @@ export class StaticMap {
             spawnLocations,
             resourcePileLocations,
             initialResourcePileAmounts,
-            initialWater
+            initialPaint
         )
     }
 
@@ -495,7 +497,7 @@ export class StaticMap {
                     const target_y = pos.y + y
                     if (target_x >= 0 && target_x < this.width && target_y >= 0 && target_y < this.height) {
                         const idx = this.locationToIndex(target_x, target_y)
-                        if (this.walls[idx] || this.initialWater[idx]) continue
+                        if (this.walls[idx] || this.initialPaint[idx]) continue
                         // Team A: 1, Team B: 2
                         spawnZoneDrawAreas[idx] = (i % 2) + 1
                     }

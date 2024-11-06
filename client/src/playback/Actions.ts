@@ -86,14 +86,15 @@ export abstract class ToFromAction extends Action {
 }
 
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
-    [schema.Action.DIE_EXCEPTION]: class DieException extends Action {
+    //old DieException
+    [schema.Action.DamageAction]: class DamageAction extends Action {
         apply(round: Round): void {
-            console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)
+            //console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)
         }
     },
-    [schema.Action.ATTACK]: class Dig extends ToFromAction {
+    [schema.Action.AttackAction]: class AttackAction extends ToFromAction {
         apply(round: Round): void {
-            // To dicuss
+            // To discuss
         }
         drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
             // Compute the start and end points for the animation projectile
@@ -133,7 +134,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
     },
     [schema.Action.HEAL]: class Heal extends ToFromAction {
         apply(round: Round): void {
-            // To dicuss
+            // To discuss
         }
         drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
             renderUtils.renderLine(
@@ -149,19 +150,19 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             )
         }
     },
-    [schema.Action.DIG]: class Dig extends Action {
+    [schema.Action.UnpaintAction]: class UnpaintAction extends Action {
         apply(round: Round): void {
-            round.map.water[this.target] = 1
+            round.map.paint[this.target] = 0
         }
     },
-    [schema.Action.FILL]: class Fill extends Action {
+    [schema.Action.PaintAction]: class PaintAction extends Action {
         apply(round: Round): void {
-            round.map.water[this.target] = 0
+            round.map.paint[this.target] = round.bodies.getById(this.robotID).team.id
         }
     },
-    [schema.Action.EXPLOSIVE_TRAP]: class ExplosiveTrap extends Action {
+    [schema.Action.MopAction]: class MopAction extends Action {
         apply(round: Round): void {
-            // To dicuss
+            // To discuss
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = Math.sqrt(4)
