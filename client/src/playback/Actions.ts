@@ -166,12 +166,12 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     //},
     [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.target] = 0
+            round.map.paint[this.actionData.loc()] = 0
         }
     },
     [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.target] = round.bodies.getById(this.robotId).team.id
+            round.map.paint[this.actionData.loc()] = round.bodies.getById(this.robotId).team.id
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
@@ -181,7 +181,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = Math.sqrt(4)
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
+            const loc = map.indexToLocation(this.actionData.loc())
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
