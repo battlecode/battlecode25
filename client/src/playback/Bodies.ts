@@ -332,6 +332,9 @@ export class Body {
         public attacksPerformed: number = 0,
         public buildsPerformed: number = 0,
         public bytecodesUsed: number = 0
+        // paintLevel
+        // upgradeLevel
+        // moneyLevel (for money towers)
     ) {
         this.nextPos = this.pos
         this.prevSquares = [this.pos]
@@ -539,7 +542,7 @@ export class Body {
     }
 }
 
-export const BODY_DEFINITIONS: Record<number, typeof Body> = {
+export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     // For future games, this dictionary translate schema values of robot
     // types to their respective class, such as this:
     //
@@ -560,15 +563,15 @@ export const BODY_DEFINITIONS: Record<number, typeof Body> = {
     // This game has no types or headquarters to speak of, so there is only
     // one type pointed to by 0:
 
-    0: class Duck extends Body {
-        public robotName = 'Duck'
+    [schema.RobotType.DEFENSE_TOWER]: class DefenseTower extends Body {
+        public robotName = 'DefenseTower'
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
             this.actionRadius = game.constants.actionRadius()
             this.visionRadius = game.constants.visionRadius()
 
-            this.robotName = `${team.colorName} Duck`
+            this.robotName = `${team.colorName} DefenseTower`
         }
 
         public draw(
@@ -588,53 +591,179 @@ export const BODY_DEFINITIONS: Record<number, typeof Body> = {
                 [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
-            for (const [color, level, [dx, dy]] of levelIndicators) {
-                this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            }
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.MONEY_TOWER]: class MoneyTower extends Body {
+        public robotName = 'MoneyTower'
+
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+            this.actionRadius = game.constants.actionRadius()
+            this.visionRadius = game.constants.visionRadius()
+
+            this.robotName = `${team.colorName} MoneyTower`
         }
 
-        private drawPetals(
+        public draw(
             match: Match,
             ctx: CanvasRenderingContext2D,
-            color: string,
-            level: number,
-            x: number,
-            y: number
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
         ): void {
-            if (level == 0) return
-            const drawCoords = renderUtils.getRenderCoords(x, y, match.currentRound.map.staticMap.dimension)
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            ctx.fillStyle = color
-            ctx.strokeStyle = 'black'
-            ctx.beginPath()
-            ctx.moveTo(drawCoords.x, drawCoords.y)
-            for (let i = 0; i < level; i++) {
-                const petalWidthRads = (2 * Math.PI) / 12
-                const angle = i * petalWidthRads * 2
-                const petalLength = 0.15
-                ctx.bezierCurveTo(
-                    drawCoords.x + ((petalLength * 1) / 3) * Math.cos(angle - petalWidthRads * 2.5),
-                    drawCoords.y + ((petalLength * 1) / 3) * Math.sin(angle - petalWidthRads * 2.5),
-                    drawCoords.x + ((petalLength * 2) / 3) * Math.cos(angle - (petalWidthRads * 2.5) / 2),
-                    drawCoords.y + ((petalLength * 2) / 3) * Math.sin(angle - (petalWidthRads * 2.5) / 2),
-                    drawCoords.x + petalLength * Math.cos(angle),
-                    drawCoords.y + petalLength * Math.sin(angle)
-                )
-                ctx.bezierCurveTo(
-                    drawCoords.x + ((petalLength * 2) / 3) * Math.cos(angle + (petalWidthRads * 2.5) / 2),
-                    drawCoords.y + ((petalLength * 2) / 3) * Math.sin(angle + (petalWidthRads * 2.5) / 2),
-                    drawCoords.x + ((petalLength * 1) / 3) * Math.cos(angle + petalWidthRads * 2.5),
-                    drawCoords.y + ((petalLength * 1) / 3) * Math.sin(angle + petalWidthRads * 2.5),
-                    drawCoords.x,
-                    drawCoords.y
-                )
-            }
-            ctx.lineWidth = 0.05
-            ctx.globalAlpha = 0.5
-            ctx.stroke()
-            ctx.globalAlpha = 0.75
-            ctx.fill()
-            ctx.globalAlpha = 1
+            const levelIndicators: [string, number, [number, number]][] = [
+                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+            ]
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.MOPPER]: class Mopper extends Body {
+        public robotName = 'Mopper'
+
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+            this.actionRadius = game.constants.actionRadius()
+            this.visionRadius = game.constants.visionRadius()
+
+            this.robotName = `${team.colorName} Mopper`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const levelIndicators: [string, number, [number, number]][] = [
+                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+            ]
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.PAINT_TOWER]: class PaintTower extends Body {
+        public robotName = 'PaintTower'
+
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+            this.actionRadius = game.constants.actionRadius()
+            this.visionRadius = game.constants.visionRadius()
+
+            this.robotName = `${team.colorName} PaintTower`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const levelIndicators: [string, number, [number, number]][] = [
+                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+            ]
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.SOLDIER]: class Soldier extends Body {
+        public robotName = 'Soldier'
+
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+            this.actionRadius = game.constants.actionRadius()
+            this.visionRadius = game.constants.visionRadius()
+
+            this.robotName = `${team.colorName} Soldier`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const levelIndicators: [string, number, [number, number]][] = [
+                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+            ]
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.SPLASHER]: class Splasher extends Body {
+        public robotName = 'Splasher'
+
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+            this.actionRadius = game.constants.actionRadius()
+            this.visionRadius = game.constants.visionRadius()
+
+            this.robotName = `${team.colorName} Splasher`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const levelIndicators: [string, number, [number, number]][] = [
+                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+            ]
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
         }
     }
 }
