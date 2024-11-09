@@ -1,18 +1,22 @@
 import Round from './Round'
 import { schema } from 'battlecode-schema'
+import { unionToAction } from 'battlecode-schema/js/battlecode/schema/action'
 import assert from 'assert'
 import * as renderUtils from '../util/RenderUtil'
 import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
 import Match from './Match'
 import { Body } from './Bodies'
 import { ATTACK_COLOR, GRASS_COLOR, HEAL_COLOR, TEAM_COLORS, WATER_COLOR } from '../constants'
+import { AttackAction } from 'battlecode-schema/js/battlecode/schema'
+
+type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
 export default class Actions {
-    actions: Action[] = []
+    actions: Action<ActionUnion>[] = []
 
     constructor() {}
 
-    applyDelta(round: Round, delta: schema.Round): void {
+    applyTurn(round: Round, turn: schema.Turn): void {
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--
             if (this.actions[i].duration == 0) {
@@ -21,14 +25,18 @@ export default class Actions {
             }
         }
 
-        if (delta.actionsLength() > 0) {
-            for (let i = 0; i < delta.actionsLength(); i++) {
-                const action = delta.actions(i) ?? assert.fail('actions not found in round')
-                const robotID = delta.actionIds(i) ?? assert.fail('actionIDs not found in round')
-                const target = delta.actionTargets(i) ?? assert.fail('actionTargets not found in round')
+        if (turn.actionsLength() > 0) {
+            for (let i = 0; i < turn.actionsTypeLength(); i++) {
+                const actionType = turn.actionsType(i)!
+                const action =
+                    unionToAction(actionType, (obj) => turn.actions(i, obj)) ?? assert.fail('Failed to parse action')
+
+                // TODO: think about revisiting this
                 const actionClass =
-                    ACTION_DEFINITIONS[action] ?? assert.fail(`Action ${action} not found in ACTION_DEFINITIONS`)
-                const newAction = new actionClass(robotID, target)
+                    ACTION_DEFINITIONS[actionType] ??
+                    assert.fail(`Action ${actionType} not found in ACTION_DEFINITIONS`)
+                const newAction = new actionClass(action)
+
                 this.actions.push(newAction)
                 newAction.apply(round)
             }
@@ -48,10 +56,9 @@ export default class Actions {
     }
 }
 
-export class Action {
+export class Action<T extends ActionUnion> {
     constructor(
-        protected robotID: number,
-        protected target: number,
+        protected actionData: T,
         public duration: number = 1
     ) {}
 
@@ -63,15 +70,15 @@ export class Action {
      */
     apply(round: Round): void {}
     draw(match: Match, ctx: CanvasRenderingContext2D) {}
-    copy(): Action {
+    copy(): Action<T> {
         // creates a new object using this object's prototype and all its parameters. this is a shallow copy, override this if you need a deep copy
         return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
     }
 }
 
 export abstract class ToFromAction extends Action {
-    constructor(robotID: number, target: number) {
-        super(robotID, target)
+    constructor(action: ActionUnion) {
+        super(action)
     }
 
     abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
@@ -86,6 +93,11 @@ export abstract class ToFromAction extends Action {
 }
 
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
+    [schema.Action.SpawnAction]: class DieException extends Action<schema.SpawnAction> {
+        apply(round: Round): void {
+            //round.bodies.
+        }
+    },
     [schema.Action.DIE_EXCEPTION]: class DieException extends Action {
         apply(round: Round): void {
             console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)

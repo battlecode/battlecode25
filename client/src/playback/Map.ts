@@ -124,36 +124,7 @@ export class CurrentMap {
     /**
      * Mutates this currentMap to reflect the given delta.
      */
-    applyDelta(delta: schema.Round): void {
-        const claimedPiles = delta.claimedResourcePiles() ?? assert.fail(`Delta missing claimedResourcePiles`)
-        const digLocations = delta.digLocations() ?? assert.fail(`Delta missing digLocations`)
-        const fillLocations = delta.fillLocations() ?? assert.fail(`Delta missing fillLocations`)
-        const trapAddedLocations = delta.trapAddedLocations() ?? assert.fail(`Delta missing trapAddedLocations`)
-        for (let i = 0; i < claimedPiles.xsLength(); i++) {
-            const schemaIdx = this.locationToIndex(claimedPiles.xs(i)!, claimedPiles.ys(i)!)
-            this.resourcePileData.get(schemaIdx)!.amount = 0
-        }
-        /* Not actually necessary since this is handled via actions
-        for (let i = 0; i < digLocations.xsLength(); i++) {
-            const schemaIdx = this.locationToIndex(digLocations.xs(i)!, digLocations.ys(i)!)
-            this.water[schemaIdx] = 1
-        }
-        for (let i = 0; i < fillLocations.xsLength(); i++) {
-            const schemaIdx = this.locationToIndex(fillLocations.xs(i)!, fillLocations.ys(i)!)
-            this.water[schemaIdx] = 0
-        }
-        */
-        for (let i = 0; i < delta.trapAddedIdsLength(); i++) {
-            const id = delta.trapAddedIds(i)!
-            const location = { x: trapAddedLocations.xs(i)!, y: trapAddedLocations.ys(i)! }
-            const type = delta.trapAddedTypes(i)!
-            const team = delta.trapAddedTeams(i)!
-            this.trapData.set(id, { location, type, team })
-        }
-        for (let i = 0; i < delta.trapTriggeredIdsLength(); i++) {
-            this.trapData.delete(delta.trapTriggeredIds(i)!)
-        }
-    }
+    applyDelta(delta: schema.Round): void {}
 
     draw(
         match: Match,
@@ -274,7 +245,8 @@ export class CurrentMap {
             info.push(`Water`)
         }
         if (divider) {
-            const dividerUp = !match.game.playable || match.currentRound.roundNumber < match.constants.setupPhaseLength()
+            const dividerUp =
+                !match.game.playable || match.currentRound.roundNumber < match.constants.setupPhaseLength()
             if (dividerUp) {
                 info.push(`Dam`)
             }

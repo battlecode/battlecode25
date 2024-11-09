@@ -27,11 +27,13 @@ export default class Bodies {
 
     constructor(
         public readonly game: Game,
-        initialBodies?: schema.SpawnedBodyTable,
+        initialBodies?: schema.InitialBodyTable,
         initialStats?: RoundStat,
         mapToVerify?: StaticMap
     ) {
-        if (initialBodies) this.insertBodies(initialBodies, initialStats)
+        if (initialBodies) {
+            this.insertInitialBodies(initialBodies, initialStats)
+        }
 
         if (mapToVerify) {
             for (let i = 0; i < mapToVerify.width * mapToVerify.height; i++) {
@@ -48,80 +50,33 @@ export default class Bodies {
         }
     }
 
-    updateBodyPositions(delta: schema.Round, allowNullBodies: boolean) {
-        const movedLocs = delta.robotLocs()
-        if (!movedLocs) return
-        const movedIds = delta.robotIdsArray() ?? assert.fail('movedIDsArray not found in round')
-        const xsArray = movedLocs.xsArray() ?? assert.fail('movedLocs.xsArray not found in round')
-        const ysArray = movedLocs.ysArray() ?? assert.fail('movedLocs.ysArray not found in round')
-        for (let i = 0; i < delta.robotIdsLength(); i++) {
-            const id = movedIds[i]
-            const body = this.bodies.get(id)
+    prepareForNextRound() {
+        for (const body of this.bodies.values()) {
+            // Clear existing indicators
+            body.indicatorDots = []
+            body.indicatorLines = []
+            body.indicatorString = ''
 
-            assert(allowNullBodies || !!body, `Moved body ${id} not found in bodies`)
-
-            if (body) body.moveTo({ x: xsArray[i], y: ysArray[i] })
+            // Remove if dead
+            if (body.dead) {
+                this.bodies.delete(body.id) // safe
+            }
         }
     }
 
-    /**
-     * Applies a delta to the bodies array. Because of update order, bodies will first
-     * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
-     */
-    applyDelta(round: Round, delta: schema.Round, nextDelta: schema.Round | null): void {
-        for (const body of this.bodies.values()) if (body.dead) body.jailed = true
-        //this.bodies.delete(body.id) in most games
+    updateNextPositions(nextDelta: schema.Round) {
+        for (let i = 0; i < nextDelta.turnsLength(); i++) {
+            const turn = nextDelta.turns(i)!
+            const body = this.bodies.get(turn.robotId())
 
-        const bodies = delta.spawnedBodies()
-        if (bodies) this.insertBodies(bodies, round.stat.completed ? undefined : round.stat)
+            // Body can be null here since they may have not been spawned for the next turn
+            if (!body) return
 
-        // Update positions with respect to interpolation. The first call to update will set the body's
-        // target location to the value in delta. This is important when the body eventually gets removed
-        // because it should still interpolate to its final position. The second call to update will set the
-        // target position to the body's true next position iff it exists. In this case, we allow null
-        // bodies and skip them since they may not exist in the next round. Most of the updates here are extra
-        // since the first call is really only necessary for bodies that die, so there is potential for
-        // optimization.
-        this.updateBodyPositions(delta, false)
-        for (const [id, body] of this.bodies) if (!body.jailed) body.addToPrevSquares()
-        if (nextDelta) {
-            this.updateBodyPositions(nextDelta, true)
+            body.moveTo({ x: turn.x(), y: turn.y() })
         }
+    }
 
-        // Update bytecode counters
-        for (let i = 0; i < delta.bytecodeIdsLength(); i++) {
-            const id = delta.bytecodeIds(i)!
-            if (!this.hasId(id)) continue // Not spawned in yet (unique to this game)
-            this.getById(id).bytecodesUsed = delta.bytecodesUsed(i)!
-        }
-
-        assert(
-            delta.robotIdsLength() == delta.healLevelsLength() &&
-                delta.robotIdsLength() == delta.attackLevelsLength() &&
-                delta.robotIdsLength() == delta.buildLevelsLength() &&
-                delta.robotIdsLength() == delta.healsPerformedLength() &&
-                delta.robotIdsLength() == delta.attacksPerformedLength() &&
-                delta.robotIdsLength() == delta.buildsPerformedLength() &&
-                delta.robotIdsLength() == delta.robotHealthsLength(),
-            'Delta arrays are not the same length'
-        )
-
-        // Update robot properties
-        for (let i = 0; i < delta.robotIdsLength(); i++) {
-            const id = delta.robotIds(i)!
-            const body = this.getById(id)
-            body.healLevel = delta.healLevels(i)!
-            body.attackLevel = delta.attackLevels(i)!
-            body.buildLevel = delta.buildLevels(i)!
-            body.healsPerformed = delta.healsPerformed(i)!
-            body.attacksPerformed = delta.attacksPerformed(i)!
-            body.buildsPerformed = delta.buildsPerformed(i)!
-            body.moveCooldown = delta.robotMoveCooldowns(i)!
-            body.actionCooldown = delta.robotActionCooldowns(i)!
-            body.hp = delta.robotHealths(i)!
-        }
-
-        // Flag died robots
+    processDiedIds(delta: schema.Round) {
         for (let i = 0; i < delta.diedIdsLength(); i++) {
             const diedId = delta.diedIds(i)!
             const diedBody = this.bodies.get(diedId)
@@ -136,6 +91,40 @@ export default class Bodies {
             // Manually set hp since we don't receive a final delta
             diedBody.hp = 0
         }
+    }
+
+    spawnBody(id: number, spawnAction: schema.SpawnAction): Body {
+        assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
+
+        const robotType = spawnAction.robotType()
+        const bodyClass =
+            BODY_DEFINITIONS[robotType] ?? assert.fail(`Body type ${robotType} not found in BODY_DEFINITIONS`)
+
+        const health = this.game.playable ? this.game.constants.robotBaseHealth() : 1
+        const team = spawnAction.team()
+        const x = spawnAction.x()
+        const y = spawnAction.y()
+
+        const body = new bodyClass(this.game, { x, y }, health, this.game.getTeamByID(team), id)
+        this.bodies.set(id, body)
+
+        return body
+    }
+
+    /**
+     * Applies a delta to the bodies array. Because of update order, bodies will first
+     * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
+     */
+    applyTurn(round: Round, turn: schema.Turn): void {
+        const body = this.getById(turn.robotId())
+
+        // Update properties
+        body.pos = { x: turn.x(), y: turn.y() }
+        body.hp = turn.health()
+        //body.paint = turn.pain();
+        body.moveCooldown = turn.moveCooldown()
+        body.actionCooldown = turn.actionCooldown()
+        body.bytecodesUsed = turn.bytecodesUsed()
 
         // Calculate some stats that do not need to recalculate every round if they have
         // not already been calculated
@@ -158,13 +147,8 @@ export default class Bodies {
             }
         }
 
-        // Clear existing indicators
-        for (const body of this.bodies.values()) {
-            body.indicatorDots = []
-            body.indicatorLines = []
-            body.indicatorString = ''
-        }
-
+        // TODO: move into actions
+        /*
         // Add new indicator dots
         const locs = delta.indicatorDotLocs() ?? assert.fail(`Delta missing indicatorDotLocs`)
         const dotColors = delta.indicatorDotRgbs() ?? assert.fail(`Delta missing indicatorDotRgbs`)
@@ -204,53 +188,7 @@ export default class Bodies {
             const string = delta.indicatorStrings(i)
             body.indicatorString = string
         }
-    }
-
-    private insertBodies(bodies: schema.SpawnedBodyTable, stat?: RoundStat): void {
-        const teams = bodies.teamIdsArray() ?? assert.fail('Initial body teams not found in header')
-        const locs = bodies.locs() ?? assert.fail('Initial body locations not found in header')
-        const xsArray = locs.xsArray() ?? assert.fail('Initial body x locations not found in header')
-        const ysArray = locs.ysArray() ?? assert.fail('Initial body y locations not found in header')
-        const idsArray = bodies.robotIdsArray() ?? assert.fail('Initial body IDs not found in header')
-        assert(
-            teams.length == xsArray.length && xsArray.length == ysArray.length && ysArray.length == idsArray.length,
-            'Initial body arrays are not the same length'
-        )
-
-        for (let i = 0; i < bodies.robotIdsLength(); i++) {
-            const id = idsArray[i]
-            const bodyClass = BODY_DEFINITIONS[0] ?? assert.fail(`Body type ${0} not found in BODY_DEFINITIONS`)
-            const health = this.game.playable ? this.game.constants.robotBaseHealth() : 1
-
-            if (this.bodies.has(id)) {
-                //respawn jailed body
-                const body = this.bodies.get(id) ?? assert.fail(`Body with id ${id} not found in bodies`)
-                assert(body.jailed && body.dead, `Body with id ${id} is not jailed or dead`)
-                body.hp = health
-                body.jailed = false
-                body.dead = false
-                body.resetPos({ x: xsArray[i], y: ysArray[i] })
-            } else {
-                this.bodies.set(
-                    id,
-                    new bodyClass(
-                        this.game,
-                        { x: xsArray[i], y: ysArray[i] },
-                        health,
-                        this.game.getTeamByID(teams[i]),
-                        id
-                    )
-                )
-            }
-            if (stat) {
-                const newBody =
-                    this.bodies.get(id) ?? assert.fail(`Body with id ${id} should have been added to bodies`)
-                const teamStat =
-                    stat.getTeamStat(this.game.getTeamByID(teams[i])) ??
-                    assert.fail(`team ${i} not found in team stats in turn`)
-                // make team stat modifications based on types here (not really used for this game)
-            }
-        }
+        */
     }
 
     getById(id: number): Body {
@@ -343,6 +281,26 @@ export default class Bodies {
         schema.SpawnedBodyTable.addTeamIds(builder, teamIDsVector)
         schema.SpawnedBodyTable.addLocs(builder, locsVecTable)
         return schema.SpawnedBodyTable.endSpawnedBodyTable(builder)
+    }
+
+    private insertInitialBodies(bodies: schema.InitialBodyTable, stat?: RoundStat): void {
+        assert(bodies.robotIdsLength() == bodies.spawnActionsLength(), 'Initial body arrays are not the same length')
+
+        for (let i = 0; i < bodies.robotIdsLength(); i++) {
+            const id = bodies.robotIds(i)!
+            const spawnAction = bodies.spawnActions(i)!
+
+            this.spawnBody(id, spawnAction)
+
+            if (stat) {
+                const newBody =
+                    this.bodies.get(id) ?? assert.fail(`Body with id ${id} should have been added to bodies`)
+                const teamStat =
+                    stat.getTeamStat(this.game.getTeamByID(teams[i])) ??
+                    assert.fail(`team ${i} not found in team stats in turn`)
+                // make team stat modifications based on types here (not really used for this game)
+            }
+        }
     }
 }
 
