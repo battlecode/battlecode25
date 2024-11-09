@@ -25,6 +25,7 @@ export default class Actions {
             }
         }
 
+        const robotId = turn.robotId()
         if (turn.actionsLength() > 0) {
             for (let i = 0; i < turn.actionsTypeLength(); i++) {
                 const actionType = turn.actionsType(i)!
@@ -35,7 +36,7 @@ export default class Actions {
                 const actionClass =
                     ACTION_DEFINITIONS[actionType] ??
                     assert.fail(`Action ${actionType} not found in ACTION_DEFINITIONS`)
-                const newAction = new actionClass(action)
+                const newAction = new actionClass(robotId, action)
 
                 this.actions.push(newAction)
                 newAction.apply(round)
@@ -58,6 +59,7 @@ export default class Actions {
 
 export class Action<T extends ActionUnion> {
     constructor(
+        protected robotId: number,
         protected actionData: T,
         public duration: number = 1
     ) {}
