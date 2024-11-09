@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Indicate that this robot was spawned on this turn
+ */
 @SuppressWarnings("unused")
 public final class SpawnAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

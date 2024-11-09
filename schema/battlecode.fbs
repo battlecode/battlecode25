@@ -95,49 +95,49 @@ enum Action : byte {
 }
 */
 
-// Generic action representing damage to a robot
+/// Generic action representing damage to a robot
 struct DamageAction {
     id: ushort;
     damage: ushort; 
 }
 
-// Visually indicate a tile has been painted
+/// Visually indicate a tile has been painted
 struct PaintAction {
     loc: ushort;
 }
 
-// Visually indicate a tile's paint has been removed
+/// Visually indicate a tile's paint has been removed
 struct UnpaintAction {
     loc: ushort;
 }
 
-// Visually indicate an attack
+/// Visually indicate an attack
 struct AttackAction {
     id: ushort;
 }
 
-// Visually indicate a mop attack
+/// Visually indicate a mop attack
 struct MopAction {
     loc: ushort;
 }
 
-// Visually indicate a tower being built
+/// Visually indicate a tower being built
 struct BuildAction {
     id: ushort;
 }
 
-// Visually indicate trasnferring paint from one robot to another
+/// Visually indicate trasnferring paint from one robot to another
 struct TransferAction {
     id: ushort;
 }
 
-// Visually indicate messaging from one robot to another
+/// Visually indicate messaging from one robot to another
 struct MessageAction {
     id: ushort;
     data: int;
 }
 
-// Indicate that this robot was spawned on this turn
+/// Indicate that this robot was spawned on this turn
 struct SpawnAction {
     x: ushort;
     y: ushort;
@@ -145,23 +145,23 @@ struct SpawnAction {
     robotType: RobotType;
 }
 
-// Visually indicate that a tower was upgraded
+/// Visually indicate that a tower was upgraded
 struct UpgradeAction {
     id: ushort;
 }
 
-// Update the indicator string for this robot
+/// Update the indicator string for this robot
 table IndicatorStringAction {
     value: string;
 }
 
-// Update the indicator dot for this robot
+/// Update the indicator dot for this robot
 struct IndicatorDotAction {
     loc: ushort;
     colorHex: int;
 }
 
-// Update the indicator line for this robot
+/// Update the indicator line for this robot
 struct IndicatorLineAction {
     startLoc: ushort;
     endLoc: ushort;
@@ -282,6 +282,7 @@ table Turn {
     paint: int;
     moveCooldown: int;
     actionCooldown: int;
+    bytecodesUsed: int;
     x: ubyte;
     y: ubyte;
     actions: [Action];
@@ -300,29 +301,10 @@ table Round {
     /// The IDs of bodies that died.
     diedIds: [int];
 
-    /*
-    trapAddedIds: [int];
-    trapAddedLocations: VecTable;
-    trapAddedTypes: [BuildActionType];
-    trapAddedTeams: [byte];
-
-    trapTriggeredIds: [int];
-
-    digLocations: VecTable;
-    fillLocations: VecTable;
-    */
-
-    // logs have been replaced with indicator strings
-
     /// The first sent Round in a match should have index 1. (The starting state,
     /// created by the MatchHeader, can be thought to have index 0.)
     /// It should increase by one for each following round.
     roundId: int;
-
-    /// The IDs of player bodies.
-    bytecodeIds: [int];
-    /// The bytecodes used by the player bodies.
-    bytecodesUsed: [int];
 }
 
 /// Necessary due to flatbuffers requiring unions to be wrapped in tables.

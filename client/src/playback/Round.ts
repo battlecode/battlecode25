@@ -35,9 +35,26 @@ export default class Round {
             they would be removed if map was before it. Bodies needs to come before maps so that actions have access
             to spawned bodies
         */
-        this.actions.applyDelta(this, delta)
-        this.bodies.applyDelta(this, delta, nextDelta)
+
+        // Prepare the bodies to receive the set of turn deltas
+        this.bodies.prepareForNextRound()
+
+        // Apply the round delta to the map
         this.map.applyDelta(delta)
+
+        // Apply all robot turns in order
+        for (let i = 0; i < delta.turnsLength(); i++) {
+            const turn = delta.turns(i)!
+            this.actions.applyTurn(this, turn)
+            this.bodies.applyTurn(this, turn)
+        }
+
+        // Update robot next positions for interpolation based on the next delta
+        if (nextDelta) {
+            this.bodies.updateNextPositions(nextDelta)
+        }
+
+        this.bodies.processDiedIds(delta)
 
         if (firstTimeComputingStat) {
             // finish computing stat and save to match

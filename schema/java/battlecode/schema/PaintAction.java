@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Visually indicate a tile has been painted
+ */
 @SuppressWarnings("unused")
 public final class PaintAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
