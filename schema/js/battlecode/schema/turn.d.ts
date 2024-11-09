@@ -11,6 +11,7 @@ export declare class Turn {
     paint(): number;
     moveCooldown(): number;
     actionCooldown(): number;
+    bytecodesUsed(): number;
     x(): number;
     y(): number;
     actionsType(index: number): Action | null;
@@ -24,6 +25,7 @@ export declare class Turn {
     static addPaint(builder: flatbuffers.Builder, paint: number): void;
     static addMoveCooldown(builder: flatbuffers.Builder, moveCooldown: number): void;
     static addActionCooldown(builder: flatbuffers.Builder, actionCooldown: number): void;
+    static addBytecodesUsed(builder: flatbuffers.Builder, bytecodesUsed: number): void;
     static addX(builder: flatbuffers.Builder, x: number): void;
     static addY(builder: flatbuffers.Builder, y: number): void;
     static addActionsType(builder: flatbuffers.Builder, actionsTypeOffset: flatbuffers.Offset): void;
@@ -33,5 +35,5 @@ export declare class Turn {
     static createActionsVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
     static startActionsVector(builder: flatbuffers.Builder, numElems: number): void;
     static endTurn(builder: flatbuffers.Builder): flatbuffers.Offset;
-    static createTurn(builder: flatbuffers.Builder, robotId: number, health: number, paint: number, moveCooldown: number, actionCooldown: number, x: number, y: number, actionsTypeOffset: flatbuffers.Offset, actionsOffset: flatbuffers.Offset): flatbuffers.Offset;
+    static createTurn(builder: flatbuffers.Builder, robotId: number, health: number, paint: number, moveCooldown: number, actionCooldown: number, bytecodesUsed: number, x: number, y: number, actionsTypeOffset: flatbuffers.Offset, actionsOffset: flatbuffers.Offset): flatbuffers.Offset;
 }

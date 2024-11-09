@@ -282,6 +282,7 @@ table Turn {
     paint: int;
     moveCooldown: int;
     actionCooldown: int;
+    bytecodesUsed: int;
     x: ubyte;
     y: ubyte;
     actions: [Action];
@@ -300,29 +301,10 @@ table Round {
     /// The IDs of bodies that died.
     diedIds: [int];
 
-    /*
-    trapAddedIds: [int];
-    trapAddedLocations: VecTable;
-    trapAddedTypes: [BuildActionType];
-    trapAddedTeams: [byte];
-
-    trapTriggeredIds: [int];
-
-    digLocations: VecTable;
-    fillLocations: VecTable;
-    */
-
-    // logs have been replaced with indicator strings
-
     /// The first sent Round in a match should have index 1. (The starting state,
     /// created by the MatchHeader, can be thought to have index 0.)
     /// It should increase by one for each following round.
     roundId: int;
-
-    /// The IDs of player bodies.
-    bytecodeIds: [int];
-    /// The bytecodes used by the player bodies.
-    bytecodesUsed: [int];
 }
 
 /// Necessary due to flatbuffers requiring unions to be wrapped in tables.

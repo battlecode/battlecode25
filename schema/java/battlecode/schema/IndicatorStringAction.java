@@ -24,7 +24,7 @@ import java.nio.ByteOrder;
  */
 @SuppressWarnings("unused")
 public final class IndicatorStringAction extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
+  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
   public static IndicatorStringAction getRootAsIndicatorStringAction(ByteBuffer _bb) { return getRootAsIndicatorStringAction(_bb, new IndicatorStringAction()); }
   public static IndicatorStringAction getRootAsIndicatorStringAction(ByteBuffer _bb, IndicatorStringAction obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

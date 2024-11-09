@@ -24,7 +24,7 @@ import java.nio.ByteOrder;
  */
 @SuppressWarnings("unused")
 public final class Round extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
+  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
   public static Round getRootAsRound(ByteBuffer _bb) { return getRootAsRound(_bb, new Round()); }
   public static Round getRootAsRound(ByteBuffer _bb, Round obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
@@ -71,36 +71,14 @@ public final class Round extends Table {
    * It should increase by one for each following round.
    */
   public int roundId() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  /**
-   * The IDs of player bodies.
-   */
-  public int bytecodeIds(int j) { int o = __offset(14); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int bytecodeIdsLength() { int o = __offset(14); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector bytecodeIdsVector() { return bytecodeIdsVector(new IntVector()); }
-  public IntVector bytecodeIdsVector(IntVector obj) { int o = __offset(14); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer bytecodeIdsAsByteBuffer() { return __vector_as_bytebuffer(14, 4); }
-  public ByteBuffer bytecodeIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 14, 4); }
-  /**
-   * The bytecodes used by the player bodies.
-   */
-  public int bytecodesUsed(int j) { int o = __offset(16); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int bytecodesUsedLength() { int o = __offset(16); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector bytecodesUsedVector() { return bytecodesUsedVector(new IntVector()); }
-  public IntVector bytecodesUsedVector(IntVector obj) { int o = __offset(16); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer bytecodesUsedAsByteBuffer() { return __vector_as_bytebuffer(16, 4); }
-  public ByteBuffer bytecodesUsedInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 16, 4); }
 
   public static int createRound(FlatBufferBuilder builder,
       int teamIdsOffset,
       int teamResourceAmountsOffset,
       int turnsOffset,
       int diedIdsOffset,
-      int roundId,
-      int bytecodeIdsOffset,
-      int bytecodesUsedOffset) {
-    builder.startTable(7);
-    Round.addBytecodesUsed(builder, bytecodesUsedOffset);
-    Round.addBytecodeIds(builder, bytecodeIdsOffset);
+      int roundId) {
+    builder.startTable(5);
     Round.addRoundId(builder, roundId);
     Round.addDiedIds(builder, diedIdsOffset);
     Round.addTurns(builder, turnsOffset);
@@ -109,7 +87,7 @@ public final class Round extends Table {
     return Round.endRound(builder);
   }
 
-  public static void startRound(FlatBufferBuilder builder) { builder.startTable(7); }
+  public static void startRound(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addTeamIds(FlatBufferBuilder builder, int teamIdsOffset) { builder.addOffset(0, teamIdsOffset, 0); }
   public static int createTeamIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startTeamIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
@@ -123,12 +101,6 @@ public final class Round extends Table {
   public static int createDiedIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startDiedIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addRoundId(FlatBufferBuilder builder, int roundId) { builder.addInt(4, roundId, 0); }
-  public static void addBytecodeIds(FlatBufferBuilder builder, int bytecodeIdsOffset) { builder.addOffset(5, bytecodeIdsOffset, 0); }
-  public static int createBytecodeIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBytecodeIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addBytecodesUsed(FlatBufferBuilder builder, int bytecodesUsedOffset) { builder.addOffset(6, bytecodesUsedOffset, 0); }
-  public static int createBytecodesUsedVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBytecodesUsedVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endRound(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

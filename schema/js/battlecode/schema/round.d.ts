@@ -38,18 +38,6 @@ export declare class Round {
      * It should increase by one for each following round.
      */
     roundId(): number;
-    /**
-     * The IDs of player bodies.
-     */
-    bytecodeIds(index: number): number | null;
-    bytecodeIdsLength(): number;
-    bytecodeIdsArray(): Int32Array | null;
-    /**
-     * The bytecodes used by the player bodies.
-     */
-    bytecodesUsed(index: number): number | null;
-    bytecodesUsedLength(): number;
-    bytecodesUsedArray(): Int32Array | null;
     static startRound(builder: flatbuffers.Builder): void;
     static addTeamIds(builder: flatbuffers.Builder, teamIdsOffset: flatbuffers.Offset): void;
     static createTeamIdsVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
@@ -76,20 +64,6 @@ export declare class Round {
     static createDiedIdsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
     static startDiedIdsVector(builder: flatbuffers.Builder, numElems: number): void;
     static addRoundId(builder: flatbuffers.Builder, roundId: number): void;
-    static addBytecodeIds(builder: flatbuffers.Builder, bytecodeIdsOffset: flatbuffers.Offset): void;
-    static createBytecodeIdsVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
-    /**
-     * @deprecated This Uint8Array overload will be removed in the future.
-     */
-    static createBytecodeIdsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
-    static startBytecodeIdsVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addBytecodesUsed(builder: flatbuffers.Builder, bytecodesUsedOffset: flatbuffers.Offset): void;
-    static createBytecodesUsedVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
-    /**
-     * @deprecated This Uint8Array overload will be removed in the future.
-     */
-    static createBytecodesUsedVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
-    static startBytecodesUsedVector(builder: flatbuffers.Builder, numElems: number): void;
     static endRound(builder: flatbuffers.Builder): flatbuffers.Offset;
-    static createRound(builder: flatbuffers.Builder, teamIdsOffset: flatbuffers.Offset, teamResourceAmountsOffset: flatbuffers.Offset, turnsOffset: flatbuffers.Offset, diedIdsOffset: flatbuffers.Offset, roundId: number, bytecodeIdsOffset: flatbuffers.Offset, bytecodesUsedOffset: flatbuffers.Offset): flatbuffers.Offset;
+    static createRound(builder: flatbuffers.Builder, teamIdsOffset: flatbuffers.Offset, teamResourceAmountsOffset: flatbuffers.Offset, turnsOffset: flatbuffers.Offset, diedIdsOffset: flatbuffers.Offset, roundId: number): flatbuffers.Offset;
 }
