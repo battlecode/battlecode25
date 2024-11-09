@@ -166,7 +166,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.target] = round.bodies.getById(this.robotID).team.id
+            round.map.paint[this.target] = round.bodies.getById(this.robotId).team.id
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
@@ -180,7 +180,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -202,7 +202,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -225,7 +225,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -241,13 +241,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         apply(round: Round): void {
             const flagId = this.target
             const flagData = round.map.flagData.get(flagId)!
-            flagData.carrierId = this.robotID
-            round.bodies.getById(this.robotID).carryingFlagId = flagId
+            flagData.carrierId = this.robotId
+            round.bodies.getById(this.robotId).carryingFlagId = flagId
         }
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            const flagId = this.robotID
+            const flagId = this.robotId
             const flagData = round.map.flagData.get(flagId)!
             // Could be carrying or already placed
             if (flagData.carrierId) {
@@ -259,7 +259,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
-            const team = round.bodies.getById(this.robotID).team
+            const team = round.bodies.getById(this.robotId).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
         }
     }
