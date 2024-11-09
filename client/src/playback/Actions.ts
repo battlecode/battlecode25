@@ -95,6 +95,11 @@ export class Action<T extends ActionUnion> {
 //}
 
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
+    [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
+        apply(round: Round): void {
+            throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)");
+        }
+    },
     //old DieException
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
@@ -261,6 +266,21 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         apply(round: Round): void {
             const team = round.bodies.getById(this.robotId).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
+        }
+    },
+    [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
+        apply(round: Round): void {
+            
+        }
+    },
+    [schema.Action.IndicatorDotAction]: class IndicatorDotAction extends Action<schema.IndicatorDotAction> {
+        apply(round: Round): void {
+            
+        }
+    },
+    [schema.Action.IndicatorLineAction]: class IndicatorLineAction extends Action<schema.IndicatorLineAction> {
+        apply(round: Round): void {
+            
         }
     }
 }
