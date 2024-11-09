@@ -183,7 +183,8 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.WATER_TRAP]: class WaterTrap extends Action {
+    //!! change
+    [schema.Action.BuildAction]: class BuildAction extends Action {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = 3
@@ -204,7 +205,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.STUN_TRAP]: class StunTrap extends Action {
+    [schema.Action.TransferAction]: class TransferAction extends Action {
         apply(round: Round): void {
             // To dicuss
         }
