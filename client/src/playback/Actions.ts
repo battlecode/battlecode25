@@ -270,17 +270,38 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
         apply(round: Round): void {
-            
+            const body = round.bodies.getById(this.robotId)
+            // Check if exists because technically can add indicators when not spawned
+            assert(body, "body should not be null")
+            const string = this.actionData.value()!
+            body.indicatorString = string
         }
     },
     [schema.Action.IndicatorDotAction]: class IndicatorDotAction extends Action<schema.IndicatorDotAction> {
         apply(round: Round): void {
+            const loc = this.actionData.loc()
+            const vectorLoc = round.map.indexToLocation(loc)
             
+            const body = round.bodies.getById(this.robotId)
+            assert(body, "body should not be null")
+            body.indicatorDots.push({
+                location: vectorLoc,
+                color: renderUtils.colorToHexString(this.actionData.colorHex())
+            })  
         }
     },
     [schema.Action.IndicatorLineAction]: class IndicatorLineAction extends Action<schema.IndicatorLineAction> {
         apply(round: Round): void {
-            
+            const starts = round.map.indexToLocation(this.actionData.startLoc())
+            const ends = round.map.indexToLocation(this.actionData.endLoc())
+
+            const body = round.bodies.getById(this.robotId)
+            assert(body, "body should not be null")
+            body.indicatorLines.push({
+                start: starts,
+                end: ends,
+                color: renderUtils.colorToHexString(this.actionData.colorHex())
+            })
         }
     }
 }
