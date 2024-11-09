@@ -92,7 +92,7 @@ export class Action<T extends ActionUnion> {
 //    }
 //}
 
-export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
+export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
     //old DieException
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
@@ -157,17 +157,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
     //        )
     //    }
     //},
-    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<UnpaintAction> {
+    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
         apply(round: Round): void {
             round.map.paint[this.target] = 0
         }
     },
-    [schema.Action.PaintAction]: class PaintAction extends Action<PaintAction> {
+    [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
             round.map.paint[this.target] = round.bodies.getById(this.robotID).team.id
         }
     },
-    [schema.Action.MopAction]: class MopAction extends Action<MopAction> {
+    [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
         apply(round: Round): void {
             // To discuss
         }
@@ -191,7 +191,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
         }
     },
     //!! change
-    [schema.Action.BuildAction]: class BuildAction extends Action<BuildAction> {
+    [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = 3
@@ -212,7 +212,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.TransferAction]: class TransferAction extends Action<TransferAction> {
+    [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
             // To dicuss
         }
@@ -235,7 +235,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.MessageAction]: class MessageAction extends Action<MessageAction> {
+    [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
         apply(round: Round): void {
             const flagId = this.target
             const flagData = round.map.flagData.get(flagId)!
@@ -243,7 +243,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             round.bodies.getById(this.robotID).carryingFlagId = flagId
         }
     },
-    [schema.Action.SpawnAction]: class SpawnAction extends Action<SpawnAction> {
+    [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
             const flagId = this.robotID
             const flagData = round.map.flagData.get(flagId)!
@@ -255,7 +255,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             flagData.location = round.map.indexToLocation(this.target)
         }
     },
-    [schema.Action.UpgradeAction]: class UpgradeAction extends Action<UpgradeAction> {
+    [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
             const team = round.bodies.getById(this.robotID).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
