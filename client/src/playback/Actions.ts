@@ -76,30 +76,30 @@ export class Action<T extends ActionUnion> {
     }
 }
 
-export abstract class ToFromAction extends Action {
-    constructor(action: ActionUnion) {
-        super(action)
-    }
+//export abstract class ToFromAction extends Action {
+//    constructor(action: ActionUnion) {
+//        super(action)
+//    }
 
-    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
+//    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
 
-    draw(match: Match, ctx: CanvasRenderingContext2D) {
-        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
-        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
-        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
-        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
-        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
-    }
-}
+//    draw(match: Match, ctx: CanvasRenderingContext2D) {
+//        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
+//        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
+//        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
+//        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
+//        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
+//    }
+//}
 
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
     //old DieException
-    [schema.Action.DamageAction]: class DamageAction extends Action {
+    [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
             //console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)
         }
     },
-    [schema.Action.AttackAction]: class AttackAction extends ToFromAction {
+    [schema.Action.AttackAction]: class AttackAction extends Action<schema.AttackAction> {
         apply(round: Round): void {
             // To discuss
         }
@@ -139,35 +139,35 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             )
         }
     },
-    [schema.Action.HEAL]: class Heal extends ToFromAction {
-        apply(round: Round): void {
-            // To discuss
-        }
-        drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
-            renderUtils.renderLine(
-                ctx,
-                renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
-                renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-                {
-                    color: HEAL_COLOR,
-                    lineWidth: 0.05,
-                    opacity: 0.5,
-                    renderArrow: true
-                }
-            )
-        }
-    },
-    [schema.Action.UnpaintAction]: class UnpaintAction extends Action {
+    //[schema.Action.HEAL]: class Heal extends ToFromAction {
+    //    apply(round: Round): void {
+    //        // To discuss
+    //    }
+    //    drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
+    //        renderUtils.renderLine(
+    //            ctx,
+    //            renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
+    //            renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
+    //            {
+    //                color: HEAL_COLOR,
+    //                lineWidth: 0.05,
+    //                opacity: 0.5,
+    //                renderArrow: true
+    //            }
+    //        )
+    //    }
+    //},
+    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<UnpaintAction> {
         apply(round: Round): void {
             round.map.paint[this.target] = 0
         }
     },
-    [schema.Action.PaintAction]: class PaintAction extends Action {
+    [schema.Action.PaintAction]: class PaintAction extends Action<PaintAction> {
         apply(round: Round): void {
             round.map.paint[this.target] = round.bodies.getById(this.robotID).team.id
         }
     },
-    [schema.Action.MopAction]: class MopAction extends Action {
+    [schema.Action.MopAction]: class MopAction extends Action<MopAction> {
         apply(round: Round): void {
             // To discuss
         }
@@ -191,7 +191,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
         }
     },
     //!! change
-    [schema.Action.BuildAction]: class BuildAction extends Action {
+    [schema.Action.BuildAction]: class BuildAction extends Action<BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = 3
@@ -212,7 +212,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.TransferAction]: class TransferAction extends Action {
+    [schema.Action.TransferAction]: class TransferAction extends Action<TransferAction> {
         apply(round: Round): void {
             // To dicuss
         }
@@ -235,7 +235,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.PICKUP_FLAG]: class PickupFlag extends Action {
+    [schema.Action.MessageAction]: class MessageAction extends Action<MessageAction> {
         apply(round: Round): void {
             const flagId = this.target
             const flagData = round.map.flagData.get(flagId)!
@@ -243,7 +243,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             round.bodies.getById(this.robotID).carryingFlagId = flagId
         }
     },
-    [schema.Action.PLACE_FLAG]: class ResetFlag extends Action {
+    [schema.Action.SpawnAction]: class SpawnAction extends Action<SpawnAction> {
         apply(round: Round): void {
             const flagId = this.robotID
             const flagData = round.map.flagData.get(flagId)!
@@ -255,16 +255,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             flagData.location = round.map.indexToLocation(this.target)
         }
     },
-    [schema.Action.CAPTURE_FLAG]: class CaptureFlag extends Action {
-        apply(round: Round): void {
-            const flagId = this.target
-            const flagData = round.map.flagData.get(flagId)!
-            // Always carrying
-            round.bodies.getById(flagData.carrierId!).carryingFlagId = null
-            round.map.flagData.delete(flagId)
-        }
-    },
-    [schema.Action.GLOBAL_UPGRADE]: class GlobalUpgrade extends Action {
+    [schema.Action.UpgradeAction]: class UpgradeAction extends Action<UpgradeAction> {
         apply(round: Round): void {
             const team = round.bodies.getById(this.robotID).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
