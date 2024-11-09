@@ -541,7 +541,7 @@ public strictfp class GameWorld {
     /**
      * @return whether a team painted more of the map than the other team
      */
-    public boolean setWinnerIfMorePaint(){
+    public boolean setWinnerIfMoreSquaresPainted(){
         int[] totalSquaresPainted = new int[2];
 
         // consider team reserves
@@ -576,53 +576,32 @@ public strictfp class GameWorld {
     }
 
     /**
-     * @return whether a team has more bread
+     * @return whether a team has more money
      */
-    // public boolean setWinnerIfMoreBread(){
-    //     int[] totalBreadValues = new int[2];
+    public boolean setWinnerIfMoreMoney(){
+        int[] totalMoneyValues = new int[2];
 
-    //     // consider team reserves
-    //     totalBreadValues[Team.A.ordinal()] += this.teamInfo.getBread(Team.A);
-    //     totalBreadValues[Team.B.ordinal()] += this.teamInfo.getBread(Team.B);
+        // consider team reserves
+        totalMoneyValues[Team.A.ordinal()] += this.teamInfo.getMoney(Team.A);
+        totalMoneyValues[Team.B.ordinal()] += this.teamInfo.getMoney(Team.B);
         
-    //     if (totalBreadValues[Team.A.ordinal()] > totalBreadValues[Team.B.ordinal()]) {
-    //         setWinner(Team.A, DominationFactor.MORE_BREAD);
-    //         return true;
-    //     } else if (totalBreadValues[Team.B.ordinal()] > totalBreadValues[Team.A.ordinal()]) {
-    //         setWinner(Team.B, DominationFactor.MORE_BREAD);
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    /**
-     * @return whether a team has more flags picked up (but not sucessfully retrieved)
-     */
-    // public boolean setWinnerIfMoreFlagsPickedUp(){
-    //     int[] totalFlagsPickedUp = new int[2];
-
-    //     // consider team reserves
-    //     totalFlagsPickedUp[Team.A.ordinal()] += this.teamInfo.getFlagsPickedUp(Team.A);
-    //     totalFlagsPickedUp[Team.B.ordinal()] += this.teamInfo.getFlagsPickedUp(Team.B);
-        
-    //     if (totalFlagsPickedUp[Team.A.ordinal()] > totalFlagsPickedUp[Team.B.ordinal()]) {
-    //         setWinner(Team.A, DominationFactor.MORE_FLAGS_PICKED);
-    //         return true;
-    //     } else if (totalFlagsPickedUp[Team.B.ordinal()] > totalFlagsPickedUp[Team.A.ordinal()]) {
-    //         setWinner(Team.B, DominationFactor.MORE_FLAGS_PICKED);
-    //         return true;
-    //     }
-    //     return false;
-    // }
+        if (totalMoneyValues[Team.A.ordinal()] > totalMoneyValues[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_MONEY);
+            return true;
+        } else if (totalMoneyValues[Team.B.ordinal()] > totalMoneyValues[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_MONEY);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * @return whether a team has more allied towers alive
      */
     public boolean setWinnerIfMoreTowersAlive(){
-        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.PAINT_TOWER, RobotOrTowerType.MONEY_TOWER}
         int[] totalTowersAlive = new int[2];
 
-        for (RobotOrTowerType type: types){
+        for (UnitType type: UnitType.values()){
             if (isTowerType(type)){
                 totalTowersAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalTowersAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
@@ -644,10 +623,9 @@ public strictfp class GameWorld {
      * @return whether a team has more allied robots alive
      */
     public boolean setWinnerIfMoreRobotsAlive(){
-        RobotOrTowerType[] types = {RobotOrTowerType.SOLDIER, RobotOrTowerType.MOPPER, RobotOrTowerType.PAINT_TOWER, RobotOrTowerType.MONEY_TOWER};
         int[] totalRobotsAlive = new int[2];
 
-        for (RobotOrTowerType type: types){
+        for (UnitType type: UnitType.values()){
             if (isRobotType(type)){
                 totalRobotsAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalRobotsAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
@@ -705,9 +683,11 @@ public strictfp class GameWorld {
      */
     public void checkEndOfMatch() {
         if (timeLimitReached() && gameStats.getWinner() == null) {
-            if (setWinnerIfMorePaint()) return;
-            if (setWinnerIfGreaterLevelSum()) return;
-            if (setWinnerIfMoreBread()) return;
+            if (setWinnerIfMoreSquaresPainted()) return;
+            if (setWinnerIfMoreTowersAlive()) return;
+            if (setWinnerIfMoreMoney()) return;
+            if (setWinnerIfMorePaintInUnits()) return;
+            if (setWinnerIfMoreRobotsAlive()) return;
             setWinnerArbitrary();
         }
     }

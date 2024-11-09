@@ -547,29 +547,29 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ******** BUILDING METHODS *********
     // ***********************************
 
-    private void assertIsRobotType(RobotOrTowerType type) throws GameActionException {
+    private void assertIsRobotType(UnitType type) throws GameActionException {
         throw new NotImplementedException();
         // TODO not implemented
     }
 
     @Override
-    public boolean isRobotType(RobotOrTowerType type) {
+    public boolean isRobotType(UnitType type) {
         throw new NotImplementedException();
         // TODO not implemented
     }
 
-    private void assertIsTowerType(RobotOrTowerType type) {
+    private void assertIsTowerType(UnitType type) {
         throw new NotImplementedException();
         // TODO not implemented
     }
 
     @Override
-    public boolean isTowerType(RobotOrTowerType type) {
+    public boolean isTowerType(UnitType type) {
         throw new NotImplementedException();
         // TODO not implemented
     }
 
-    private void assertCanBuildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    private void assertCanBuildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.BUILD_ROBOT_RADIUS_SQUARED);
         assertIsActionReady();
@@ -581,7 +581,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canBuildRobot(RobotOrTowerType type, MapLocation loc) {
+    public boolean canBuildRobot(UnitType type, MapLocation loc) {
         try {
             assertCanBuildRobot(type, loc);
             return true;
@@ -591,13 +591,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    public void buildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertCanBuildRobot(type, loc);
         this.robot.addActionCooldownTurns(GameConstants.BUILD_ROBOT_COOLDOWN);
         this.robot.buildRobot(type, loc);
     }
 
-    private void assertCanMarkTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException {
+    private void assertCanMarkTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
         throw new NotImplementedException();
@@ -605,7 +605,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canMarkTowerPattern(RobotOrTowerType type, MapLocation loc) {
+    public boolean canMarkTowerPattern(UnitType type, MapLocation loc) {
         try {
             assertCanMarkTowerPattern(type, loc);
             return true;
@@ -615,7 +615,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void markTowerPattern(RobotOrTowerType type, MapLocation loc) {
+    public void markTowerPattern(UnitType type, MapLocation loc) {
         throw new NotImplementedException();
         // TODO not implemented
     }
@@ -842,7 +842,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (isTowerType(this.robot.getType())) {
             throw new GameActionException(CANT_DO_THAT, "Towers cannot transfer paint!");
         }
-        if (amount > 0 && this.robot.getType() != RobotOrTowerType.MOPPER) {
+        if (amount > 0 && this.robot.getType() != UnitType.MOPPER) {
             throw new GameActionException(CANT_DO_THAT, "Only mopppers can give paint to allies!");
         }
         if (isRobotType(robot.getType()) && amount < 0) {
@@ -954,5 +954,59 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(startLoc);
         assertNotNull(endLoc);
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);
+    }
+
+    
+    private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
+        assertNotNull(loc);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
+        // check if there is a tower at loc
+        if (! isTowerType(this.robot.getType())){ 
+            throw new GameActionException(CANT_DO_THAT, "No tower at the location");
+        }
+        // check if tower corresponds to correct team
+        if (robot.getTeam() != this.robot.getTeam()){
+            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of the enemy team!");
+        }
+
+        UnitType type = robot.getType();
+        int moneyRequired = 0;
+
+        if (!type.canUpgradeType()){
+            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of this level!");
+        }
+
+        UnitType nextType = type.getNextLevel();
+        moneyRequired = nextType.moneyCost;
+
+        if (this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < moneyRequired){
+            throw new GameActionException(CANT_DO_THAT, "Not enough money to upgrade tower!");
+        }
+    }
+
+    @Override
+    public boolean canUpgradeTower(MapLocation loc) {
+        try {
+            assertCanUpgradeTower(loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+    //checks if they can upgrade tower
+    
+    public void upgradeTower(MapLocation loc) throws GameActionException{
+        // you have enough money
+        // tower at the location
+        // tower is on your team, can be upgraded
+        //if all true, subtract money from your team and then increment tower's type/level
+        assertCanUpgradeTower(loc);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
+        UnitType type = robot.getType();
+        int moneyRequired = 0;
+        UnitType newType = type.getNextLevel();
+        moneyRequired += newType.moneyCost;
+        this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
+        robot.upgradeTower(newType);
     }
 }

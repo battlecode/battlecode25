@@ -2,7 +2,7 @@ package battlecode.world;
 
 import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotOrTowerType;
+import battlecode.common.UnitType;
 import battlecode.common.Team;
 
 import gnu.trove.list.array.TIntArrayList;
@@ -37,7 +37,7 @@ public strictfp class ObjectInfo {
 
     private final TIntArrayList dynamicBodyExecOrder;
 
-    private Map<Team, Map<RobotOrTowerType, Integer>> robotTypeCount = new EnumMap<>(
+    private Map<Team, Map<UnitType, Integer>> robotTypeCount = new EnumMap<>(
             Team.class);
     private int[] robotCount = new int[3];
 
@@ -55,14 +55,14 @@ public strictfp class ObjectInfo {
         robotIndex.init(null);
 
         robotTypeCount.put(Team.A, new EnumMap<>(
-            RobotOrTowerType.class));
+            UnitType.class));
         robotTypeCount.put(Team.B, new EnumMap<>(
-                RobotOrTowerType.class));
+                UnitType.class));
         robotTypeCount.put(Team.NEUTRAL, new EnumMap<>(
-            RobotOrTowerType.class));
+            UnitType.class));
     }
 
-    public int getRobotTypeCount(Team team, RobotOrTowerType type) {
+    public int getRobotTypeCount(Team team, UnitType type) {
         if (robotTypeCount.get(team).containsKey(type)) {
             return robotTypeCount.get(team).get(type);
         } else {
