@@ -28,10 +28,11 @@ export default class Match {
         public winner: Team | null,
         public winType: schema.WinType | null,
         public readonly map: StaticMap,
-        firstBodies: Bodies,
-        firstStats: RoundStat
+        initialBodies: Bodies
     ) {
-        this.currentRound = new Round(this, 0, new CurrentMap(map), firstBodies, new Actions(), firstStats)
+        this.verifyMap(initialBodies)
+
+        this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
         this.snapshots = [this.currentRound.copy()]
         this.stats = [this.snapshots[0].stat]
     }
@@ -40,18 +41,17 @@ export default class Match {
      * Creates a blank match for use in the map editor.
      */
     public static createBlank(game: Game, bodies: Bodies, map: StaticMap): Match {
-        const firstStats = new RoundStat(game)
-        return new Match(game, [], 0, game.teams[0], schema.WinType.RESIGNATION, map, bodies, firstStats)
+        return new Match(game, [], 0, game.teams[0], null, map, bodies)
     }
 
     /**
      * Creates a match from a map for loading into the map editor from an existing file.
      */
-    public static fromMap(schema_map: schema.GameMap, game: Game, map: StaticMap): Match {
-        const firstStats = new RoundStat(game)
-        const mapBodies = schema_map.bodies() ?? assert.fail('Initial bodies not found in header')
-        const bodies = new Bodies(game, mapBodies, firstStats, map)
-        return new Match(game, [], 0, game.teams[0], schema.WinType.RESIGNATION, map, bodies, firstStats)
+    public static fromMap(schemaMap: schema.GameMap, game: Game): Match {
+        const map = StaticMap.fromSchema(schemaMap)
+        const mapBodies = schemaMap.initialBodies()
+        const bodies = new Bodies(game, mapBodies ?? undefined)
+        return new Match(game, [], 0, game.teams[0], null, map, bodies)
     }
 
     public static fromSchema(
@@ -63,12 +63,7 @@ export default class Match {
         const mapData = header.map() ?? assert.fail('Map data not found in header')
         const map = StaticMap.fromSchema(mapData)
 
-        const firstStats = new RoundStat(game)
-        const firstBodies = new Bodies(
-            game,
-            mapData.bodies() ?? assert.fail('Initial bodies not found in header'),
-            firstStats
-        )
+        const initialBodies = new Bodies(game, mapData.initialBodies() ?? undefined)
 
         // header.maxRounds() is always 2000
 
@@ -79,8 +74,10 @@ export default class Match {
 
         const maxRound = deltas.length
 
-        const match = new Match(game, deltas, maxRound, null, null, map, firstBodies, firstStats)
-        if (footer) match.addMatchFooter(footer)
+        const match = new Match(game, deltas, maxRound, null, null, map, initialBodies)
+        if (footer) {
+            match.addMatchFooter(footer)
+        }
 
         return match
     }
@@ -201,5 +198,17 @@ export default class Match {
         }
 
         this.currentRound = updatingRound
+    }
+
+    private verifyMap(initialBodies: Bodies): void {
+        for (let i = 0; i < this.map.width * this.map.height; i++) {
+            if (this.map.walls[i] || this.map.divider[i] || this.map.initialPaint[i]) {
+                for (const body of initialBodies.bodies.values()) {
+                    if (body.pos.x == i % this.map.width && body.pos.y == Math.floor(i / this.map.width)) {
+                        assert.fail(`Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall or divider or water`)
+                    }
+                }
+            }
+        }
     }
 }

@@ -13,10 +13,9 @@ export function loadFileAsMap(file: File): Promise<Game> {
         reader.readAsArrayBuffer(file)
         reader.onload = () => {
             const data = new Uint8Array(reader.result as ArrayBuffer)
-            const schema_map = schema.GameMap.getRootAsGameMap(new flatbuffers.ByteBuffer(data))
+            const schemaMap = schema.GameMap.getRootAsGameMap(new flatbuffers.ByteBuffer(data))
             const game = new Game()
-            const map = StaticMap.fromSchema(schema_map)
-            game.currentMatch = Match.fromMap(schema_map, game, map)
+            game.currentMatch = Match.fromMap(schemaMap, game)
             resolve(game)
         }
     })

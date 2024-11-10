@@ -38,7 +38,7 @@ var MatchFooter = /** @class */ (function () {
      */
     MatchFooter.prototype.winType = function () {
         var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? this.bb.readInt8(this.bb_pos + offset) : win_type_1.WinType.AREA_PAINTED;
+        return offset ? this.bb.readInt8(this.bb_pos + offset) : win_type_1.WinType.RESIGNATION;
     };
     /**
      * The number of rounds played.
@@ -65,7 +65,7 @@ var MatchFooter = /** @class */ (function () {
         builder.addFieldInt8(0, winner, 0);
     };
     MatchFooter.addWinType = function (builder, winType) {
-        builder.addFieldInt8(1, winType, win_type_1.WinType.AREA_PAINTED);
+        builder.addFieldInt8(1, winType, win_type_1.WinType.RESIGNATION);
     };
     MatchFooter.addTotalRounds = function (builder, totalRounds) {
         builder.addFieldInt32(2, totalRounds, 0);

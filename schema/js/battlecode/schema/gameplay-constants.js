@@ -21,79 +21,93 @@ var GameplayConstants = /** @class */ (function () {
         bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
         return (obj || new GameplayConstants()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     };
-    GameplayConstants.prototype.setupPhaseLength = function () {
+    GameplayConstants.prototype.baseHealth = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
-    GameplayConstants.prototype.flagMinDistance = function () {
+    GameplayConstants.prototype.baseHealthLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 4);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+    GameplayConstants.prototype.baseHealthArray = function () {
+        var offset = this.bb.__offset(this.bb_pos, 4);
+        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+    GameplayConstants.prototype.visionRadius = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
-    GameplayConstants.prototype.globalUpgradeRoundDelay = function () {
+    GameplayConstants.prototype.visionRadiusLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 6);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+    GameplayConstants.prototype.visionRadiusArray = function () {
+        var offset = this.bb.__offset(this.bb_pos, 6);
+        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+    };
+    GameplayConstants.prototype.actionRadius = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 8);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
-    GameplayConstants.prototype.passiveResourceRate = function () {
-        var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    GameplayConstants.prototype.actionRadiusLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 8);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
-    GameplayConstants.prototype.robotBaseHealth = function () {
-        var offset = this.bb.__offset(this.bb_pos, 12);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.jailedRounds = function () {
-        var offset = this.bb.__offset(this.bb_pos, 14);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.visionRadius = function () {
-        var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.actionRadius = function () {
-        var offset = this.bb.__offset(this.bb_pos, 18);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    GameplayConstants.prototype.actionRadiusArray = function () {
+        var offset = this.bb.__offset(this.bb_pos, 8);
+        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
     GameplayConstants.startGameplayConstants = function (builder) {
-        builder.startObject(8);
+        builder.startObject(3);
     };
-    GameplayConstants.addSetupPhaseLength = function (builder, setupPhaseLength) {
-        builder.addFieldInt32(0, setupPhaseLength, 0);
+    GameplayConstants.addBaseHealth = function (builder, baseHealthOffset) {
+        builder.addFieldOffset(0, baseHealthOffset, 0);
     };
-    GameplayConstants.addFlagMinDistance = function (builder, flagMinDistance) {
-        builder.addFieldInt32(1, flagMinDistance, 0);
+    GameplayConstants.createBaseHealthVector = function (builder, data) {
+        builder.startVector(4, data.length, 4);
+        for (var i = data.length - 1; i >= 0; i--) {
+            builder.addInt32(data[i]);
+        }
+        return builder.endVector();
     };
-    GameplayConstants.addGlobalUpgradeRoundDelay = function (builder, globalUpgradeRoundDelay) {
-        builder.addFieldInt32(2, globalUpgradeRoundDelay, 0);
+    GameplayConstants.startBaseHealthVector = function (builder, numElems) {
+        builder.startVector(4, numElems, 4);
     };
-    GameplayConstants.addPassiveResourceRate = function (builder, passiveResourceRate) {
-        builder.addFieldInt32(3, passiveResourceRate, 0);
+    GameplayConstants.addVisionRadius = function (builder, visionRadiusOffset) {
+        builder.addFieldOffset(1, visionRadiusOffset, 0);
     };
-    GameplayConstants.addRobotBaseHealth = function (builder, robotBaseHealth) {
-        builder.addFieldInt32(4, robotBaseHealth, 0);
+    GameplayConstants.createVisionRadiusVector = function (builder, data) {
+        builder.startVector(4, data.length, 4);
+        for (var i = data.length - 1; i >= 0; i--) {
+            builder.addInt32(data[i]);
+        }
+        return builder.endVector();
     };
-    GameplayConstants.addJailedRounds = function (builder, jailedRounds) {
-        builder.addFieldInt32(5, jailedRounds, 0);
+    GameplayConstants.startVisionRadiusVector = function (builder, numElems) {
+        builder.startVector(4, numElems, 4);
     };
-    GameplayConstants.addVisionRadius = function (builder, visionRadius) {
-        builder.addFieldInt32(6, visionRadius, 0);
+    GameplayConstants.addActionRadius = function (builder, actionRadiusOffset) {
+        builder.addFieldOffset(2, actionRadiusOffset, 0);
     };
-    GameplayConstants.addActionRadius = function (builder, actionRadius) {
-        builder.addFieldInt32(7, actionRadius, 0);
+    GameplayConstants.createActionRadiusVector = function (builder, data) {
+        builder.startVector(4, data.length, 4);
+        for (var i = data.length - 1; i >= 0; i--) {
+            builder.addInt32(data[i]);
+        }
+        return builder.endVector();
+    };
+    GameplayConstants.startActionRadiusVector = function (builder, numElems) {
+        builder.startVector(4, numElems, 4);
     };
     GameplayConstants.endGameplayConstants = function (builder) {
         var offset = builder.endObject();
         return offset;
     };
-    GameplayConstants.createGameplayConstants = function (builder, setupPhaseLength, flagMinDistance, globalUpgradeRoundDelay, passiveResourceRate, robotBaseHealth, jailedRounds, visionRadius, actionRadius) {
+    GameplayConstants.createGameplayConstants = function (builder, baseHealthOffset, visionRadiusOffset, actionRadiusOffset) {
         GameplayConstants.startGameplayConstants(builder);
-        GameplayConstants.addSetupPhaseLength(builder, setupPhaseLength);
-        GameplayConstants.addFlagMinDistance(builder, flagMinDistance);
-        GameplayConstants.addGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay);
-        GameplayConstants.addPassiveResourceRate(builder, passiveResourceRate);
-        GameplayConstants.addRobotBaseHealth(builder, robotBaseHealth);
-        GameplayConstants.addJailedRounds(builder, jailedRounds);
-        GameplayConstants.addVisionRadius(builder, visionRadius);
-        GameplayConstants.addActionRadius(builder, actionRadius);
+        GameplayConstants.addBaseHealth(builder, baseHealthOffset);
+        GameplayConstants.addVisionRadius(builder, visionRadiusOffset);
+        GameplayConstants.addActionRadius(builder, actionRadiusOffset);
         return GameplayConstants.endGameplayConstants(builder);
     };
     return GameplayConstants;

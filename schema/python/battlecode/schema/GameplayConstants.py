@@ -25,114 +25,127 @@ class GameplayConstants(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # GameplayConstants
-    def SetupPhaseLength(self):
+    def BaseHealth(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
         return 0
 
     # GameplayConstants
-    def FlagMinDistance(self):
+    def BaseHealthAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
+        return 0
+
+    # GameplayConstants
+    def BaseHealthLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # GameplayConstants
+    def BaseHealthIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
+        return o == 0
+
+    # GameplayConstants
+    def VisionRadius(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
         return 0
 
     # GameplayConstants
-    def GlobalUpgradeRoundDelay(self):
+    def VisionRadiusAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
+        return 0
+
+    # GameplayConstants
+    def VisionRadiusLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # GameplayConstants
+    def VisionRadiusIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        return o == 0
+
+    # GameplayConstants
+    def ActionRadius(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
         return 0
 
     # GameplayConstants
-    def PassiveResourceRate(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+    def ActionRadiusAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
         return 0
 
     # GameplayConstants
-    def RobotBaseHealth(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+    def ActionRadiusLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            return self._tab.VectorLen(o)
         return 0
 
     # GameplayConstants
-    def JailedRounds(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
-        return 0
-
-    # GameplayConstants
-    def VisionRadius(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
-        return 0
-
-    # GameplayConstants
-    def ActionRadius(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
-        return 0
+    def ActionRadiusIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        return o == 0
 
 def GameplayConstantsStart(builder):
-    builder.StartObject(8)
+    builder.StartObject(3)
 
 def Start(builder):
     GameplayConstantsStart(builder)
 
-def GameplayConstantsAddSetupPhaseLength(builder, setupPhaseLength):
-    builder.PrependInt32Slot(0, setupPhaseLength, 0)
+def GameplayConstantsAddBaseHealth(builder, baseHealth):
+    builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(baseHealth), 0)
 
-def AddSetupPhaseLength(builder, setupPhaseLength):
-    GameplayConstantsAddSetupPhaseLength(builder, setupPhaseLength)
+def AddBaseHealth(builder, baseHealth):
+    GameplayConstantsAddBaseHealth(builder, baseHealth)
 
-def GameplayConstantsAddFlagMinDistance(builder, flagMinDistance):
-    builder.PrependInt32Slot(1, flagMinDistance, 0)
+def GameplayConstantsStartBaseHealthVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
 
-def AddFlagMinDistance(builder, flagMinDistance):
-    GameplayConstantsAddFlagMinDistance(builder, flagMinDistance)
-
-def GameplayConstantsAddGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay):
-    builder.PrependInt32Slot(2, globalUpgradeRoundDelay, 0)
-
-def AddGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay):
-    GameplayConstantsAddGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay)
-
-def GameplayConstantsAddPassiveResourceRate(builder, passiveResourceRate):
-    builder.PrependInt32Slot(3, passiveResourceRate, 0)
-
-def AddPassiveResourceRate(builder, passiveResourceRate):
-    GameplayConstantsAddPassiveResourceRate(builder, passiveResourceRate)
-
-def GameplayConstantsAddRobotBaseHealth(builder, robotBaseHealth):
-    builder.PrependInt32Slot(4, robotBaseHealth, 0)
-
-def AddRobotBaseHealth(builder, robotBaseHealth):
-    GameplayConstantsAddRobotBaseHealth(builder, robotBaseHealth)
-
-def GameplayConstantsAddJailedRounds(builder, jailedRounds):
-    builder.PrependInt32Slot(5, jailedRounds, 0)
-
-def AddJailedRounds(builder, jailedRounds):
-    GameplayConstantsAddJailedRounds(builder, jailedRounds)
+def StartBaseHealthVector(builder, numElems):
+    return GameplayConstantsStartBaseHealthVector(builder, numElems)
 
 def GameplayConstantsAddVisionRadius(builder, visionRadius):
-    builder.PrependInt32Slot(6, visionRadius, 0)
+    builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(visionRadius), 0)
 
 def AddVisionRadius(builder, visionRadius):
     GameplayConstantsAddVisionRadius(builder, visionRadius)
 
+def GameplayConstantsStartVisionRadiusVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartVisionRadiusVector(builder, numElems):
+    return GameplayConstantsStartVisionRadiusVector(builder, numElems)
+
 def GameplayConstantsAddActionRadius(builder, actionRadius):
-    builder.PrependInt32Slot(7, actionRadius, 0)
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(actionRadius), 0)
 
 def AddActionRadius(builder, actionRadius):
     GameplayConstantsAddActionRadius(builder, actionRadius)
+
+def GameplayConstantsStartActionRadiusVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartActionRadiusVector(builder, numElems):
+    return GameplayConstantsStartActionRadiusVector(builder, numElems)
 
 def GameplayConstantsEnd(builder):
     return builder.EndObject()

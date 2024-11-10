@@ -5,10 +5,11 @@ exports.WinType = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 var WinType;
 (function (WinType) {
-    WinType[WinType["AREA_PAINTED"] = 0] = "AREA_PAINTED";
-    WinType[WinType["MORE_TOWERS"] = 1] = "MORE_TOWERS";
-    WinType[WinType["MORE_MONEY"] = 2] = "MORE_MONEY";
-    WinType[WinType["MORE_STORED_PAINT"] = 3] = "MORE_STORED_PAINT";
-    WinType[WinType["MORE_ROBOTS"] = 4] = "MORE_ROBOTS";
-    WinType[WinType["RANDOM"] = 5] = "RANDOM";
+    WinType[WinType["RESIGNATION"] = 0] = "RESIGNATION";
+    WinType[WinType["AREA_PAINTED"] = 1] = "AREA_PAINTED";
+    WinType[WinType["MORE_TOWERS"] = 2] = "MORE_TOWERS";
+    WinType[WinType["MORE_MONEY"] = 3] = "MORE_MONEY";
+    WinType[WinType["MORE_STORED_PAINT"] = 4] = "MORE_STORED_PAINT";
+    WinType[WinType["MORE_ROBOTS"] = 5] = "MORE_ROBOTS";
+    WinType[WinType["RANDOM"] = 6] = "RANDOM";
 })(WinType || (exports.WinType = WinType = {}));

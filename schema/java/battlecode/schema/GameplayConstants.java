@@ -27,45 +27,46 @@ public final class GameplayConstants extends Table {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public GameplayConstants __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int setupPhaseLength() { int o = __offset(4); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int flagMinDistance() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int globalUpgradeRoundDelay() { int o = __offset(8); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int passiveResourceRate() { int o = __offset(10); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int robotBaseHealth() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int jailedRounds() { int o = __offset(14); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int visionRadius() { int o = __offset(16); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int actionRadius() { int o = __offset(18); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public int baseHealth(int j) { int o = __offset(4); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int baseHealthLength() { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; }
+  public IntVector baseHealthVector() { return baseHealthVector(new IntVector()); }
+  public IntVector baseHealthVector(IntVector obj) { int o = __offset(4); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer baseHealthAsByteBuffer() { return __vector_as_bytebuffer(4, 4); }
+  public ByteBuffer baseHealthInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 4); }
+  public int visionRadius(int j) { int o = __offset(6); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int visionRadiusLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
+  public IntVector visionRadiusVector() { return visionRadiusVector(new IntVector()); }
+  public IntVector visionRadiusVector(IntVector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer visionRadiusAsByteBuffer() { return __vector_as_bytebuffer(6, 4); }
+  public ByteBuffer visionRadiusInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 6, 4); }
+  public int actionRadius(int j) { int o = __offset(8); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int actionRadiusLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public IntVector actionRadiusVector() { return actionRadiusVector(new IntVector()); }
+  public IntVector actionRadiusVector(IntVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer actionRadiusAsByteBuffer() { return __vector_as_bytebuffer(8, 4); }
+  public ByteBuffer actionRadiusInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 8, 4); }
 
   public static int createGameplayConstants(FlatBufferBuilder builder,
-      int setupPhaseLength,
-      int flagMinDistance,
-      int globalUpgradeRoundDelay,
-      int passiveResourceRate,
-      int robotBaseHealth,
-      int jailedRounds,
-      int visionRadius,
-      int actionRadius) {
-    builder.startTable(8);
-    GameplayConstants.addActionRadius(builder, actionRadius);
-    GameplayConstants.addVisionRadius(builder, visionRadius);
-    GameplayConstants.addJailedRounds(builder, jailedRounds);
-    GameplayConstants.addRobotBaseHealth(builder, robotBaseHealth);
-    GameplayConstants.addPassiveResourceRate(builder, passiveResourceRate);
-    GameplayConstants.addGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay);
-    GameplayConstants.addFlagMinDistance(builder, flagMinDistance);
-    GameplayConstants.addSetupPhaseLength(builder, setupPhaseLength);
+      int baseHealthOffset,
+      int visionRadiusOffset,
+      int actionRadiusOffset) {
+    builder.startTable(3);
+    GameplayConstants.addActionRadius(builder, actionRadiusOffset);
+    GameplayConstants.addVisionRadius(builder, visionRadiusOffset);
+    GameplayConstants.addBaseHealth(builder, baseHealthOffset);
     return GameplayConstants.endGameplayConstants(builder);
   }
 
-  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(8); }
-  public static void addSetupPhaseLength(FlatBufferBuilder builder, int setupPhaseLength) { builder.addInt(0, setupPhaseLength, 0); }
-  public static void addFlagMinDistance(FlatBufferBuilder builder, int flagMinDistance) { builder.addInt(1, flagMinDistance, 0); }
-  public static void addGlobalUpgradeRoundDelay(FlatBufferBuilder builder, int globalUpgradeRoundDelay) { builder.addInt(2, globalUpgradeRoundDelay, 0); }
-  public static void addPassiveResourceRate(FlatBufferBuilder builder, int passiveResourceRate) { builder.addInt(3, passiveResourceRate, 0); }
-  public static void addRobotBaseHealth(FlatBufferBuilder builder, int robotBaseHealth) { builder.addInt(4, robotBaseHealth, 0); }
-  public static void addJailedRounds(FlatBufferBuilder builder, int jailedRounds) { builder.addInt(5, jailedRounds, 0); }
-  public static void addVisionRadius(FlatBufferBuilder builder, int visionRadius) { builder.addInt(6, visionRadius, 0); }
-  public static void addActionRadius(FlatBufferBuilder builder, int actionRadius) { builder.addInt(7, actionRadius, 0); }
+  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(3); }
+  public static void addBaseHealth(FlatBufferBuilder builder, int baseHealthOffset) { builder.addOffset(0, baseHealthOffset, 0); }
+  public static int createBaseHealthVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
+  public static void startBaseHealthVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addVisionRadius(FlatBufferBuilder builder, int visionRadiusOffset) { builder.addOffset(1, visionRadiusOffset, 0); }
+  public static int createVisionRadiusVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
+  public static void startVisionRadiusVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addActionRadius(FlatBufferBuilder builder, int actionRadiusOffset) { builder.addOffset(2, actionRadiusOffset, 0); }
+  public static int createActionRadiusVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
+  public static void startActionRadiusVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endGameplayConstants(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

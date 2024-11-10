@@ -138,12 +138,3 @@ export const TOOLTIP_PATH_LENGTH = 8
 export const TOOLTIP_PATH_INIT_R = 0.2
 export const TOOLTIP_PATH_DECAY_R = 0.9
 export const TOOLTIP_PATH_DECAY_OPACITY = 0.95
-
-// Map build types to image filenames
-export const BUILD_NAMES: Record<schema.BuildActionType, string> = {
-    [schema.BuildActionType.EXPLOSIVE_TRAP]: 'explosive',
-    [schema.BuildActionType.WATER_TRAP]: 'water',
-    [schema.BuildActionType.STUN_TRAP]: 'stun',
-    [schema.BuildActionType.DIG]: '',
-    [schema.BuildActionType.FILL]: ''
-}

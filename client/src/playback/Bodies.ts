@@ -27,26 +27,10 @@ export default class Bodies {
 
     constructor(
         public readonly game: Game,
-        initialBodies?: schema.InitialBodyTable,
-        initialStats?: RoundStat,
-        mapToVerify?: StaticMap
+        initialBodies?: schema.InitialBodyTable
     ) {
         if (initialBodies) {
-            this.insertInitialBodies(initialBodies, initialStats)
-        }
-
-        if (mapToVerify) {
-            for (let i = 0; i < mapToVerify.width * mapToVerify.height; i++) {
-                if (mapToVerify.walls[i] || mapToVerify.divider[i] || mapToVerify.initialWater[i]) {
-                    for (const body of this.bodies.values()) {
-                        if (body.pos.x == i % mapToVerify.width && body.pos.y == Math.floor(i / mapToVerify.width)) {
-                            assert.fail(
-                                `Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall or divider or water`
-                            )
-                        }
-                    }
-                }
-            }
+            this.insertInitialBodies(initialBodies)
         }
     }
 
@@ -125,27 +109,6 @@ export default class Bodies {
         body.moveCooldown = turn.moveCooldown()
         body.actionCooldown = turn.actionCooldown()
         body.bytecodesUsed = turn.bytecodesUsed()
-
-        // Calculate some stats that do not need to recalculate every round if they have
-        // not already been calculated
-        if (!round.stat.completed) {
-            round.stat.getTeamStat(this.game.teams[0]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            round.stat.getTeamStat(this.game.teams[1]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            round.stat.getTeamStat(this.game.teams[0]).robots = [0, 0, 0, 0, 0]
-            round.stat.getTeamStat(this.game.teams[1]).robots = [0, 0, 0, 0, 0]
-            for (const body of this.bodies.values()) {
-                const teamStat = round.stat.getTeamStat(body.team)
-                if (body.dead || body.jailed) {
-                    teamStat.robots[4] += 1
-                    teamStat.specializationTotalLevels[4] += (body.healLevel + body.buildLevel + body.attackLevel) / 3
-                } else {
-                    teamStat.robots[body.getSpecialization().idx] += 1
-                    teamStat.specializationTotalLevels[1] += body.attackLevel
-                    teamStat.specializationTotalLevels[2] += body.buildLevel
-                    teamStat.specializationTotalLevels[3] += body.healLevel
-                }
-            }
-        }
     }
 
     getById(id: number): Body {
@@ -240,7 +203,7 @@ export default class Bodies {
         return schema.SpawnedBodyTable.endSpawnedBodyTable(builder)
     }
 
-    private insertInitialBodies(bodies: schema.InitialBodyTable, stat?: RoundStat): void {
+    private insertInitialBodies(bodies: schema.InitialBodyTable): void {
         assert(bodies.robotIdsLength() == bodies.spawnActionsLength(), 'Initial body arrays are not the same length')
 
         for (let i = 0; i < bodies.robotIdsLength(); i++) {
@@ -248,15 +211,6 @@ export default class Bodies {
             const spawnAction = bodies.spawnActions(i)!
 
             this.spawnBody(id, spawnAction)
-
-            if (stat) {
-                const newBody =
-                    this.bodies.get(id) ?? assert.fail(`Body with id ${id} should have been added to bodies`)
-                const teamStat =
-                    stat.getTeamStat(this.game.getTeamByID(teams[i])) ??
-                    assert.fail(`team ${i} not found in team stats in turn`)
-                // make team stat modifications based on types here (not really used for this game)
-            }
         }
     }
 }
