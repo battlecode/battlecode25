@@ -243,7 +243,7 @@ export class CurrentMap {
             info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
         }
         if (paint) {
-            info.push(`Paint`)
+            info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
         }
         if (divider) {
             const dividerUp =
@@ -267,7 +267,7 @@ export class CurrentMap {
     }
 
     isEmpty(): boolean {
-        return this.resourcePileData.size == 0 && this.water.every((x) => x == 0) && this.staticMap.isEmpty()
+        return this.resourcePileData.size == 0 && this.paint.every((x) => x == 0) && this.staticMap.isEmpty()
     }
 
     /**
@@ -275,9 +275,23 @@ export class CurrentMap {
      * This and the next function are seperated due to how flatbuffers works
      */
     getSchemaPacket(builder: flatbuffers.Builder): SchemaPacket {
-        const paintOffset = builder.createInt8Vector(this.paint)
-        const wallsOffset = builder.createInt8Vector(this.staticMap.walls)
-        const dividerOffset = builder.createInt8Vector(this.staticMap.divider)
+        const wallsOffset = schema.GameMap.createWallsVector(
+            builder,
+            Array.from(this.staticMap.walls).map((x) => !!x)
+        )
+        //haven't changed this yet
+        const waterOffset = schema.GameMap.createWaterVector(
+            builder,
+            Array.from(this.staticMap.initialPaint).map((x) => !!x)
+        )
+        const dividerOffset = schema.GameMap.createDividerVector(
+            builder,
+            Array.from(this.staticMap.divider).map((x) => !!x)
+        )
+        const resourcePileAmountOffset = schema.GameMap.createResourcePileAmountsVector(
+            builder,
+            Array.from(this.resourcePileData.values()).map((x) => x.amount)
+        )
         const spawnLocationOffset = packVecTable(builder, this.staticMap.spawnLocations)
         const resourcePileOffset = packVecTable(builder, this.staticMap.resourcePileLocations)
         const resourcePileAmountOffset = builder.createInt16Vector(this.staticMap.initialResourcePileAmounts)
@@ -318,7 +332,7 @@ export class StaticMap {
         public readonly spawnLocations: Vector[],
         public readonly resourcePileLocations: Vector[],
         public readonly initialResourcePileAmounts: Int32Array,
-        public readonly initialWater: Int8Array
+        public readonly initialPaint: Int8Array
     ) {
         if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
 
@@ -350,7 +364,8 @@ export class StaticMap {
         const resourcePileLocations = parseVecTable(schemaMap.resourcePiles() ?? assert.fail('resourcePiles() is null'))
         const initialResourcePileAmounts =
             schemaMap.resourcePileAmountsArray() ?? assert.fail('resourcePileAmountsArray() is null')
-        const initialWater = schemaMap.waterArray() ?? assert.fail('waterArray() is null')
+        //!! have not changed below
+        const initialPaint = schemaMap.waterArray() ?? assert.fail('waterArray() is null')
         return new StaticMap(
             name,
             randomSeed,
@@ -361,7 +376,7 @@ export class StaticMap {
             spawnLocations,
             resourcePileLocations,
             initialResourcePileAmounts,
-            initialWater
+            initialPaint
         )
     }
 
@@ -383,7 +398,7 @@ export class StaticMap {
         const spawnLocations: Vector[] = []
         const resourcePileLocations: Vector[] = []
         const initialResourcePileAmounts = new Int32Array()
-        const initialWater = new Int8Array(width * height)
+        const initialPaint = new Int8Array(width * height)
         return new StaticMap(
             name,
             randomSeed,
@@ -394,7 +409,7 @@ export class StaticMap {
             spawnLocations,
             resourcePileLocations,
             initialResourcePileAmounts,
-            initialWater
+            initialPaint
         )
     }
 
@@ -455,7 +470,7 @@ export class StaticMap {
                     const target_y = pos.y + y
                     if (target_x >= 0 && target_x < this.width && target_y >= 0 && target_y < this.height) {
                         const idx = this.locationToIndex(target_x, target_y)
-                        if (this.walls[idx] || this.initialWater[idx]) continue
+                        if (this.walls[idx] || this.initialPaint[idx]) continue
                         // Team A: 1, Team B: 2
                         spawnZoneDrawAreas[idx] = (i % 2) + 1
                     }
