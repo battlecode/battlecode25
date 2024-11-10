@@ -146,49 +146,6 @@ export default class Bodies {
                 }
             }
         }
-
-        // TODO: move into actions
-        /*
-        // Add new indicator dots
-        const locs = delta.indicatorDotLocs() ?? assert.fail(`Delta missing indicatorDotLocs`)
-        const dotColors = delta.indicatorDotRgbs() ?? assert.fail(`Delta missing indicatorDotRgbs`)
-        for (let i = 0; i < locs.xsLength(); i++) {
-            const bodyId = delta.indicatorDotIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            body.indicatorDots.push({
-                location: { x: locs.xs(i)!, y: locs.ys(i)! },
-                color: renderUtils.rgbToHex(dotColors.red(i)!, dotColors.green(i)!, dotColors.blue(i)!)
-            })
-        }
-
-        // Add new indicator lines
-        const starts = delta.indicatorLineStartLocs() ?? assert.fail(`Delta missing indicatorLineStarts`)
-        const ends = delta.indicatorLineEndLocs() ?? assert.fail(`Delta missing indicatorLineEnds`)
-        const lineColors = delta.indicatorLineRgbs() ?? assert.fail(`Delta missing indicatorLineRgbs`)
-        for (let i = 0; i < starts.xsLength(); i++) {
-            const bodyId = delta.indicatorLineIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            body.indicatorLines.push({
-                start: { x: starts.xs(i)!, y: starts.ys(i)! },
-                end: { x: ends.xs(i)!, y: ends.ys(i)! },
-                color: renderUtils.rgbToHex(lineColors.red(i)!, lineColors.green(i)!, lineColors.blue(i)!)
-            })
-        }
-
-        // Add new indicator strings
-        for (let i = 0; i < delta.indicatorStringIdsLength(); i++) {
-            const bodyId = delta.indicatorStringIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            const string = delta.indicatorStrings(i)
-            body.indicatorString = string
-        }
-        */
     }
 
     getById(id: number): Body {

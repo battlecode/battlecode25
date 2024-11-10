@@ -97,7 +97,7 @@ export class Action<T extends ActionUnion> {
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
     [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
         apply(round: Round): void {
-            throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)");
+            throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
         }
     },
     //old DieException
@@ -252,14 +252,10 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            const flagId = this.robotId
-            const flagData = round.map.flagData.get(flagId)!
-            // Could be carrying or already placed
-            if (flagData.carrierId) {
-                round.bodies.getById(flagData.carrierId).carryingFlagId = null
-            }
-            flagData.carrierId = null
-            flagData.location = round.map.indexToLocation(this.target)
+            // This assumes ids are never reused
+            assert(!round.bodies.hasId(this.robotId), 'Spawned robot already exists')
+
+            round.bodies.spawnBody(this.robotId, this.actionData)
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {

@@ -17,14 +17,11 @@ table TeamData {
 }
 
 table GameplayConstants {
-    setupPhaseLength: int;
-    flagMinDistance: int;
-    globalUpgradeRoundDelay: int;
-    passiveResourceRate: int;
-    robotBaseHealth: int;
-    jailedRounds: int;
-    visionRadius: int;
-    actionRadius: int;
+
+    // Constants per robot type
+    baseHealth: [int];
+    visionRadius: [int];
+    actionRadius: [int];
 }
 
 enum RobotType: byte {
@@ -64,36 +61,6 @@ table GameMap {
     resourcePiles: VecTable;
     resourcePileAmounts: [int];
 }
-
-/*
-enum Action : byte {
-    // Target: ID of hit robot
-    ATTACK,
-    // Target: ID of healed robot
-    HEAL,
-    // Target: x + y * width of dig location
-    DIG,
-    // Target: x + y * width of fill location
-    FILL,
-    // Target: x + y * width of trap location
-    EXPLOSIVE_TRAP,
-    // Target: x + y * width of trap location
-    WATER_TRAP,
-    // Target: x + y * width of trap location
-    STUN_TRAP,
-    // Target: flag id
-    PICKUP_FLAG,
-    // Id: Flag id, Target: x + y * width of placed location
-    PLACE_FLAG,
-    // Target: flag id
-    CAPTURE_FLAG,
-    // Target: GlobalUpgradeType id
-    GLOBAL_UPGRADE,
-    /// Dies due to an uncaught exception
-    /// Target: none
-    DIE_EXCEPTION,
-}
-*/
 
 /// Generic action representing damage to a robot
 struct DamageAction {
