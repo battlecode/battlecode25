@@ -69,63 +69,28 @@ wallsArray():Int8Array|null {
   return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
-water(index: number):boolean|null {
+paint(index: number):boolean|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? !!this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : false;
 }
 
-waterLength():number {
+paintLength():number {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-waterArray():Int8Array|null {
+paintArray():Int8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
-divider(index: number):boolean|null {
+ruins(obj?:VecTable):VecTable|null {
   const offset = this.bb!.__offset(this.bb_pos, 18);
-  return offset ? !!this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : false;
-}
-
-dividerLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 18);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-dividerArray():Int8Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 18);
-  return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
-spawnLocations(obj?:VecTable):VecTable|null {
-  const offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? (obj || new VecTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-}
-
-resourcePiles(obj?:VecTable):VecTable|null {
-  const offset = this.bb!.__offset(this.bb_pos, 22);
-  return offset ? (obj || new VecTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-}
-
-resourcePileAmounts(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 24);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-resourcePileAmountsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 24);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-resourcePileAmountsArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 24);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
 static startGameMap(builder:flatbuffers.Builder) {
-  builder.startObject(11);
+  builder.startObject(8);
 }
 
 static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
@@ -164,11 +129,11 @@ static startWallsVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(1, numElems, 1);
 }
 
-static addWater(builder:flatbuffers.Builder, waterOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(6, waterOffset, 0);
+static addPaint(builder:flatbuffers.Builder, paintOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(6, paintOffset, 0);
 }
 
-static createWaterVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
+static createPaintVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
   builder.startVector(1, data.length, 1);
   for (let i = data.length - 1; i >= 0; i--) {
     builder.addInt8(+data[i]!);
@@ -176,53 +141,12 @@ static createWaterVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffer
   return builder.endVector();
 }
 
-static startWaterVector(builder:flatbuffers.Builder, numElems:number) {
+static startPaintVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(1, numElems, 1);
 }
 
-static addDivider(builder:flatbuffers.Builder, dividerOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(7, dividerOffset, 0);
-}
-
-static createDividerVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
-  builder.startVector(1, data.length, 1);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(+data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startDividerVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(1, numElems, 1);
-}
-
-static addSpawnLocations(builder:flatbuffers.Builder, spawnLocationsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(8, spawnLocationsOffset, 0);
-}
-
-static addResourcePiles(builder:flatbuffers.Builder, resourcePilesOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(9, resourcePilesOffset, 0);
-}
-
-static addResourcePileAmounts(builder:flatbuffers.Builder, resourcePileAmountsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(10, resourcePileAmountsOffset, 0);
-}
-
-static createResourcePileAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createResourcePileAmountsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createResourcePileAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startResourcePileAmountsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+static addRuins(builder:flatbuffers.Builder, ruinsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(7, ruinsOffset, 0);
 }
 
 static endGameMap(builder:flatbuffers.Builder):flatbuffers.Offset {

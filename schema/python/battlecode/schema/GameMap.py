@@ -95,7 +95,7 @@ class GameMap(object):
         return o == 0
 
     # GameMap
-    def Water(self, j):
+    def Paint(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             a = self._tab.Vector(o)
@@ -103,54 +103,27 @@ class GameMap(object):
         return 0
 
     # GameMap
-    def WaterAsNumpy(self):
+    def PaintAsNumpy(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             return self._tab.GetVectorAsNumpy(flatbuffers.number_types.BoolFlags, o)
         return 0
 
     # GameMap
-    def WaterLength(self):
+    def PaintLength(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # GameMap
-    def WaterIsNone(self):
+    def PaintIsNone(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         return o == 0
 
     # GameMap
-    def Divider(self, j):
+    def Ruins(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
-        if o != 0:
-            a = self._tab.Vector(o)
-            return self._tab.Get(flatbuffers.number_types.BoolFlags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
-        return 0
-
-    # GameMap
-    def DividerAsNumpy(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
-        if o != 0:
-            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.BoolFlags, o)
-        return 0
-
-    # GameMap
-    def DividerLength(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
-        if o != 0:
-            return self._tab.VectorLen(o)
-        return 0
-
-    # GameMap
-    def DividerIsNone(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
-        return o == 0
-
-    # GameMap
-    def SpawnLocations(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         if o != 0:
             x = self._tab.Indirect(o + self._tab.Pos)
             from battlecode.schema.VecTable import VecTable
@@ -158,47 +131,9 @@ class GameMap(object):
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
-
-    # GameMap
-    def ResourcePiles(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
-        if o != 0:
-            x = self._tab.Indirect(o + self._tab.Pos)
-            from battlecode.schema.VecTable import VecTable
-            obj = VecTable()
-            obj.Init(self._tab.Bytes, x)
-            return obj
-        return None
-
-    # GameMap
-    def ResourcePileAmounts(self, j):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
-        if o != 0:
-            a = self._tab.Vector(o)
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
-        return 0
-
-    # GameMap
-    def ResourcePileAmountsAsNumpy(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
-        if o != 0:
-            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
-        return 0
-
-    # GameMap
-    def ResourcePileAmountsLength(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
-        if o != 0:
-            return self._tab.VectorLen(o)
-        return 0
-
-    # GameMap
-    def ResourcePileAmountsIsNone(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
-        return o == 0
 
 def GameMapStart(builder):
-    builder.StartObject(11)
+    builder.StartObject(8)
 
 def Start(builder):
     GameMapStart(builder)
@@ -245,53 +180,23 @@ def GameMapStartWallsVector(builder, numElems):
 def StartWallsVector(builder, numElems):
     return GameMapStartWallsVector(builder, numElems)
 
-def GameMapAddWater(builder, water):
-    builder.PrependUOffsetTRelativeSlot(6, flatbuffers.number_types.UOffsetTFlags.py_type(water), 0)
+def GameMapAddPaint(builder, paint):
+    builder.PrependUOffsetTRelativeSlot(6, flatbuffers.number_types.UOffsetTFlags.py_type(paint), 0)
 
-def AddWater(builder, water):
-    GameMapAddWater(builder, water)
+def AddPaint(builder, paint):
+    GameMapAddPaint(builder, paint)
 
-def GameMapStartWaterVector(builder, numElems):
+def GameMapStartPaintVector(builder, numElems):
     return builder.StartVector(1, numElems, 1)
 
-def StartWaterVector(builder, numElems):
-    return GameMapStartWaterVector(builder, numElems)
+def StartPaintVector(builder, numElems):
+    return GameMapStartPaintVector(builder, numElems)
 
-def GameMapAddDivider(builder, divider):
-    builder.PrependUOffsetTRelativeSlot(7, flatbuffers.number_types.UOffsetTFlags.py_type(divider), 0)
+def GameMapAddRuins(builder, ruins):
+    builder.PrependUOffsetTRelativeSlot(7, flatbuffers.number_types.UOffsetTFlags.py_type(ruins), 0)
 
-def AddDivider(builder, divider):
-    GameMapAddDivider(builder, divider)
-
-def GameMapStartDividerVector(builder, numElems):
-    return builder.StartVector(1, numElems, 1)
-
-def StartDividerVector(builder, numElems):
-    return GameMapStartDividerVector(builder, numElems)
-
-def GameMapAddSpawnLocations(builder, spawnLocations):
-    builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(spawnLocations), 0)
-
-def AddSpawnLocations(builder, spawnLocations):
-    GameMapAddSpawnLocations(builder, spawnLocations)
-
-def GameMapAddResourcePiles(builder, resourcePiles):
-    builder.PrependUOffsetTRelativeSlot(9, flatbuffers.number_types.UOffsetTFlags.py_type(resourcePiles), 0)
-
-def AddResourcePiles(builder, resourcePiles):
-    GameMapAddResourcePiles(builder, resourcePiles)
-
-def GameMapAddResourcePileAmounts(builder, resourcePileAmounts):
-    builder.PrependUOffsetTRelativeSlot(10, flatbuffers.number_types.UOffsetTFlags.py_type(resourcePileAmounts), 0)
-
-def AddResourcePileAmounts(builder, resourcePileAmounts):
-    GameMapAddResourcePileAmounts(builder, resourcePileAmounts)
-
-def GameMapStartResourcePileAmountsVector(builder, numElems):
-    return builder.StartVector(4, numElems, 4)
-
-def StartResourcePileAmountsVector(builder, numElems):
-    return GameMapStartResourcePileAmountsVector(builder, numElems)
+def AddRuins(builder, ruins):
+    GameMapAddRuins(builder, ruins)
 
 def GameMapEnd(builder):
     return builder.EndObject()

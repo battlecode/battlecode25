@@ -36,6 +36,9 @@ export function exportMap(round: Round, name: string) {
 function verifyMapGuarantees(round: Round) {
     const staticMap = round.map.staticMap
 
+    throw new Error('Not implemented')
+
+    /*
     if (round.map.isEmpty() && round.bodies.isEmpty()) {
         return 'Map is empty'
     }
@@ -106,6 +109,7 @@ function verifyMapGuarantees(round: Round) {
             return `Map is too open. Must be divided into at least 2 sections by the dam`
         }
     }
+*/
 
     return ''
 }
@@ -117,14 +121,14 @@ function verifyMapGuarantees(round: Round) {
 function mapToFile(currentMap: CurrentMap, initialBodies: Bodies): Uint8Array {
     const builder = new flatbuffers.Builder()
     const name = builder.createString(currentMap.staticMap.name)
-    const initialBodiesTable = initialBodies.toSpawnedBodyTable(builder)
+    const initialBodiesTable = initialBodies.toInitialBodyTable(builder)
     const mapPacket = currentMap.getSchemaPacket(builder)
 
     schema.GameMap.startGameMap(builder)
     schema.GameMap.addName(builder, name)
     schema.GameMap.addSize(builder, schema.Vec.createVec(builder, currentMap.width, currentMap.height))
     schema.GameMap.addSymmetry(builder, currentMap.staticMap.symmetry)
-    schema.GameMap.addBodies(builder, initialBodiesTable)
+    schema.GameMap.addInitialBodies(builder, initialBodiesTable)
     schema.GameMap.addRandomSeed(builder, Math.round(Math.random() * 1000))
     currentMap.insertSchemaPacket(builder, mapPacket)
 

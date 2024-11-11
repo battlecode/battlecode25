@@ -3,10 +3,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
 export enum RobotType {
-  PAINT_TOWER = 0,
-  MONEY_TOWER = 1,
-  DEFENSE_TOWER = 2,
-  SOLDIER = 3,
-  SPLASHER = 4,
-  MOPPER = 5
+  NONE = 0,
+  PAINT_TOWER = 1,
+  MONEY_TOWER = 2,
+  DEFENSE_TOWER = 3,
+  SOLDIER = 4,
+  SPLASHER = 5,
+  MOPPER = 6
 }

@@ -18,9 +18,6 @@ export default class Match {
     private readonly snapshots: Round[]
     public readonly stats: RoundStat[]
     private currentSimulationStep: number = 0
-    get constants(): schema.GameplayConstants {
-        return this.game.constants
-    }
     constructor(
         public readonly game: Game,
         private readonly deltas: schema.Round[],
@@ -34,7 +31,11 @@ export default class Match {
 
         this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
         this.snapshots = [this.currentRound.copy()]
-        this.stats = [this.snapshots[0].stat]
+        this.stats = []
+    }
+
+    get constants(): schema.GameplayConstants {
+        return this.game.constants
     }
 
     /**
@@ -202,10 +203,10 @@ export default class Match {
 
     private verifyMap(initialBodies: Bodies): void {
         for (let i = 0; i < this.map.width * this.map.height; i++) {
-            if (this.map.walls[i] || this.map.divider[i] || this.map.initialPaint[i]) {
+            if (this.map.walls[i]) {
                 for (const body of initialBodies.bodies.values()) {
                     if (body.pos.x == i % this.map.width && body.pos.y == Math.floor(i / this.map.width)) {
-                        assert.fail(`Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall or divider or water`)
+                        assert.fail(`Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall`)
                     }
                 }
             }

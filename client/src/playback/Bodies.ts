@@ -84,7 +84,7 @@ export default class Bodies {
         const bodyClass =
             BODY_DEFINITIONS[robotType] ?? assert.fail(`Body type ${robotType} not found in BODY_DEFINITIONS`)
 
-        const health = this.game.playable ? this.game.constants.robotBaseHealth() : 1
+        const health = this.game.playable ? this.game.constants.baseHealth(robotType)! : 1
         const team = spawnAction.team()
         const x = spawnAction.x()
         const y = spawnAction.y()
@@ -173,34 +173,24 @@ export default class Bodies {
         return []
     }
 
-    toSpawnedBodyTable(builder: flatbuffers.Builder): number {
-        const robotIDs: Uint8Array = new Uint8Array(this.bodies.size)
-        const teamIDs: Uint8Array = new Uint8Array(this.bodies.size)
-        const xs: Uint8Array = new Uint8Array(this.bodies.size)
-        const ys: Uint8Array = new Uint8Array(this.bodies.size)
+    toInitialBodyTable(builder: flatbuffers.Builder): number {
+        const robotIds = new Int32Array(this.bodies.size)
 
         Array.from(this.bodies.values()).forEach((body, i) => {
-            robotIDs[i] = body.id
-            teamIDs[i] = body.team.id
-            xs[i] = body.pos.x
-            ys[i] = body.pos.y
+            robotIds[i] = body.id
         })
 
-        const robotIDsVector = schema.SpawnedBodyTable.createRobotIdsVector(builder, robotIDs)
-        const teamIDsVector = schema.SpawnedBodyTable.createTeamIdsVector(builder, teamIDs)
+        const robotIdsVector = schema.InitialBodyTable.createRobotIdsVector(builder, robotIds)
 
-        const xsTable = schema.VecTable.createXsVector(builder, xs)
-        const ysTable = schema.VecTable.createYsVector(builder, ys)
-        schema.VecTable.startVecTable(builder)
-        schema.VecTable.addXs(builder, xsTable)
-        schema.VecTable.addYs(builder, ysTable)
-        const locsVecTable = schema.VecTable.endVecTable(builder)
+        // Fill out spawn actions
+        schema.InitialBodyTable.startSpawnActionsVector(builder, robotIds.length)
+        for (let i = 0; i < robotIds.length; i++) {
+            const body = this.bodies.get(robotIds[i])!
+            schema.SpawnAction.createSpawnAction(builder, body.pos.x, body.pos.y, body.team.id, body.robotType)
+        }
+        const spawnActionsVector = builder.endVector()
 
-        schema.SpawnedBodyTable.startSpawnedBodyTable(builder)
-        schema.SpawnedBodyTable.addRobotIds(builder, robotIDsVector)
-        schema.SpawnedBodyTable.addTeamIds(builder, teamIDsVector)
-        schema.SpawnedBodyTable.addLocs(builder, locsVecTable)
-        return schema.SpawnedBodyTable.endSpawnedBodyTable(builder)
+        return schema.InitialBodyTable.createInitialBodyTable(builder, robotIdsVector, spawnActionsVector)
     }
 
     private insertInitialBodies(bodies: schema.InitialBodyTable): void {
@@ -217,6 +207,7 @@ export default class Bodies {
 
 export class Body {
     public robotName: string = ''
+    public robotType: schema.RobotType = schema.RobotType.NONE
     public actionRadius: number = 0
     public visionRadius: number = 0
     protected imgPath: string = ''
@@ -386,7 +377,8 @@ export class Body {
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
-        const maxHP = this.game.constants.robotBaseHealth()
+        // TODO: adjust
+        const maxHP = this.game.constants.baseHealth(this.robotType)!
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
@@ -474,15 +466,23 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     // This game has no types or headquarters to speak of, so there is only
     // one type pointed to by 0:
 
+    [schema.RobotType.NONE]: class None extends Body {
+        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
+            super(game, pos, hp, team, id)
+
+            throw new Error("Body type 'NONE' not supported")
+        }
+    },
+
     [schema.RobotType.DEFENSE_TOWER]: class DefenseTower extends Body {
         public robotName = 'DefenseTower'
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} DefenseTower`
+            this.robotType = schema.RobotType.DEFENSE_TOWER
         }
 
         public draw(
@@ -513,10 +513,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} MoneyTower`
+            this.robotType = schema.RobotType.MONEY_TOWER
         }
 
         public draw(
@@ -547,10 +547,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} Mopper`
+            this.robotType = schema.RobotType.MOPPER
         }
 
         public draw(
@@ -581,10 +581,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} PaintTower`
+            this.robotType = schema.RobotType.PAINT_TOWER
         }
 
         public draw(
@@ -615,10 +615,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} Soldier`
+            this.robotType = schema.RobotType.SOLDIER
         }
 
         public draw(
@@ -649,10 +649,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
             super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
-
+            this.actionRadius = game.constants.actionRadius(this.robotType)!
+            this.visionRadius = game.constants.visionRadius(this.robotType)!
             this.robotName = `${team.colorName} Splasher`
+            this.robotType = schema.RobotType.SPLASHER
         }
 
         public draw(

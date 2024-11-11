@@ -67,7 +67,7 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
                     }))
                     localStorage.setItem('config' + configKey, JSON.stringify(e.target.checked))
                     // hopefully after the setState is done
-                    setTimeout(GameRenderer.render, 10)
+                    setTimeout(() => GameRenderer.render(), 10)
                 }}
             />
             <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>

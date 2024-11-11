@@ -6,8 +6,7 @@ import * as renderUtils from '../util/RenderUtil'
 import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
 import Match from './Match'
 import { Body } from './Bodies'
-import { ATTACK_COLOR, GRASS_COLOR, HEAL_COLOR, TEAM_COLORS, WATER_COLOR } from '../constants'
-import { AttackAction } from 'battlecode-schema/js/battlecode/schema'
+import { ATTACK_COLOR, TEAM_COLORS } from '../constants'
 
 type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
@@ -201,6 +200,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            /*
             const radius = 3
             const map = match.currentRound.map
             const loc = map.indexToLocation(this.target)
@@ -217,6 +217,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             ctx.fill()
             ctx.stroke()
             ctx.globalAlpha = 1
+            */
         }
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
@@ -224,6 +225,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             // To dicuss
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            /*
             const radius = Math.sqrt(13)
             const map = match.currentRound.map
             const loc = map.indexToLocation(this.target)
@@ -240,14 +242,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             ctx.fill()
             ctx.stroke()
             ctx.globalAlpha = 1
+            */
         }
     },
     [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
         apply(round: Round): void {
+            /*
             const flagId = this.target
             const flagData = round.map.flagData.get(flagId)!
             flagData.carrierId = this.robotId
             round.bodies.getById(this.robotId).carryingFlagId = flagId
+            */
         }
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
@@ -260,15 +265,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
+            /*
             const team = round.bodies.getById(this.robotId).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
+            */
         }
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
         apply(round: Round): void {
             const body = round.bodies.getById(this.robotId)
             // Check if exists because technically can add indicators when not spawned
-            assert(body, "body should not be null")
+            assert(body, 'body should not be null')
             const string = this.actionData.value()!
             body.indicatorString = string
         }
@@ -277,13 +284,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         apply(round: Round): void {
             const loc = this.actionData.loc()
             const vectorLoc = round.map.indexToLocation(loc)
-            
+
             const body = round.bodies.getById(this.robotId)
-            assert(body, "body should not be null")
+            assert(body, 'body should not be null')
             body.indicatorDots.push({
                 location: vectorLoc,
                 color: renderUtils.colorToHexString(this.actionData.colorHex())
-            })  
+            })
         }
     },
     [schema.Action.IndicatorLineAction]: class IndicatorLineAction extends Action<schema.IndicatorLineAction> {
@@ -292,7 +299,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const ends = round.map.indexToLocation(this.actionData.endLoc())
 
             const body = round.bodies.getById(this.robotId)
-            assert(body, "body should not be null")
+            assert(body, 'body should not be null')
             body.indicatorLines.push({
                 start: starts,
                 end: ends,

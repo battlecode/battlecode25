@@ -17,17 +17,10 @@ export declare class GameMap {
     walls(index: number): boolean | null;
     wallsLength(): number;
     wallsArray(): Int8Array | null;
-    water(index: number): boolean | null;
-    waterLength(): number;
-    waterArray(): Int8Array | null;
-    divider(index: number): boolean | null;
-    dividerLength(): number;
-    dividerArray(): Int8Array | null;
-    spawnLocations(obj?: VecTable): VecTable | null;
-    resourcePiles(obj?: VecTable): VecTable | null;
-    resourcePileAmounts(index: number): number | null;
-    resourcePileAmountsLength(): number;
-    resourcePileAmountsArray(): Int32Array | null;
+    paint(index: number): boolean | null;
+    paintLength(): number;
+    paintArray(): Int8Array | null;
+    ruins(obj?: VecTable): VecTable | null;
     static startGameMap(builder: flatbuffers.Builder): void;
     static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset): void;
     static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset): void;
@@ -37,20 +30,9 @@ export declare class GameMap {
     static addWalls(builder: flatbuffers.Builder, wallsOffset: flatbuffers.Offset): void;
     static createWallsVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
     static startWallsVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addWater(builder: flatbuffers.Builder, waterOffset: flatbuffers.Offset): void;
-    static createWaterVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
-    static startWaterVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addDivider(builder: flatbuffers.Builder, dividerOffset: flatbuffers.Offset): void;
-    static createDividerVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
-    static startDividerVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addSpawnLocations(builder: flatbuffers.Builder, spawnLocationsOffset: flatbuffers.Offset): void;
-    static addResourcePiles(builder: flatbuffers.Builder, resourcePilesOffset: flatbuffers.Offset): void;
-    static addResourcePileAmounts(builder: flatbuffers.Builder, resourcePileAmountsOffset: flatbuffers.Offset): void;
-    static createResourcePileAmountsVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
-    /**
-     * @deprecated This Uint8Array overload will be removed in the future.
-     */
-    static createResourcePileAmountsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
-    static startResourcePileAmountsVector(builder: flatbuffers.Builder, numElems: number): void;
+    static addPaint(builder: flatbuffers.Builder, paintOffset: flatbuffers.Offset): void;
+    static createPaintVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
+    static startPaintVector(builder: flatbuffers.Builder, numElems: number): void;
+    static addRuins(builder: flatbuffers.Builder, ruinsOffset: flatbuffers.Offset): void;
     static endGameMap(builder: flatbuffers.Builder): flatbuffers.Offset;
 }

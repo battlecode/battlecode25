@@ -5,15 +5,7 @@ import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
 import { DividerBrush, ResourcePileBrush, SpawnZoneBrush, WallsBrush, PaintBrush } from './Brushes'
-import {
-    DIVIDER_COLOR,
-    GRASS_COLOR,
-    WALLS_COLOR,
-    PAINT_COLOR,
-    TEAM_COLORS,
-    BUILD_NAMES,
-    TEAM_COLOR_NAMES
-} from '../constants'
+import { DIVIDER_COLOR, GRASS_COLOR, WALLS_COLOR, PAINT_COLOR, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
@@ -25,37 +17,24 @@ export type Dimension = {
     height: number
 }
 
-type ResourcePileData = {
-    amount: number
-}
-
-type TrapData = {
-    location: Vector
-    type: schema.BuildActionType
-    team: number
-}
-
+/*
 type FlagData = {
     id: number
     team: number
     location: Vector
     carrierId: number | null
 }
+*/
 
 type SchemaPacket = {
     wallsOffset: number
     paintOffset: number
-    dividerOffset: number
-    spawnLocationOffset: number
-    resourcePileOffset: number
-    resourcePileAmountOffset: number
+    ruinsOffset: number
 }
 
 export class CurrentMap {
     public readonly staticMap: StaticMap
-    public readonly resourcePileData: Map<number, ResourcePileData>
-    public readonly trapData: Map<number, TrapData>
-    public readonly flagData: Map<number, FlagData>
+    //public readonly flagData: Map<number, FlagData>
     public readonly paint: Int8Array
 
     get width(): number {
@@ -69,19 +48,14 @@ export class CurrentMap {
     }
 
     constructor(from: StaticMap | CurrentMap) {
-        this.resourcePileData = new Map()
-        this.trapData = new Map()
-        this.flagData = new Map()
+        //this.flagData = new Map()
         if (from instanceof StaticMap) {
             // Create current map from static map
 
             this.staticMap = from
-            this.trapData = new Map()
             this.paint = new Int8Array(from.initialPaint)
-            for (let i = 0; i < from.initialResourcePileAmounts.length; i++) {
-                const id = this.locationToIndex(from.resourcePileLocations[i].x, from.resourcePileLocations[i].y)
-                this.resourcePileData.set(id, { amount: from.initialResourcePileAmounts[i] })
-            }
+
+            /*
             for (let i = 0; i < from.spawnLocations.length; i++) {
                 // Assign initial flag data, ids are initial map locations
                 const team = i % 2
@@ -89,19 +63,16 @@ export class CurrentMap {
                 const flagId = this.locationToIndex(location.x, location.y)
                 this.flagData.set(flagId, { id: flagId, team, location, carrierId: null })
             }
+            */
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
-            for (let [key, value] of from.resourcePileData) {
-                this.resourcePileData.set(key, { ...value })
-            }
-            for (let [key, value] of from.trapData) {
-                this.trapData.set(key, { ...value })
-            }
+            /*
             for (let [key, value] of from.flagData) {
                 this.flagData.set(key, { ...value })
             }
+            */
             this.paint = new Int8Array(from.paint)
         }
     }
@@ -155,30 +126,11 @@ export class CurrentMap {
                         { x: true, y: false }
                     )
                 }
-
-                // Render rounded (clipped) divider
-                const dividerUp =
-                    !match.game.playable || match.currentRound.roundNumber < match.constants.setupPhaseLength()
-                if (dividerUp && this.staticMap.divider[schemaIdx]) {
-                    ctx.globalAlpha = 0.6
-                    renderUtils.renderRounded(
-                        ctx,
-                        i,
-                        j,
-                        this,
-                        this.staticMap.divider,
-                        () => {
-                            ctx.fillStyle = DIVIDER_COLOR
-                            ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
-                        },
-                        { x: false, y: true }
-                    )
-                    ctx.globalAlpha = 1.0
-                }
             }
         }
 
         // Render flags
+        /*
         for (const flagId of this.flagData.keys()) {
             const data = this.flagData.get(flagId)!
             if (data.carrierId) continue
@@ -219,6 +171,7 @@ export class CurrentMap {
             renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(file), coords, 0.8)
             ctx.globalAlpha = 1
         }
+        */
     }
 
     getTooltipInfo(square: Vector, match: Match): string[] {
@@ -226,29 +179,17 @@ export class CurrentMap {
         if (square.x >= this.width || square.y >= this.height) return []
 
         const schemaIdx = this.locationToIndex(square.x, square.y)
-        const resourcePile = this.resourcePileData.get(schemaIdx)
-        const trap = [...this.trapData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
-        const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
+        //const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
         const paint = this.paint[schemaIdx]
-        const divider = this.staticMap.divider[schemaIdx]
         const walls = this.staticMap.walls[schemaIdx]
         const info: string[] = []
-        if (resourcePile && resourcePile.amount > 0) {
-            info.push(`Crumbs: ${resourcePile.amount}`)
-        }
-        if (trap) {
-            info.push(`${TEAM_COLOR_NAMES[trap.team - 1]} ${BUILD_NAMES[trap.type]} trap`)
-        }
+        /*
         if (flag) {
             info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
         }
+        */
         if (paint) {
             info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
-        }
-        if (divider) {
-            const dividerUp =
-                !match.game.playable || match.currentRound.roundNumber < match.constants.setupPhaseLength()
-            if (dividerUp) info.push('Divider')
         }
         if (walls) {
             info.push('Wall')
@@ -258,7 +199,7 @@ export class CurrentMap {
 
     getEditorBrushes() {
         const brushes: MapEditorBrush[] = [
-            new WaterBrush(this),
+            new PaintBrush(this),
             new ResourcePileBrush(this),
             new SpawnZoneBrush(this),
             new WallsBrush(this)
@@ -267,7 +208,7 @@ export class CurrentMap {
     }
 
     isEmpty(): boolean {
-        return this.resourcePileData.size == 0 && this.paint.every((x) => x == 0) && this.staticMap.isEmpty()
+        return this.paint.every((x) => x == 0) && this.staticMap.isEmpty()
     }
 
     /**
@@ -279,33 +220,18 @@ export class CurrentMap {
             builder,
             Array.from(this.staticMap.walls).map((x) => !!x)
         )
-        //haven't changed this yet
-        const waterOffset = schema.GameMap.createWaterVector(
+        const paintOffset = schema.GameMap.createPaintVector(
             builder,
             Array.from(this.staticMap.initialPaint).map((x) => !!x)
         )
-        const dividerOffset = schema.GameMap.createDividerVector(
-            builder,
-            Array.from(this.staticMap.divider).map((x) => !!x)
-        )
-        const resourcePileAmountOffset = schema.GameMap.createResourcePileAmountsVector(
-            builder,
-            Array.from(this.resourcePileData.values()).map((x) => x.amount)
-        )
-        const spawnLocationOffset = packVecTable(builder, this.staticMap.spawnLocations)
-        const resourcePileOffset = packVecTable(builder, this.staticMap.resourcePileLocations)
-        const resourcePileAmountOffset = builder.createInt16Vector(this.staticMap.initialResourcePileAmounts)
+        const ruinsOffset = packVecTable(builder, this.staticMap.ruins)
 
         return {
             wallsOffset,
             paintOffset,
-            dividerOffset,
-            spawnLocationOffset,
-            resourcePileOffset,
-            resourcePileAmountOffset
+            ruinsOffset
         }
     }
-}
 
     /**
      * Inserts an existing packet of flatbuffers data into the given builder
@@ -313,11 +239,8 @@ export class CurrentMap {
      */
     insertSchemaPacket(builder: flatbuffers.Builder, packet: SchemaPacket) {
         schema.GameMap.addWalls(builder, packet.wallsOffset)
-        schema.GameMap.addWater(builder, packet.waterOffset)
-        schema.GameMap.addDivider(builder, packet.dividerOffset)
-        schema.GameMap.addSpawnLocations(builder, packet.spawnLocationOffset)
-        schema.GameMap.addResourcePiles(builder, packet.resourcePileOffset)
-        schema.GameMap.addResourcePileAmounts(builder, packet.resourcePileAmountOffset)
+        schema.GameMap.addPaint(builder, packet.paintOffset)
+        schema.GameMap.addRuins(builder, packet.ruinsOffset)
     }
 }
 
@@ -328,19 +251,16 @@ export class StaticMap {
         public readonly symmetry: number,
         public readonly dimension: Dimension,
         public readonly walls: Int8Array,
-        public readonly divider: Int8Array,
-        public readonly spawnLocations: Vector[],
-        public readonly resourcePileLocations: Vector[],
-        public readonly initialResourcePileAmounts: Int32Array,
+        public readonly ruins: Vector[],
         public readonly initialPaint: Int8Array
     ) {
         if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
 
         if (walls.length != dimension.width * dimension.height) throw new Error('Invalid walls length')
-        if (divider.length != dimension.width * dimension.height) throw new Error('Invalid divider length')
+        if (initialPaint.length != dimension.width * dimension.height) throw new Error('Invalid paint length')
 
         if (walls.some((x) => x !== 0 && x !== 1)) throw new Error('Invalid walls value')
-        if (divider.some((x) => x !== 0 && x !== 1)) throw new Error('Invalid divider value')
+        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) throw new Error('Invalid paint value')
     }
 
     static fromSchema(schemaMap: schema.GameMap) {
@@ -359,25 +279,9 @@ export class StaticMap {
         }
 
         const walls = schemaMap.wallsArray() ?? assert.fail('wallsArray() is null')
-        const divider = schemaMap.dividerArray() ?? assert.fail('dividerArray() is null')
-        const spawnLocations = parseVecTable(schemaMap.spawnLocations() ?? assert.fail('spawnLocations() is null'))
-        const resourcePileLocations = parseVecTable(schemaMap.resourcePiles() ?? assert.fail('resourcePiles() is null'))
-        const initialResourcePileAmounts =
-            schemaMap.resourcePileAmountsArray() ?? assert.fail('resourcePileAmountsArray() is null')
-        //!! have not changed below
-        const initialPaint = schemaMap.waterArray() ?? assert.fail('waterArray() is null')
-        return new StaticMap(
-            name,
-            randomSeed,
-            symmetry,
-            dimension,
-            walls,
-            divider,
-            spawnLocations,
-            resourcePileLocations,
-            initialResourcePileAmounts,
-            initialPaint
-        )
+        const ruins = parseVecTable(schemaMap.ruins() ?? assert.fail('ruins() is null'))
+        const initialPaint = schemaMap.paintArray() ?? assert.fail('paintArray() is null')
+        return new StaticMap(name, randomSeed, symmetry, dimension, walls, ruins, initialPaint)
     }
 
     static fromParams(width: number, height: number, symmetry: Symmetry) {
@@ -394,23 +298,9 @@ export class StaticMap {
         }
 
         const walls = new Int8Array(width * height)
-        const divider = new Int8Array(width * height)
-        const spawnLocations: Vector[] = []
-        const resourcePileLocations: Vector[] = []
-        const initialResourcePileAmounts = new Int32Array()
+        const ruins: Vector[] = []
         const initialPaint = new Int8Array(width * height)
-        return new StaticMap(
-            name,
-            randomSeed,
-            symmetry,
-            dimension,
-            walls,
-            divider,
-            spawnLocations,
-            resourcePileLocations,
-            initialResourcePileAmounts,
-            initialPaint
-        )
+        return new StaticMap(name, randomSeed, symmetry, dimension, walls, ruins, initialPaint)
     }
 
     get width(): number {
@@ -460,24 +350,6 @@ export class StaticMap {
             this.dimension.height
         )
 
-        // Populate buffer with values where spawn zones should be rendered
-        const spawnZoneDrawAreas = Array(this.width * this.height).fill(0)
-        for (let i = 0; i < this.spawnLocations.length; i++) {
-            const pos = this.spawnLocations[i]
-            for (let x = -1; x <= 1; x++) {
-                for (let y = -1; y <= 1; y++) {
-                    const target_x = pos.x + x
-                    const target_y = pos.y + y
-                    if (target_x >= 0 && target_x < this.width && target_y >= 0 && target_y < this.height) {
-                        const idx = this.locationToIndex(target_x, target_y)
-                        if (this.walls[idx] || this.initialPaint[idx]) continue
-                        // Team A: 1, Team B: 2
-                        spawnZoneDrawAreas[idx] = (i % 2) + 1
-                    }
-                }
-            }
-        }
-
         for (let i = 0; i < this.dimension.width; i++) {
             for (let j = 0; j < this.dimension.height; j++) {
                 const schemaIdx = this.locationToIndex(i, j)
@@ -490,6 +362,8 @@ export class StaticMap {
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     })
                 }
+
+                /*
                 // Render spawn zones
                 if (spawnZoneDrawAreas[schemaIdx]) {
                     const color = TEAM_COLORS[spawnZoneDrawAreas[schemaIdx] - 1]
@@ -497,6 +371,7 @@ export class StaticMap {
                         renderUtils.drawDiagonalLines(ctx, coords, 1.0, color)
                     })
                 }
+                */
 
                 // Draw grid
                 const showGrid = true
@@ -520,12 +395,7 @@ export class StaticMap {
     }
 
     isEmpty(): boolean {
-        return (
-            this.walls.every((x) => x == 0) &&
-            this.divider.every((x) => x == 0) &&
-            this.spawnLocations.length == 0 &&
-            this.resourcePileLocations.length == 0
-        )
+        return this.walls.every((x) => x == 0) && this.ruins.length == 0
     }
 
     getEditorBrushes(): MapEditorBrush[] {

@@ -4,9 +4,10 @@
 
 class WinType(object):
     RESIGNATION = 0
-    AREA_PAINTED = 1
-    MORE_TOWERS = 2
-    MORE_MONEY = 3
-    MORE_STORED_PAINT = 4
-    MORE_ROBOTS = 5
-    RANDOM = 6
+    MAJORITY_PAINTED = 1
+    AREA_PAINTED = 2
+    MORE_TOWERS = 3
+    MORE_MONEY = 4
+    MORE_STORED_PAINT = 5
+    MORE_ROBOTS = 6
+    COIN_FLIP = 7

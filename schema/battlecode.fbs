@@ -25,6 +25,7 @@ table GameplayConstants {
 }
 
 enum RobotType: byte {
+    NONE,
     PAINT_TOWER,
     MONEY_TOWER,
     DEFENSE_TOWER,
@@ -35,32 +36,13 @@ enum RobotType: byte {
 
 enum WinType: byte {
     RESIGNATION,
+    MAJORITY_PAINTED,
     AREA_PAINTED,
     MORE_TOWERS,
     MORE_MONEY,
     MORE_STORED_PAINT,
     MORE_ROBOTS,
-    RANDOM
-}
-
-// A list of initial bodies to be placed on the map.
-table InitialBodyTable {
-    robotIds: [int];
-    spawnActions: [SpawnAction];
-}
-
-table GameMap {
-    name: string;
-    size: Vec;
-    symmetry: int; // The map symmetry: 0 for rotation, 1 for horizontal, 2 for vertical.
-    initialBodies: InitialBodyTable;
-    randomSeed: int;
-    walls: [bool];
-    water: [bool];
-    divider: [bool];
-    spawnLocations: VecTable; //alternates teams, starting with team 0
-    resourcePiles: VecTable;
-    resourcePileAmounts: [int];
+    COIN_FLIP
 }
 
 /// Generic action representing damage to a robot
@@ -150,6 +132,23 @@ union Action {
     IndicatorStringAction,
     IndicatorDotAction,
     IndicatorLineAction
+}
+
+// A list of initial bodies to be placed on the map.
+table InitialBodyTable {
+    robotIds: [int];
+    spawnActions: [SpawnAction];
+}
+
+table GameMap {
+    name: string;
+    size: Vec;
+    symmetry: int; // The map symmetry: 0 for rotation, 1 for horizontal, 2 for vertical.
+    initialBodies: InitialBodyTable;
+    randomSeed: int;
+    walls: [bool];
+    paint: [bool];
+    ruins: VecTable;
 }
 
 //========================================================================================

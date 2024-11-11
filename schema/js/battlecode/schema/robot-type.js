@@ -5,10 +5,11 @@ exports.RobotType = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 var RobotType;
 (function (RobotType) {
-    RobotType[RobotType["PAINT_TOWER"] = 0] = "PAINT_TOWER";
-    RobotType[RobotType["MONEY_TOWER"] = 1] = "MONEY_TOWER";
-    RobotType[RobotType["DEFENSE_TOWER"] = 2] = "DEFENSE_TOWER";
-    RobotType[RobotType["SOLDIER"] = 3] = "SOLDIER";
-    RobotType[RobotType["SPLASHER"] = 4] = "SPLASHER";
-    RobotType[RobotType["MOPPER"] = 5] = "MOPPER";
+    RobotType[RobotType["NONE"] = 0] = "NONE";
+    RobotType[RobotType["PAINT_TOWER"] = 1] = "PAINT_TOWER";
+    RobotType[RobotType["MONEY_TOWER"] = 2] = "MONEY_TOWER";
+    RobotType[RobotType["DEFENSE_TOWER"] = 3] = "DEFENSE_TOWER";
+    RobotType[RobotType["SOLDIER"] = 4] = "SOLDIER";
+    RobotType[RobotType["SPLASHER"] = 5] = "SPLASHER";
+    RobotType[RobotType["MOPPER"] = 6] = "MOPPER";
 })(RobotType || (exports.RobotType = RobotType = {}));
