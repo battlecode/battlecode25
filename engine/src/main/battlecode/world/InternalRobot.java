@@ -427,7 +427,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void soldierAttack(MapLocation loc, boolean useSecondaryColor) {
-        assert(this.type == UnitType.SOLDIER);
+        if(this.type != UnitType.SOLDIER)
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a soldier");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
         
         // This attack costs some paint
@@ -452,7 +453,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
-        assert(this.type == UnitType.SPLASHER);
+        if(this.type != UnitType.SPLASHER)
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a splasher");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
@@ -484,7 +486,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // This is the first kind of attack for moppers which only targets one location
     public void mopperAttack(MapLocation loc, boolean useSecondaryColor) {
-        assert(this.type == UnitType.MOPPER);
+        if(this.type != UnitType.MOPPER)
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack should be free (but this is here just in case)
@@ -511,7 +514,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void towerAttack(MapLocation loc) {
-        assert(UnitType.isTowerType(this.type));
+        if(!UnitType.isTowerType(this.type))
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a tower");
 
         if(loc == null) { // area attack
             this.towerHasAreaAttacked = true;
@@ -540,8 +544,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void mopSwing(Direction dir) { // NOTE: only works for moppers!
         // swing even if there's not 3 robots there, just remove from existing
-        assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
-        assert(this.type == UnitType.MOPPER);
+        if(this.type != UnitType.MOPPER)
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
+        if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
+            throw new GameActionException(CANT_DO_THAT, "Direction must be a cardinal direction");
 
         // NORTH, SOUTH, EAST, WEST
         int[][] dx = {{-1, 0, 1}, {-1, 0, 1}, {1, 1, 1}, {-1, -1, -1}};

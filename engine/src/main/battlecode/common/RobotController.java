@@ -589,9 +589,9 @@ public strictfp interface RobotController {
     int getAttackDamage();
 
     /**
-     * Tests whether this robot can attack the given location. Robots can only
-     * attack
-     * enemy robots, and attacks cannot miss.
+     * Tests whether this robot can attack the given location. Types of
+     * attacks for specific units determine whether or not towers, other
+     * robots, or empty tiles can be attacked. 
      *
      * @param loc target location to attack
      * @return whether it is possible to attack the given location
