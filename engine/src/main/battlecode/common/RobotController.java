@@ -635,9 +635,9 @@ public strictfp interface RobotController {
     int getAttackDamage();
 
     /**
-     * Tests whether this robot can attack the given location. Robots can only
-     * attack
-     * enemy robots, and attacks cannot miss.
+     * Tests whether this robot can attack the given location. Types of
+     * attacks for specific units determine whether or not towers, other
+     * robots, or empty tiles can be attacked. 
      *
      * @param loc target location to attack
      * @return whether it is possible to attack the given location
@@ -646,15 +646,50 @@ public strictfp interface RobotController {
      */
     boolean canAttack(MapLocation loc);
 
-    /**
-     * Attack a given location.
+    /** 
+     * Performs the specific attack for this robot type.
      *
-     * @param loc the target location to attack
+     * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
+     * @param useSecondaryColor whether or not the attack should use a secondary color
+     * @throws GameActionException if conditions for attacking are not satisfied
+     *
+     * @battlecode.doc.costlymethod
+     */
+    void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException;
+    
+    /** 
+     * Performs the specific attack for this robot type, defaulting to the
+     * primary color
+     *
+     * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
      * @throws GameActionException if conditions for attacking are not satisfied
      *
      * @battlecode.doc.costlymethod
      */
     void attack(MapLocation loc) throws GameActionException;
+
+    /**
+     * Tests whether this robot (which must be a mopper) can perform
+     * a mop swing in a specific direction
+     *
+     * @param dir the direction in which to mop swing
+     * @return whether it is possible to mop swing in the given direction
+     *
+     * @battlecode.doc.costlymethod
+     */
+    boolean canMopSwing(Direction dir);
+
+    /**
+     * Performs a mop swing in the given direction (only for moppers!)
+     *
+     * @param dir the direction in which to mop swing
+     * @throws GameActionException if conditions for attacking are not satisfied
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void mopSwing(Direction dir) throws GameActionException;
 
     /**
      * Gets the true healing amount of this robot accounting for all effects.

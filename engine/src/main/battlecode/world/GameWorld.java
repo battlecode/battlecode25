@@ -483,6 +483,18 @@ public strictfp class GameWorld {
         }
     }
 
+    public int getPrimaryPaint(Team team) {
+        if(team == Team.A) return 1;
+        else if(team == Team.B) return 3;
+        return 0;
+    }
+
+    public int getSecondaryPaint(Team team) {
+        if(team == Team.A) return 2;
+        else if(team == Team.B) return 4;
+        return 0;
+    }
+
     /**
      * Helper method that converts a location into an index.
      * 

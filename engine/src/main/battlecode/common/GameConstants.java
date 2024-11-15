@@ -145,9 +145,6 @@ public class GameConstants {
     /** The maximum distance from a robot where information can be sensed */
     public static final int VISION_RADIUS_SQUARED = 20;
 
-    /** The maximum distance for attacking an enemy robot */
-    public static final int ATTACK_RADIUS_SQUARED = 4;
-
     /** The maximum distance for healing an ally robot */
     public static final int HEAL_RADIUS_SQUARED = 4;
 
@@ -164,6 +161,15 @@ public class GameConstants {
 
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
+
+    /** The amount of paint depleted from enemy in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_DEPLETION = 10;
+
+    /** The amount of paint added to self in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_ADDITION = 5;
+
+    /** The amount of paint depleted from enemies in a swing mopper attack */
+    public static final int MOPPER_SWING_PAINT_DEPLETION = 5;
 
     // *********************************
     // ****** COOLDOWNS ****************
@@ -197,8 +203,8 @@ public class GameConstants {
      */
     public static final int BUILD_ROBOT_COOLDOWN = 10;
 
-    /** The amount added to the action cooldown counter after attacking */
-    public static final int ATTACK_COOLDOWN = 20;
+    /** The amount added to the action cooldown counter after attacking (as a mopper for the swing attack) */
+    public static final int ATTACK_MOPPER_SWING_COOLDOWN = 40;
 
     /** The amount added to the action cooldown counter after healing */
     public static final int HEAL_COOLDOWN = 30;

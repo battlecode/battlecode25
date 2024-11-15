@@ -711,18 +711,52 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** ATTACK / HEAL ********
     // *****************************
 
-    private void assertCanAttack(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc, GameConstants.ATTACK_RADIUS_SQUARED);
-        assertIsActionReady();
-        InternalRobot bot = gameWorld.getRobot(loc);
+    private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.SOLDIER.attackCost);
+    }
 
-        if (bot == null || bot.getTeam() == this.getTeam()) {
-            throw new GameActionException(CANT_DO_THAT, "No enemy robot to attack at this location");
+    private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, UnitType.SPLASHER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.SPLASHER.attackCost);
+    }
+
+    private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
+        assertCanActLocation(loc, UnitType.MOPPER.actionRadiusSquared);
+        assert(this.robot.getPaint() >= UnitType.MOPPER.attackCost);
+    }
+
+    private void assertCanAttackTower(MapLocation loc) throws GameActionException {
+        if(loc == null) { // area attack
+            assert(!this.robot.hasTowerAreaAttacked());
+        } else { // single attack
+            assert(!this.robot.hasTowerSingleAttacked());
+            assertCanActLocation(loc, this.robot.getType().actionRadiusSquared);
+        }
+    }
+
+    private void assertCanAttack(MapLocation loc) throws GameActionException {
+        assert(loc != null || UnitType.isTowerType(this.robot.getType()));
+        assertIsActionReady();
+
+        if(gameWorld.isSetupPhase()) {
+            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
         }
 
-        if (this.gameWorld.isSetupPhase()) {
-            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
+        // note: paint type is irrelevant for checking attack validity
+        switch(this.robot.getType()) {
+            case UnitType.SOLDIER:
+                assertCanAttackSoldier(loc);
+                break;
+            case UnitType.SPLASHER:
+                assertCanAttackSplasher(loc);
+                break;
+            case UnitType.MOPPER:
+                assertCanAttackMopper(loc);
+                break; 
+            default:
+                assertCanAttackTower(loc);
+                break;
         }
     }
 
@@ -742,11 +776,40 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void attack(MapLocation loc) throws GameActionException {
+    public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
-        this.robot.addActionCooldownTurns((int) Math.round(GameConstants.ATTACK_COOLDOWN
-                * (1 + .01 * SkillType.ATTACK.getCooldown(this.robot.getLevel(SkillType.ATTACK)))));
-        this.robot.attack(loc);
+        this.robot.addActionCooldownTurns(this.robot.getType().attackCooldown);
+        this.robot.attack(loc, useSecondaryColor);
+    }
+
+    @Override
+    public void attack(MapLocation loc) throws GameActionException {
+        attack(loc, false);
+    }
+
+    private void assertCanMopSwing(Direction dir) throws GameActionException {
+        assertNotNull(dir);
+        assertIsActionReady();
+        assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
+        assert(this.robot.getType() == UnitType.MOPPER);
+
+        if(gameWorld.isSetupPhase()) {
+            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
+        }
+    }
+
+    @Override
+    public boolean canMopSwing(Direction dir) {
+        try {
+            assertCanMopSwing(dir);
+            return true;
+        } catch (GameActionException e) { return false; }  
+    }
+
+    @Override
+    public void mopSwing(Direction dir) throws GameActionException {
+        this.robot.addActionCooldownTurns(GameConstants.ATTACK_MOPPER_SWING_COOLDOWN);
+        this.robot.mopSwing(dir);
     }
 
     @Override
