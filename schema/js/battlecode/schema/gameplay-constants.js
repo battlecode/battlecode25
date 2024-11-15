@@ -21,93 +21,15 @@ var GameplayConstants = /** @class */ (function () {
         bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
         return (obj || new GameplayConstants()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     };
-    GameplayConstants.prototype.baseHealth = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    GameplayConstants.prototype.baseHealthLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.baseHealthArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    GameplayConstants.prototype.visionRadius = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    GameplayConstants.prototype.visionRadiusLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.visionRadiusArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
-    GameplayConstants.prototype.actionRadius = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 8);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    GameplayConstants.prototype.actionRadiusLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 8);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    GameplayConstants.prototype.actionRadiusArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 8);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
     GameplayConstants.startGameplayConstants = function (builder) {
-        builder.startObject(3);
-    };
-    GameplayConstants.addBaseHealth = function (builder, baseHealthOffset) {
-        builder.addFieldOffset(0, baseHealthOffset, 0);
-    };
-    GameplayConstants.createBaseHealthVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    GameplayConstants.startBaseHealthVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    GameplayConstants.addVisionRadius = function (builder, visionRadiusOffset) {
-        builder.addFieldOffset(1, visionRadiusOffset, 0);
-    };
-    GameplayConstants.createVisionRadiusVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    GameplayConstants.startVisionRadiusVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
-    };
-    GameplayConstants.addActionRadius = function (builder, actionRadiusOffset) {
-        builder.addFieldOffset(2, actionRadiusOffset, 0);
-    };
-    GameplayConstants.createActionRadiusVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    GameplayConstants.startActionRadiusVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
+        builder.startObject(0);
     };
     GameplayConstants.endGameplayConstants = function (builder) {
         var offset = builder.endObject();
         return offset;
     };
-    GameplayConstants.createGameplayConstants = function (builder, baseHealthOffset, visionRadiusOffset, actionRadiusOffset) {
+    GameplayConstants.createGameplayConstants = function (builder) {
         GameplayConstants.startGameplayConstants(builder);
-        GameplayConstants.addBaseHealth(builder, baseHealthOffset);
-        GameplayConstants.addVisionRadius(builder, visionRadiusOffset);
-        GameplayConstants.addActionRadius(builder, actionRadiusOffset);
         return GameplayConstants.endGameplayConstants(builder);
     };
     return GameplayConstants;

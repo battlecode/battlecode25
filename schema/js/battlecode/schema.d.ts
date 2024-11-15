@@ -22,6 +22,7 @@ export { ProfilerEvent } from './schema/profiler-event';
 export { ProfilerFile } from './schema/profiler-file';
 export { ProfilerProfile } from './schema/profiler-profile';
 export { RobotType } from './schema/robot-type';
+export { RobotTypeMetadata } from './schema/robot-type-metadata';
 export { Round } from './schema/round';
 export { SpawnAction } from './schema/spawn-action';
 export { TeamData } from './schema/team-data';

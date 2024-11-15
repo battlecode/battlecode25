@@ -24,6 +24,7 @@ export default class Game {
     // Metadata
     private readonly specVersion: string
     public readonly constants: schema.GameplayConstants
+    public readonly robotTypeMetadata: Map<schema.RobotType, schema.RobotTypeMetadata>
 
     /**
      * Whether this game is playable (not currently being made in the map editor)
@@ -47,6 +48,7 @@ export default class Game {
             this.winner = this.teams[0]
             this.specVersion = SPEC_VERSION
             this.constants = new schema.GameplayConstants()
+            this.robotTypeMetadata = new Map()
             this.id = nextID++
             this.playable = false
             return
@@ -65,7 +67,15 @@ export default class Game {
             Team.fromSchema(gameHeader.teams(1) ?? assert.fail('Team 1 was null'))
         ]
 
+        // load constants
         this.constants = gameHeader.constants() ?? assert.fail('Constants was null')
+
+        // load metadata
+        this.robotTypeMetadata = new Map()
+        for (let i = 0; i < gameHeader.robotTypeMetadataLength(); i++) {
+            const metadata = gameHeader.robotTypeMetadata(i)!
+            this.robotTypeMetadata.set(metadata.type(), metadata)
+        }
 
         // load all other events  ==========================================================================================
         for (let i = 1; i < eventCount; i++) {

@@ -10,20 +10,6 @@ table VecTable {
     ys: [int];
 }
 
-table TeamData {
-    name: string;
-    packageName: string;
-    teamId: byte;
-}
-
-table GameplayConstants {
-
-    // Constants per robot type
-    baseHealth: [int];
-    visionRadius: [int];
-    actionRadius: [int];
-}
-
 enum RobotType: byte {
     NONE,
     PAINT_TOWER,
@@ -43,6 +29,25 @@ enum WinType: byte {
     MORE_STORED_PAINT,
     MORE_ROBOTS,
     COIN_FLIP
+}
+
+table RobotTypeMetadata {
+    type: RobotType;
+    actionCooldown: int;
+    movementCooldown: int;
+    baseHealth: int;
+    actionRadiusSquared: int;
+    visionRadiusSquared: int;
+    bytecodeLimit: int;
+}
+
+table TeamData {
+    name: string;
+    packageName: string;
+    teamId: byte;
+}
+
+table GameplayConstants {
 }
 
 /// Generic action representing damage to a robot
@@ -215,7 +220,7 @@ union Event {
 table GameHeader {
     specVersion: string;
     teams: [TeamData];
-
+    robotTypeMetadata: [RobotTypeMetadata];
     constants: GameplayConstants;
 }
 

@@ -12,9 +12,11 @@ function getChartData(round: Round): number[][][] {
     ]
     for (const [id, body] of round.bodies.bodies) {
         const teamIdx = body.team.id - 1
+        /*
         totals[teamIdx][0][body.attackLevel] += 1
         totals[teamIdx][1][body.buildLevel] += 1
         totals[teamIdx][2][body.healLevel] += 1
+        */
     }
 
     return totals

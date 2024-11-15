@@ -5,6 +5,7 @@
 import * as flatbuffers from 'flatbuffers';
 
 import { GameplayConstants } from '../../battlecode/schema/gameplay-constants';
+import { RobotTypeMetadata } from '../../battlecode/schema/robot-type-metadata';
 import { TeamData } from '../../battlecode/schema/team-data';
 
 
@@ -46,13 +47,23 @@ teamsLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-constants(obj?:GameplayConstants):GameplayConstants|null {
+robotTypeMetadata(index: number, obj?:RobotTypeMetadata):RobotTypeMetadata|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? (obj || new RobotTypeMetadata()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+}
+
+robotTypeMetadataLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+constants(obj?:GameplayConstants):GameplayConstants|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? (obj || new GameplayConstants()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 static startGameHeader(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(4);
 }
 
 static addSpecVersion(builder:flatbuffers.Builder, specVersionOffset:flatbuffers.Offset) {
@@ -75,8 +86,24 @@ static startTeamsVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
+static addRobotTypeMetadata(builder:flatbuffers.Builder, robotTypeMetadataOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(2, robotTypeMetadataOffset, 0);
+}
+
+static createRobotTypeMetadataVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startRobotTypeMetadataVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+}
+
 static addConstants(builder:flatbuffers.Builder, constantsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, constantsOffset, 0);
+  builder.addFieldOffset(3, constantsOffset, 0);
 }
 
 static endGameHeader(builder:flatbuffers.Builder):flatbuffers.Offset {

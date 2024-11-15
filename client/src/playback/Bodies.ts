@@ -84,13 +84,15 @@ export default class Bodies {
         const bodyClass =
             BODY_DEFINITIONS[robotType] ?? assert.fail(`Body type ${robotType} not found in BODY_DEFINITIONS`)
 
-        const health = this.game.playable ? this.game.constants.baseHealth(robotType)! : 1
         const team = spawnAction.team()
         const x = spawnAction.x()
         const y = spawnAction.y()
 
-        const body = new bodyClass(this.game, { x, y }, health, this.game.getTeamByID(team), id)
+        const body = new bodyClass(this.game, { x, y }, this.game.getTeamByID(team), id)
         this.bodies.set(id, body)
+
+        // Populate default hp, cooldowns, etc
+        body.populateDefaultValues()
 
         return body
     }
@@ -137,16 +139,16 @@ export default class Bodies {
         selectedBodyID?: number,
         hoveredTile?: Vector
     ): void {
-        for (const body of this.bodies.values())
-            if (!body.jailed)
-                body.draw(
-                    match,
-                    ctx,
-                    overlayCtx,
-                    config,
-                    body.id === selectedBodyID,
-                    body.pos.x === hoveredTile?.x && body.pos.y === hoveredTile?.y
-                )
+        for (const body of this.bodies.values()) {
+            body.draw(
+                match,
+                ctx,
+                overlayCtx,
+                config,
+                body.id === selectedBodyID,
+                body.pos.x === hoveredTile?.x && body.pos.y === hoveredTile?.y
+            )
+        }
     }
 
     getNextID(): number {
@@ -157,7 +159,6 @@ export default class Bodies {
         let found_dead_body: Body | undefined = undefined
         for (const body of this.bodies.values()) {
             if ((!team || body.team === team) && body.pos.x === x && body.pos.y === y) {
-                if (body.jailed) continue
                 if (body.dead) found_dead_body = body
                 else return body
             }
@@ -208,8 +209,6 @@ export default class Bodies {
 export class Body {
     public robotName: string = ''
     public robotType: schema.RobotType = schema.RobotType.NONE
-    public actionRadius: number = 0
-    public visionRadius: number = 0
     protected imgPath: string = ''
     public nextPos: Vector
     private prevSquares: Vector[]
@@ -217,29 +216,28 @@ export class Body {
     public indicatorLines: { start: Vector; end: Vector; color: string }[] = []
     public indicatorString: string = ''
     public dead: boolean = false
-    public jailed: boolean = false
+    public hp: number = 0
+    public actionRadius: number = 0
+    public visionRadius: number = 0
     public moveCooldown: number = 0
     public actionCooldown: number = 0
+    public bytecodesUsed: number = 0
+
     constructor(
         private game: Game,
         public pos: Vector,
-        public hp: number,
         public readonly team: Team,
-        public readonly id: number,
-        public carryingFlagId: number | null = null,
-        public healLevel: number = 0,
-        public attackLevel: number = 0,
-        public buildLevel: number = 0,
-        public healsPerformed: number = 0,
-        public attacksPerformed: number = 0,
-        public buildsPerformed: number = 0,
-        public bytecodesUsed: number = 0
+        public readonly id: number
         // paintLevel
         // upgradeLevel
         // moneyLevel (for money towers)
     ) {
         this.nextPos = this.pos
         this.prevSquares = [this.pos]
+    }
+
+    get metadata() {
+        return this.game.robotTypeMetadata.get(this.robotType) ?? assert.fail('Robot missing metadata!')
     }
 
     public draw(
@@ -253,12 +251,6 @@ export class Body {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
         if (this.dead) ctx.globalAlpha = 0.5
-        renderUtils.renderCenteredImageOrLoadingIndicator(
-            ctx,
-            getImageIfLoaded(this.imgPath),
-            renderCoords,
-            this.carryingFlagId !== null ? 1.1 : 1
-        )
         ctx.globalAlpha = 1
 
         if (selected || hovered) this.drawPath(match, overlayCtx)
@@ -267,6 +259,7 @@ export class Body {
             this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
         if (selected || hovered || config.showHealthBars) this.drawHealthBar(match, overlayCtx)
 
+        /*
         if (this.carryingFlagId !== null) {
             renderUtils.renderCenteredImageOrLoadingIndicator(
                 overlayCtx,
@@ -292,6 +285,7 @@ export class Body {
                 }
             }
         }
+        */
     }
 
     private drawPath(match: Match, ctx: CanvasRenderingContext2D) {
@@ -378,7 +372,7 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
         // TODO: adjust
-        const maxHP = this.game.constants.baseHealth(this.robotType)!
+        const maxHP = this.metadata.baseHealth()
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
@@ -392,10 +386,7 @@ export class Body {
             `ID: ${this.id}`,
             `HP: ${this.hp}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
-            this.carryingFlagId !== null ? `Has Flag! (ID: ${this.carryingFlagId})` : '',
-            `Attack Lvl: ${this.attackLevel} (${this.attacksPerformed} exp)`,
-            `Build Lvl: ${this.buildLevel} (${this.buildsPerformed} exp)`,
-            `Heal Lvl: ${this.healLevel} (${this.healsPerformed} exp)`,
+            //this.carryingFlagId !== null ? `Has Flag! (ID: ${this.carryingFlagId})` : '',
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
             `Bytecodes Used: ${this.bytecodesUsed}`
@@ -433,14 +424,18 @@ export class Body {
         }
     }
 
+    public populateDefaultValues(): void {
+        const metadata = this.metadata
+
+        this.hp = metadata.baseHealth()
+        this.actionCooldown = metadata.actionCooldown()
+        this.moveCooldown = metadata.movementCooldown()
+        this.visionRadius = metadata.visionRadiusSquared()
+        this.actionRadius = metadata.actionRadiusSquared()
+    }
+
     public getSpecialization(): { idx: number; name: string } {
-        assert(this.attackLevel >= 0 && this.attackLevel <= 6, 'Attack level out of bounds')
-        assert(this.healLevel >= 0 && this.healLevel <= 6, 'Heal level out of bounds')
-        assert(this.buildLevel >= 0 && this.buildLevel <= 6, 'Build level out of bounds')
-        // assert([this.attackLevel, this.healLevel, this.buildLevel].sort()[1] <= 3, 'Specialization level too high')
-        if (this.attackLevel > 3) return { idx: 1, name: 'attack' }
-        if (this.buildLevel > 3) return { idx: 2, name: 'build' }
-        if (this.healLevel > 3) return { idx: 3, name: 'heal' }
+        // TODO: delete this function
         return { idx: 0, name: 'base' }
     }
 }
@@ -467,8 +462,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     // one type pointed to by 0:
 
     [schema.RobotType.NONE]: class None extends Body {
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
 
             throw new Error("Body type 'NONE' not supported")
         }
@@ -477,10 +472,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.DEFENSE_TOWER]: class DefenseTower extends Body {
         public robotName = 'DefenseTower'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} DefenseTower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
         }
@@ -496,11 +489,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
@@ -511,10 +499,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.MONEY_TOWER]: class MoneyTower extends Body {
         public robotName = 'MoneyTower'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} MoneyTower`
             this.robotType = schema.RobotType.MONEY_TOWER
         }
@@ -530,11 +516,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
@@ -545,10 +526,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.MOPPER]: class Mopper extends Body {
         public robotName = 'Mopper'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} Mopper`
             this.robotType = schema.RobotType.MOPPER
         }
@@ -564,11 +543,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
@@ -579,10 +553,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.PAINT_TOWER]: class PaintTower extends Body {
         public robotName = 'PaintTower'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} PaintTower`
             this.robotType = schema.RobotType.PAINT_TOWER
         }
@@ -598,11 +570,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
@@ -613,10 +580,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.SOLDIER]: class Soldier extends Body {
         public robotName = 'Soldier'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} Soldier`
             this.robotType = schema.RobotType.SOLDIER
         }
@@ -632,11 +597,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
@@ -647,10 +607,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     [schema.RobotType.SPLASHER]: class Splasher extends Body {
         public robotName = 'Splasher'
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius(this.robotType)!
-            this.visionRadius = game.constants.visionRadius(this.robotType)!
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
             this.robotName = `${team.colorName} Splasher`
             this.robotType = schema.RobotType.SPLASHER
         }
@@ -666,11 +624,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
             //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
