@@ -309,35 +309,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertIsSpawned();
         int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
                 : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
-        ArrayList<MapLocation> ruinInfos = new ArrayList<>();
-
-        for (MapLocation loc : gameWorld.getAllRuins()) {
-            if (loc.distanceSquaredTo(robot.getLocation()) <= actualRadiusSquared) {
-                ruinInfos.add(loc);
-            }
-        }
-
-        return ruinInfos.toArray(new MapLocation[ruinInfos.size()]);
-    }
-
-    @Override
-    public boolean senseLegalStartingRuinPlacement(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
-
-        if (!gameWorld.isPassable(loc)) {
-            return false;
-        }
-
-        boolean valid = true;
-
-        for (MapLocation ruin : gameWorld.getAllRuins()) {
-            if (ruin.distanceSquaredTo(loc) <= GameConstants.MIN_RUIN_SPACING_SQUARED) {
-                valid = false;
-                break;
-            }
-        }
-
-        return valid;
+        return this.gameWorld.getAllRuinsWithinRadiusSquared(getLocation(), actualRadiusSquared);
     }
 
     @Override
@@ -509,14 +481,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.setLocation(nextLoc);
 
         int amtBread = this.gameWorld.getBreadAmount(nextLoc);
+
         if (amtBread != 0) {
             this.robot.addResourceAmount(amtBread);
             this.gameWorld.getMatchMaker().addClaimedResource(nextLoc);
         }
+
         this.gameWorld.removeBread(nextLoc);
         this.robot.addMovementCooldownTurns();
 
         Team nextTeam = this.gameWorld.getTeam(nextLoc);
+
         if (nextTeam == Team.NEUTRAL) {
             this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
         } else if (nextTeam == this.robot.getTeam().opponent()) {
@@ -526,9 +501,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // trap trigger methods
         for (int i = this.gameWorld.getTrapTriggers(nextLoc).size() - 1; i >= 0; i--) {
             Trap trap = this.gameWorld.getTrapTriggers(nextLoc).get(i);
+
             if (trap.getTeam() == this.robot.getTeam()) {
                 continue;
             }
+
             this.robot.addTrapTrigger(trap, true);
         }
     }
@@ -587,17 +564,26 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.buildRobot(type, loc);
     }
 
-    private void assertCanMarkTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
+    private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertIsTowerType(type);
-        throw new NotImplementedException();
-        // TODO not implemented
+
+        if (!this.gameWorld.hasRuin(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the center is not a ruin");
+        }
+
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because it is too close to the edge of the map");
+        }
     }
 
     @Override
-    public boolean canMarkTowerPattern(UnitType type, MapLocation loc) {
+    public boolean canMarkTowerPattern(MapLocation loc) {
         try {
-            assertCanMarkTowerPattern(type, loc);
+            assertCanMarkTowerPattern(loc);
             return true;
         } catch (GameActionException e) {
             return false;
@@ -605,7 +591,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void markTowerPattern(UnitType type, MapLocation loc) {
+    public void markTowerPattern(MapLocation loc) throws GameActionException {
+        assertCanMarkTowerPattern(loc);
+
         throw new NotImplementedException();
         // TODO not implemented
     }
@@ -613,10 +601,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
 
-        if (loc.x < GameConstants.PATTERN_SIZE / 2
-                || loc.y < GameConstants.PATTERN_SIZE / 2
-                || loc.x >= getMapWidth() - GameConstants.PATTERN_SIZE / 2
-                || loc.y >= getMapHeight() - GameConstants.PATTERN_SIZE / 2) {
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
@@ -634,9 +619,92 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void markResourcePattern(MapLocation loc) {
+    public void markResourcePattern(MapLocation loc) throws GameActionException {
+        assertCanMarkResourcePattern(loc);
+
         throw new NotImplementedException();
         // TODO not implemented
+    }
+
+    private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
+        assertIsRobotType(this.robot.getType());
+        assertIsTowerType(type);
+
+        if (this.gameWorld.hasTower(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                        + ") because the center already contains a tower");
+        }
+
+        if (!this.gameWorld.hasRuin(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the center is not a ruin");
+        }
+
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because it is too close to the edge of the map");
+        }
+
+        boolean valid = this.gameWorld.checkTowerPattern(getTeam(), loc);
+
+        if (!valid) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the paint pattern is wrong");
+        }
+    }
+
+    @Override
+    public boolean canCompleteTowerPattern(UnitType type, MapLocation loc) {
+        try {
+            assertCanCompleteTowerPattern(type, loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
+        assertCanCompleteTowerPattern(type, loc);
+        this.gameWorld.completeTowerPattern(getTeam(), type, loc);
+    }
+
+    private void assertCanCompleteResourcePattern(MapLocation loc) throws GameActionException {
+        assertIsRobotType(this.robot.getType());
+
+        if (!this.gameWorld.isValidPatternCenter(loc)) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because it is too close to the edge of the map");
+        }
+
+        boolean valid = this.gameWorld.checkResourcePattern(this.robot.getTeam(), loc);
+
+        if (!valid) {
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because the paint pattern is wrong");
+        }
+    }
+
+    @Override
+    public boolean canCompleteResourcePattern(MapLocation loc) {
+        try {
+            assertCanCompleteResourcePattern(loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void completeResourcePattern(MapLocation loc) throws GameActionException {
+        assertCanCompleteResourcePattern(loc);
+        this.gameWorld.completeResourcePattern(getTeam(), loc);
     }
 
     // *****************************

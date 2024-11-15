@@ -181,28 +181,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return this.towerHasAreaAttacked;
     }
 
-    public boolean canAddFlag() {
-        return flag == null;
-    }
-
-    public void addFlag(Flag flag) {
-        this.flag = flag;
-        flag.pickUp(this);
-    }
-
-    public boolean hasFlag() {
-        return flag != null;
-    }
-
-    public Flag getFlag() {
-        return flag;
-    }
-
-    public void removeFlag() {
-        flag.drop();
-        this.flag = null;
-    }
-
     public long getControlBits() {
         return controlBits;
     }
@@ -696,13 +674,18 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         for (int i = 0; i < trapsToTrigger.size(); i++) {
             this.gameWorld.triggerTrap(trapsToTrigger.get(i), this, enteredTraps.get(i));
         }
+
         this.trapsToTrigger = new ArrayList<>();
         this.enteredTraps = new ArrayList<>();
+        
         // bytecode stuff!
         this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
+
         // indicator strings!
-        if (!indicatorString.equals(""))
+        if (!indicatorString.equals("")) {
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
+        }
+
         this.roundsAlive++;
     }
 
