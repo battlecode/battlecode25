@@ -491,11 +491,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****** GETTER METHODS ******
     // ****************************
 
-    public void buildRobot(UnitType type, MapLocation loc) {
-        throw new NotImplementedException();
-        // TODO not implemented
-    }
-
     public int getHeal() {
         int base_heal = SkillType.HEAL.skillEffect;
         // check for upgrade

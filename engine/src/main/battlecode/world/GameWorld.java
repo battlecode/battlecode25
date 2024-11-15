@@ -86,12 +86,6 @@ public strictfp class GameWorld {
 
         this.teamInfo = new TeamInfo(this);
 
-        // Create all robots in their despawned states
-        for (int i = 0; i < GameConstants.ROBOT_CAPACITY; i++) {
-            createRobot(Team.A);
-            createRobot(Team.B);
-        }
-
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
@@ -260,6 +254,12 @@ public strictfp class GameWorld {
     }
 
     public void setPaint(MapLocation loc, int paint) {
+        if (teamFromPaint(this.colorLocations[locationToIndex(loc)]) != Team.NEUTRAL){
+        this.getTeamInfo().addPaintedSquares(-1, teamFromPaint(this.colorLocations[locationToIndex(loc)]));
+        }
+        if (teamFromPaint(paint) != Team.NEUTRAL){
+        this.getTeamInfo().addPaintedSquares(1, teamFromPaint(paint));
+        }
         this.colorLocations[locationToIndex(loc)] = paint;
     }
 
@@ -751,16 +751,17 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int createRobot(int ID, Team team) {
-        InternalRobot robot = new InternalRobot(this, ID, team);
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
+        InternalRobot robot = new InternalRobot(this, ID, team, type);
+        addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
         return ID;
     }
 
-    public int createRobot(Team team) {
+    public int spawnRobot(UnitType type, MapLocation location, Team team){
         int ID = idGenerator.nextID();
-        return createRobot(ID, team);
+        return spawnRobot(ID, type, location, team);
     }
 
     // *********************************

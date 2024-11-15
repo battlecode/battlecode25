@@ -509,24 +509,24 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Checks if a {@link RobotOrTowerType} is a robot type.
+     * Checks if a {@link UnitType} is a robot type.
      * 
      * @param type the enum item to check
      * @return true if type is a robot type
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean isRobotType(RobotOrTowerType type);
+    boolean isRobotType(UnitType type);
 
     /**
-     * Checks if a {@link RobotOrTowerType} is a tower type.
+     * Checks if a {@link UnitType} is a tower type.
      * 
      * @param type the enum item to check
      * @return true if type is a tower type
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean isTowerType(RobotOrTowerType type);
+    boolean isTowerType(UnitType type);
 
     /**
      * Checks if a tower can spawn a robot at the given location.
@@ -538,7 +538,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canBuildRobot(RobotOrTowerType type, MapLocation loc);
+    boolean canBuildRobot(UnitType type, MapLocation loc);
 
     /**
      * Spawns a robot at the given location.
@@ -549,7 +549,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void buildRobot(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+    void buildRobot(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can build a tower by marking a 5x5 pattern centered at
@@ -562,7 +562,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canMarkTowerPattern(RobotOrTowerType type, MapLocation loc);
+    boolean canMarkTowerPattern(UnitType type, MapLocation loc);
 
     /**
      * Builds a tower by marking a 5x5 pattern centered at the given location.
@@ -573,7 +573,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void markTowerPattern(RobotOrTowerType type, MapLocation loc) throws GameActionException;
+    void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
@@ -815,4 +815,8 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+
+    boolean canUpgradeTower(MapLocation loc);
+
+    void upgradeTower(MapLocation loc) throws GameActionException;
 }

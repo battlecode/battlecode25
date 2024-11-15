@@ -571,13 +571,27 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanBuildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertNotNull(loc);
+        assertNotNull(type);
         assertCanActLocation(loc, GameConstants.BUILD_ROBOT_RADIUS_SQUARED);
         assertIsActionReady();
         assertIsTowerType(this.robot.getType());
         assertIsRobotType(type);
 
-        throw new NotImplementedException();
-        // TODO not implemented
+        if (this.robot.getPaint() < type.paintCost){
+            throw new GameActionException(CANT_DO_THAT, "Not enough paint to build new robot!");
+        }
+
+        if (this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < type.moneyCost){
+            throw new GameActionException(CANT_DO_THAT, "Not enough money to build new robot!");
+        }
+
+        if (isLocationOccupied(loc)){
+            throw new GameActionException(CANT_DO_THAT, "Location is already occupied!");
+        }
+
+        if (!sensePassability(loc)){
+            throw new GameActionException(CANT_DO_THAT, "Location has a wall!");
+        }
     }
 
     @Override
@@ -594,7 +608,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void buildRobot(UnitType type, MapLocation loc) throws GameActionException {
         assertCanBuildRobot(type, loc);
         this.robot.addActionCooldownTurns(GameConstants.BUILD_ROBOT_COOLDOWN);
-        this.robot.buildRobot(type, loc);
+        this.gameWorld.spawnRobot(type, loc, this.robot.getTeam());
+        this.robot.addPaint(-type.paintCost);
+        this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), -type.moneyCost);
     }
 
     private void assertCanMarkTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
@@ -995,6 +1011,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
     //checks if they can upgrade tower
     
+    @Override
     public void upgradeTower(MapLocation loc) throws GameActionException{
         // you have enough money
         // tower at the location
