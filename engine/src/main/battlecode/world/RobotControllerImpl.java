@@ -911,14 +911,18 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(this.gameWorld.getRobot(loc));
         assert (getTeam() == this.gameWorld.getRobot(loc).getTeam());
         assertNotNull(message);
-        if (true) { // TODO: replace this with isRobot (as opposed to isTower)
+
+        // we also need them to be different (i.e. only robot to tower or vice versa)
+        assert(UnitType.isRobotType(this.robot.getType()) ^ UnitType.isRobotType(this.gameWorld.getRobot(loc)));
+        if (UnitType.isRobotType(this.robot.getType())) {
             assert (this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_ROBOT);
         } else {
             assert (this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_TOWER);
         }
-        // TODO: assert that the distance between the robots is < sqrt(20?) and they are
-        // connected by paint once that functionality is available
-        // TODO: assert that robot -> tower and tower -> robot only
+        
+        // make sure the other unit is within the right distance and connected by paint
+        assert(this.robot.getLocation().distanceSquaredTo(loc) <= GameConstants.MESSAGE_RADIUS_SQUARED);
+        assert(this.gameWorld.connectedByPaint(this.robot.getLocation(), loc));
     }
 
     @Override
