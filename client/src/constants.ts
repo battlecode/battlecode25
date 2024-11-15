@@ -119,16 +119,7 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
 export const TEAM_COLORS = [Colors.TEAM_ONE, Colors.TEAM_TWO]
 export const TEAM_COLOR_NAMES = ['White', 'Brown']  //!! need to change
 
-export const PAINT_COLOR = '#1d4f6c' // brighter version '#29B0D9'
-export const WALLS_COLOR = '#3B6B4C'
-export const DIVIDER_COLOR = '#7b4724'
-export const GRASS_COLOR = '#153e30' // brighter version '#3CCA6E'
-export const GAMEAREA_BACKGROUND = PAINT_COLOR
-
-export const ATTACK_COLOR = '#db6b5c'
-export const BUILD_COLOR = '#c573c9'
-export const HEAL_COLOR = '#f2b804'
-export const SPECIALTY_COLORS = [ATTACK_COLOR, BUILD_COLOR, HEAL_COLOR]
+export const SPECIALTY_COLORS = [Colors.ATTACK_COLOR, Colors.BUILD_COLOR, Colors.HEAL_COLOR]
 
 export const INDICATOR_DOT_SIZE = 0.2
 export const INDICATOR_LINE_WIDTH = 0.1

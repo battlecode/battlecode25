@@ -8,10 +8,8 @@ import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
 import { Vector } from './Vector'
+import { Colors } from '../colors'
 import {
-    ATTACK_COLOR,
-    BUILD_COLOR,
-    HEAL_COLOR,
     INDICATOR_DOT_SIZE,
     INDICATOR_LINE_WIDTH,
     TOOLTIP_PATH_DECAY_OPACITY,
@@ -497,9 +495,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
@@ -531,9 +529,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
@@ -565,9 +563,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
@@ -599,9 +597,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
@@ -633,9 +631,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
@@ -667,9 +665,9 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
+                [Colors.ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
+                [Colors.BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
+                [Colors.HEAL_COLOR, this.healLevel, [0.2, -0.2]]
             ]
             const interpCoords = this.getInterpolatedCoords(match)
             // for (const [color, level, [dx, dy]] of levelIndicators) {
