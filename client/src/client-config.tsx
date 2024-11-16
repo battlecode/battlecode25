@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { SketchPicker } from 'react-color'
 import { useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
 
@@ -27,6 +28,10 @@ const configDescription: { [key: string]: string } = {
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
     validateMaps: 'Validate maps before running a game'
 }
+
+//export function getColors(): ClientConfig {
+
+//}
 
 export function getDefaultConfig(): ClientConfig {
     const config: ClientConfig = { ...DEFAULT_CONFIG }
@@ -70,7 +75,9 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
                     setTimeout(() => GameRenderer.render(), 10)
                 }}
             />
-            <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
+            <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}
+
+            </div>
         </div>
     )
 }

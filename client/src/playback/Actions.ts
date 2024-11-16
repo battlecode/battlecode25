@@ -6,7 +6,8 @@ import * as renderUtils from '../util/RenderUtil'
 import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
 import Match from './Match'
 import { Body } from './Bodies'
-import { ATTACK_COLOR, TEAM_COLORS } from '../constants'
+import { TEAM_COLORS } from '../constants'
+import { Colors } from '../colors'
 
 type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
@@ -188,7 +189,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
-            ctx.fillStyle = ATTACK_COLOR
+            ctx.fillStyle = Colors.ATTACK_COLOR
             ctx.beginPath()
             ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
             ctx.fill()
