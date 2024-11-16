@@ -235,7 +235,7 @@ public final strictfp class GameMapIO {
             boolean[] damArray = new boolean[size];
             int[] breadArray = new int[size];
             int[] spawnZoneArray = new int[size];
-
+            //TODO: update once we compile schema again
             for (int i = 0; i < wallArray.length; i++) {
                 wallArray[i] = raw.walls(i);
                 waterArray[i] = raw.water(i);
@@ -275,20 +275,21 @@ public final strictfp class GameMapIO {
             int name = builder.createString(gameMap.getMapName());
             int randomSeed = gameMap.getSeed();
             boolean[] wallArray = gameMap.getWallArray();
-            boolean[] waterArray = gameMap.getWaterArray();
-            boolean[] damArray = gameMap.getDamArray();
-            int[] breadArray = gameMap.getBreadArray();
-            int[][] spawnZoneCenters = gameMap.getSpawnZoneCenters();
-            TIntArrayList spawnZoneCenterXs = new TIntArrayList(spawnZoneCenters[0]);
-            TIntArrayList spawnZoneCenterYs = new TIntArrayList(spawnZoneCenters[1]);
+            int[] paintArray = gameMap.getPaintArray();
+            boolean[] ruinArray = gameMap.getRuinArray();
+            
 
 
             // Make body tables
+            ArrayList<Integer> bodyIDs = new ArrayList<>();
+            ArrayList<Byte> bodyTeamIDs = new ArrayList<>();
+            ArrayList<Byte> bodyTypes = new ArrayList<>();
+            ArrayList<Integer> bodyLocsXs = new ArrayList<>();
+            ArrayList<Integer> bodyLocsYs = new ArrayList<>();
             ArrayList<Boolean> wallArrayList = new ArrayList<>();
-            ArrayList<Boolean> waterArrayList = new ArrayList<>();
-            ArrayList<Boolean> damArrayList = new ArrayList<>();
-            ArrayList<Integer> breadArrayList = new ArrayList<>();
-            ArrayList<Integer> breadLocationsArrayList = new ArrayList<>();
+            ArrayList<Boolean> ruinArrayList = new ArrayList<>();
+            ArrayList<Integer> paintArrayList = new ArrayList<>();
+            ArrayList<Integer> paintLocationsArrayList = new ArrayList<>();
 
             for (int i = 0; i < gameMap.getWidth() * gameMap.getHeight(); i++) {
                 wallArrayList.add(wallArray[i]);
