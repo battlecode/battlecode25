@@ -513,6 +513,27 @@ public strictfp class GameWorld {
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
+    public boolean connectedByPaint(MapLocation loc1, MapLocation loc2) {
+        if(getPaint(loc1) == 0 || getPaint(loc2) == 0 || teamFromPaint(loc1) != teamFromPaint(loc2)) return false;
+        Team t = teamFromPaint(loc1);
+        Queue<MapLocation> q = new LinkedList<MapLocation>();
+        Set<MapLocation> vis = new HashSet<MapLocation>();
+        q.add(loc1);
+        MapLocation cur;
+        int[] dx = {1, 0, -1, 0}, dy = {0, 1, 0, -1};
+        while(!q.isEmpty()) {
+            cur = q.peek();
+            q.remove();
+            if(cur.x < 0 || cur.y < 0 || cur.x >= this.gameMap.getWidth() || cur.y >= this.gameMap.getHeight() || vis.contains(cur) || teamFromPaint(cur) != t) continue;
+            vis.add(cur);
+            if(cur == loc2)
+                return true;
+            for(int i = 0; i < 4; i ++)
+                q.add(new MapLocation(cur.x + dx[i], cur.y + dy[i]));
+        }
+        return false;
+    }
+
     public MapLocation[] getAllRuins() {
         return this.allRuins.toArray(new MapLocation[this.allRuins.size()]);
     }
