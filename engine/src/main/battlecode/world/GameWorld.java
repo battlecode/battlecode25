@@ -646,7 +646,7 @@ public strictfp class GameWorld {
         while(!q.isEmpty()) {
             cur = q.peek();
             q.remove();
-            if(cur.x < 0 || cur.y < 0 || cur.x >= this.gameMap.getWidth() || cur.y >= this.gameMap.getHeight() || vis.contains(cur) || teamFromPaint(cur) != t) continue;
+            if(getGameMap().onTheMap(cur) || vis.contains(cur) || teamFromPaint(cur) != t) continue;
             vis.add(cur);
             if(cur == loc2)
                 return true;
