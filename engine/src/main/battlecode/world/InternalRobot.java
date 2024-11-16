@@ -304,6 +304,19 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = newMovementTurns;
     }
 
+    /**
+     * Adds health to a robot. Input can be negative to subtract health.
+     * 
+     * @param healthAmount the amount to change health by (can be negative)
+     */
+    public void addHealth(int healthAmount) {
+        this.health += healthAmount;
+        this.health = Math.min(this.health, GameConstants.DEFAULT_HEALTH);
+        if (this.health <= 0) {
+            this.gameWorld.destroyRobot(this.ID);
+        }
+    }
+
     // *********************************
     // ****** ACTION METHODS *********
     // *********************************

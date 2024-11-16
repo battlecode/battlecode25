@@ -78,6 +78,15 @@ public strictfp interface RobotController {
     MapLocation getLocation();
 
     /**
+     * Returns this robot's current health.
+     *
+     * @return this robot's current health
+     *
+     * @battlecode.doc.costlymethod
+     */
+    int getHealth();
+
+    /**
      * Returns this robot's current paint amount.
      *
      * @return this robot's current paint amount
