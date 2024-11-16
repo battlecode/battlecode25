@@ -29,9 +29,11 @@ const configDescription: { [key: string]: string } = {
     validateMaps: 'Validate maps before running a game'
 }
 
-//export function getColors(): ClientConfig {
-
-//}
+export class ColorPickers extends React.Component {
+    render() {
+        return <SketchPicker />;
+    }
+}
 
 export function getDefaultConfig(): ClientConfig {
     const config: ClientConfig = { ...DEFAULT_CONFIG }
