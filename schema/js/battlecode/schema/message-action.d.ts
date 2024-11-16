@@ -1,4 +1,7 @@
 import * as flatbuffers from 'flatbuffers';
+/**
+ * Visually indicate messaging from one robot to another
+ */
 export declare class MessageAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;

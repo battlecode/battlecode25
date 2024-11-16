@@ -36,7 +36,6 @@ export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
         <div className="flex flex-col">
             <UnitsTable teamStat={teamStat} teamIdx={props.teamIdx} />
             <ResourceTable map={map} teamStat={teamStat} teamIdx={props.teamIdx} />
-            <GlobalUpgradeSection teamStat={teamStat} />
         </div>
     )
 }
@@ -48,6 +47,7 @@ interface ResourceTableProps {
 }
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, teamIdx }) => {
+    /*
     let flags = 3
     let carried = 0
     let crumbs = 0
@@ -88,6 +88,8 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, tea
             </div>
         </div>
     )
+    */
+    return <div>TODO: Resource table</div>
 }
 
 interface UnitsTableProps {
@@ -96,6 +98,7 @@ interface UnitsTableProps {
 }
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
+    /*
     const columns: Array<[string, React.ReactElement]> = [
         ['Base', <UnitsIcon teamIdx={teamIdx} robotType="base" key="0" />],
         ['Attack', <UnitsIcon teamIdx={teamIdx} robotType="attack" key="1" />],
@@ -150,26 +153,7 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
             </table>
         </>
     )
-}
+    */
 
-const GlobalUpgradeSection: React.FC<{ teamStat: TeamRoundStat | undefined }> = ({ teamStat }) => {
-    const upgradeTypes: Record<schema.GlobalUpgradeType, string> = {
-        [schema.GlobalUpgradeType.ACTION_UPGRADE]: 'Global Attack Upgrade',
-        [schema.GlobalUpgradeType.CAPTURING_UPGRADE]: 'Global Capturing Upgrade',
-        [schema.GlobalUpgradeType.HEALING_UPGRADE]: 'Global Healing Upgrade'
-    }
-    if (!teamStat) return <> </>
-    return (
-        <>
-            {teamStat.globalUpgrades.map(
-                (type) =>
-                    upgradeTypes[type] && (
-                        <div className="text-sm flex flex-row justify-center font-bold" key={type}>
-                            <DoubleChevronUpIcon />
-                            {upgradeTypes[type]}
-                        </div>
-                    )
-            )}
-        </>
-    )
+    return <div>TODO: Units table</div>
 }

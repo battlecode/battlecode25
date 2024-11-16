@@ -28,7 +28,7 @@ import java.nio.ByteOrder;
  */
 @SuppressWarnings("unused")
 public final class ProfilerEvent extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
+  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
   public static ProfilerEvent getRootAsProfilerEvent(ByteBuffer _bb) { return getRootAsProfilerEvent(_bb, new ProfilerEvent()); }
   public static ProfilerEvent getRootAsProfilerEvent(ByteBuffer _bb, ProfilerEvent obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

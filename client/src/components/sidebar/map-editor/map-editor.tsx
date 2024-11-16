@@ -106,11 +106,11 @@ export const MapEditorPage: React.FC<Props> = (props) => {
 
             gameRunner.setMatch(editGame.current.currentMatch)
 
-            const turn = editGame.current.currentMatch!.currentRound
-            const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
+            const round = editGame.current.currentMatch!.currentRound
+            const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
             brushes[0].open = true
             setBrushes(brushes)
-            setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
+            setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
             gameRunner.setGame(undefined)
         }

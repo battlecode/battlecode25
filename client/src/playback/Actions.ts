@@ -1,18 +1,21 @@
 import Round from './Round'
 import { schema } from 'battlecode-schema'
+import { unionToAction } from 'battlecode-schema/js/battlecode/schema/action'
 import assert from 'assert'
 import * as renderUtils from '../util/RenderUtil'
 import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
 import Match from './Match'
 import { Body } from './Bodies'
-import { ATTACK_COLOR, GRASS_COLOR, HEAL_COLOR, TEAM_COLORS, WATER_COLOR } from '../constants'
+import { ATTACK_COLOR, TEAM_COLORS } from '../constants'
+
+type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
 export default class Actions {
-    actions: Action[] = []
+    actions: Action<ActionUnion>[] = []
 
     constructor() {}
 
-    applyDelta(round: Round, delta: schema.Round): void {
+    applyTurn(round: Round, turn: schema.Turn): void {
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--
             if (this.actions[i].duration == 0) {
@@ -21,14 +24,19 @@ export default class Actions {
             }
         }
 
-        if (delta.actionsLength() > 0) {
-            for (let i = 0; i < delta.actionsLength(); i++) {
-                const action = delta.actions(i) ?? assert.fail('actions not found in round')
-                const robotID = delta.actionIds(i) ?? assert.fail('actionIDs not found in round')
-                const target = delta.actionTargets(i) ?? assert.fail('actionTargets not found in round')
+        const robotId = turn.robotId()
+        if (turn.actionsLength() > 0) {
+            for (let i = 0; i < turn.actionsTypeLength(); i++) {
+                const actionType = turn.actionsType(i)!
+                const action =
+                    unionToAction(actionType, (obj) => turn.actions(i, obj)) ?? assert.fail('Failed to parse action')
+
+                // TODO: think about revisiting this
                 const actionClass =
-                    ACTION_DEFINITIONS[action] ?? assert.fail(`Action ${action} not found in ACTION_DEFINITIONS`)
-                const newAction = new actionClass(robotID, target)
+                    ACTION_DEFINITIONS[actionType] ??
+                    assert.fail(`Action ${actionType} not found in ACTION_DEFINITIONS`)
+                const newAction = new actionClass(robotId, action)
+
                 this.actions.push(newAction)
                 newAction.apply(round)
             }
@@ -48,10 +56,10 @@ export default class Actions {
     }
 }
 
-export class Action {
+export class Action<T extends ActionUnion> {
     constructor(
-        protected robotID: number,
-        protected target: number,
+        protected robotId: number,
+        protected actionData: T,
         public duration: number = 1
     ) {}
 
@@ -63,37 +71,43 @@ export class Action {
      */
     apply(round: Round): void {}
     draw(match: Match, ctx: CanvasRenderingContext2D) {}
-    copy(): Action {
+    copy(): Action<T> {
         // creates a new object using this object's prototype and all its parameters. this is a shallow copy, override this if you need a deep copy
         return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
     }
 }
 
-export abstract class ToFromAction extends Action {
-    constructor(robotID: number, target: number) {
-        super(robotID, target)
-    }
+//export abstract class ToFromAction extends Action {
+//    constructor(action: ActionUnion) {
+//        super(action)
+//    }
 
-    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
+//    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
 
-    draw(match: Match, ctx: CanvasRenderingContext2D) {
-        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
-        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
-        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
-        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
-        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
-    }
-}
+//    draw(match: Match, ctx: CanvasRenderingContext2D) {
+//        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
+//        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
+//        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
+//        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
+//        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
+//    }
+//}
 
-export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
-    [schema.Action.DIE_EXCEPTION]: class DieException extends Action {
+export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
+    [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
         apply(round: Round): void {
-            console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)
+            throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
         }
     },
-    [schema.Action.ATTACK]: class Dig extends ToFromAction {
+    //old DieException
+    [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
-            // To dicuss
+            //console.log(`Exception occured: robotID(${this.robotID}), target(${this.target}`)
+        }
+    },
+    [schema.Action.AttackAction]: class AttackAction extends Action<schema.AttackAction> {
+        apply(round: Round): void {
+            // To discuss
         }
         drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
             // Compute the start and end points for the animation projectile
@@ -131,46 +145,46 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             )
         }
     },
-    [schema.Action.HEAL]: class Heal extends ToFromAction {
+    //[schema.Action.HEAL]: class Heal extends ToFromAction {
+    //    apply(round: Round): void {
+    //        // To discuss
+    //    }
+    //    drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
+    //        renderUtils.renderLine(
+    //            ctx,
+    //            renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
+    //            renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
+    //            {
+    //                color: HEAL_COLOR,
+    //                lineWidth: 0.05,
+    //                opacity: 0.5,
+    //                renderArrow: true
+    //            }
+    //        )
+    //    }
+    //},
+    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
         apply(round: Round): void {
-            // To dicuss
-        }
-        drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
-            renderUtils.renderLine(
-                ctx,
-                renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
-                renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-                {
-                    color: HEAL_COLOR,
-                    lineWidth: 0.05,
-                    opacity: 0.5,
-                    renderArrow: true
-                }
-            )
-        }
-    },
-    [schema.Action.DIG]: class Dig extends Action {
-        apply(round: Round): void {
-            round.map.water[this.target] = 1
-        }
-    },
-    [schema.Action.FILL]: class Fill extends Action {
-        apply(round: Round): void {
-            round.map.water[this.target] = 0
+            round.map.paint[this.actionData.loc()] = 0
         }
     },
-    [schema.Action.EXPLOSIVE_TRAP]: class ExplosiveTrap extends Action {
+    [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            // To dicuss
+            round.map.paint[this.actionData.loc()] = round.bodies.getById(this.robotId).team.id
+        }
+    },
+    [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
+        apply(round: Round): void {
+            // To discuss
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const radius = Math.sqrt(4)
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
+            const loc = map.indexToLocation(this.actionData.loc())
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -182,16 +196,18 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.globalAlpha = 1
         }
     },
-    [schema.Action.WATER_TRAP]: class WaterTrap extends Action {
+    //!! change
+    [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            /*
             const radius = 3
             const map = match.currentRound.map
             const loc = map.indexToLocation(this.target)
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -201,20 +217,22 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.fill()
             ctx.stroke()
             ctx.globalAlpha = 1
+            */
         }
     },
-    [schema.Action.STUN_TRAP]: class StunTrap extends Action {
+    [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
             // To dicuss
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            /*
             const radius = Math.sqrt(13)
             const map = match.currentRound.map
             const loc = map.indexToLocation(this.target)
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotID)
+            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
             ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
 
             ctx.globalAlpha = 0.5
@@ -224,41 +242,69 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action> = {
             ctx.fill()
             ctx.stroke()
             ctx.globalAlpha = 1
+            */
         }
     },
-    [schema.Action.PICKUP_FLAG]: class PickupFlag extends Action {
+    [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
         apply(round: Round): void {
+            /*
             const flagId = this.target
             const flagData = round.map.flagData.get(flagId)!
-            flagData.carrierId = this.robotID
-            round.bodies.getById(this.robotID).carryingFlagId = flagId
+            flagData.carrierId = this.robotId
+            round.bodies.getById(this.robotId).carryingFlagId = flagId
+            */
         }
     },
-    [schema.Action.PLACE_FLAG]: class ResetFlag extends Action {
+    [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            const flagId = this.robotID
-            const flagData = round.map.flagData.get(flagId)!
-            // Could be carrying or already placed
-            if (flagData.carrierId) {
-                round.bodies.getById(flagData.carrierId).carryingFlagId = null
-            }
-            flagData.carrierId = null
-            flagData.location = round.map.indexToLocation(this.target)
+            // This assumes ids are never reused
+            assert(!round.bodies.hasId(this.robotId), 'Spawned robot already exists')
+
+            round.bodies.spawnBody(this.robotId, this.actionData)
         }
     },
-    [schema.Action.CAPTURE_FLAG]: class CaptureFlag extends Action {
+    [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
-            const flagId = this.target
-            const flagData = round.map.flagData.get(flagId)!
-            // Always carrying
-            round.bodies.getById(flagData.carrierId!).carryingFlagId = null
-            round.map.flagData.delete(flagId)
-        }
-    },
-    [schema.Action.GLOBAL_UPGRADE]: class GlobalUpgrade extends Action {
-        apply(round: Round): void {
-            const team = round.bodies.getById(this.robotID).team
+            /*
+            const team = round.bodies.getById(this.robotId).team
             round.stat.getTeamStat(team).globalUpgrades.push(this.target)
+            */
+        }
+    },
+    [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
+        apply(round: Round): void {
+            const body = round.bodies.getById(this.robotId)
+            // Check if exists because technically can add indicators when not spawned
+            assert(body, 'body should not be null')
+            const string = this.actionData.value()!
+            body.indicatorString = string
+        }
+    },
+    [schema.Action.IndicatorDotAction]: class IndicatorDotAction extends Action<schema.IndicatorDotAction> {
+        apply(round: Round): void {
+            const loc = this.actionData.loc()
+            const vectorLoc = round.map.indexToLocation(loc)
+
+            const body = round.bodies.getById(this.robotId)
+            assert(body, 'body should not be null')
+            body.indicatorDots.push({
+                location: vectorLoc,
+                color: renderUtils.colorToHexString(this.actionData.colorHex())
+            })
+        }
+    },
+    [schema.Action.IndicatorLineAction]: class IndicatorLineAction extends Action<schema.IndicatorLineAction> {
+        apply(round: Round): void {
+            const starts = round.map.indexToLocation(this.actionData.startLoc())
+            const ends = round.map.indexToLocation(this.actionData.endLoc())
+
+            const body = round.bodies.getById(this.robotId)
+            assert(body, 'body should not be null')
+            body.indicatorLines.push({
+                start: starts,
+                end: ends,
+                color: renderUtils.colorToHexString(this.actionData.colorHex())
+            })
         }
     }
 }

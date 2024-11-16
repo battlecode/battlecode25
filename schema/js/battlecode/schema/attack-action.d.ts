@@ -1,4 +1,7 @@
 import * as flatbuffers from 'flatbuffers';
+/**
+ * Visually indicate an attack
+ */
 export declare class AttackAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;

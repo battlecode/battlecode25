@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Visually indicate a tower being built
+ */
 @SuppressWarnings("unused")
 public final class BuildAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

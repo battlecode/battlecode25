@@ -1,4 +1,7 @@
 import * as flatbuffers from 'flatbuffers';
+/**
+ * Visually indicate that a tower was upgraded
+ */
 export declare class UpgradeAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;

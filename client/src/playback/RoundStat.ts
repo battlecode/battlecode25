@@ -4,19 +4,12 @@ import assert from 'assert'
 import Round from './Round'
 
 export class TeamRoundStat {
-    robots: [number, number, number, number, number] = [0, 0, 0, 0, 0]
-    specializationTotalLevels: [number, number, number, number, number] = [0, 0, 0, 0, 0]
-    resourceAmount: number = 0
-    resourceAmountAverageDatapoint: number | undefined = undefined
-    globalUpgrades: schema.GlobalUpgradeType[] = []
+    robots: number = 0
 
     copy(): TeamRoundStat {
         const newStat: TeamRoundStat = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
 
         // Copy any internal objects here
-        newStat.robots = [...this.robots]
-        newStat.specializationTotalLevels = [...this.specializationTotalLevels]
-        newStat.globalUpgrades = [...this.globalUpgrades]
 
         return newStat
     }
@@ -49,23 +42,25 @@ export default class RoundStat {
      * Mutates this stat to reflect the given delta.
      */
     applyDelta(round: Round, delta: schema.Round): void {
-        assert(!this.completed, 'Cannot apply delta to completed round')
         assert(
             round.roundNumber === delta.roundId(),
             `Wrong round ID: is ${delta.roundId()}, should be ${round.roundNumber}`
         )
 
+        // Do not recompute if this stat is already completed
+        if (this.completed) return
+
+        // Compute team stats for this round
+        const time = Date.now()
         for (var i = 0; i < delta.teamIdsLength(); i++) {
             const team = this.game.teams[(delta.teamIds(i) ?? assert.fail('teamID not found in round')) - 1]
             assert(team != undefined, `team ${i} not found in game.teams in round`)
             const teamStat = this.teams.get(team) ?? assert.fail(`team ${i} not found in team stats in round`)
 
-            teamStat.resourceAmount =
-                delta.teamResourceAmounts(i) ?? assert.fail('teamResourceAmounts not found in round')
-        }
+            teamStat.robots = 0
 
-        const time = Date.now()
-        for (const team of this.game.teams) {
+            /*
+            // Compute average datapoint every 10 rounds
             if (round.roundNumber % 10 == 0) {
                 const teamStat = this.teams.get(team) ?? assert.fail(`team ${team} not found in team stats in round`)
                 let avgValue = teamStat.resourceAmount
@@ -78,7 +73,16 @@ export default class RoundStat {
 
                 teamStat.resourceAmountAverageDatapoint = avgValue / avgCount
             }
+            */
         }
+
+        for (const body of round.bodies.bodies.values()) {
+            const teamStat = round.stat.getTeamStat(body.team)
+
+            // Count number of alive robots
+            if (!body.dead) teamStat.robots++
+        }
+
         const timems = Date.now() - time
         if (timems > 1) console.log(`took ${timems}ms to calculate income averages`)
 
