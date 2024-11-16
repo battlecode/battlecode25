@@ -775,7 +775,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(message);
 
         // we also need them to be different (i.e. only robot to tower or vice versa)
-        assert(UnitType.isRobotType(this.robot.getType()) ^ UnitType.isRobotType(this.gameWorld.getRobot(loc).getType()));
+        assert(UnitType.isRobotType(this.robot.getType()) ^ UnitType.isRobotType(this.gameWorld.getRobot(loc)));
         if (UnitType.isRobotType(this.robot.getType())) {
             assert (this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_ROBOT);
         } else {
