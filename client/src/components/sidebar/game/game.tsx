@@ -111,7 +111,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                             them so that they don't render any data (since we're likely hiding stats to prevent lag) */}
                         <SpecialtyHistogram active={showStats} />
                         <br />
-                        <ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />
+                        {/*<ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />*/}
                     </>
                 ) : (
                     <div>Select a game to see stats</div>

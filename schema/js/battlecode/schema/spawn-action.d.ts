@@ -1,5 +1,8 @@
 import * as flatbuffers from 'flatbuffers';
 import { RobotType } from '../../battlecode/schema/robot-type';
+/**
+ * Indicate that this robot was spawned on this turn
+ */
 export declare class SpawnAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;

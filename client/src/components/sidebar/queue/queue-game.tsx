@@ -28,18 +28,22 @@ export const QueuedGame: React.FC<Props> = (props) => {
 
     const getWinText = (winType: schema.WinType) => {
         switch (winType) {
-            case schema.WinType.CAPTURE:
-                return 'by capturing all flags '
-            case schema.WinType.MORE_FLAG_CAPTURES:
-                return 'with more captured flags '
-            case schema.WinType.LEVEL_SUM:
-                return 'with a higher level sum '
-            case schema.WinType.MORE_BREAD:
-                return 'with a higher crumb count '
-            case schema.WinType.COIN_FLIP:
-                return 'by coin flip '
             case schema.WinType.RESIGNATION:
                 return 'by resignation '
+            case schema.WinType.MAJORITY_PAINTED:
+                return 'by having paint majority '
+            case schema.WinType.AREA_PAINTED:
+                return 'by painting more territory '
+            case schema.WinType.MORE_TOWERS:
+                return 'with more towers alive '
+            case schema.WinType.MORE_MONEY:
+                return 'with more money '
+            case schema.WinType.MORE_STORED_PAINT:
+                return 'with more stored paint '
+            case schema.WinType.MORE_ROBOTS:
+                return 'with more robots alive '
+            case schema.WinType.COIN_FLIP:
+                return 'by coin flip '
             default:
                 return ''
         }

@@ -24,18 +24,12 @@ export default class Game {
     // Metadata
     private readonly specVersion: string
     public readonly constants: schema.GameplayConstants
-    public readonly specializationMetadata: schema.SpecializationMetadata[] = []
-    public readonly buildActionMetadata: schema.BuildActionMetadata[] = []
-    public readonly globalUpgradeMetadata: schema.GlobalUpgradeMetadata[] = []
+    public readonly robotTypeMetadata: Map<schema.RobotType, schema.RobotTypeMetadata>
 
     /**
      * Whether this game is playable (not currently being made in the map editor)
      */
     public readonly playable: boolean
-
-    //shared slots for efficiency??
-    public _bodiesSlot: schema.SpawnedBodyTable = new schema.SpawnedBodyTable()
-    public _vecTableSlot1: schema.VecTable = new schema.VecTable()
 
     /**
      * The ID of this game. This is used to uniquely identify games in the UI, and is just based on uploaded order
@@ -54,6 +48,7 @@ export default class Game {
             this.winner = this.teams[0]
             this.specVersion = SPEC_VERSION
             this.constants = new schema.GameplayConstants()
+            this.robotTypeMetadata = new Map()
             this.id = nextID++
             this.playable = false
             return
@@ -72,19 +67,15 @@ export default class Game {
             Team.fromSchema(gameHeader.teams(1) ?? assert.fail('Team 1 was null'))
         ]
 
-        for (let i = 0; i < gameHeader.specializationMetadataLength(); i++) {
-            const data = gameHeader.specializationMetadata(i) ?? assert.fail('SpecializationMetadata was null')
-            this.specializationMetadata[data.type()] = data
-        }
-        for (let i = 0; i < gameHeader.buildActionMetadataLength(); i++) {
-            const data = gameHeader.buildActionMetadata(i) ?? assert.fail('BuildActionMetadata was null')
-            this.buildActionMetadata[data.type()] = data
-        }
-        for (let i = 0; i < gameHeader.globalUpgradeMetadataLength(); i++) {
-            const data = gameHeader.globalUpgradeMetadata(i) ?? assert.fail('GlobalUpgradeMetadata was null')
-            this.globalUpgradeMetadata[data.type()] = data
-        }
+        // load constants
         this.constants = gameHeader.constants() ?? assert.fail('Constants was null')
+
+        // load metadata
+        this.robotTypeMetadata = new Map()
+        for (let i = 0; i < gameHeader.robotTypeMetadataLength(); i++) {
+            const metadata = gameHeader.robotTypeMetadata(i)!
+            this.robotTypeMetadata.set(metadata.type(), metadata)
+        }
 
         // load all other events  ==========================================================================================
         for (let i = 1; i < eventCount; i++) {

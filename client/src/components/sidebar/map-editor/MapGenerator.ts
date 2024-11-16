@@ -13,10 +13,9 @@ export function loadFileAsMap(file: File): Promise<Game> {
         reader.readAsArrayBuffer(file)
         reader.onload = () => {
             const data = new Uint8Array(reader.result as ArrayBuffer)
-            const schema_map = schema.GameMap.getRootAsGameMap(new flatbuffers.ByteBuffer(data))
+            const schemaMap = schema.GameMap.getRootAsGameMap(new flatbuffers.ByteBuffer(data))
             const game = new Game()
-            const map = StaticMap.fromSchema(schema_map)
-            game.currentMatch = Match.fromMap(schema_map, game, map)
+            game.currentMatch = Match.fromMap(schemaMap, game)
             resolve(game)
         }
     })
@@ -34,10 +33,13 @@ export function exportMap(round: Round, name: string) {
     return ''
 }
 
-function verifyMapGuarantees(turn: Round) {
-    const staticMap = turn.map.staticMap
+function verifyMapGuarantees(round: Round) {
+    const staticMap = round.map.staticMap
 
-    if (turn.map.isEmpty() && turn.bodies.isEmpty()) {
+    throw new Error('Not implemented')
+
+    /*
+    if (round.map.isEmpty() && round.bodies.isEmpty()) {
         return 'Map is empty'
     }
 
@@ -62,9 +64,9 @@ function verifyMapGuarantees(turn: Round) {
         const loc = staticMap.spawnLocations[i]
         for (let x = loc.x - 1; x <= loc.x + 1; x++) {
             for (let y = loc.y - 1; y <= loc.y + 1; y++) {
-                if (x < 0 || x >= turn.map.width || y < 0 || y >= turn.map.height) continue
-                const mapIdx = turn.map.locationToIndex(x, y)
-                if (!turn.map.water[mapIdx] && !staticMap.walls[mapIdx] && !staticMap.divider[mapIdx]) {
+                if (x < 0 || x >= round.map.width || y < 0 || y >= round.map.height) continue
+                const mapIdx = round.map.locationToIndex(x, y)
+                if (!round.map.water[mapIdx] && !staticMap.walls[mapIdx] && !staticMap.divider[mapIdx]) {
                     totalSpawnableLocations++
                 }
             }
@@ -75,20 +77,20 @@ function verifyMapGuarantees(turn: Round) {
     }
 
     for (let zoneIdx = 0; zoneIdx < staticMap.spawnLocations.length; zoneIdx += 2) {
-        const floodMask = new Int8Array(turn.map.width * turn.map.height)
+        const floodMask = new Int8Array(round.map.width * round.map.height)
         const floodQueue: number[] = []
         const spawnZone = staticMap.spawnLocations[zoneIdx]
-        const startIdx = turn.map.locationToIndex(spawnZone.x, spawnZone.y)
+        const startIdx = round.map.locationToIndex(spawnZone.x, spawnZone.y)
         floodMask[startIdx] = 1
         floodQueue.push(startIdx)
         let totalFlooded = 1
         while (floodQueue.length > 0) {
             const idx = floodQueue.shift()!
             for (let i = 1; i < 9; i++) {
-                const x = DIRECTIONS[i][0] + turn.map.indexToLocation(idx).x
-                const y = DIRECTIONS[i][1] + turn.map.indexToLocation(idx).y
-                if (x < 0 || x >= turn.map.width || y < 0 || y >= turn.map.height) continue
-                const newIdx = turn.map.locationToIndex(x, y)
+                const x = DIRECTIONS[i][0] + round.map.indexToLocation(idx).x
+                const y = DIRECTIONS[i][1] + round.map.indexToLocation(idx).y
+                if (x < 0 || x >= round.map.width || y < 0 || y >= round.map.height) continue
+                const newIdx = round.map.locationToIndex(x, y)
                 if (!staticMap.divider[newIdx] && !staticMap.walls[newIdx] && !floodMask[newIdx]) {
                     // Check if we can reach an enemy spawn location
                     for (let j = 0; j < staticMap.spawnLocations.length; j++) {
@@ -103,10 +105,11 @@ function verifyMapGuarantees(turn: Round) {
                 }
             }
         }
-        if (totalFlooded >= 0.5 * turn.map.width * turn.map.height) {
+        if (totalFlooded >= 0.5 * round.map.width * round.map.height) {
             return `Map is too open. Must be divided into at least 2 sections by the dam`
         }
     }
+*/
 
     return ''
 }
@@ -118,14 +121,14 @@ function verifyMapGuarantees(turn: Round) {
 function mapToFile(currentMap: CurrentMap, initialBodies: Bodies): Uint8Array {
     const builder = new flatbuffers.Builder()
     const name = builder.createString(currentMap.staticMap.name)
-    const initialBodiesTable = initialBodies.toSpawnedBodyTable(builder)
+    const initialBodiesTable = initialBodies.toInitialBodyTable(builder)
     const mapPacket = currentMap.getSchemaPacket(builder)
 
     schema.GameMap.startGameMap(builder)
     schema.GameMap.addName(builder, name)
     schema.GameMap.addSize(builder, schema.Vec.createVec(builder, currentMap.width, currentMap.height))
     schema.GameMap.addSymmetry(builder, currentMap.staticMap.symmetry)
-    schema.GameMap.addBodies(builder, initialBodiesTable)
+    schema.GameMap.addInitialBodies(builder, initialBodiesTable)
     schema.GameMap.addRandomSeed(builder, Math.round(Math.random() * 1000))
     currentMap.insertSchemaPacket(builder, mapPacket)
 

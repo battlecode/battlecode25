@@ -48,6 +48,7 @@ export class WallsBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        /*
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
             const { x, y } = this.map.indexToLocation(idx)
@@ -58,6 +59,7 @@ export class WallsBrush extends SymmetricMapEditorBrush<CurrentMap> {
                 this.map.water[idx] = 0
             }
         })
+        */
     }
 }
 
@@ -80,12 +82,14 @@ export class DividerBrush extends SymmetricMapEditorBrush<StaticMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        /*
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
             const { x, y } = this.map.indexToLocation(idx)
             if (this.map.spawnLocations.find((l) => l.x == x && l.y == y)) return
             this.map.divider[idx] = fields.should_add.value ? 1 : 0
         })
+        */
     }
 }
 
@@ -104,6 +108,7 @@ export class SpawnZoneBrush extends SymmetricMapEditorBrush<CurrentMap> {
 
     // Also add flags for visual purposes even though they don't get serialized
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        /*
         const spawnLocs = this.map.staticMap.spawnLocations
         const flagData = this.map.flagData
         const foundIdx = spawnLocs.findIndex((l) => l.x == x && l.y == y)
@@ -126,10 +131,11 @@ export class SpawnZoneBrush extends SymmetricMapEditorBrush<CurrentMap> {
             spawnLocs[i] = spawnLocs[i + 1]
         }
         spawnLocs.pop()
+        */
     }
 }
 
-export class WaterBrush extends SymmetricMapEditorBrush<CurrentMap> {
+export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
     public readonly name = 'Water'
     public readonly fields = {
         should_add: {
@@ -148,6 +154,7 @@ export class WaterBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        /*
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
             const { x, y } = this.map.indexToLocation(idx)
@@ -156,6 +163,7 @@ export class WaterBrush extends SymmetricMapEditorBrush<CurrentMap> {
             this.map.water[idx] = add ? 1 : 0
             this.map.staticMap.initialWater[idx] = add ? 1 : 0
         })
+        */
     }
 }
 
@@ -182,6 +190,7 @@ export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        /*
         const foundIdx = this.map.staticMap.resourcePileLocations.findIndex((l) => l.x == x && l.y == y)
         const schemaIdx = this.map.locationToIndex(x, y)
 
@@ -197,6 +206,7 @@ export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
             this.map.staticMap.resourcePileLocations[i] = this.map.staticMap.resourcePileLocations[i + 1]
         this.map.staticMap.resourcePileLocations.pop()
         this.map.resourcePileData.delete(schemaIdx)
+        */
     }
 }
 

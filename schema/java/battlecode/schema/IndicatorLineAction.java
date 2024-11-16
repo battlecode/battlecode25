@@ -19,6 +19,9 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Update the indicator line for this robot
+ */
 @SuppressWarnings("unused")
 public final class IndicatorLineAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

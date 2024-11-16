@@ -3,7 +3,7 @@ import { TEAM_WHITE, TEAM_BROWN } from '../../../constants'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
 
 export interface LineChartDataPoint {
-    turn: number
+    round: number
     brown: number
     white: number
 }
@@ -40,14 +40,14 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
         if (data.length > 0) {
             context.strokeStyle = TEAM_BROWN
             context.beginPath()
-            context.moveTo(xScale(data[0].turn), yScale(data[0].brown))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].turn), yScale(data[i].brown))
+            context.moveTo(xScale(data[0].round), yScale(data[0].brown))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
             context.stroke()
 
             context.strokeStyle = TEAM_WHITE
             context.beginPath()
-            context.moveTo(xScale(data[0].turn), yScale(data[0].white))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].turn), yScale(data[i].white))
+            context.moveTo(xScale(data[0].round), yScale(data[0].white))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))
             context.stroke()
         }
 

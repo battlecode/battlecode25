@@ -1,4 +1,7 @@
 import * as flatbuffers from 'flatbuffers';
+/**
+ * Visually indicate a mop attack
+ */
 export declare class MopAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;
