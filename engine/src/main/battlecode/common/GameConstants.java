@@ -98,6 +98,9 @@ public class GameConstants {
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
 
+    /** The paint cost of marking a resource or tower pattern */
+    public static final int MARK_PATTERN_PAINT_COST = 25;
+
     /**
      * Number of rounds between updating the random noisy flag broadcast location
      */

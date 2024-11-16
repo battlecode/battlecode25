@@ -556,6 +556,19 @@ public strictfp interface RobotController {
     void markTowerPattern(MapLocation loc) throws GameActionException;
 
     /**
+     * Builds a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
+     * 
+     * @param type          the type of tower to build
+     * @param loc           the location to build at
+     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
+     * @param reflect       whether to reflect the pattern
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markTowerPattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
+
+    /**
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
      * given location.
      * 
@@ -574,6 +587,17 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void markResourcePattern(MapLocation loc) throws GameActionException;
+
+    /**
+     * Marks a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc           the center of the resource pattern
+     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
+     * @param reflect       whether to reflect the pattern
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
 
     /**
      * Checks if the robot can build a tower at the given location.

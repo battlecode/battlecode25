@@ -592,10 +592,15 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public void markTowerPattern(MapLocation loc) throws GameActionException {
+        markTowerPattern(loc, 0, false);
+    }
+
+    @Override
+    public void markTowerPattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkTowerPattern(loc);
 
-        throw new NotImplementedException();
-        // TODO not implemented
+        this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
+        this.gameWorld.markTowerPattern(getTeam(), loc, rotationAngle, reflect);
     }
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
@@ -620,10 +625,15 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public void markResourcePattern(MapLocation loc) throws GameActionException {
+        markResourcePattern(loc, 0, false);
+    }
+
+    @Override
+    public void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkResourcePattern(loc);
 
-        throw new NotImplementedException();
-        // TODO not implemented
+        this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
+        this.gameWorld.markResourcePattern(getTeam(), loc, rotationAngle, reflect);
     }
 
     private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
