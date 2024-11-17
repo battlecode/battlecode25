@@ -532,13 +532,49 @@ public strictfp interface RobotController {
     void buildRobot(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
+     * Checks if the location can be marked.
+     * 
+     * @param loc the location to mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canMark(MapLocation loc);
+
+    /**
+     * Checks if the location can be marked.
+     * 
+     * @param loc the location to mark
+     * @param secondary whether the secondary color should be used
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void mark(MapLocation loc, boolean secondary) throws GameActionException;
+
+    /**
+     * Checks if a mark at the location can be removed.
+     * 
+     * @param loc the location that has the mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canRemoveMark(MapLocation loc);
+
+    /**
+     * Removes the mark at the given location.
+     * 
+     * @param loc the location that has the mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void removeMark(MapLocation loc) throws GameActionException;
+
+    /**
      * Checks if the robot can build a tower by marking a 5x5 pattern centered at
      * the given location.
      * This requires there to be a ruin at the location.
      * 
-     * @param type the type of tower to build
-     * @param loc  the location to build at
-     * @return true if tower can be built at loc
+     * @param loc  the center of the 5x5 pattern
+     * @return true if a tower pattern can be marked at loc
      * 
      * @battlecode.doc.costlymethod
      */
@@ -548,8 +584,7 @@ public strictfp interface RobotController {
      * Builds a tower by marking a 5x5 pattern centered at the given location.
      * This requires there to be a ruin at the location.
      * 
-     * @param type the type of tower to build
-     * @param loc  the location to build at
+     * @param loc  the center of the 5x5 pattern
      * 
      * @battlecode.doc.costlymethod
      */
@@ -559,8 +594,7 @@ public strictfp interface RobotController {
      * Builds a tower by marking a 5x5 pattern centered at the given location.
      * This requires there to be a ruin at the location.
      * 
-     * @param type          the type of tower to build
-     * @param loc           the location to build at
+     * @param loc           the center of the 5x5 pattern
      * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
      * @param reflect       whether to reflect the pattern
      * 
@@ -629,7 +663,7 @@ public strictfp interface RobotController {
      * given location. This requires the 5x5 region to be painted correctly.
      * 
      * @param loc the center of the resource pattern
-     * @return true if an SRP can be marked at loc
+     * @return true if the SRP can be completed at loc
      * 
      * @battlecode.doc.costlymethod
      */

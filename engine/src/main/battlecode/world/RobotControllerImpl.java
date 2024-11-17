@@ -174,10 +174,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
                     "Target location not within vision range");
     }
 
-    private void assertCanActLocation(MapLocation loc, int maxRadius) throws GameActionException {
+    private void assertCanActLocation(MapLocation loc, int maxRadiusSquared) throws GameActionException {
         assertNotNull(loc);
         assertIsSpawned();
-        if (getLocation().distanceSquaredTo(loc) > maxRadius)
+        if (getLocation().distanceSquaredTo(loc) > maxRadiusSquared)
             throw new GameActionException(OUT_OF_RANGE,
                     "Target location not within action range");
         if (!this.gameWorld.getGameMap().onTheMap(loc))
@@ -564,8 +564,57 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.buildRobot(type, loc);
     }
 
+    private void assertCanMark(MapLocation loc) throws GameActionException {
+        assertIsRobotType(this.robot.getType());
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+    }
+
+    @Override
+    public boolean canMark(MapLocation loc) {
+        try {
+            assertCanMark(loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void mark(MapLocation loc, boolean secondary) throws GameActionException {
+        assertCanMark(loc);
+        
+        this.gameWorld.setMarker(getTeam(), loc, secondary ? 2 : 1);
+    }
+
+    private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
+        assertIsRobotType(this.robot.getType());
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+
+        if (this.gameWorld.getMarker(getTeam(), loc) == 0) {
+            throw new GameActionException(CANT_DO_THAT, "Cannot remove a nonexistent marker!");
+        }
+    }
+
+    @Override
+    public boolean canRemoveMark(MapLocation loc) {
+        try {
+            assertCanRemoveMark(loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void removeMark(MapLocation loc) throws GameActionException {
+        assertCanRemoveMark(loc);
+
+        this.gameWorld.setMarker(getTeam(), loc, 0);
+    }
+
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
 
         if (!this.gameWorld.hasRuin(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -605,6 +654,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
 
         if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -639,6 +689,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
 
         if (this.gameWorld.hasTower(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -685,6 +736,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanCompleteResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
+        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
 
         if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
