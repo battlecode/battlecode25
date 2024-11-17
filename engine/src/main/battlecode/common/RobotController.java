@@ -306,8 +306,8 @@ public strictfp interface RobotController {
     boolean sensePassability(MapLocation loc) throws GameActionException;
 
     /**
-     * Senses the map info at a location. MapInfo includes walls, spawn zones,
-     * water, crumbs, and friendly traps.
+     * Senses the map info at a location. MapInfo includes walls, paint, marks,
+     * and ruins
      *
      * @param loc to sense map at
      * @return MapInfo describing map at location
@@ -319,7 +319,7 @@ public strictfp interface RobotController {
 
     /**
      * Return map info for all senseable locations.
-     * MapInfo includes walls, spawn zones, water, crumbs, and friendly traps.
+     * MapInfo includes walls, paint, marks, and ruins.
      *
      * @return MapInfo about all locations within vision radius
      *
@@ -332,7 +332,7 @@ public strictfp interface RobotController {
      * If radiusSquared is larger than the robot's vision radius, uses the robot's
      * vision radius instead. If -1 is passed, all locations within vision radius
      * are returned.
-     * MapInfo includes walls, spawn zones, water, crumbs, and friendly traps.
+     * MapInfo includes walls, paint, marks, and ruins.
      *
      * @param radiusSquared the squared radius of all locations to be returned
      * @return MapInfo about all locations within vision radius
@@ -345,7 +345,7 @@ public strictfp interface RobotController {
     /**
      * Return map info for all senseable locations within vision radius of a center
      * location.
-     * MapInfo includes walls, spawn zones, water, crumbs, and friendly traps.
+     * MapInfo includes walls, paint, marks, and ruins
      *
      * @param center the center of the search area
      * @return MapInfo about all locations within vision radius
@@ -361,7 +361,7 @@ public strictfp interface RobotController {
      * If radiusSquared is larger than the robot's vision radius, uses the robot's
      * vision radius instead. If -1 is passed, all locations within vision radius
      * are returned.
-     * MapInfo includes walls, spawn zones, water, crumbs, and friendly traps.
+     * MapInfo includes walls, paint, marks, and ruins
      *
      * @param center        the center of the search area
      * @param radiusSquared the squared radius of all locations to be returned

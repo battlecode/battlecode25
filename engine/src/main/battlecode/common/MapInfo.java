@@ -98,5 +98,4 @@ public class MapInfo {
                 ", mark=" + Integer.toString(mark) +
                 "}";
     }
-
 }
