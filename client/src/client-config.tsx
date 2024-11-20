@@ -30,6 +30,11 @@ const configDescription: { [key: string]: string } = {
 }
 
 export class ColorPickers extends React.Component {
+    state = {
+        color: "#8648d9",
+        name: "TEAM_ONE",
+    };
+    
     render() {
         return <SketchPicker />;
     }
@@ -55,6 +60,8 @@ export const ConfigPage: React.FC<Props> = (props) => {
                 if (typeof value === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
                 if (typeof value === 'number') return <ConfigNumberElement configKey={key} key={key} />
             })}
+            <div className="color-pickers">Color Pickers:</div>
+            {/*<ColorPickers editing={"TEAM_ONE"} />*/}
         </div>
     )
 }
