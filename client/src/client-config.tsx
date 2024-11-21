@@ -29,17 +29,6 @@ const configDescription: { [key: string]: string } = {
     validateMaps: 'Validate maps before running a game'
 }
 
-export class ColorPickers extends React.Component {
-    state = {
-        color: "#8648d9",
-        name: "TEAM_ONE",
-    };
-    
-    render() {
-        return <SketchPicker />;
-    }
-}
-
 export function getDefaultConfig(): ClientConfig {
     const config: ClientConfig = { ...DEFAULT_CONFIG }
     for (const key in config) {
@@ -48,6 +37,40 @@ export function getDefaultConfig(): ClientConfig {
     }
     return config
 }
+
+export class ColorPicker extends React.Component {
+    state = {
+        color: "#8648d9",
+        name: "TEAM_ONE",
+    };
+
+    handleChange = (newColor: any) =>  {
+        this.setState({color: newColor.hex});
+    }
+    
+    render() {
+        return <SketchPicker
+        color = { this.state.color}
+        onChange={ this.handleChange }
+        />;
+    }
+}
+
+//export function getColorPickers() {
+
+//    const picker =
+//    {
+//        name: "TEAM_ONE",
+//        color: "#000000",
+//    }
+
+//    return (
+//        <div className="ColorPickers">
+//            <ColorPicker picker={picker} />
+//            <hr></hr>
+//        </div>
+//    );
+//}
 
 export const ConfigPage: React.FC<Props> = (props) => {
     if (!props.open) return null
@@ -60,8 +83,9 @@ export const ConfigPage: React.FC<Props> = (props) => {
                 if (typeof value === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
                 if (typeof value === 'number') return <ConfigNumberElement configKey={key} key={key} />
             })}
-            <div className="color-pickers">Color Pickers:</div>
-            {/*<ColorPickers editing={"TEAM_ONE"} />*/}
+            <div><br></br></div>
+            <div className="color-pickers">Customize Colors:</div>
+            <ColorPicker />
         </div>
     )
 }
