@@ -7,6 +7,7 @@ const TIMELINE_WIDTH = 350;
 
 interface TimelineMarker {
     round: number;
+    label?: string;
 }
 
 interface Props {
@@ -21,12 +22,32 @@ const TimelineMarkers: React.FC<{ markers: TimelineMarker[]; maxRound: number }>
                 return (
                     <div
                         key={index}
-                        className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1"
-                        style={{
-                            left: `${position}px`,
-                            bottom: '5px'
-                        }}
-                    />
+                        className="group relative"
+                    >
+                        <div
+                            className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1 hover:bg-blue-400 transition-colors cursor-pointer"
+                            style={{
+                                left: `${position}px`,
+                                bottom: '5px'
+                            }}
+                        />
+                        <div
+                            className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap"
+                            style={{
+                                left: `${position}px`,
+                            }}
+                        >
+                            {marker.label || `Round ${marker.round}`}
+                            <div 
+                                className="absolute w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"
+                                style={{
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    bottom: '-4px'
+                                }}
+                            />
+                        </div>
+                    </div>
                 );
             })}
         </div>
@@ -39,8 +60,17 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const match = useMatch();
     const down = useRef(false);
 
-    // Get markers from context (you'll need to add this to your context)
     const markers = appContext.state.timelineMarkers || [];
+    
+    // Ensure maxRound is always a number
+    const maxRound = match ? (appContext.state.tournament ? GAME_MAX_TURNS : match.maxRound) : GAME_MAX_TURNS;
+
+    const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound);
+        gameRunner.jumpToRound(round);
+    };
 
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!down.current) return;
@@ -52,11 +82,11 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         timelineClick(e);
     };
 
-    const timelineUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const timelineUp = () => {
         down.current = false;
     };
 
-    const tilelineEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const timelineEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (e.buttons === 1) timelineDown(e);
     };
 
@@ -70,19 +100,10 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 gameRunner.jumpToEnd();
             }
         }
-        timelineUp(e);
+        timelineUp();
     };
 
-    const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound;
-
-    const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound);
-        gameRunner.jumpToRound(round);
-    };
-
-    if (!match)
+    if (!match) {
         return (
             <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
                 <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[9px] text-xs pointer-events-none">
@@ -91,6 +112,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
             </div>
         );
+    }
 
     const round = match.currentRound.roundNumber;
     const roundPercentage = () => (1 - round / maxRound) * 100 + '%';
@@ -110,12 +132,12 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
             <TimelineMarkers markers={markers} maxRound={maxRound} />
 
             <div
-                className="absolute left-0 right-0 top-0 bottom-0 z-index-1 cursor-pointer"
+                className="absolute left-0 right-0 top-0 bottom-0 z-[1] cursor-pointer"
                 onMouseMove={timelineHover}
                 onMouseDown={timelineDown}
                 onMouseUp={timelineUp}
                 onMouseLeave={timelineLeave}
-                onMouseEnter={tilelineEnter}
+                onMouseEnter={timelineEnter}
             />
         </div>
     );
