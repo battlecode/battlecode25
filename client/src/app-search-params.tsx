@@ -7,7 +7,8 @@ export enum PageType {
     MAP_EDITOR = 'Map Editor',
     HELP = 'Help',
     TOURNAMENT = 'Tournament',
-    CONFIG = 'Config'
+    CONFIG = 'Config',
+    PROFILER = 'Profiler'
 }
 
 function updateSearchParams(

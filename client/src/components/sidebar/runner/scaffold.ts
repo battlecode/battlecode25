@@ -30,7 +30,13 @@ type Scaffold = [
     manuallySetupScaffold: () => Promise<void>,
     reloadData: () => void,
     scaffoldLoading: boolean,
-    runMatch: (langVersion: LanguageVersion, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
+    runMatch: (
+        langVersion: LanguageVersion,
+        teamA: string,
+        teamB: string,
+        selectedMaps: Set<string>,
+        shouldProfile: boolean
+    ) => Promise<void>,
     killMatch: (() => Promise<void>) | undefined,
     console: RingBuffer<ConsoleLine>
 ]
@@ -68,14 +74,14 @@ export const useScaffold = (): Scaffold => {
         if (path) setScaffoldPath(path)
     }
 
-    const runMatch = async (
+    async function runMatch(
         langVersion: LanguageVersion,
         teamA: string,
         teamB: string,
-        selectedMaps: Set<string>
-    ): Promise<void> => {
+        selectedMaps: Set<string>,
+        shouldProfile: boolean
+    ): Promise<void> {
         if (matchPID.current || !scaffoldPath) return
-        const shouldProfile = false
         consoleLines.current.clear()
         try {
             const newPID = await dispatchMatch(

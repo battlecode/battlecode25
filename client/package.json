@@ -145,6 +145,7 @@
         "react-router-dom": "^6.13.0",
         "react-window": "^1.8.10",
         "react-zoomable-ui": "^0.11.0",
+        "speedscope": "^1.21.0",
         "where-is-it": "github:TheApplePieGod/where-is-it"
     },
     "devDependencies": {

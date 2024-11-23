@@ -19,6 +19,7 @@ import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../playback/Game'
 import gameRunner from '../../playback/GameRunner'
+import { ProfilerPage } from './profiler/profiler'
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
@@ -152,7 +153,8 @@ export const Sidebar: React.FC = () => {
             { name: 'Runner', page: PageType.RUNNER },
             { name: 'Map Editor', page: PageType.MAP_EDITOR },
             { name: 'Help', page: PageType.HELP },
-            { name: 'Config', page: PageType.CONFIG }
+            { name: 'Config', page: PageType.CONFIG },
+            { name: 'Profiler', page: PageType.PROFILER }
         ]
     }, [showTournamentFeatures])
 
@@ -217,6 +219,7 @@ export const Sidebar: React.FC = () => {
                         <HelpPage open={open && page == PageType.HELP} />
                         <ConfigPage open={open && page == PageType.CONFIG} />
                         <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                        <ProfilerPage open={open && page == PageType.PROFILER} />
                     </div>
                 </div>
             </Scrollbars>

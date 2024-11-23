@@ -56,10 +56,11 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     const [teamA, setTeamA] = useState<string | undefined>(undefined)
     const [teamB, setTeamB] = useState<string | undefined>(undefined)
     const [maps, setMaps] = useState<Set<string>>(new Set())
+    const [enableProfiling, setEnableProfiling] = useState(false)
 
     const runGame = () => {
         if (!teamA || !teamB || maps.size === 0 || !langVersion || !runMatch) return
-        runMatch(langVersion, teamA, teamB, maps)
+        runMatch(langVersion, teamA, teamB, maps, enableProfiling)
     }
 
     const resetSettings = () => {
