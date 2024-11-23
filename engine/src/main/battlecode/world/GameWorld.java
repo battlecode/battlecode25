@@ -31,12 +31,6 @@ public strictfp class GameWorld {
 
     private boolean[] walls;
     private boolean[] water;
-    private boolean[] dams;
-    private int[] teamSides; //Team A territory = 1, Team B territory = 2, dam = 0
-    private int[] breadAmounts;
-    private ArrayList<Trap>[] trapTriggers;
-    private Trap[] trapLocations;
-    private int trapId;
     private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
@@ -68,18 +62,13 @@ public strictfp class GameWorld {
         int numSquares = width * height;
 
         this.walls = gm.getWallArray();
-        this.water = gm.getWaterArray();
-        this.dams = gm.getDamArray();
-        this.breadAmounts = gm.getBreadArray();
         this.robots = new InternalRobot[width][height]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
-        this.trapId = 0;
         this.idGenerator = new IDGenerator(gm.getSeed());
         this.gameStats = new GameStats();
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
         this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
-        this.teamSides = new int[numSquares];
 
         this.profilerCollections = new HashMap<>();
 
@@ -99,13 +88,6 @@ public strictfp class GameWorld {
 
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
-
-        this.trapLocations = new Trap[numSquares];
-
-        this.trapTriggers = new ArrayList[numSquares];
-        for (int i = 0; i < trapTriggers.length; i++){
-            this.trapTriggers[i] = new ArrayList<Trap>();
-        }
 
         this.resourcePattern = gm.getResourcePattern();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
@@ -155,18 +137,11 @@ public strictfp class GameWorld {
         try {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
-            // On the first round we want to add the initial amounts to the headquarters
-            if (this.currentRound == 1) {
-                this.teamInfo.addBread(Team.A, GameConstants.INITIAL_CRUMBS_AMOUNT);
-                this.teamInfo.addBread(Team.B, GameConstants.INITIAL_CRUMBS_AMOUNT);
-            }
-
+            
             updateResourcePatterns();
             updateDynamicBodies();
 
             this.controlProvider.roundEnded();
-            this.teamInfo.addBread(Team.A, GameConstants.PASSIVE_CRUMBS_INCREASE);
-            this.teamInfo.addBread(Team.B, GameConstants.PASSIVE_CRUMBS_INCREASE);
             this.processEndOfRound();
 
             if (!this.isRunning()) {
@@ -378,28 +353,8 @@ public strictfp class GameWorld {
         return this.walls[locationToIndex(loc)];
     }
 
-    public boolean getWater(MapLocation loc) {
-        return this.water[locationToIndex(loc)];
-    }
-
-    public void setWater(MapLocation loc) {
-        this.water[locationToIndex(loc)] = true;
-    }
-
-    public void setLand(MapLocation loc) {
-        this.water[locationToIndex(loc)] = false;
-    }
-
     public void setPaint(MapLocation loc, int paint) {
         this.colorLocations[locationToIndex(loc)] = paint;
-    }
-
-    public int getBreadAmount(MapLocation loc) {
-        return this.breadAmounts[locationToIndex(loc)];
-    }
-
-    public void removeBread(MapLocation loc) {
-        this.breadAmounts[locationToIndex(loc)] = 0;
     }
 
     public boolean hasTower(MapLocation loc) {
@@ -458,9 +413,9 @@ public strictfp class GameWorld {
 
     public boolean isPassable(MapLocation loc) {
         if (currentRound <= GameConstants.SETUP_ROUNDS){
-            return !this.walls[locationToIndex(loc)] && !this.water[locationToIndex(loc)] && !this.dams[locationToIndex(loc)];
+            return !this.walls[locationToIndex(loc)];
         }
-        return !this.walls[locationToIndex(loc)] && !this.water[locationToIndex(loc)];
+        return !this.walls[locationToIndex(loc)];
     }
 
     public ArrayList<MapLocation> getRuinArray() {
@@ -511,83 +466,6 @@ public strictfp class GameWorld {
      */
     public MapLocation indexToLocation(int idx) {
         return gameMap.indexToLocation(idx);
-    }
-
-    // ***********************************
-    // ****** DAM METHODS **************
-    // ***********************************
-
-    public boolean getDam(MapLocation loc){
-        if (currentRound <= GameConstants.SETUP_ROUNDS){
-            return dams[locationToIndex(loc)];
-        }
-        else {
-            return false;
-        }
-    }
-
-    // ***********************************
-    // ****** TRAP METHODS **************
-    // ***********************************
-    
-    public Trap getTrap(MapLocation loc) {
-        return this.trapLocations[locationToIndex(loc)];
-    }
-
-    public boolean hasTrap(MapLocation loc){
-        return (this.trapLocations[locationToIndex(loc)] != null);
-    }
-
-    public ArrayList<Trap> getTrapTriggers(MapLocation loc) {
-        return this.trapTriggers[locationToIndex(loc)];
-    }
-
-    public void placeTrap(MapLocation loc, TrapType type, Team team){
-        Trap trap = new Trap(loc, type, team, trapId);
-        trapId++;
-        matchMaker.addTrap(trap);
-        this.trapLocations[locationToIndex(loc)] = trap;
-        for (MapLocation adjLoc : getAllLocationsWithinRadiusSquared(loc, trap.getType().triggerRadius)){
-            this.trapTriggers[locationToIndex(adjLoc)].add(trap);
-        }
-    }
-
-    public void triggerTrap(Trap trap, InternalRobot robot, boolean entered){
-        MapLocation loc = trap.getLocation();
-        TrapType type = trap.getType();
-        switch(type) {
-            case STUN:
-                for (InternalRobot rob : getAllRobotsWithinRadiusSquared(loc, type.enterRadius, trap.getTeam().opponent())){
-                    rob.setMovementCooldownTurns(type.opponentCooldown);
-                    rob.setActionCooldownTurns(type.opponentCooldown);
-                }
-                break;
-            case EXPLOSIVE:
-                int rad = type.interactRadius;
-                int dmg = type.interactDamage;
-                if (entered){
-                    rad = type.enterRadius;
-                    dmg = type.enterDamage;
-                }
-                for (InternalRobot rob : getAllRobotsWithinRadiusSquared(loc, rad, trap.getTeam().opponent())){
-                    rob.addHealth(-1*dmg);
-                }
-                break;
-            case WATER:
-                for (MapLocation adjLoc : getAllLocationsWithinRadiusSquared(loc, type.enterRadius)){
-                    if (getRobot(adjLoc) != null || !isPassable(adjLoc) || getSpawnZone(adjLoc) != 0 || getTrap(adjLoc) != null)
-                        continue;
-                    setWater(adjLoc);
-                    matchMaker.addAction(-1, Action.DIG, locationToIndex(adjLoc));
-                }
-                break;
-        }
-        for (MapLocation adjLoc : getAllLocationsWithinRadiusSquared(loc, 2)){
-            this.trapTriggers[locationToIndex(adjLoc)].remove(trap);
-        }
-        this.trapLocations[locationToIndex(loc)] = null;
-        matchMaker.addTriggeredTrap(trap.getId());
-        matchMaker.addAction(robot.getID(), FlatHelpers.getTrapActionFromTrapType(type), locationToIndex(trap.getLocation()));
     }
 
     // ***********************************
@@ -714,11 +592,6 @@ public strictfp class GameWorld {
     public void processBeginningOfRound() {
         currentRound++;
 
-        if (currentRound != 0 && currentRound % GameConstants.GLOBAL_UPGRADE_ROUNDS == 0) {
-            teamInfo.incrementGlobalUpgradePoints(Team.A);
-            teamInfo.incrementGlobalUpgradePoints(Team.B);
-        }
-
         // Process beginning of each robot's round
         objectInfo.eachRobot((robot) -> {
             robot.processBeginningOfRound();
@@ -763,46 +636,6 @@ public strictfp class GameWorld {
         }
         else if(sumB > sumA) {
             setWinner(Team.B, DominationFactor.LEVEL_SUM);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @return whether a team has more bread
-     */
-    public boolean setWinnerIfMoreBread(){
-        int[] totalBreadValues = new int[2];
-
-        // consider team reserves
-        totalBreadValues[Team.A.ordinal()] += this.teamInfo.getBread(Team.A);
-        totalBreadValues[Team.B.ordinal()] += this.teamInfo.getBread(Team.B);
-        
-        if (totalBreadValues[Team.A.ordinal()] > totalBreadValues[Team.B.ordinal()]) {
-            setWinner(Team.A, DominationFactor.MORE_BREAD);
-            return true;
-        } else if (totalBreadValues[Team.B.ordinal()] > totalBreadValues[Team.A.ordinal()]) {
-            setWinner(Team.B, DominationFactor.MORE_BREAD);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @return whether a team has more flags picked up (but not sucessfully retrieved)
-     */
-    public boolean setWinnerIfMoreFlagsPickedUp(){
-        int[] totalFlagsPickedUp = new int[2];
-
-        // consider team reserves
-        totalFlagsPickedUp[Team.A.ordinal()] += this.teamInfo.getFlagsPickedUp(Team.A);
-        totalFlagsPickedUp[Team.B.ordinal()] += this.teamInfo.getFlagsPickedUp(Team.B);
-        
-        if (totalFlagsPickedUp[Team.A.ordinal()] > totalFlagsPickedUp[Team.B.ordinal()]) {
-            setWinner(Team.A, DominationFactor.MORE_FLAGS_PICKED);
-            return true;
-        } else if (totalFlagsPickedUp[Team.B.ordinal()] > totalFlagsPickedUp[Team.A.ordinal()]) {
-            setWinner(Team.B, DominationFactor.MORE_FLAGS_PICKED);
             return true;
         }
         return false;
@@ -921,32 +754,6 @@ public strictfp class GameWorld {
                 if (a.distanceSquaredTo(b) < GameConstants.MIN_RUIN_SPACING_SQUARED) {
                     validPlacements = false;
                     break;
-                }
-            }
-        }
-    }
-
-    private void floodFillTeam(int teamVal, MapLocation start) {
-        Queue<MapLocation> queue = new LinkedList<MapLocation>();
-        queue.add(start);
-
-        while (!queue.isEmpty()) {
-            MapLocation loc = queue.remove();
-            int idx = locationToIndex(loc);
-
-            if(teamSides[idx] != 0) continue;
-            teamSides[idx] = teamVal;
-
-            for (Direction dir : Direction.allDirections()) {
-                if (dir != Direction.CENTER) {
-                    MapLocation newLoc = loc.add(dir);
-
-                    if (gameMap.onTheMap(newLoc)) {
-                        int newIdx = locationToIndex(newLoc);
-                        if (teamSides[newIdx] == 0 && !walls[newIdx] && !dams[newIdx]) {
-                            queue.add(newLoc);
-                        }
-                    }
                 }
             }
         }

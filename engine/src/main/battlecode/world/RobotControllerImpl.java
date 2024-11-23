@@ -132,16 +132,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public int getExperience(SkillType skill) {
-        return this.robot.getExp(skill);
-    }
-
-    @Override
-    public int getLevel(SkillType skill) {
-        return this.robot.getLevel(skill);
-    }
-
-    @Override
     public int getHealth() {
         return this.robot.getHealth();
     }
@@ -280,21 +270,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
             validSensedRobots.add(sensedRobot.getRobotInfo());
         }
         return validSensedRobots.toArray(new RobotInfo[validSensedRobots.size()]);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyCrumbs(int radiusSquared) throws GameActionException {
-        assertRadiusNonNegative(radiusSquared);
-        assertIsSpawned();
-        int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
-                : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
-
-        ArrayList<MapLocation> breadLocs = new ArrayList<>();
-        for (MapLocation loc : getAllLocationsWithinRadiusSquared(getLocation(), actualRadiusSquared)) {
-            if (gameWorld.getBreadAmount(loc) != 0)
-                breadLocs.add(loc);
-        }
-        return breadLocs.toArray(new MapLocation[breadLocs.size()]);
     }
 
     @Override
@@ -479,15 +454,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         MapLocation nextLoc = adjacentLocation(dir);
         Team[] allSpawnZones = { null, Team.A, Team.B };
         this.robot.setLocation(nextLoc);
-
-        int amtBread = this.gameWorld.getBreadAmount(nextLoc);
-
-        if (amtBread != 0) {
-            this.robot.addResourceAmount(amtBread);
-            this.gameWorld.getMatchMaker().addClaimedResource(nextLoc);
-        }
-
-        this.gameWorld.removeBread(nextLoc);
         this.robot.addMovementCooldownTurns();
 
         Team nextTeam = this.gameWorld.getTeam(nextLoc);
@@ -496,17 +462,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
             this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
         } else if (nextTeam == this.robot.getTeam().opponent()) {
             this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
-        }
-
-        // trap trigger methods
-        for (int i = this.gameWorld.getTrapTriggers(nextLoc).size() - 1; i >= 0; i--) {
-            Trap trap = this.gameWorld.getTrapTriggers(nextLoc).get(i);
-
-            if (trap.getTeam() == this.robot.getTeam()) {
-                continue;
-            }
-
-            this.robot.addTrapTrigger(trap, true);
         }
     }
 
@@ -812,97 +767,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.mopSwing(dir);
     }
 
-    @Override
-    public int getHealAmount() {
-        return this.robot.getHeal();
-    }
-
-    private void assertCanHeal(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc, GameConstants.HEAL_RADIUS_SQUARED);
-        assertIsActionReady();
-        if (getLocation().equals(loc)) {
-            throw new GameActionException(CANT_DO_THAT, "You can't heal yourself");
-        }
-        if (this.gameWorld.getRobot(loc) == null) {
-            throw new GameActionException(CANT_DO_THAT, "There is no robot at this location.");
-        }
-        if (this.gameWorld.getRobot(loc).getTeam() != this.getTeam()) {
-            throw new GameActionException(CANT_DO_THAT, "The robot at this location is the other team.");
-        }
-        if (this.gameWorld.getRobot(loc).getHealth() == GameConstants.DEFAULT_HEALTH) {
-            throw new GameActionException(CANT_DO_THAT, "The robot at this location is at full health.");
-        }
-        if (this.robot.hasFlag()) {
-            throw new GameActionException(CANT_DO_THAT, "Can't heal while holding a flag");
-        }
-    }
-
-    @Override
-    public boolean canHeal(MapLocation loc) {
-        try {
-            assertCanHeal(loc);
-            return true;
-        } catch (GameActionException e) {
-            return false;
-        }
-    }
-
-    public void heal(MapLocation loc) throws GameActionException {
-        assertCanHeal(loc);
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        int healAmt = this.robot.getHeal();
-        this.robot.addActionCooldownTurns((int) Math.round(GameConstants.HEAL_COOLDOWN
-                * (1 + .01 * SkillType.HEAL.getCooldown(this.robot.getLevel(SkillType.HEAL)))));
-
-        bot.addHealth(healAmt);
-        this.robot.incrementSkill(SkillType.HEAL);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.HEAL, bot.getID());
-    }
-
     // ***********************************
     // ****** COMMUNICATION METHODS ******
     // ***********************************
-
-    private void assertValidIndex(int index) throws GameActionException {
-        if (index < 0 || index >= GameConstants.SHARED_ARRAY_LENGTH)
-            throw new GameActionException(CANT_DO_THAT,
-                    "You can't access this index as it is not within the shared array.");
-    }
-
-    private void assertValidValue(int value) throws GameActionException {
-        if (value < 0 || value > GameConstants.MAX_SHARED_ARRAY_VALUE)
-            throw new GameActionException(CANT_DO_THAT, "You can't write this value to the shared array " +
-                    "as it is not within the range of allowable values: [0, " + GameConstants.MAX_SHARED_ARRAY_VALUE
-                    + "].");
-    }
-
-    @Override
-    public int readSharedArray(int index) throws GameActionException {
-        assertValidIndex(index);
-        return this.gameWorld.getTeamInfo().readSharedArray(getTeam(), index);
-    }
-
-    private void assertCanWriteSharedArray(int index, int value) throws GameActionException {
-        assertValidIndex(index);
-        assertValidValue(value);
-    }
-
-    @Override
-    public boolean canWriteSharedArray(int index, int value) {
-        try {
-            assertCanWriteSharedArray(index, value);
-            return true;
-        } catch (GameActionException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void writeSharedArray(int index, int value) throws GameActionException {
-        assertCanWriteSharedArray(index, value);
-        this.gameWorld.getTeamInfo().writeSharedArray(getTeam(), index, value);
-    }
 
     @Override
     private void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
@@ -995,52 +862,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         robot.addPaint(amount);
         this.robot.addActionCooldownTurns(GameConstants.PAINT_TRANSFER_COOLDOWN);
-    }
-
-    private void assertCanBuyGlobal(GlobalUpgrade ug) throws GameActionException {
-        int i = -1;
-        if (ug == GlobalUpgrade.ATTACK || ug == GlobalUpgrade.ACTION)
-            i = 0;
-        else if (ug == GlobalUpgrade.CAPTURING)
-            i = 1;
-        else if (ug == GlobalUpgrade.HEALING)
-            i = 2;
-        boolean hasBought = this.gameWorld.getTeamInfo().getGlobalUpgrades(getTeam())[i];
-        if (hasBought)
-            throw new GameActionException(CANT_DO_THAT, "Cannot buy an upgrade you already have!");
-        if (this.gameWorld.getTeamInfo().getGlobalUpgradePoints(getTeam()) <= 0)
-            throw new GameActionException(CANT_DO_THAT, "Cannot buy an upgrade with no global upgrade points!");
-    }
-
-    @Override
-    public boolean canBuyGlobal(GlobalUpgrade ug) {
-        try {
-            assertCanBuyGlobal(ug);
-            return true;
-        } catch (GameActionException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void buyGlobal(GlobalUpgrade ug) throws GameActionException {
-        assertCanBuyGlobal(ug);
-        this.gameWorld.getTeamInfo().makeGlobalUpgrade(getTeam(), ug);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.GLOBAL_UPGRADE,
-                FlatHelpers.getGlobalUpgradeTypeFromGlobalUpgrade(ug));
-    }
-
-    @Override
-    public GlobalUpgrade[] getGlobalUpgrades(Team team) {
-        boolean[] boolUpgrades = this.gameWorld.getTeamInfo().getGlobalUpgrades(team);
-        ArrayList<GlobalUpgrade> upgrades = new ArrayList<>();
-        if (boolUpgrades[0])
-            upgrades.add(GlobalUpgrade.ATTACK);
-        if (boolUpgrades[1])
-            upgrades.add(GlobalUpgrade.CAPTURING);
-        if (boolUpgrades[2])
-            upgrades.add(GlobalUpgrade.HEALING);
-        return upgrades.toArray(new GlobalUpgrade[upgrades.size()]);
     }
 
     @Override

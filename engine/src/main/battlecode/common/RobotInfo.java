@@ -32,36 +32,12 @@ public class RobotInfo {
      */
     public final int paintAmount;
 
-    /**
-     * Whether or not the robot is holding a flag.
-     */
-    public final boolean hasFlag;
-
-    /**
-     * The robot's current level in the attack skill.
-     */
-    public final int attackLevel;
-
-    /**
-     * The robot's current level in the heal skill.
-     */
-    public final int healLevel;
-
-    /**
-     * The robot's current level in the build skill.
-     */
-    public final int buildLevel;
-
-    public RobotInfo(int ID, Team team, int health, MapLocation location, boolean hasFlag, int attackLevel, int healLevel, int buildLevel, int paintAmount) {
+    public RobotInfo(int ID, Team team, int health, MapLocation location, int paintAmount) {
         super();
         this.ID = ID;
         this.team = team;
         this.health = health;
         this.location = location;
-        this.hasFlag = hasFlag;
-        this.attackLevel = attackLevel;
-        this.healLevel = healLevel;
-        this.buildLevel = buildLevel;
         this.paintAmount = paintAmount;
     }
 
@@ -99,42 +75,6 @@ public class RobotInfo {
      */
     public MapLocation getLocation() {
         return this.location;
-    }
-
-    /**
-     * Returns whether or not this robot has a flag. 
-     * 
-     * @return whether or not this robot has a flag
-     */
-    public boolean hasFlag() {
-        return this.hasFlag;
-    }
-
-    /**
-     * Returns the attack level of this robot. 
-     * 
-     * @return the attack level of the robot
-     */
-    public int getAttackLevel(){
-        return this.attackLevel;
-    }
-
-    /**
-     * Returns the heal level of this robot. 
-     * 
-     * @return the heal level of the robot
-     */
-    public int getHealLevel(){
-        return this.healLevel;
-    }
-
-    /**
-     * Returns the build level of this robot. 
-     * 
-     * @return the build level of the robot
-     */
-    public int getBuildLevel(){
-        return this.buildLevel;
     }
 
     /**
