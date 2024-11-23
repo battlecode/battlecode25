@@ -1,59 +1,86 @@
-import React, { useRef } from 'react'
-import { useAppContext } from '../../app-context'
-import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner'
-import { GAME_MAX_TURNS } from '../../constants'
+import React, { useRef } from 'react';
+import { useAppContext } from '../../app-context';
+import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner';
+import { GAME_MAX_TURNS } from '../../constants';
 
-const TIMELINE_WIDTH = 350
-interface Props {
-    targetUPS: number
+const TIMELINE_WIDTH = 350;
+
+interface TimelineMarker {
+    round: number;
 }
 
-export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
-    const appContext = useAppContext()
-    const currentUPS = useCurrentUPS()
-    const match = useMatch()
+interface Props {
+    targetUPS: number;
+}
 
-    let down = useRef(false)
+const TimelineMarkers: React.FC<{ markers: TimelineMarker[]; maxRound: number }> = ({ markers, maxRound }) => {
+    return (
+        <div className="absolute left-0 right-0 bottom-[5px] h-[15px]">
+            {markers.map((marker, index) => {
+                const position = (marker.round / maxRound) * TIMELINE_WIDTH;
+                return (
+                    <div
+                        key={index}
+                        className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1"
+                        style={{
+                            left: `${position}px`,
+                            bottom: '5px'
+                        }}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
+export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
+    const appContext = useAppContext();
+    const currentUPS = useCurrentUPS();
+    const match = useMatch();
+    const down = useRef(false);
+
+    // Get markers from context (you'll need to add this to your context)
+    const markers = appContext.state.timelineMarkers || [];
+
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!down.current) return
-        timelineClick(e)
-    }
+        if (!down.current) return;
+        timelineClick(e);
+    };
 
     const timelineDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        down.current = true
-        timelineClick(e)
-    }
+        down.current = true;
+        timelineClick(e);
+    };
 
     const timelineUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        down.current = false
-    }
+        down.current = false;
+    };
 
     const tilelineEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (e.buttons === 1) timelineDown(e)
-    }
+        if (e.buttons === 1) timelineDown(e);
+    };
 
     const timelineLeave = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (down.current) {
-            // if exiting from left or right, jump to min or max round
-            const rect = e.currentTarget.getBoundingClientRect()
-            const x = e.clientX - rect.left
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
             if (x <= 0) {
-                gameRunner.jumpToRound(0)
+                gameRunner.jumpToRound(0);
             } else if (x >= rect.width) {
-                gameRunner.jumpToEnd()
+                gameRunner.jumpToEnd();
             }
         }
-        timelineUp(e)
-    }
+        timelineUp(e);
+    };
 
-    const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound
+    const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound;
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound)
-        gameRunner.jumpToRound(round)
-    }
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound);
+        gameRunner.jumpToRound(round);
+    };
 
     if (!match)
         return (
@@ -63,10 +90,11 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 </p>
                 <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
             </div>
-        )
+        );
 
-    const round = match!.currentRound.roundNumber
-    const roundPercentage = () => (1 - round / maxRound) * 100 + '%'
+    const round = match.currentRound.roundNumber;
+    const roundPercentage = () => (1 - round / maxRound) * 100 + '%';
+
     return (
         <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
             <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[10px] text-xs select-none whitespace-nowrap">
@@ -77,7 +105,10 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
             <div
                 className="absolute bg-white/90 left-0 bottom-0 min-h-[5px] rounded min-w-[5px]"
                 style={{ right: roundPercentage() }}
-            ></div>
+            />
+
+            <TimelineMarkers markers={markers} maxRound={maxRound} />
+
             <div
                 className="absolute left-0 right-0 top-0 bottom-0 z-index-1 cursor-pointer"
                 onMouseMove={timelineHover}
@@ -85,7 +116,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 onMouseUp={timelineUp}
                 onMouseLeave={timelineLeave}
                 onMouseEnter={tilelineEnter}
-            ></div>
+            />
         </div>
-    )
-}
+    );
+};
