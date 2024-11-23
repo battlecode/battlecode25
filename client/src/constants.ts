@@ -7,7 +7,7 @@ export const MAP_SIZE_RANGE = {
     min: 30,
     max: 60
 }
-
+export const GAME_MAX_TURNS = 2000
 /*
  * General constants
  */
