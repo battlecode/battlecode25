@@ -109,7 +109,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     
             // Apply damage to the target
             target.hp -= this.actionData.damage();
-
         }
     },
     [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
