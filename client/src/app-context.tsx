@@ -3,6 +3,10 @@ import Game from './playback/Game'
 import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playback/Tournament'
 import { ClientConfig, getDefaultConfig } from './client-config'
 
+export interface TimelineMarker {
+    round: number;
+}
+
 export interface AppState {
     queue: Game[]
     tournament: Tournament | undefined
@@ -10,6 +14,7 @@ export interface AppState {
     loadingRemoteContent: string
     disableHotkeys: boolean
     config: ClientConfig
+    timelineMarkers: TimelineMarker[]
 }
 
 const DEFAULT_APP_STATE: AppState = {
@@ -18,7 +23,8 @@ const DEFAULT_APP_STATE: AppState = {
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',
     disableHotkeys: false,
-    config: getDefaultConfig()
+    config: getDefaultConfig(),
+    timelineMarkers: []
 }
 
 export interface AppContext {
