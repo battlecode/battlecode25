@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
-//TODO: readd RobotType counters for tiebreakers
 /**
  * This class is used to hold information about the robots
  * in the game world.
@@ -153,7 +152,7 @@ public strictfp class ObjectInfo {
 
     public void createRobot(InternalRobot robot) {
         incrementRobotCount(robot.getTeam());
-        //incrementRobotTypeCount(robot.getTeam(), robot.getType());
+        incrementRobotTypeCount(robot.getTeam(), robot.getType());
 
         int id = robot.getID();
         gameRobotsByID.put(id, robot);
@@ -180,7 +179,7 @@ public strictfp class ObjectInfo {
         InternalRobot robot = getRobotByID(id);
 
         decrementRobotCount(robot.getTeam());
-        //decrementRobotTypeCount(robot.getTeam(), robot.getType());
+        decrementRobotTypeCount(robot.getTeam(), robot.getType());
 
         MapLocation loc = robot.getLocation();
         gameRobotsByID.remove(id);
@@ -217,19 +216,18 @@ public strictfp class ObjectInfo {
         robotCount[team.ordinal()]--;
     }
 
-    // private void incrementRobotTypeCount(Team team, RobotType type) {
-    //     robotTypeCount.get(team);
-    //     if (robotTypeCount.get(team).containsKey(type)) {
-    //         robotTypeCount.get(team).put(type,
-    //                 robotTypeCount.get(team).get(type) + 1);
-    //     } else {
-    //         robotTypeCount.get(team).put(type, 1);
-    //     }
-    // }
+    private void incrementRobotTypeCount(Team team, UnitType type) {
+        if (robotTypeCount.get(team).containsKey(type)) {
+            robotTypeCount.get(team).put(type,
+                    robotTypeCount.get(team).get(type) + 1);
+        } else {
+            robotTypeCount.get(team).put(type, 1);
+        }
+    }
 
-    // private void decrementRobotTypeCount(Team team, RobotType type) {
-    //     Integer currentCount = getRobotTypeCount(team, type);
-    //     robotTypeCount.get(team).put(type,currentCount - 1);
-    // }
+    private void decrementRobotTypeCount(Team team, UnitType type) {
+        Integer currentCount = getRobotTypeCount(team, type);
+        robotTypeCount.get(team).put(type,currentCount - 1);
+    }
 
 }

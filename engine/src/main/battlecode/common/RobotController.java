@@ -96,26 +96,6 @@ public strictfp interface RobotController {
     int getPaint();
 
     /**
-     * Returns the robot's current experience in the specified skill.
-     * 
-     * @param skill the skill that we want to get the robot's experience in
-     * @return the robot's experience in the skill
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    int getExperience(SkillType skill);
-
-    /**
-     * Returns the robot's current level in the specified skill.
-     * 
-     * @param skill the skill that we want to get the robot's level in
-     * @return the robot's level in the skill
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    int getLevel(SkillType skill);
-
-    /**
      * Returns the amount of money that this robot's team has.
      *
      * @return the amount of money this robot's team has
@@ -282,20 +262,7 @@ public strictfp interface RobotController {
     RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException;
 
     /**
-     * Returns all locations that contain crumbs within a certain radius of the
-     * robot.
-     * 
-     * @param radiusSquared return crumbs within this distance; if -1 is passed, all
-     *                      crumbs within
-     *                      vision radius are returned
-     * @return array of MapLocations of crumbs
-     * @throws GameActionException if the radius is negative and not -1
-     */
-    MapLocation[] senseNearbyCrumbs(int radiusSquared) throws GameActionException;
-
-    /**
-     * Given a senseable location, returns whether that location is passable (not
-     * water, a wall, or a dam).
+     * Given a senseable location, returns whether that location is passable (a wall).
      * 
      * @param loc the given location
      * @return whether that location is passable
@@ -306,8 +273,7 @@ public strictfp interface RobotController {
     boolean sensePassability(MapLocation loc) throws GameActionException;
 
     /**
-     * Senses the map info at a location. MapInfo includes walls, spawn zones,
-     * water, crumbs, and friendly traps.
+     * Senses the map info at a location. MapInfo includes walls and paint.
      *
      * @param loc to sense map at
      * @return MapInfo describing map at location
@@ -319,7 +285,7 @@ public strictfp interface RobotController {
 
     /**
      * Return map info for all senseable locations.
-     * MapInfo includes walls, spawn zones, water, crumbs, and friendly traps.
+     * MapInfo includes walls, spawn zones.
      *
      * @return MapInfo about all locations within vision radius
      *
@@ -508,27 +474,6 @@ public strictfp interface RobotController {
     // *********** BUILDING **************
     // ***********************************
 
-    /**
-     * Checks if a {@link UnitType} is a robot type.
-     * 
-     * @param type the enum item to check
-     * @return true if type is a robot type
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isRobotType(UnitType type);
-
-    /**
-     * Checks if a {@link UnitType} is a tower type.
-     * 
-     * @param type the enum item to check
-     * @return true if type is a tower type
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isTowerType(UnitType type);
-
-    /**
      * Checks if a tower can spawn a robot at the given location.
      * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
@@ -562,7 +507,7 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canMarkTowerPattern(UnitType type, MapLocation loc);
+    boolean canMarkTowerPattern(MapLocation loc);
 
     /**
      * Builds a tower by marking a 5x5 pattern centered at the given location.
@@ -598,7 +543,7 @@ public strictfp interface RobotController {
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
      * given location.
      * 
-     * @param loc the location to build at
+     * @param loc the center of the resource pattern
      * @return true if an SRP can be marked at loc
      * 
      * @battlecode.doc.costlymethod
@@ -608,29 +553,66 @@ public strictfp interface RobotController {
     /**
      * Marks a 5x5 special resource pattern centered at the given location.
      * 
-     * @param loc the location to build at
+     * @param loc the center of the resource pattern
      * 
      * @battlecode.doc.costlymethod
      */
     void markResourcePattern(MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if the robot can build a tower at the given location.
+     * This requires there to be a ruin at the location.
+     * This also requires the 5x5 region to be painted correctly.
+     * 
+     * @param type the type of tower to build
+     * @param loc  the location to build at
+     * @return true if tower can be built at loc
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canCompleteTowerPattern(UnitType type, MapLocation loc);
+
+    /**
+     * Builds a tower at the given location.
+     * This requires there to be a ruin at the location.
+     * This also requires the 5x5 region to be painted correctly.
+     * 
+     * @param type the type of tower to build
+     * @param loc  the location to build at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if the robot can complete a 5x5 special resource pattern centered at the
+     * given location. This requires the 5x5 region to be painted correctly.
+     * 
+     * @param loc the center of the resource pattern
+     * @return true if an SRP can be marked at loc
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canCompleteResourcePattern(MapLocation loc);
+
+    /**
+     * Completes a 5x5 special resource pattern centered at the given location.
+     * This requires the 5x5 region to be painted correctly.
+     * 
+     * @param loc the center of the resource pattern
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void completeResourcePattern(MapLocation loc) throws GameActionException;
 
     // ****************************
     // ***** ATTACK / HEAL ********
     // ****************************
 
     /**
-     * Gets the true attack damage of this robot accounting for all effects.
-     *
-     * @return The attack damage
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int getAttackDamage();
-
-    /**
-     * Tests whether this robot can attack the given location. Robots can only
-     * attack
-     * enemy robots, and attacks cannot miss.
+     * Tests whether this robot can attack the given location. Types of
+     * attacks for specific units determine whether or not towers, other
+     * robots, or empty tiles can be attacked. 
      *
      * @param loc target location to attack
      * @return whether it is possible to attack the given location
@@ -639,10 +621,24 @@ public strictfp interface RobotController {
      */
     boolean canAttack(MapLocation loc);
 
-    /**
-     * Attack a given location.
+    /** 
+     * Performs the specific attack for this robot type.
      *
-     * @param loc the target location to attack
+     * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
+     * @param useSecondaryColor whether or not the attack should use a secondary color
+     * @throws GameActionException if conditions for attacking are not satisfied
+     *
+     * @battlecode.doc.costlymethod
+     */
+    void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException;
+    
+    /** 
+     * Performs the specific attack for this robot type, defaulting to the
+     * primary color
+     *
+     * @param loc the target location to attack (for splashers, the center location)
+     *      Note: for a tower, leaving loc null represents an area attack
      * @throws GameActionException if conditions for attacking are not satisfied
      *
      * @battlecode.doc.costlymethod
@@ -650,77 +646,57 @@ public strictfp interface RobotController {
     void attack(MapLocation loc) throws GameActionException;
 
     /**
-     * Gets the true healing amount of this robot accounting for all effects.
+     * Tests whether this robot (which must be a mopper) can perform
+     * a mop swing in a specific direction
      *
-     * @return The heal amount
+     * @param dir the direction in which to mop swing
+     * @return whether it is possible to mop swing in the given direction
      *
      * @battlecode.doc.costlymethod
      */
-    int getHealAmount();
+    boolean canMopSwing(Direction dir);
 
     /**
-     * Tests whether this robot can heal a nearby friendly unit.
-     * 
-     * Checks that this robot can heal and whether the friendly unit is within
-     * range. Also checks that
-     * there are no cooldown turns remaining.
-     * 
-     * @param loc location of friendly unit to be healed
-     * @return whether it is possible for this robot to heal
+     * Performs a mop swing in the given direction (only for moppers!)
      *
-     * @battlecode.doc.costlymethod
-     */
-    boolean canHeal(MapLocation loc);
-
-    /**
-     * Heal a nearby friendly unit.
-     * 
-     * @param loc the location of the friendly unit to be healed
-     * @throws GameActionException if conditions for healing are not satisfied
+     * @param dir the direction in which to mop swing
+     * @throws GameActionException if conditions for attacking are not satisfied
      * 
      * @battlecode.doc.costlymethod
      */
-    void heal(MapLocation loc) throws GameActionException;
+    void mopSwing(Direction dir) throws GameActionException;
 
     // ***********************************
     // ****** COMMUNICATION METHODS ******
     // ***********************************
 
     /**
-     * Given an index, returns the value at that index in the team array.
-     *
-     * @param index the index in the team's shared array, 0-indexed
-     * @return the value at that index in the team's shared array,
-     * @throws GameActionException if the index is invalid
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int readSharedArray(int index) throws GameActionException;
-
-    /**
-     * Checks if the given index and value are valid for writing to the shared
-     * array.
+     * Returns true if the unit can send a message to a specific
+     * location, false otherwise. We can send a message to a location
+     * if it is within a specific distance and connected by paint,
+     * and only if one unit is a robot and the other is a tower.
      * 
-     * @param index the index in the team's shared array, 0-indexed
-     * @param value the value to set that index to
-     * @return whether the index and value are valid
+     * @param loc the location to send the message to
+     * @param messageContent an int representing the content of the
+     * message (up to 4 bytes)
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canWriteSharedArray(int index, int value);
+    boolean canSendMessage(MapLocation loc, int messageContent);
 
     /**
-     * Sets the team's array value at a specified index.
-     * No change occurs if the index or value is invalid.
-     *
-     * @param index the index in the team's shared array, 0-indexed
-     * @param value the value to set that index to
-     * @throws GameActionException if the index is invalid or the value
-     *                             is out of bounds.
-     *
+     * Sends a message (contained in an int, so 4 bytes) to a specific
+     * unit at a location on the map, if it is possible
+     * 
+     * @param loc the location to send the message to
+     * @param messageContent an int representing the content of the
+     * message (up to 4 bytes)
+     * @throws GameActionException if conditions for messaging are not 
+     * satisfied
+     * 
      * @battlecode.doc.costlymethod
      */
-    void writeSharedArray(int index, int value) throws GameActionException;
+    void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
 
     // ***********************************
     // ****** OTHER ACTION METHODS *******
@@ -753,40 +729,6 @@ public strictfp interface RobotController {
      *                             location
      */
     void transferPaint(MapLocation loc, int amount) throws GameActionException;
-
-    /**
-     * Tests whether you can buy an upgrade.
-     * 
-     * You can buy the upgrade if you have enough points and
-     * haven't bought the upgrade before.
-     * 
-     * @param ug the global upgrade
-     * @return whether it is valid for you to buy the upgrade
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    boolean canBuyGlobal(GlobalUpgrade ug);
-
-    /**
-     * Purchases the global upgrade and applies the effect to the game.
-     * 
-     * @param ug the global upgrade
-     * @throws GameActionException if the robot is not able to buy the upgrade
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    void buyGlobal(GlobalUpgrade ug) throws GameActionException;
-
-    /**
-     * Returns the global upgrades that the given team has
-     * 
-     * @param team the team to get global upgrades for
-     * 
-     * @return The global upgrades that the team has
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    GlobalUpgrade[] getGlobalUpgrades(Team team);
 
     /**
      * Causes your team to lose the game. It's like typing "gg."
