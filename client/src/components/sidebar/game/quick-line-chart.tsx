@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Colors } from '../../../colors'
+import { Colors, currentColors } from '../../../colors'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
 
 export interface LineChartDataPoint {
@@ -38,13 +38,13 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
         context.clearRect(0, 0, width, height)
 
         if (data.length > 0) {
-            context.strokeStyle = Colors.TEAM_ONE
+            context.strokeStyle = currentColors[Colors.TEAM_ONE]
             context.beginPath()
             context.moveTo(xScale(data[0].round), yScale(data[0].brown))
             for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
             context.stroke()
 
-            context.strokeStyle = Colors.TEAM_TWO
+            context.strokeStyle = currentColors[Colors.TEAM_TWO]
             context.beginPath()
             context.moveTo(xScale(data[0].round), yScale(data[0].white))
             for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))

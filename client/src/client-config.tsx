@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react'
-import { SketchPicker } from 'react-color'
+import React, { useEffect, useState } from 'react'
+import { ChromePicker } from 'react-color'
 import { useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
+import { Colors, currentColors, updateGlobalColor, getGlobalColor, resetGlobalColors } from './colors'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -38,22 +39,37 @@ export function getDefaultConfig(): ClientConfig {
     return config
 }
 
-export class ColorPicker extends React.Component {
-    state = {
-        color: "#8648d9",
-        name: "TEAM_ONE",
-    };
+//export class ColorPicker extends React.Component {
+//    state = {
+//        color: "#8648d9",
+//        name: "TEAM_ONE",
+//    };
 
-    handleChange = (newColor: any) =>  {
-        this.setState({color: newColor.hex});
-    }
+//    handleChange = (newColor: any) =>  {
+//        this.setState({color: newColor.hex});
+//    }
     
-    render() {
-        return <SketchPicker
-        color = { this.state.color}
-        onChange={ this.handleChange }
-        />;
+//    render() {
+//        return <ChromePicker
+//        color = { this.state.color}
+//        onChange={ this.handleChange }
+//        />;
+//    }
+//}
+
+const ColorPicker = (props: {name: Colors}) => {
+    const [color, setColor] = useState(getGlobalColor(props.name));
+
+    const onChange = (newColor: any) => {
+        setColor(newColor.hex);
+        updateGlobalColor(props.name, newColor.hex);
     }
+
+    return <ChromePicker
+        color={color}
+        onChange={onChange}
+    />
+
 }
 
 //export function getColorPickers() {
@@ -85,7 +101,7 @@ export const ConfigPage: React.FC<Props> = (props) => {
             })}
             <div><br></br></div>
             <div className="color-pickers">Customize Colors:</div>
-            <ColorPicker />
+            <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
         </div>
     )
 }

@@ -7,7 +7,7 @@ import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPla
 import Match from './Match'
 import { Body } from './Bodies'
 import { TEAM_COLORS } from '../constants'
-import { Colors } from '../colors'
+import { Colors, currentColors } from '../colors'
 
 type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
@@ -186,10 +186,10 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
 
             // Get the trap color, assumes only opposite team can trigger
             const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
+            ctx.strokeStyle = currentColors[TEAM_COLORS[1 - (triggeredBot.team.id - 1)]]
 
             ctx.globalAlpha = 0.5
-            ctx.fillStyle = Colors.ATTACK_COLOR
+            ctx.fillStyle = currentColors[Colors.ATTACK_COLOR]
             ctx.beginPath()
             ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
             ctx.fill()

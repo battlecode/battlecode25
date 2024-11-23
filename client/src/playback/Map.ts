@@ -6,7 +6,7 @@ import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEd
 import { packVecTable, parseVecTable } from './SchemaHelpers'
 import { DividerBrush, ResourcePileBrush, SpawnZoneBrush, WallsBrush, PaintBrush } from './Brushes'
 import { TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
-import { Colors } from '../colors'
+import { Colors, currentColors } from '../colors'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
@@ -121,7 +121,7 @@ export class CurrentMap {
                         this,
                         this.paint,
                         () => {
-                            ctx.fillStyle = Colors.PAINT_COLOR
+                            ctx.fillStyle = currentColors[Colors.PAINT_TEAMONE_ONE]
                             ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                         },
                         { x: true, y: false }
@@ -343,7 +343,7 @@ export class StaticMap {
 
     draw(ctx: CanvasRenderingContext2D) {
         // Fill background
-        ctx.fillStyle = Colors.WALLS_COLOR
+        ctx.fillStyle = currentColors[Colors.WALLS_COLOR]
         ctx.fillRect(
             this.dimension.minCorner.x,
             this.dimension.minCorner.y,
@@ -359,7 +359,7 @@ export class StaticMap {
                 // Render rounded (clipped) wall
                 if (this.walls[schemaIdx]) {
                     renderUtils.renderRounded(ctx, i, j, this, this.walls, () => {
-                        ctx.fillStyle = Colors.WALLS_COLOR
+                        ctx.fillStyle = currentColors[Colors.WALLS_COLOR]
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     })
                 }
