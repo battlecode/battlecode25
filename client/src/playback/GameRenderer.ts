@@ -43,6 +43,15 @@ class GameRendererClass {
         topCanvas.onmouseenter = (e) => this.canvasMouseEnter(e)
         topCanvas.onclick = (e) => this.canvasClick(e)
         topCanvas.oncontextmenu = (e) => e.preventDefault()
+
+        // Add logic to clear selected item when clicking outside the canvases
+        document.addEventListener('mousedown', (event) => {
+            if (Object.values(this.canvases).some((canvas) => canvas.contains(event.target as Node))) return
+            this.selectedTile = undefined
+            this.selectedBodyID = undefined
+            this.render()
+            this._canvasEventListeners.forEach((listener) => listener())
+        })
     }
 
     addCanvasesToDOM(elem: HTMLDivElement | null) {
