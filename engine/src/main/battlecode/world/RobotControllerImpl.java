@@ -636,6 +636,56 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // TODO not implemented
     }
 
+
+    private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
+        assertNotNull(loc);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
+
+        if (! isTowerType(this.robot.getType())){ 
+            throw new GameActionException(CANT_DO_THAT, "No tower at the location");
+        }
+
+        if (robot.getTeam() != this.robot.getTeam()){
+            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of the enemy team!");
+        }
+
+        UnitType type = robot.getType();
+        int moneyRequired = 0;
+
+        if (!type.canUpgradeType()){
+            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of this level!");
+        }
+
+        UnitType nextType = type.getNextLevel();
+        moneyRequired = nextType.moneyCost;
+
+        if (this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < moneyRequired){
+            throw new GameActionException(CANT_DO_THAT, "Not enough money to upgrade tower!");
+        }
+    }
+
+    @Override
+    public boolean canUpgradeTower(MapLocation loc) {
+        try {
+            assertCanUpgradeTower(loc);
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public void upgradeTower(MapLocation loc) throws GameActionException{
+        assertCanUpgradeTower(loc);
+        InternalRobot robot = this.gameWorld.getRobot(loc);
+        UnitType type = robot.getType();
+        int moneyRequired = 0;
+        UnitType newType = type.getNextLevel();
+        moneyRequired += newType.moneyCost;
+        this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
+        robot.upgradeTower(newType);
+    }
+
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
 
@@ -970,60 +1020,5 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(startLoc);
         assertNotNull(endLoc);
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);
-    }
-
-    
-    private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
-        assertNotNull(loc);
-        InternalRobot robot = this.gameWorld.getRobot(loc);
-        // check if there is a tower at loc
-        if (! isTowerType(this.robot.getType())){ 
-            throw new GameActionException(CANT_DO_THAT, "No tower at the location");
-        }
-        // check if tower corresponds to correct team
-        if (robot.getTeam() != this.robot.getTeam()){
-            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of the enemy team!");
-        }
-
-        UnitType type = robot.getType();
-        int moneyRequired = 0;
-
-        if (!type.canUpgradeType()){
-            throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of this level!");
-        }
-
-        UnitType nextType = type.getNextLevel();
-        moneyRequired = nextType.moneyCost;
-
-        if (this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < moneyRequired){
-            throw new GameActionException(CANT_DO_THAT, "Not enough money to upgrade tower!");
-        }
-    }
-
-    @Override
-    public boolean canUpgradeTower(MapLocation loc) {
-        try {
-            assertCanUpgradeTower(loc);
-            return true;
-        } catch (GameActionException e) {
-            return false;
-        }
-    }
-    //checks if they can upgrade tower
-    
-    @Override
-    public void upgradeTower(MapLocation loc) throws GameActionException{
-        // you have enough money
-        // tower at the location
-        // tower is on your team, can be upgraded
-        //if all true, subtract money from your team and then increment tower's type/level
-        assertCanUpgradeTower(loc);
-        InternalRobot robot = this.gameWorld.getRobot(loc);
-        UnitType type = robot.getType();
-        int moneyRequired = 0;
-        UnitType newType = type.getNextLevel();
-        moneyRequired += newType.moneyCost;
-        this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
-        robot.upgradeTower(newType);
     }
 }

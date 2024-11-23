@@ -576,6 +576,25 @@ public strictfp interface RobotController {
     void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
+     * Checks if a tower can be upgraded by verifying conditions on the location, team, 
+     * tower level, and cost.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canUpgradeTower(MapLocation loc);
+
+    /**
+     * Upgrades a tower if possible; subtracts the corresponding amount of money from the team.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void upgradeTower(MapLocation loc) throws GameActionException;
+
+    /**
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
      * given location.
      * 
@@ -815,8 +834,4 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
-
-    boolean canUpgradeTower(MapLocation loc);
-
-    void upgradeTower(MapLocation loc) throws GameActionException;
 }
