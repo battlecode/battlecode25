@@ -102,9 +102,9 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     //old DieException
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
-            const target = round.bodies.getById(this.robotId);
+            const target = round.bodies.getById(this.actionData.id());
             if (!target) {
-                throw new Error(`Target ${this.robotId} not found for damage action`);
+                throw new Error(`Target ${this.actionData.id()} not found for damage action`);
             }
     
             // Apply damage to the target
