@@ -17,7 +17,24 @@ const DEFAULT_CONFIG = {
     showMapXY: true,
     showFlagCarryIndicator: true,
     streamRunnerGames: false,
-    validateMaps: false
+    validateMaps: false,
+    colors: {
+        [Colors.TEAM_ONE]: '#8648d9',
+        [Colors.TEAM_TWO]: '#ffadcd',
+
+        [Colors.PAINT_TEAMONE_ONE]: '#1d4f6c',
+        [Colors.PAINT_TEAMONE_TWO]: '#ffffff',
+        [Colors.PAINT_TEAMTWO_ONE]: '#ffffff',
+        [Colors.PAINT_TEAMTWO_TWO]: '#ffffff',
+        [Colors.WALLS_COLOR]: '#3B6B4C',
+        [Colors.DIVIDER_COLOR]: '#7b4724',
+        [Colors.RUINS_COLOR]: '#153e30',
+        [Colors.GAMEAREA_BACKGROUND]: '#313847',
+
+        [Colors.ATTACK_COLOR]: '#db6b5c',
+        [Colors.BUILD_COLOR]: '#c573c9',
+        [Colors.HEAL_COLOR]: '#f2b804',
+    } as Record<Colors, string>
 }
 
 const configDescription: { [key: string]: string } = {
@@ -39,30 +56,19 @@ export function getDefaultConfig(): ClientConfig {
     return config
 }
 
-//export class ColorPicker extends React.Component {
-//    state = {
-//        color: "#8648d9",
-//        name: "TEAM_ONE",
-//    };
-
-//    handleChange = (newColor: any) =>  {
-//        this.setState({color: newColor.hex});
-//    }
-    
-//    render() {
-//        return <ChromePicker
-//        color = { this.state.color}
-//        onChange={ this.handleChange }
-//        />;
-//    }
-//}
-
 const ColorPicker = (props: {name: Colors}) => {
-    const [color, setColor] = useState(getGlobalColor(props.name));
+    const context = useAppContext()
+    const value = context.state.config.colors[props.name]
 
     const onChange = (newColor: any) => {
-        setColor(newColor.hex);
         updateGlobalColor(props.name, newColor.hex);
+        context.setState((prevState) => ({
+            ...prevState,
+            config: { ...prevState.config, colors: {...prevState.config.colors, [props.name]: newColor.hex} }
+        }))
+        localStorage.setItem('config' + props.name, JSON.stringify(newColor.hex))
+        // hopefully after the setState is done
+        setTimeout(() => GameRenderer.render(), 10)
     }
 
     return <ChromePicker
@@ -71,22 +77,6 @@ const ColorPicker = (props: {name: Colors}) => {
     />
 
 }
-
-//export function getColorPickers() {
-
-//    const picker =
-//    {
-//        name: "TEAM_ONE",
-//        color: "#000000",
-//    }
-
-//    return (
-//        <div className="ColorPickers">
-//            <ColorPicker picker={picker} />
-//            <hr></hr>
-//        </div>
-//    );
-//}
 
 export const ConfigPage: React.FC<Props> = (props) => {
     if (!props.open) return null
@@ -113,11 +103,11 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
         <div className={'flex flex-row items-center mb-2'}>
             <input
                 type={'checkbox'}
-                checked={value}
+                checked={value as any}
                 onChange={(e) => {
                     context.setState((prevState) => ({
                         ...prevState,
-                        config: { ...context.state.config, [configKey]: e.target.checked }
+                        config: { ...prevState.config, [configKey]: e.target.checked }
                     }))
                     localStorage.setItem('config' + configKey, JSON.stringify(e.target.checked))
                     // hopefully after the setState is done

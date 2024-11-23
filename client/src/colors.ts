@@ -1,19 +1,19 @@
 export enum Colors {
-    TEAM_ONE = 0,   //'#8648d9'
-    TEAM_TWO = 1,   //'#ffadcd'
+    TEAM_ONE = 'TEAM_ONE',   //'#8648d9'
+    TEAM_TWO = 'TEAM_TWO',   //'#ffadcd'
 
-    PAINT_TEAMONE_ONE = 2,    //'#1d4f6c'
-    PAINT_TEAMONE_TWO = 3,
-    PAINT_TEAMTWO_ONE = 4,
-    PAINT_TEAMTWO_TWO = 5,
-    WALLS_COLOR = 6,    //'#3B6B4C'
-    DIVIDER_COLOR = 7,  //'#7b4724'
-    RUINS_COLOR = 8, // '#153e30'
-    GAMEAREA_BACKGROUND = 9,    //'#313847'
+    PAINT_TEAMONE_ONE = 'PAINT_TEAMONE_ONE',    //'#1d4f6c'
+    PAINT_TEAMONE_TWO = 'PAINT_TEAMONE_TWO',
+    PAINT_TEAMTWO_ONE = 'PAINT_TEAMTWO_ONE',
+    PAINT_TEAMTWO_TWO = 'PAINT_TEAMTWO_TWO',
+    WALLS_COLOR = 'WALLS_COLOR',    //'#3B6B4C'
+    DIVIDER_COLOR = 'DIVIDER_COLOR',  //'#7b4724'
+    RUINS_COLOR = 'RUINS_COLOR', // '#153e30'
+    GAMEAREA_BACKGROUND = 'GAMEAREA_BACKGROUND',    //'#313847'
 
-    ATTACK_COLOR = 10,  //'#db6b5c'
-    BUILD_COLOR = 11,   //'#c573c9'
-    HEAL_COLOR = 12,    //'#f2b804'
+    ATTACK_COLOR = 'ATTACK_COLOR',  //'#db6b5c'
+    BUILD_COLOR = 'BUILD_COLOR',   //'#c573c9'
+    HEAL_COLOR = 'HEAL_COLOR',    //'#f2b804'
 }
 
 export const currentColors: Record<Colors, string> = {
