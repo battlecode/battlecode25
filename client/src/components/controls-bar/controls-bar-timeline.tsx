@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
 import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner'
+import { GAME_MAX_TURNS } from '../../constants'
 
 const TIMELINE_WIDTH = 350
 interface Props {
@@ -45,8 +46,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         timelineUp(e)
     }
 
-    // TODO: should have a defined constant somewhere else
-    const maxRound = appContext.state.tournament ? 2000 : match!.maxRound
+    const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const rect = e.currentTarget.getBoundingClientRect()

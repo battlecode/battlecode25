@@ -1,28 +1,18 @@
-import React, { useEffect } from 'react'
-import { useAppContext } from '../../app-context'
+import React from 'react'
 import { ThreeBarsIcon } from '../../icons/three-bars'
-import { getRenderCoords } from '../../util/RenderUtil'
 import { Vector } from '../../playback/Vector'
-import { useRound } from '../../playback/GameRunner'
 
-type TooltipProps = {
-    overlayCanvas: HTMLCanvasElement | null
-    selectedBodyID: number | undefined
-    hoveredTile: Vector | undefined
-    selectedTile: Vector | undefined
-    wrapperRef: HTMLDivElement | null
-}
+type Rect = { x: number; y: number; width: number; height: number }
 
-export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTile, wrapperRef }: TooltipProps) => {
-    const appContext = useAppContext()
-    const round = useRound()
-
-    const selectedBody = selectedBodyID !== undefined ? round?.bodies.bodies.get(selectedBodyID) : undefined
-    const hoveredBody = hoveredTile ? round?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
-
-    const tooltipRef = React.useRef<HTMLDivElement>(null)
+export const FloatingTooltip: React.FC<{
+    container: Rect
+    target: Rect
+    content: React.ReactNode
+    margin?: number
+}> = ({ container, target, content, margin = 10 }) => {
+    const tooltipRef = React.useRef<HTMLDivElement | null>(null)
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
-    useEffect(() => {
+    React.useEffect(() => {
         const observer = new ResizeObserver((entries) => {
             if (entries[0]) {
                 const borderBox = entries[0].borderBoxSize[0]
@@ -33,96 +23,55 @@ export const Tooltip = ({ overlayCanvas, selectedBodyID, hoveredTile, selectedTi
         return () => {
             if (tooltipRef.current) observer.unobserve(tooltipRef.current)
         }
-    }, [hoveredBody, hoveredTile])
+    }, [])
 
-    const map = round?.map
-    if (!overlayCanvas || !wrapperRef || !map) return <></>
-
-    const wrapperRect = wrapperRef.getBoundingClientRect()
-
-    const getTooltipStyle = () => {
-        const overlayCanvasRect = overlayCanvas.getBoundingClientRect()
-        const tileWidth = overlayCanvasRect.width / map.width
-        const tileHeight = overlayCanvasRect.height / map.height
-        const mapLeft = overlayCanvasRect.left - wrapperRect.left
-        const mapTop = overlayCanvasRect.top - wrapperRect.top
-
-        let tooltipStyle: React.CSSProperties = {}
-
-        if (!hoveredBody && !hoveredTile) return tooltipStyle
-
-        let tipPos: Vector
-        if (hoveredBody) {
-            tipPos = getRenderCoords(hoveredBody.pos.x, hoveredBody.pos.y, map.dimension, true)
-        } else {
-            tipPos = getRenderCoords(hoveredTile!.x, hoveredTile!.y, map.dimension, true)
-        }
-        const distanceFromBotCenterX = 0.75 * tileWidth
-        const distanceFromBotCenterY = 0.75 * tileHeight
-        const clearanceLeft = mapLeft + tipPos.x * tileWidth - distanceFromBotCenterX
-        const clearanceRight = wrapperRect.width - clearanceLeft - 2 * distanceFromBotCenterX
-        const clearanceTop = mapTop + tipPos.y * tileHeight - distanceFromBotCenterY
-
-        if (clearanceTop > tooltipSize.height) {
-            tooltipStyle.top = mapTop + tipPos.y * tileHeight - tooltipSize.height - distanceFromBotCenterY + 'px'
-        } else {
-            tooltipStyle.top = mapTop + tipPos.y * tileHeight + distanceFromBotCenterY + 'px'
-        }
-        if (clearanceLeft < tooltipSize.width / 2) {
-            tooltipStyle.left = mapLeft + tipPos.x * tileWidth + distanceFromBotCenterX + 'px'
-        } else if (clearanceRight < tooltipSize.width / 2) {
-            tooltipStyle.left = mapLeft + tipPos.x * tileWidth - tooltipSize.width - distanceFromBotCenterX + 'px'
-        } else {
-            tooltipStyle.left = mapLeft + tipPos.x * tileWidth - tooltipSize.width / 2 + 'px'
-        }
-
-        return tooltipStyle
+    const tipPos: Vector = {
+        x: target.x + target.width / 2,
+        y: target.y + target.height / 2
+    }
+    const distanceFromBotCenterY = 0.75 * target.height
+    const clearanceTop = tipPos.y - distanceFromBotCenterY - container.y - margin
+    const tooltipStyle = {
+        top:
+            clearanceTop > tooltipSize.height
+                ? tipPos.y - tooltipSize.height - distanceFromBotCenterY - container.y + 'px'
+                : tipPos.y + distanceFromBotCenterY - container.y + 'px',
+        left:
+            Math.max(
+                margin,
+                Math.min(tipPos.x - container.x - tooltipSize.width / 2, container.width - tooltipSize.width - margin)
+            ) + 'px'
     }
 
-    let showFloatingTooltip = !!((hoveredBody && hoveredBody != selectedBody) || hoveredTile)
-    const tooltipContent = hoveredBody
-        ? hoveredBody.onHoverInfo()
-        : hoveredTile
-          ? map.getTooltipInfo(hoveredTile, round!.match)
-          : []
-
-    if (tooltipContent.length === 0) showFloatingTooltip = false
-
-    // Check for the default empty size and don't show before the resize observer
-    // has updated
-    if (tooltipSize.width == 16 || tooltipSize.height == 16) showFloatingTooltip = false
+    // we show even when the tooltip isnt ready because we need it to render invisibly to get the size
+    const showFloatingTooltip = tooltipSize.width > 20 && tooltipSize.height > 20 && target.width > 0
 
     return (
-        <div style={{ WebkitUserSelect: 'none', userSelect: 'none' }}>
-            <div
-                className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs"
-                style={{ ...getTooltipStyle(), visibility: showFloatingTooltip ? 'visible' : 'hidden' }}
-                ref={tooltipRef}
-            >
-                {tooltipContent.map((v, i) => (
-                    <p key={i}>{v}</p>
-                ))}
-            </div>
+        <div
+            className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap"
+            style={{
+                ...tooltipStyle,
+                visibility: showFloatingTooltip ? 'visible' : 'hidden'
+            }}
+            ref={tooltipRef}
+        >
+            {content}
+        </div>
+    )
+}
 
-            <Draggable width={wrapperRect.width} height={wrapperRect.height}>
-                {selectedBody && (
-                    <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative">
-                        {selectedBody.onHoverInfo().map((v, i) => (
-                            <p key={i}>{v}</p>
-                        ))}
-                        <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
-                            <ThreeBarsIcon />
-                        </div>
+export const DraggableTooltip: React.FC<{ container: Rect; content: React.ReactNode }> = ({ container, content }) => {
+    return (
+        <Draggable width={container.width} height={container.height}>
+            {content && (
+                <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative pointer-events-auto">
+                    {content}
+                    <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
+                        <ThreeBarsIcon />
                     </div>
-                )}
-            </Draggable>
-
-            {appContext.state.config.showMapXY && hoveredTile && (
-                <div className="absolute right-[5px] top-[5px] bg-black/70 z-20 text-white p-2 rounded-md text-xs opacity-50 pointer-events-none">
-                    {`(X: ${hoveredTile.x}, Y: ${hoveredTile.y})`}
                 </div>
             )}
-        </div>
+        </Draggable>
     )
 }
 
@@ -133,41 +82,48 @@ interface DraggableProps {
     margin?: number
 }
 
-const Draggable = ({ children, width, height, margin = 0 }: DraggableProps) => {
+const Draggable = ({ children, width, height, margin = 10 }: DraggableProps) => {
     const [dragging, setDragging] = React.useState(false)
-    const [pos, setPos] = React.useState({ x: 20, y: 20 })
+    const [pos, setPos] = React.useState({ x: margin, y: margin })
     const [offset, setOffset] = React.useState({ x: 0, y: 0 })
     const ref = React.useRef<HTMLDivElement>(null)
+    const realSize = { x: width, y: height }
 
     const mouseDown = (e: React.MouseEvent) => {
         setDragging(true)
-        setOffset({ x: e.clientX - pos.x, y: e.clientY - pos.y })
+        setOffset({ x: e.screenX - pos.x, y: e.screenY - pos.y })
     }
 
     const mouseUp = () => {
         setDragging(false)
     }
 
-    const mouseMove = (e: React.MouseEvent) => {
+    const mouseMove = (e: MouseEvent) => {
         if (dragging && ref.current) {
-            const targetX = e.clientX - offset.x
-            const targetY = e.clientY - offset.y
-            const realX = Math.min(Math.max(targetX, margin), width - ref.current.clientWidth - margin)
-            const realY = Math.min(Math.max(targetY, margin), height - ref.current.clientHeight - margin)
+            const targetX = e.screenX - offset.x
+            const targetY = e.screenY - offset.y
+            const realTooltipSize = { x: ref.current.clientWidth, y: ref.current.clientHeight }
+            const realX = Math.min(Math.max(targetX, margin), realSize.x - realTooltipSize.x - margin)
+            const realY = Math.min(Math.max(targetY, margin), realSize.y - realTooltipSize.y - margin)
             setPos({ x: realX, y: realY })
         }
     }
+
+    React.useEffect(() => {
+        if (dragging) {
+            window.addEventListener('mousemove', mouseMove)
+            window.addEventListener('mouseup', mouseUp)
+        }
+        return () => {
+            window.removeEventListener('mousemove', mouseMove)
+            window.removeEventListener('mouseup', mouseUp)
+        }
+    }, [dragging])
 
     return (
         <div
             ref={ref}
             onMouseDown={mouseDown}
-            onMouseUp={mouseUp}
-            onMouseLeave={mouseUp}
-            onMouseEnter={(e) => {
-                if (e.buttons === 1) mouseDown(e)
-            }}
-            onMouseMove={mouseMove}
             className="absolute z-20"
             style={{
                 left: pos.x + 'px',
