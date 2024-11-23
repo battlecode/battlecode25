@@ -21,6 +21,7 @@ export declare class GameMap {
     paintLength(): number;
     paintArray(): Int8Array | null;
     ruins(obj?: VecTable): VecTable | null;
+    resourcePattern(): number;
     static startGameMap(builder: flatbuffers.Builder): void;
     static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset): void;
     static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset): void;
@@ -34,5 +35,6 @@ export declare class GameMap {
     static createPaintVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
     static startPaintVector(builder: flatbuffers.Builder, numElems: number): void;
     static addRuins(builder: flatbuffers.Builder, ruinsOffset: flatbuffers.Offset): void;
+    static addResourcePattern(builder: flatbuffers.Builder, resourcePattern: number): void;
     static endGameMap(builder: flatbuffers.Builder): flatbuffers.Offset;
 }

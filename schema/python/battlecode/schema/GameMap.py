@@ -132,8 +132,15 @@ class GameMap(object):
             return obj
         return None
 
+    # GameMap
+    def ResourcePattern(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
 def GameMapStart(builder):
-    builder.StartObject(8)
+    builder.StartObject(9)
 
 def Start(builder):
     GameMapStart(builder)
@@ -197,6 +204,12 @@ def GameMapAddRuins(builder, ruins):
 
 def AddRuins(builder, ruins):
     GameMapAddRuins(builder, ruins)
+
+def GameMapAddResourcePattern(builder, resourcePattern):
+    builder.PrependInt32Slot(8, resourcePattern, 0)
+
+def AddResourcePattern(builder, resourcePattern):
+    GameMapAddResourcePattern(builder, resourcePattern)
 
 def GameMapEnd(builder):
     return builder.EndObject()

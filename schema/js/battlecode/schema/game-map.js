@@ -72,8 +72,12 @@ var GameMap = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 18);
         return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
+    GameMap.prototype.resourcePattern = function () {
+        var offset = this.bb.__offset(this.bb_pos, 20);
+        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    };
     GameMap.startGameMap = function (builder) {
-        builder.startObject(8);
+        builder.startObject(9);
     };
     GameMap.addName = function (builder, nameOffset) {
         builder.addFieldOffset(0, nameOffset, 0);
@@ -118,6 +122,9 @@ var GameMap = /** @class */ (function () {
     };
     GameMap.addRuins = function (builder, ruinsOffset) {
         builder.addFieldOffset(7, ruinsOffset, 0);
+    };
+    GameMap.addResourcePattern = function (builder, resourcePattern) {
+        builder.addFieldInt32(8, resourcePattern, 0);
     };
     GameMap.endGameMap = function (builder) {
         var offset = builder.endObject();

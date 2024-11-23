@@ -154,6 +154,7 @@ table GameMap {
     walls: [bool];
     paint: [bool];
     ruins: VecTable;
+    resourcePattern: int;
 }
 
 //========================================================================================

@@ -89,8 +89,13 @@ ruins(obj?:VecTable):VecTable|null {
   return offset ? (obj || new VecTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
+resourcePattern():number {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
 static startGameMap(builder:flatbuffers.Builder) {
-  builder.startObject(8);
+  builder.startObject(9);
 }
 
 static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
@@ -147,6 +152,10 @@ static startPaintVector(builder:flatbuffers.Builder, numElems:number) {
 
 static addRuins(builder:flatbuffers.Builder, ruinsOffset:flatbuffers.Offset) {
   builder.addFieldOffset(7, ruinsOffset, 0);
+}
+
+static addResourcePattern(builder:flatbuffers.Builder, resourcePattern:number) {
+  builder.addFieldInt32(8, resourcePattern, 0);
 }
 
 static endGameMap(builder:flatbuffers.Builder):flatbuffers.Offset {
