@@ -267,6 +267,17 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     /**
+     * Upgrades the level of a tower.
+     * 
+     * @param robot the tower to be upgraded
+     */
+    public void upgradeTower(UnitType newType) {
+        int damage = this.type.health - getHealth();
+        this.type = newType;
+        this.health = newType.health - damage; 
+    }
+
+    /**
      * Resets the action cooldown.
      */
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
@@ -555,11 +566,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****************************
     // ****** GETTER METHODS ******
     // ****************************
-
-    public void buildRobot(UnitType type, MapLocation loc) {
-        throw new NotImplementedException();
-        // TODO not implemented
-    }
 
     // *********************************
     // ****** GAMEPLAY METHODS *********

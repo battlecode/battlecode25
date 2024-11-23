@@ -474,7 +474,6 @@ public strictfp interface RobotController {
     // *********** BUILDING **************
     // ***********************************
 
-    /**
      * Checks if a tower can spawn a robot at the given location.
      * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
@@ -519,7 +518,26 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void markTowerPattern(MapLocation loc) throws GameActionException;
+    void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if a tower can be upgraded by verifying conditions on the location, team, 
+     * tower level, and cost.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canUpgradeTower(MapLocation loc);
+
+    /**
+     * Upgrades a tower if possible; subtracts the corresponding amount of money from the team.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void upgradeTower(MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can mark a 5x5 special resource pattern centered at the

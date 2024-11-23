@@ -77,6 +77,15 @@ public class TeamInfo {
      public int getNumberOfPaintedSquares(Team team) {
         return this.totalPaintedSquares[team.ordinal()];
     }
+
+    /**
+     * Change the total number of squares painted by the team over the game
+     * @param team the team to query
+     */
+
+     public void addPaintedSquares(int num, Team team) {
+        this.totalPaintedSquares[team.ordinal()] += num;
+    }    
     
     /**
      * Reads the shared array value.

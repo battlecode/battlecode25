@@ -80,12 +80,6 @@ public strictfp class GameWorld {
 
         this.teamInfo = new TeamInfo(this);
 
-        // Create all robots in their despawned states
-        for (int i = 0; i < GameConstants.ROBOT_CAPACITY; i++) {
-            createRobot(Team.A);
-            createRobot(Team.B);
-        }
-
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
@@ -354,6 +348,12 @@ public strictfp class GameWorld {
     }
 
     public void setPaint(MapLocation loc, int paint) {
+        if (teamFromPaint(this.colorLocations[locationToIndex(loc)]) != Team.NEUTRAL){
+        this.getTeamInfo().addPaintedSquares(-1, teamFromPaint(this.colorLocations[locationToIndex(loc)]));
+        }
+        if (teamFromPaint(paint) != Team.NEUTRAL){
+        this.getTeamInfo().addPaintedSquares(1, teamFromPaint(paint));
+        }
         this.colorLocations[locationToIndex(loc)] = paint;
     }
 
@@ -607,7 +607,7 @@ public strictfp class GameWorld {
     /**
      * @return whether a team painted more of the map than the other team
      */
-    public boolean setWinnerIfMorePaint(){
+    public boolean setWinnerIfMoreSquaresPainted(){
         int[] totalSquaresPainted = new int[2];
 
         // consider team reserves
@@ -636,6 +636,26 @@ public strictfp class GameWorld {
         }
         else if(sumB > sumA) {
             setWinner(Team.B, DominationFactor.LEVEL_SUM);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return whether a team has more money
+     */
+    public boolean setWinnerIfMoreMoney(){
+        int[] totalMoneyValues = new int[2];
+
+        // consider team reserves
+        totalMoneyValues[Team.A.ordinal()] += this.teamInfo.getMoney(Team.A);
+        totalMoneyValues[Team.B.ordinal()] += this.teamInfo.getMoney(Team.B);
+        
+        if (totalMoneyValues[Team.A.ordinal()] > totalMoneyValues[Team.B.ordinal()]) {
+            setWinner(Team.A, DominationFactor.MORE_MONEY);
+            return true;
+        } else if (totalMoneyValues[Team.B.ordinal()] > totalMoneyValues[Team.A.ordinal()]) {
+            setWinner(Team.B, DominationFactor.MORE_MONEY);
             return true;
         }
         return false;
@@ -694,7 +714,13 @@ public strictfp class GameWorld {
     public boolean setWinnerIfMorePaintInUnits(){
         int[] paintInUnits = new int[2];
 
-        // TODO: count paint quantity accross all units
+        for (InternalRobot robot : getAllRobots(Team.A)) {
+            paintInUnits[Team.A.ordinal()] += robot.getPaint();
+        }
+
+        for (InternalRobot robot : getAllRobots(Team.B)) {
+            paintInUnits[Team.B.ordinal()] += robot.getPaint();
+        }
         
         if (paintInUnits[Team.A.ordinal()] > paintInUnits[Team.B.ordinal()]) {
             setWinner(Team.A, DominationFactor.MORE_PAINT_IN_UNITS);
@@ -723,9 +749,11 @@ public strictfp class GameWorld {
      */
     public void checkEndOfMatch() {
         if (timeLimitReached() && gameStats.getWinner() == null) {
-            if (setWinnerIfMorePaint()) return;
-            if (setWinnerIfGreaterLevelSum()) return;
-            if (setWinnerIfMoreBread()) return;
+            if (setWinnerIfMoreSquaresPainted()) return;
+            if (setWinnerIfMoreTowersAlive()) return;
+            if (setWinnerIfMoreMoney()) return;
+            if (setWinnerIfMorePaintInUnits()) return;
+            if (setWinnerIfMoreRobotsAlive()) return;
             setWinnerArbitrary();
         }
     }
@@ -763,16 +791,17 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int createRobot(int ID, Team team) {
-        InternalRobot robot = new InternalRobot(this, ID, team);
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
+        InternalRobot robot = new InternalRobot(this, ID, team, type);
+        addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
         return ID;
     }
 
-    public int createRobot(Team team) {
+    public int spawnRobot(UnitType type, MapLocation location, Team team){
         int ID = idGenerator.nextID();
-        return createRobot(ID, team);
+        return spawnRobot(ID, type, location, team);
     }
 
     // *********************************
