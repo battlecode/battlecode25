@@ -430,7 +430,7 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
         // TODO: adjust
-        const maxHP = this.metadata.baseHealth()
+        const maxHP = this.game.playable ? this.metadata.baseHealth() : 1
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
@@ -534,6 +534,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} DefenseTower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
         }
 
         public draw(
@@ -544,7 +545,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -561,6 +561,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} MoneyTower`
             this.robotType = schema.RobotType.MONEY_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
         }
 
         public draw(
@@ -571,34 +572,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
-        }
-    },
-
-    [schema.RobotType.MOPPER]: class Mopper extends Body {
-        public robotName = 'Mopper'
-
-        constructor(game: Game, pos: Vector, team: Team, id: number) {
-            super(game, pos, team, id)
-            this.robotName = `${team.colorName} Mopper`
-            this.robotType = schema.RobotType.MOPPER
-        }
-
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -615,6 +588,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} PaintTower`
             this.robotType = schema.RobotType.PAINT_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
         }
 
         public draw(
@@ -625,7 +599,33 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.MOPPER]: class Mopper extends Body {
+        public robotName = 'Mopper'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Mopper`
+            this.robotType = schema.RobotType.MOPPER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/mopper_64x64.png`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -642,6 +642,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} Soldier`
             this.robotType = schema.RobotType.SOLDIER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/soldier_64x64.png`
         }
 
         public draw(
@@ -652,7 +653,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -669,6 +669,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} Splasher`
             this.robotType = schema.RobotType.SPLASHER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/splasher_64x64.png`
         }
 
         public draw(
@@ -679,7 +680,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
