@@ -154,7 +154,7 @@ table GameMap {
     walls: [bool];
     paint: [bool];
     ruins: VecTable;
-    resourcePattern: int;
+    paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
 }
 
 //========================================================================================

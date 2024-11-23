@@ -72,9 +72,17 @@ var GameMap = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 18);
         return offset ? (obj || new vec_table_1.VecTable()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
     };
-    GameMap.prototype.resourcePattern = function () {
+    GameMap.prototype.paintPatterns = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 20);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+    };
+    GameMap.prototype.paintPatternsLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 20);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
+    GameMap.prototype.paintPatternsArray = function () {
+        var offset = this.bb.__offset(this.bb_pos, 20);
+        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
     GameMap.startGameMap = function (builder) {
         builder.startObject(9);
@@ -123,8 +131,18 @@ var GameMap = /** @class */ (function () {
     GameMap.addRuins = function (builder, ruinsOffset) {
         builder.addFieldOffset(7, ruinsOffset, 0);
     };
-    GameMap.addResourcePattern = function (builder, resourcePattern) {
-        builder.addFieldInt32(8, resourcePattern, 0);
+    GameMap.addPaintPatterns = function (builder, paintPatternsOffset) {
+        builder.addFieldOffset(8, paintPatternsOffset, 0);
+    };
+    GameMap.createPaintPatternsVector = function (builder, data) {
+        builder.startVector(4, data.length, 4);
+        for (var i = data.length - 1; i >= 0; i--) {
+            builder.addInt32(data[i]);
+        }
+        return builder.endVector();
+    };
+    GameMap.startPaintPatternsVector = function (builder, numElems) {
+        builder.startVector(4, numElems, 4);
     };
     GameMap.endGameMap = function (builder) {
         var offset = builder.endObject();
