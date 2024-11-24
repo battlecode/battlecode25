@@ -474,6 +474,7 @@ public strictfp interface RobotController {
     // *********** BUILDING **************
     // ***********************************
 
+    /**
      * Checks if a tower can spawn a robot at the given location.
      * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 
@@ -608,6 +609,16 @@ public strictfp interface RobotController {
     // ****************************
     // ***** ATTACK / HEAL ********
     // ****************************
+
+    /**
+     * Getter method for the attack strength of a given robot
+     *
+     * 
+     * @return attack damage of the robot
+     *
+     * @battlecode.doc.costlymethod
+     */
+    public int getAttackDamage();
 
     /**
      * Tests whether this robot can attack the given location. Types of
