@@ -58,7 +58,7 @@ var GameMap = /** @class */ (function () {
     };
     GameMap.prototype.paint = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? !!this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index) : false;
+        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
     GameMap.prototype.paintLength = function () {
         var offset = this.bb.__offset(this.bb_pos, 16);
@@ -66,7 +66,7 @@ var GameMap = /** @class */ (function () {
     };
     GameMap.prototype.paintArray = function () {
         var offset = this.bb.__offset(this.bb_pos, 16);
-        return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
     GameMap.prototype.ruins = function (obj) {
         var offset = this.bb.__offset(this.bb_pos, 18);
@@ -119,14 +119,14 @@ var GameMap = /** @class */ (function () {
         builder.addFieldOffset(6, paintOffset, 0);
     };
     GameMap.createPaintVector = function (builder, data) {
-        builder.startVector(1, data.length, 1);
+        builder.startVector(4, data.length, 4);
         for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt8(+data[i]);
+            builder.addInt32(data[i]);
         }
         return builder.endVector();
     };
     GameMap.startPaintVector = function (builder, numElems) {
-        builder.startVector(1, numElems, 1);
+        builder.startVector(4, numElems, 4);
     };
     GameMap.addRuins = function (builder, ruinsOffset) {
         builder.addFieldOffset(7, ruinsOffset, 0);

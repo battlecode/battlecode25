@@ -99,14 +99,14 @@ class GameMap(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             a = self._tab.Vector(o)
-            return self._tab.Get(flatbuffers.number_types.BoolFlags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
         return 0
 
     # GameMap
     def PaintAsNumpy(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
-            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.BoolFlags, o)
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
         return 0
 
     # GameMap
@@ -214,7 +214,7 @@ def AddPaint(builder, paint):
     GameMapAddPaint(builder, paint)
 
 def GameMapStartPaintVector(builder, numElems):
-    return builder.StartVector(1, numElems, 1)
+    return builder.StartVector(4, numElems, 4)
 
 def StartPaintVector(builder, numElems):
     return GameMapStartPaintVector(builder, numElems)
