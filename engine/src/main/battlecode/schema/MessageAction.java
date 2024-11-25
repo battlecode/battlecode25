@@ -19,26 +19,30 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Visually indicate messaging from one robot to another
+ */
 @SuppressWarnings("unused")
-public final class GameplayConstants extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
-  public static GameplayConstants getRootAsGameplayConstants(ByteBuffer _bb) { return getRootAsGameplayConstants(_bb, new GameplayConstants()); }
-  public static GameplayConstants getRootAsGameplayConstants(ByteBuffer _bb, GameplayConstants obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+public final class MessageAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public GameplayConstants __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public MessageAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int data() { return bb.getInt(bb_pos + 4); }
 
-  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(0); }
-  public static int endGameplayConstants(FlatBufferBuilder builder) {
-    int o = builder.endTable();
-    return o;
+  public static int createMessageAction(FlatBufferBuilder builder, int id, int data) {
+    builder.prep(4, 8);
+    builder.putInt(data);
+    builder.pad(2);
+    builder.putShort((short) id);
+    return builder.offset();
   }
 
   public static final class Vector extends BaseVector {
     public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
 
-    public GameplayConstants get(int j) { return get(new GameplayConstants(), j); }
-    public GameplayConstants get(GameplayConstants obj, int j) {  return obj.__assign(__indirect(__element(j), bb), bb); }
+    public MessageAction get(int j) { return get(new MessageAction(), j); }
+    public MessageAction get(MessageAction obj, int j) {  return obj.__assign(__element(j), bb); }
   }
 }
 

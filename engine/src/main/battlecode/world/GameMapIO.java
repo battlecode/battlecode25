@@ -231,36 +231,31 @@ public final strictfp class GameMapIO {
             final String mapName = raw.name();
             int size = width*height;
             boolean[] wallArray = new boolean[size];
-            boolean[] waterArray = new boolean[size];
-            boolean[] damArray = new boolean[size];
-            int[] breadArray = new int[size];
-            int[] spawnZoneArray = new int[size];
-            //TODO: update once we compile schema again
+            boolean[] ruinArray = new boolean[size];
+            int[] paintArray = new int[size];
+            int[] patternArray = new int[4];
             for (int i = 0; i < wallArray.length; i++) {
                 wallArray[i] = raw.walls(i);
-                waterArray[i] = raw.water(i);
-                damArray[i] = raw.divider(i);
+                paintArray[i] = raw.paint(i);
             }
-            battlecode.schema.VecTable resourcePiles = raw.resourcePiles();
-            int num_piles = resourcePiles.xsLength();
-            for (int i = 0; i < num_piles; i++){
-                MapLocation cur = new MapLocation(resourcePiles.xs(i), resourcePiles.ys(i));
-                int amt = raw.resourcePileAmounts(i);
-                // support older maps by multiplying crumbs by 10 if value is low
-                if(amt < 100) amt *= 10;
-                breadArray[cur.x+cur.y*width] = amt;
+            for (int i = 0; i < patternArray.length; i++){
+                patternArray[i] = raw.paintPatterns(i);
+            }
+            battlecode.schema.VecTable ruins = raw.ruins();
+            int num_ruins = ruins.xsLength();
+            for (int i = 0; i < num_ruins; i++){
+                MapLocation cur = new MapLocation(ruins.xs(i), ruins.ys(i));
+                ruinArray[cur.x+cur.y*width] = true;
             }
 
-            battlecode.schema.VecTable spawnZoneCentersTable = raw.spawnLocations();
-            for (int i = 0; i < 6; i++){
-                MapLocation cur = new MapLocation(spawnZoneCentersTable.xs(i), spawnZoneCentersTable.ys(i));
-                for (MapLocation loc : GameWorld.getAllLocationsWithinRadiusSquaredWithoutMap(origin, width, height, cur, 2)){
-                    spawnZoneArray[loc.x + loc.y*width] = (i % 2 == 0) ? 1 : 2;
-                }
-            }
+            ArrayList<RobotInfo> initBodies = new ArrayList<>();
+            InitialBodyTable bodyTable = raw.initialBodies();
+            initInitialBodiesFromSchemaBodyTable(bodyTable, initBodies, teamsReversed);
+
+            RobotInfo[] initialBodies = initBodies.toArray(new RobotInfo[initBodies.size()]);
 
             return new LiveMap(
-                width, height, origin, seed, rounds, mapName, symmetry, wallArray, waterArray, damArray, breadArray, spawnZoneArray);
+                width, height, origin, seed, rounds, mapName, symmetry, wallArray, paintArray, ruinArray, patternArray, initialBodies);
         }
 
 
@@ -349,6 +344,21 @@ public final strictfp class GameMapIO {
         // ****************************
         // *** HELPER METHODS *********
         // ****************************
+
+        private static void initInitialBodiesFromSchemaBodyTable(InitialBodyTable bodyTable, ArrayList<RobotInfo> initialBodies, boolean teamsReversed) {
+            for (int i = 0; i < bodyTable.robotIdsLength(); i++){
+                int curId = bodyTable.robotIds(i);
+                battlecode.schema.SpawnAction curSpawnAction = bodyTable.spawnActions(i);
+                UnitType bodyType = FlatHelpers.getUnitTypeFromRobotType(curSpawnAction.robotType());
+                int bodyX = curSpawnAction.x();
+                int bodyY = curSpawnAction.y();
+                Team bodyTeam = TeamMapping.team(curSpawnAction.team());
+                if (teamsReversed){
+                    bodyTeam = bodyTeam.opponent();
+                }
+                initialBodies.add(new RobotInfo(curId, bodyTeam, bodyType, bodyType.health, new MapLocation(bodyX, bodyY), GameConstants.INITIAL_PAINT_TOWER_PAINT));
+            }
+        }
 
     }
 }

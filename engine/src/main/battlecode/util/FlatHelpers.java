@@ -2,12 +2,11 @@ package battlecode.util;
 
 import battlecode.common.GlobalUpgrade;
 import battlecode.common.TrapType;
+import battlecode.common.UnitType;
 import battlecode.schema.VecTable;
 import battlecode.schema.WinType;
 import battlecode.world.DominationFactor;
 import battlecode.schema.Action;
-import battlecode.schema.BuildActionType;
-import battlecode.schema.GlobalUpgradeType;
 import battlecode.schema.RGBTable;
 import com.google.flatbuffers.FlatBufferBuilder;
 import gnu.trove.TByteCollection;
@@ -27,60 +26,79 @@ import java.util.function.ObjIntConsumer;
  */
 public class FlatHelpers {
 
-    public static byte getTrapActionFromTrapType(TrapType type) {
-        switch (type) {
-            case EXPLOSIVE:
-                return Action.EXPLOSIVE_TRAP;
-            case WATER:
-                return Action.WATER_TRAP;
-            case STUN:
-                return Action.STUN_TRAP;
+    public static UnitType getUnitTypeFromRobotType(byte b){
+        switch (b){
+            case 1:
+                return UnitType.LEVEL_ONE_PAINT_TOWER;
+            case 2:
+                return UnitType.LEVEL_ONE_MONEY_TOWER;
+            case 3:
+                return UnitType.LEVEL_ONE_DEFENSE_TOWER;
+            case 4:
+                return UnitType.SOLDIER;
+            case 5:
+                return UnitType.SPLASHER;
+            case 6:
+                return UnitType.MOPPER;
             default:
-                throw new RuntimeException("No action type for " + type);
+                throw new RuntimeException("No unit type for " + b);
         }
     }
 
-    public static byte getBuildActionFromTrapType(TrapType type) {
-        switch (type) {
-            case EXPLOSIVE:
-                return BuildActionType.EXPLOSIVE_TRAP;
-            case WATER:
-                return BuildActionType.WATER_TRAP;
-            case STUN:
-                return BuildActionType.STUN_TRAP;
-            default:
-                throw new RuntimeException("No build action type for " + type);
-        }
-    }
+    // public static byte getTrapActionFromTrapType(TrapType type) {
+    //     switch (type) {
+    //         case EXPLOSIVE:
+    //             return Action.EXPLOSIVE_TRAP;
+    //         case WATER:
+    //             return Action.WATER_TRAP;
+    //         case STUN:
+    //             return Action.STUN_TRAP;
+    //         default:
+    //             throw new RuntimeException("No action type for " + type);
+    //     }
+    // }
 
-    public static byte getWinTypeFromDominationFactor(DominationFactor factor) {
-        switch (factor) {
-            case CAPTURE:
-                return WinType.CAPTURE;
-            case MORE_FLAG_CAPTURES:
-                return WinType.MORE_FLAG_CAPTURES;
-            case LEVEL_SUM:
-                return WinType.LEVEL_SUM;
-            case MORE_BREAD:
-                return WinType.MORE_BREAD;
-            case WON_BY_DUBIOUS_REASONS:
-                return WinType.COIN_FLIP;
-            case RESIGNATION:
-                return WinType.RESIGNATION;
-            default:
-                return Byte.MIN_VALUE;
-        }
-    }
+    // public static byte getBuildActionFromTrapType(TrapType type) {
+    //     switch (type) {
+    //         case EXPLOSIVE:
+    //             return BuildActionType.EXPLOSIVE_TRAP;
+    //         case WATER:
+    //             return BuildActionType.WATER_TRAP;
+    //         case STUN:
+    //             return BuildActionType.STUN_TRAP;
+    //         default:
+    //             throw new RuntimeException("No build action type for " + type);
+    //     }
+    // }
 
-    public static byte getGlobalUpgradeTypeFromGlobalUpgrade(GlobalUpgrade gu) {
-        if (gu == GlobalUpgrade.ATTACK || gu == GlobalUpgrade.ACTION)
-            return GlobalUpgradeType.ACTION_UPGRADE;
-        if (gu == GlobalUpgrade.HEALING)
-            return GlobalUpgradeType.HEALING_UPGRADE;
-        if (gu == GlobalUpgrade.CAPTURING)
-            return GlobalUpgradeType.CAPTURING_UPGRADE;
-        return Byte.MIN_VALUE;
-    }
+    // public static byte getWinTypeFromDominationFactor(DominationFactor factor) {
+    //     switch (factor) {
+    //         case CAPTURE:
+    //             return WinType.CAPTURE;
+    //         case MORE_FLAG_CAPTURES:
+    //             return WinType.MORE_FLAG_CAPTURES;
+    //         case LEVEL_SUM:
+    //             return WinType.LEVEL_SUM;
+    //         case MORE_BREAD:
+    //             return WinType.MORE_BREAD;
+    //         case WON_BY_DUBIOUS_REASONS:
+    //             return WinType.COIN_FLIP;
+    //         case RESIGNATION:
+    //             return WinType.RESIGNATION;
+    //         default:
+    //             return Byte.MIN_VALUE;
+    //     }
+    // }
+
+    // public static byte getGlobalUpgradeTypeFromGlobalUpgrade(GlobalUpgrade gu) {
+    //     if (gu == GlobalUpgrade.ATTACK || gu == GlobalUpgrade.ACTION)
+    //         return GlobalUpgradeType.ACTION_UPGRADE;
+    //     if (gu == GlobalUpgrade.HEALING)
+    //         return GlobalUpgradeType.HEALING_UPGRADE;
+    //     if (gu == GlobalUpgrade.CAPTURING)
+    //         return GlobalUpgradeType.CAPTURING_UPGRADE;
+    //     return Byte.MIN_VALUE;
+    // }
 
     /**
      * DO NOT CALL THIS WITH OFFSETS!

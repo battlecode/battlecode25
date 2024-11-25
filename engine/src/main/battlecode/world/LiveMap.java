@@ -19,7 +19,7 @@ import javax.management.RuntimeErrorException;
  * which represents a serialized LiveMap.
  */
 public strictfp class LiveMap {
-    //TODO: add resource pattern to this
+    
     /**
      * The width and height of the map.
      */
@@ -49,6 +49,11 @@ public strictfp class LiveMap {
      * Whether each square is a ruin.
      */
     private boolean[] ruinArray;
+
+    /**
+     * The patterns for resources and towers.
+     */
+    private int[] patternArray;
 
     /**
      * The random seed contained in the map file.
@@ -93,6 +98,7 @@ public strictfp class LiveMap {
         this.wallArray = new boolean[numSquares];
         this.paintArray = new int[numSquares];
         this.ruinArray = new boolean[numSquares];
+        this.patternArray = new int[4];
 
         // invariant: bodies is sorted by id
         Arrays.sort(this.initialBodies, (a, b) -> Integer.compare(a.getID(), b.getID()));
@@ -108,6 +114,7 @@ public strictfp class LiveMap {
                    boolean[] wallArray,
                    int[] paintArray,
                    boolean[] ruinArray,
+                   int[] patternArray,
                    RobotInfo[] initialBodies) {
         this.width = width;
         this.height = height;
@@ -129,6 +136,10 @@ public strictfp class LiveMap {
         for (int i = 0; i < ruinArray.length; i++){
             this.ruinArray[i] = ruinArray[i];
         }
+        this.patternArray = new int[patternArray.length];
+        for (int i = 0; i < patternArray.length; i++){
+            this.patternArray[i] = patternArray[i];
+        }
         // invariant: bodies is sorted by id
        Arrays.sort(this.initialBodies, (a, b) -> Integer.compare(a.getID(), b.getID()));
     }
@@ -140,7 +151,7 @@ public strictfp class LiveMap {
      */
     public LiveMap(LiveMap gm) {
         this(gm.width, gm.height, gm.origin, gm.seed, gm.rounds, gm.mapName, gm.symmetry,
-         gm.wallArray, gm.paintArray, gm.ruinArray, gm.initialBodies);
+         gm.wallArray, gm.paintArray, gm.ruinArray, gm.patternArray, gm.initialBodies);
     }
 
     @Override
@@ -165,6 +176,7 @@ public strictfp class LiveMap {
         if (!Arrays.equals(this.wallArray, other.wallArray)) return false;
         if (!Arrays.equals(this.paintArray, other.paintArray)) return false;
         if (!Arrays.equals(this.ruinArray, other.ruinArray)) return false;
+        if (!Arrays.equals(this.patternArray, other.patternArray)) return false;
         if (!Arrays.equals(this.initialBodies, other.initialBodies)) return false;
         return true;
     }
@@ -180,6 +192,7 @@ public strictfp class LiveMap {
         result = 31 * result + Arrays.hashCode(wallArray);
         result = 31 * result + Arrays.hashCode(paintArray);
         result = 31 * result + Arrays.hashCode(ruinArray);
+        result = 31 * result + Arrays.hashCode(patternArray);
         result = 31 * result + Arrays.hashCode(initialBodies);
         return result;
     }
@@ -314,6 +327,13 @@ public strictfp class LiveMap {
      */
     public boolean[] getRuinArray(){
         return ruinArray;
+    }
+
+    /**
+     * @return the pattern array of the map
+     */
+    public int[] getPatternArray(){
+        return patternArray;
     }
 
 
@@ -468,6 +488,7 @@ public strictfp class LiveMap {
                     ", paintArray=" + Arrays.toString(paintArray) + 
                     ", wallArray=" + Arrays.toString(wallArray) +
                     ", ruinArray=" + Arrays.toString(ruinArray) + 
+                    ", patternArray=" + Arrays.toString(patternArray) + 
                     ", initialBodies=" + Arrays.toString(initialBodies) + 
                     "}";
         }
