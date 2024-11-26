@@ -741,6 +741,20 @@ public strictfp class GameWorld {
         }
     }
 
+    public void processEndOfRound() {
+        this.teamInfo.processEndOfRound();
+
+        objectInfo.eachRobot((robot) -> {
+            matchMaker.addRobot(robot);
+            return true;
+        });
+
+        checkEndOfMatch();
+
+        if (gameStats.getWinner() != null)
+            running = false;
+    }
+
     private void confirmRuinPlacements(ArrayList<MapLocation> ruins) {
         boolean validPlacements = true;
 

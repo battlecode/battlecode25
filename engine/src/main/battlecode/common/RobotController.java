@@ -611,16 +611,6 @@ public strictfp interface RobotController {
     // ****************************
 
     /**
-     * Getter method for the attack strength of a given robot
-     *
-     * 
-     * @return attack damage of the robot
-     *
-     * @battlecode.doc.costlymethod
-     */
-    public int getAttackDamage();
-
-    /**
      * Tests whether this robot can attack the given location. Types of
      * attacks for specific units determine whether or not towers, other
      * robots, or empty tiles can be attacked. 

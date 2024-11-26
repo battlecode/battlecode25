@@ -773,11 +773,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public int getAttackDamage() {
-        return this.robot.getType().attackStrength;
-    }
-
-    @Override
     public boolean canAttack(MapLocation loc) {
         try {
             assertCanAttack(loc);
