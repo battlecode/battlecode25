@@ -530,6 +530,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.gameWorld.getMatchMaker().startTurn();
     }
 
     public void processEndOfTurn() {
@@ -543,6 +544,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         // indicator strings!
         if (!indicatorString.equals(""))
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
+        this.gameWorld.getMatchMaker().endTurn();
         this.roundsAlive++;
     }
 

@@ -707,8 +707,8 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getBread(Team.A), this.teamInfo.getSharedArray(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getBread(Team.B), this.teamInfo.getSharedArray(Team.B));
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A));
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B));
         this.teamInfo.processEndOfRound();
 
         objectInfo.eachRobot((robot) -> {

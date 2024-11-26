@@ -300,143 +300,39 @@ public strictfp class GameMaker {
      * There is only one of these per GameMaker.
      */
     public class MatchMaker {
-        private TIntArrayList robotIds;
-        private TIntArrayList robotLocsX;
-        private TIntArrayList robotLocsY;
-        private TIntArrayList robotMoveCooldowns;
-        private TIntArrayList robotActionCooldowns;
-        private TIntArrayList robotHealths;
-        private TIntArrayList attacksPerformed;
-        private TIntArrayList attackLevels;
-        private TIntArrayList buildsPerformed;
-        private TIntArrayList buildLevels;
-        private TIntArrayList healsPerformed;
-        private TIntArrayList healLevels;
-
-        private TIntArrayList spawnedIds;
-        private TByteArrayList spawnedTeams;
-        private TIntArrayList spawnedLocsX;
-        private TIntArrayList spawnedLocsY;
-        private TIntArrayList diedIds; // ints
-
-        private TIntArrayList actionIds; // ints
-        private TByteArrayList actions; // Actions
-        private TIntArrayList actionTargets; // ints (IDs)
-
-        private TIntArrayList claimedResourcesX;
-        private TIntArrayList claimedResourcesY;
 
         // Round statistics
         private TIntArrayList teamIDs;
-        private TIntArrayList teamBreadAmounts;
-        private TIntArrayList teamAComm;
-        private TIntArrayList teamBComm;
+        private TIntArrayList teamMoneyAmounts;
 
-        private TIntArrayList trapAddedIds;
-        private TIntArrayList trapAddedX;
-        private TIntArrayList trapAddedY;
-        private TByteArrayList trapAddedTypes;
-        private TByteArrayList trapAddedTeams;
+        private TIntArrayList turns; 
 
-        private TIntArrayList trapTriggeredIds;
+        private TIntArrayList diedIds; // ints
 
-        private TIntArrayList digLocsX;
-        private TIntArrayList digLocsY;
-        private TIntArrayList fillLocsX;
-        private TIntArrayList fillLocsY;
+        private int currentRound;
+        
+        //helper to store all of a robot's actions before commiting them at the end of a turn
+        private ArrayList<Integer> currentActions; 
+        private int currentMapWidth = -1;
 
-        private TIntArrayList indicatorStringIds;
-        private ArrayList<String> indicatorStrings;
-
-        // Indicator dots with locations and RGB values
-        private TIntArrayList indicatorDotIds;
-        private TIntArrayList indicatorDotLocsX;
-        private TIntArrayList indicatorDotLocsY;
-        private TIntArrayList indicatorDotRGBsRed;
-        private TIntArrayList indicatorDotRGBsGreen;
-        private TIntArrayList indicatorDotRGBsBlue;
-
-        // Indicator lines with locations and RGB values
-        private TIntArrayList indicatorLineIds;
-        private TIntArrayList indicatorLineStartLocsX;
-        private TIntArrayList indicatorLineStartLocsY;
-        private TIntArrayList indicatorLineEndLocsX;
-        private TIntArrayList indicatorLineEndLocsY;
-        private TIntArrayList indicatorLineRGBsRed;
-        private TIntArrayList indicatorLineRGBsGreen;
-        private TIntArrayList indicatorLineRGBsBlue;
-
-        // Robot IDs and their bytecode usage
-        private TIntArrayList bytecodeIds;
-        private TIntArrayList bytecodesUsed;
 
         // Used to write logs.
         private final ByteArrayOutputStream logger;
 
         public MatchMaker() {
-            this.robotIds = new TIntArrayList();
-            this.robotLocsX = new TIntArrayList();
-            this.robotLocsY = new TIntArrayList();
-            this.robotMoveCooldowns = new TIntArrayList();
-            this.robotActionCooldowns = new TIntArrayList();
-            this.robotHealths = new TIntArrayList();
-            this.attacksPerformed = new TIntArrayList();
-            this.attackLevels = new TIntArrayList();
-            this.buildsPerformed = new TIntArrayList();
-            this.buildLevels = new TIntArrayList();
-            this.healsPerformed = new TIntArrayList();
-            this.healLevels = new TIntArrayList();
-            this.spawnedIds = new TIntArrayList();
-            this.spawnedTeams = new TByteArrayList();
-            this.spawnedLocsX = new TIntArrayList();
-            this.spawnedLocsY = new TIntArrayList();
-            this.diedIds = new TIntArrayList();
-            this.actionIds = new TIntArrayList();
-            this.actions = new TByteArrayList();
-            this.actionTargets = new TIntArrayList();
-            this.claimedResourcesX = new TIntArrayList();
-            this.claimedResourcesY = new TIntArrayList();
             this.teamIDs = new TIntArrayList();
-            this.teamBreadAmounts = new TIntArrayList();
-            this.teamAComm = new TIntArrayList();
-            this.teamBComm = new TIntArrayList();
-            this.trapAddedIds = new TIntArrayList();
-            this.trapAddedX = new TIntArrayList();
-            this.trapAddedY = new TIntArrayList();
-            this.trapAddedTypes = new TByteArrayList();
-            this.trapAddedTeams = new TByteArrayList();
-            this.trapTriggeredIds = new TIntArrayList();
-            this.digLocsX = new TIntArrayList();
-            this.digLocsY = new TIntArrayList();
-            this.fillLocsX = new TIntArrayList();
-            this.fillLocsY = new TIntArrayList();
-            this.indicatorStringIds = new TIntArrayList();
-            this.indicatorStrings = new ArrayList<>();
-            this.indicatorDotIds = new TIntArrayList();
-            this.indicatorDotLocsX = new TIntArrayList();
-            this.indicatorDotLocsY = new TIntArrayList();
-            this.indicatorDotRGBsRed = new TIntArrayList();
-            this.indicatorDotRGBsBlue = new TIntArrayList();
-            this.indicatorDotRGBsGreen = new TIntArrayList();
-            this.indicatorLineIds = new TIntArrayList();
-            this.indicatorLineStartLocsX = new TIntArrayList();
-            this.indicatorLineStartLocsY = new TIntArrayList();
-            this.indicatorLineEndLocsX = new TIntArrayList();
-            this.indicatorLineEndLocsY = new TIntArrayList();
-            this.indicatorLineRGBsRed = new TIntArrayList();
-            this.indicatorLineRGBsBlue = new TIntArrayList();
-            this.indicatorLineRGBsGreen = new TIntArrayList();
-            this.bytecodeIds = new TIntArrayList();
-            this.bytecodesUsed = new TIntArrayList();
+            this.teamMoneyAmounts = new TIntArrayList();
+            this.turns = new TIntArrayList();
+            this.diedIds = new TIntArrayList();
+            this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
         }
 
         public void makeMatchHeader(LiveMap gameMap) {
             changeState(State.IN_GAME, State.IN_MATCH);
-
+            this.currentMapWidth = gameMap.getWidth();
             createEvent((builder) -> {
                 int map = GameMapIO.Serial.serialize(builder, gameMap);
-
                 return EventWrapper.createEventWrapper(builder, Event.MatchHeader,
                         MatchHeader.createMatchHeader(builder, map, gameMap.getRounds()));
             });
@@ -507,7 +403,7 @@ public strictfp class GameMaker {
             }
             // byte[] logs = this.logger.toByteArray();
             this.logger.reset();
-
+            this.currentRound = roundNum;
             createEvent((builder) -> {
 
                 // Round statistics
@@ -633,6 +529,17 @@ public strictfp class GameMaker {
             clearData();
         }
 
+        public void startTurn(){
+            createEvent((builder) => {
+                Turn.startTurn(builder);
+            });
+        }
+
+        public void endTurn(){
+            createEvent((builder) => {Turn.endTurn(builder)});
+            this.currentActions.clear();
+        }
+
         /**
          * @return an outputstream that will be baked into the output file
          */
@@ -708,19 +615,19 @@ public strictfp class GameMaker {
             fillLocsY.add(loc.y);
         }
 
-        public void addTeamInfo(Team team, int breadAmount, int[] sharedArray) {
+        public void addTeamInfo(Team team, int moneyAmount) {
             teamIDs.add(TeamMapping.id(team));
-            teamBreadAmounts.add(breadAmount);
-            if (team == Team.A)
-                teamAComm = new TIntArrayList(sharedArray);
-            else if (team == Team.B)
-                teamBComm = new TIntArrayList(sharedArray);
+            teamMoneyAmounts.add(moneyAmount);
         }
 
         public void addIndicatorString(int id, String string) {
             if (!showIndicators) {
                 return;
             }
+            createEvent((builder) => {
+                int action = IndicatorStringAction.createIndicatorStringAction(builder, builder.createString(string));
+                this.currentActions.add(action);
+            });
             indicatorStringIds.add(id);
             indicatorStrings.add(string);
         }
@@ -729,88 +636,39 @@ public strictfp class GameMaker {
             if (!showIndicators) {
                 return;
             }
-            indicatorDotIds.add(id);
-            indicatorDotLocsX.add(loc.x);
-            indicatorDotLocsY.add(loc.y);
-            indicatorDotRGBsRed.add(red);
-            indicatorDotRGBsGreen.add(green);
-            indicatorDotRGBsBlue.add(blue);
+            createEvent((builder) => {
+                int action = IndicatorDotAction.createIndicatorDotAction(builder, locationToInt(loc), FlatHelpers.RGBtoInt(red, green, blue));
+                this.currentActions.add(action);
+            });
         }
 
         public void addIndicatorLine(int id, MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
             if (!showIndicators) {
                 return;
             }
-            indicatorLineIds.add(id);
-            indicatorLineStartLocsX.add(startLoc.x);
-            indicatorLineStartLocsY.add(startLoc.y);
-            indicatorLineEndLocsX.add(endLoc.x);
-            indicatorLineEndLocsY.add(endLoc.y);
-            indicatorLineRGBsRed.add(red);
-            indicatorLineRGBsGreen.add(green);
-            indicatorLineRGBsBlue.add(blue);
+            createEvent((builder) => {
+                //TODO: this will add to currentActions twice (although idk if action int will be the same for both)
+                int action = IndicatorLineAction.createIndicatorLineAction(builder, locationToInt(startLoc), locationToInt(endLoc), FlatHelpers.RGBtoInt(red, green, blue));
+                this.currentActions.add(action);
+            });
         }
 
-        public void addBytecodes(int id, int bytecodes) {
-            bytecodeIds.add(id);
-            bytecodesUsed.add(bytecodes);
+        public void addBytecodes(int bytecodes) {
+            createEvent((builder) => {
+                Turn.addBytecodesUsed(builder, bytecodes);
+            });
         }
+
+        private int locationToInt(MapLocation loc){
+            return loc.x + this.currentMapWidth * loc.y;
+        }
+
 
         private void clearData() {
-            robotIds.clear();
-            robotLocsX.clear();
-            robotLocsY.clear();
-            robotMoveCooldowns.clear();
-            robotActionCooldowns.clear();
-            robotHealths.clear();
-            attacksPerformed.clear();
-            attackLevels.clear();
-            buildsPerformed.clear();
-            buildLevels.clear();
-            healsPerformed.clear();
-            healLevels.clear();
-            spawnedIds.clear();
-            spawnedTeams.clear();
-            spawnedLocsX.clear();
-            spawnedLocsY.clear();
-            diedIds.clear();
-            actionIds.clear();
-            actions.clear();
-            actionTargets.clear();
-            claimedResourcesX.clear();
-            claimedResourcesY.clear();
-            teamIDs.clear();
-            teamBreadAmounts.clear();
-            teamAComm.clear();
-            teamBComm.clear();
-            trapAddedIds.clear();
-            trapAddedX.clear();
-            trapAddedY.clear();
-            trapAddedTypes.clear();
-            trapAddedTeams.clear();
-            trapTriggeredIds.clear();
-            digLocsX.clear();
-            digLocsY.clear();
-            fillLocsX.clear();
-            fillLocsY.clear();
-            indicatorStringIds.clear();
-            indicatorStrings.clear();
-            indicatorDotIds.clear();
-            indicatorDotLocsX.clear();
-            indicatorDotLocsY.clear();
-            indicatorDotRGBsRed.clear();
-            indicatorDotRGBsBlue.clear();
-            indicatorDotRGBsGreen.clear();
-            indicatorLineIds.clear();
-            indicatorLineStartLocsX.clear();
-            indicatorLineStartLocsY.clear();
-            indicatorLineEndLocsX.clear();
-            indicatorLineEndLocsY.clear();
-            indicatorLineRGBsRed.clear();
-            indicatorLineRGBsBlue.clear();
-            indicatorLineRGBsGreen.clear();
-            bytecodeIds.clear();
-            bytecodesUsed.clear();
+            this.teamIDs.clear();
+            this.teamMoneyAmounts.clear();
+            this.turns.clear();
+            this.diedIds.clear();
         }
     }
 }
