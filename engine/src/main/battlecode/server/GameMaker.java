@@ -262,120 +262,26 @@ public strictfp class GameMaker {
             int[] teamsVec = { teamAOffset, teamBOffset };
 
             int teamsOffset = GameHeader.createTeamsVector(builder, teamsVec);
-            int specializationMetadataOffset = makeSpecializationMetadata(builder);
-            int buildActionMetadataOffset = makeBuildActionMetadata(builder);
-            int globalUpgradeMetadataOffset = makeGlobalUpgradeMetadata(builder);
 
             GameplayConstants.startGameplayConstants(builder);
-            GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
-            GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
-            GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
-            GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
-            GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
-            GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
-            GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
+            //TODO: what gameplay constants do we need?
+            // GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
+            // GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
+            // GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
+            // GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
+            // GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
+            // GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
+            // GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
             int constantsOffset = GameplayConstants.endGameplayConstants(builder);
 
             GameHeader.startGameHeader(builder);
             GameHeader.addSpecVersion(builder, specVersionOffset);
             GameHeader.addTeams(builder, teamsOffset);
-            GameHeader.addSpecializationMetadata(builder, specializationMetadataOffset);
-            GameHeader.addBuildActionMetadata(builder, buildActionMetadataOffset);
-            GameHeader.addGlobalUpgradeMetadata(builder, globalUpgradeMetadataOffset);
             GameHeader.addConstants(builder, constantsOffset);
             int gameHeaderOffset = GameHeader.endGameHeader(builder);
 
             return EventWrapper.createEventWrapper(builder, Event.GameHeader, gameHeaderOffset);
         });
-    }
-
-    public int makeSpecializationMetadata(FlatBufferBuilder builder) {
-        TIntArrayList specializationMetadataOffsets = new TIntArrayList();
-
-        for (SkillType type : SkillType.values()) {
-            for (int l = 0; l <= 6; l++) {
-                SpecializationMetadata.startSpecializationMetadata(builder);
-                SpecializationMetadata.addType(builder, skillTypeToSpecializationType(type));
-                SpecializationMetadata.addLevel(builder, l);
-                SpecializationMetadata.addCooldownReduction(builder, type.getCooldown(l));
-                int effect = type.getSkillEffect(l);
-                if (type == SkillType.ATTACK) {
-                    SpecializationMetadata.addDamageIncrease(builder, effect);
-                    SpecializationMetadata.addHealIncrease(builder, 0);
-                } else if (type == SkillType.BUILD) {
-                    SpecializationMetadata.addDamageIncrease(builder, 0);
-                    SpecializationMetadata.addHealIncrease(builder, 0);
-                } else if (type == SkillType.HEAL) {
-                    SpecializationMetadata.addDamageIncrease(builder, 0);
-                    SpecializationMetadata.addHealIncrease(builder, effect);
-                }
-                specializationMetadataOffsets.add(SpecializationMetadata.endSpecializationMetadata(builder));
-            }
-        }
-        return GameHeader.createSpecializationMetadataVector(builder, specializationMetadataOffsets.toArray());
-    }
-
-    public int makeBuildActionMetadata(FlatBufferBuilder builder) {
-        TIntArrayList buildActionMetadataOffsets = new TIntArrayList();
-        for (TrapType type : TrapType.values()) {
-            BuildActionMetadata.startBuildActionMetadata(builder);
-            BuildActionMetadata.addType(builder, trapTypeToBuildActionType(type));
-            BuildActionMetadata.addCost(builder, type.buildCost);
-            BuildActionMetadata.addBuildCooldown(builder, type.actionCooldownIncrease);
-            buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        }
-        BuildActionMetadata.startBuildActionMetadata(builder);
-        BuildActionMetadata.addType(builder, BuildActionType.DIG);
-        BuildActionMetadata.addCost(builder, GameConstants.DIG_COST);
-        BuildActionMetadata.addBuildCooldown(builder, GameConstants.DIG_COOLDOWN);
-        buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        BuildActionMetadata.startBuildActionMetadata(builder);
-        BuildActionMetadata.addType(builder, BuildActionType.FILL);
-        BuildActionMetadata.addCost(builder, GameConstants.FILL_COST);
-        BuildActionMetadata.addBuildCooldown(builder, GameConstants.FILL_COOLDOWN);
-        buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        return GameHeader.createBuildActionMetadataVector(builder, buildActionMetadataOffsets.toArray());
-    }
-
-    public int makeGlobalUpgradeMetadata(FlatBufferBuilder builder) {
-        TIntArrayList globalUpgradeMetadataOffsets = new TIntArrayList();
-        for (GlobalUpgrade upgrade : GlobalUpgrade.values()) {
-            GlobalUpgradeMetadata.startGlobalUpgradeMetadata(builder);
-            GlobalUpgradeMetadata.addType(builder, FlatHelpers.getGlobalUpgradeTypeFromGlobalUpgrade(upgrade));
-            GlobalUpgradeMetadata.addUpgradeAmount(builder, getUpgradeAmount(upgrade));
-            globalUpgradeMetadataOffsets.add(GlobalUpgradeMetadata.endGlobalUpgradeMetadata(builder));
-        }
-        return GameHeader.createGlobalUpgradeMetadataVector(builder, globalUpgradeMetadataOffsets.toArray());
-    }
-
-    private byte skillTypeToSpecializationType(SkillType type) {
-        if (type == SkillType.ATTACK)
-            return SpecializationType.ATTACK;
-        if (type == SkillType.BUILD)
-            return SpecializationType.BUILD;
-        if (type == SkillType.HEAL)
-            return SpecializationType.HEAL;
-        return Byte.MIN_VALUE;
-    }
-
-    private byte trapTypeToBuildActionType(TrapType type) {
-        if (type == TrapType.EXPLOSIVE)
-            return BuildActionType.EXPLOSIVE_TRAP;
-        if (type == TrapType.WATER)
-            return BuildActionType.WATER_TRAP;
-        if (type == TrapType.STUN)
-            return BuildActionType.STUN_TRAP;
-        return Byte.MIN_VALUE;
-    }
-
-    private int getUpgradeAmount(GlobalUpgrade gu) {
-        if (gu == GlobalUpgrade.ATTACK)
-            return gu.baseAttackChange;
-        if (gu == GlobalUpgrade.HEALING)
-            return gu.baseHealChange;
-        if (gu == GlobalUpgrade.CAPTURING)
-            return gu.flagReturnDelayChange;
-        return 0;
     }
 
     public void makeGameFooter(Team winner) {
