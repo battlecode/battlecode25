@@ -7,7 +7,6 @@ import battlecode.schema.VecTable;
 import battlecode.schema.WinType;
 import battlecode.world.DominationFactor;
 import battlecode.schema.Action;
-import battlecode.schema.RGBTable;
 import com.google.flatbuffers.FlatBufferBuilder;
 import gnu.trove.TByteCollection;
 import gnu.trove.list.TByteList;
@@ -26,6 +25,7 @@ import java.util.function.ObjIntConsumer;
  */
 public class FlatHelpers {
 
+    //assumes all robots are level 1 (can change levels manually if needed)
     public static UnitType getUnitTypeFromRobotType(byte b){
         switch (b){
             case 1:
@@ -42,6 +42,37 @@ public class FlatHelpers {
                 return UnitType.MOPPER;
             default:
                 throw new RuntimeException("No unit type for " + b);
+        }
+    }
+
+    public static byte getRobotTypeFromUnitType(UnitType type){
+        switch(type) {
+            case LEVEL_ONE_PAINT_TOWER:
+                return 1;
+            case LEVEL_TWO_PAINT_TOWER:
+                return 1;
+            case LEVEL_THREE_PAINT_TOWER:
+                return 1;
+            case LEVEL_ONE_MONEY_TOWER:
+                return 2;
+            case LEVEL_TWO_MONEY_TOWER:
+                return 2;
+            case LEVEL_THREE_MONEY_TOWER:
+                return 2;
+            case LEVEL_ONE_DEFENSE_TOWER:
+                return 3;
+            case LEVEL_TWO_DEFENSE_TOWER:
+                return 3;
+            case LEVEL_THREE_DEFENSE_TOWER:
+                return 3;
+            case SOLDIER:
+                return 4;
+            case SPLASHER:
+                return 5;
+            case MOPPER:
+                return 6;
+            default:
+                throw new RuntimeException("Cannot find byte encoding for " + type);
         }
     }
 
