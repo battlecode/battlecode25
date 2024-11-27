@@ -18,6 +18,11 @@ public class RobotInfo {
     public final Team team;
 
     /**
+     * The type of the robot.
+     */
+    public final UnitType type;
+
+    /**
      * The health of the robot.
      */
     public final int health;
@@ -32,10 +37,11 @@ public class RobotInfo {
      */
     public final int paintAmount;
 
-    public RobotInfo(int ID, Team team, int health, MapLocation location, int paintAmount) {
+    public RobotInfo(int ID, Team team, UnitType type, int health, MapLocation location, int paintAmount) {
         super();
         this.ID = ID;
         this.team = team;
+        this.type = type;
         this.health = health;
         this.location = location;
         this.paintAmount = paintAmount;
@@ -75,6 +81,15 @@ public class RobotInfo {
      */
     public MapLocation getLocation() {
         return this.location;
+    }
+
+    /**
+     * Returns this robot's type.
+     * 
+     * @return the type of this robot.
+     */
+    public UnitType getType(){
+        return this.type;
     }
 
     /**

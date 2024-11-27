@@ -73,6 +73,9 @@ public class GameConstants {
     /** Paint capacity for mopper robots */
     public static final int PAINT_CAPACITY_MOPPER = 100;
 
+    /** The amount of a paint a paint tower starts with. */
+    public static final int INITIAL_PAINT_TOWER_PAINT = 500;
+
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;
 

@@ -592,6 +592,7 @@ public strictfp class GameWorld {
     public void processBeginningOfRound() {
         currentRound++;
 
+        this.getMatchMaker().startRound(currentRound);
         // Process beginning of each robot's round
         objectInfo.eachRobot((robot) -> {
             robot.processBeginningOfRound();
@@ -743,12 +744,11 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A));
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B));
         this.teamInfo.processEndOfRound();
 
-        objectInfo.eachRobot((robot) -> {
-            matchMaker.addRobot(robot);
-            return true;
-        });
+        this.getMatchMaker().endRound();
 
         checkEndOfMatch();
 

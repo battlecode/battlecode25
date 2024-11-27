@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { CurrentMap, StaticMap } from '../../../playback/Map'
+import { StaticMap } from '../../../playback/Map'
 import { MapEditorBrushRow } from './map-editor-brushes'
 import Bodies from '../../../playback/Bodies'
 import Game from '../../../playback/Game'
@@ -7,12 +7,13 @@ import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
 import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
-import { EventType, publishEvent, useListenEvent } from '../../../app-events'
 import { MapEditorBrush } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
+import gameRunner, { useRound } from '../../../playback/GameRunner'
+import { GameRenderer } from '../../../playback/GameRenderer'
 
 type MapParams = {
     width: number
@@ -26,7 +27,7 @@ interface Props {
 }
 
 export const MapEditorPage: React.FC<Props> = (props) => {
-    const context = useAppContext()
+    const round = useRound()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
     const [brushes, setBrushes] = React.useState<MapEditorBrush[]>([])
@@ -43,15 +44,13 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setBrushes(brushes.map((b) => b.opened(b === brush)))
     }
 
-    const mapEmpty = () =>
-        !context.state.activeMatch?.currentTurn ||
-        (context.state.activeMatch.currentTurn.map.isEmpty() && context.state.activeMatch.currentTurn.bodies.isEmpty())
+    const mapEmpty = () => !round || (round.map.isEmpty() && round.bodies.isEmpty())
 
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
 
         openBrush.apply(point.x, point.y, openBrush.fields)
-        publishEvent(EventType.INITIAL_RENDER, {})
+        GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
 
@@ -73,7 +72,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!e.target.files || e.target.files.length == 0) return
         const file = e.target.files[0]
         loadFileAsMap(file).then((game) => {
-            const map = game.currentMatch!.currentTurn!.map
+            const map = game.currentMatch!.currentRound!.map
             setMapParams({ width: map.width, height: map.height, symmetry: map.staticMap.symmetry, imported: game })
         })
     }
@@ -84,8 +83,11 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setMapParams({ ...mapParams, imported: null })
     }
 
-    useListenEvent(EventType.TILE_CLICK, applyBrush, [brushes])
-    useListenEvent(EventType.TILE_DRAG, applyBrush, [brushes])
+    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
+
+    useEffect(() => {
+        if (canvasMouseDown && hoveredTile) applyBrush(hoveredTile)
+    }, [canvasMouseDown, hoveredTile])
 
     useEffect(() => {
         if (props.open) {
@@ -102,23 +104,15 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: editGame.current ?? undefined,
-                activeMatch: editGame.current?.currentMatch
-            }))
+            gameRunner.setMatch(editGame.current.currentMatch)
 
-            const turn = editGame.current.currentMatch!.currentTurn
-            const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
+            const round = editGame.current.currentMatch!.currentRound
+            const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
             brushes[0].open = true
             setBrushes(brushes)
-            setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
+            setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: undefined,
-                activeMatch: undefined
-            }))
+            gameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 
@@ -181,7 +175,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                 <div className="flex flex-row mt-8">
                     <BrightButton
                         onClick={() => {
-                            if (!context.state.activeMatch?.currentTurn) return
+                            if (!round) return
                             setMapNameOpen(true)
                         }}
                     >
@@ -199,7 +193,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                         setMapNameOpen(false)
                         return
                     }
-                    const error = exportMap(context.state.activeMatch!.currentTurn, name)
+                    const error = exportMap(round!, name)
                     setMapError(error)
                     if (!error) setMapNameOpen(false)
                 }}

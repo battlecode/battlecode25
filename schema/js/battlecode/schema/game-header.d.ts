@@ -1,8 +1,6 @@
 import * as flatbuffers from 'flatbuffers';
-import { BuildActionMetadata } from '../../battlecode/schema/build-action-metadata';
 import { GameplayConstants } from '../../battlecode/schema/gameplay-constants';
-import { GlobalUpgradeMetadata } from '../../battlecode/schema/global-upgrade-metadata';
-import { SpecializationMetadata } from '../../battlecode/schema/specialization-metadata';
+import { RobotTypeMetadata } from '../../battlecode/schema/robot-type-metadata';
 import { TeamData } from '../../battlecode/schema/team-data';
 /**
  * The first event sent in the game. Contains all metadata about the game.
@@ -17,27 +15,17 @@ export declare class GameHeader {
     specVersion(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     teams(index: number, obj?: TeamData): TeamData | null;
     teamsLength(): number;
-    specializationMetadata(index: number, obj?: SpecializationMetadata): SpecializationMetadata | null;
-    specializationMetadataLength(): number;
-    buildActionMetadata(index: number, obj?: BuildActionMetadata): BuildActionMetadata | null;
-    buildActionMetadataLength(): number;
-    globalUpgradeMetadata(index: number, obj?: GlobalUpgradeMetadata): GlobalUpgradeMetadata | null;
-    globalUpgradeMetadataLength(): number;
+    robotTypeMetadata(index: number, obj?: RobotTypeMetadata): RobotTypeMetadata | null;
+    robotTypeMetadataLength(): number;
     constants(obj?: GameplayConstants): GameplayConstants | null;
     static startGameHeader(builder: flatbuffers.Builder): void;
     static addSpecVersion(builder: flatbuffers.Builder, specVersionOffset: flatbuffers.Offset): void;
     static addTeams(builder: flatbuffers.Builder, teamsOffset: flatbuffers.Offset): void;
     static createTeamsVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
     static startTeamsVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addSpecializationMetadata(builder: flatbuffers.Builder, specializationMetadataOffset: flatbuffers.Offset): void;
-    static createSpecializationMetadataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
-    static startSpecializationMetadataVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addBuildActionMetadata(builder: flatbuffers.Builder, buildActionMetadataOffset: flatbuffers.Offset): void;
-    static createBuildActionMetadataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
-    static startBuildActionMetadataVector(builder: flatbuffers.Builder, numElems: number): void;
-    static addGlobalUpgradeMetadata(builder: flatbuffers.Builder, globalUpgradeMetadataOffset: flatbuffers.Offset): void;
-    static createGlobalUpgradeMetadataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
-    static startGlobalUpgradeMetadataVector(builder: flatbuffers.Builder, numElems: number): void;
+    static addRobotTypeMetadata(builder: flatbuffers.Builder, robotTypeMetadataOffset: flatbuffers.Offset): void;
+    static createRobotTypeMetadataVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
+    static startRobotTypeMetadataVector(builder: flatbuffers.Builder, numElems: number): void;
     static addConstants(builder: flatbuffers.Builder, constantsOffset: flatbuffers.Offset): void;
     static endGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset;
 }

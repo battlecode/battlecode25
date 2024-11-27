@@ -2,7 +2,7 @@ import { schema, flatbuffers } from 'battlecode-schema'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import assert from 'assert'
-import { EventType, publishEvent } from '../../../app-events'
+import gameRunner from '../../../playback/GameRunner'
 
 export type FakeGameWrapper = {
     events: (index: number, unusedEventSlot: any) => schema.EventWrapper | null
@@ -14,7 +14,7 @@ export default class WebSocketListener {
     pollEvery: number = 500
     activeGame: Game | null = null
     stream: boolean = false
-    lastSetTurn: number = 0
+    lastSetRound: number = 0
     constructor(
         private shouldStream: boolean,
         readonly onGameCreated: (game: Game) => void,
@@ -30,7 +30,7 @@ export default class WebSocketListener {
 
     private reset() {
         this.activeGame = null
-        this.lastSetTurn = 0
+        this.lastSetRound = 0
     }
 
     private poll() {
@@ -57,17 +57,19 @@ export default class WebSocketListener {
         if (!this.activeGame) return
 
         const match = this.activeGame.matches[this.activeGame.matches.length - 1]
-        if (match) {
-            // Auto progress the turn if the user hasn't done it themselves
-            if (match.maxTurn > 0 && match.currentTurn.turnNumber == this.lastSetTurn) {
-                // Jump to the second to last turn so that we ensure nextDelta always
+        if (match && match === gameRunner.match) {
+            // Auto progress the round if the user hasn't done it themselves
+            // We only want to do this if the currently selected match is the one being updated
+
+            if (match.maxRound > 0 && match.currentRound.roundNumber == this.lastSetRound) {
+                // Jump to the second to last round so that we ensure nextDelta always
                 // exists (fixes bug where snapshot rounds don't have nextDelta which
                 // causes a visual jump)
-                match.jumpToTurn(match.maxTurn - 1, true)
-                this.lastSetTurn = match.currentTurn.turnNumber
+                gameRunner.jumpToRound(match.maxRound - 1)
+                this.lastSetRound = match.currentRound.roundNumber
             } else {
-                // Publish anyways so the control bar updates
-                publishEvent(EventType.TURN_PROGRESS, {})
+                // Trigger match update so anyone accessing round/max round gets updated
+                gameRunner.setMatch(match)
             }
         }
 
@@ -105,12 +107,11 @@ export default class WebSocketListener {
 
                 const match = this.activeGame.matches[this.activeGame.matches.length - 1]
                 this.onMatchCreated(match)
-                this.lastSetTurn = 0
+                this.lastSetRound = 0
 
                 break
             }
             case schema.Event.GameFooter: {
-                publishEvent(EventType.TURN_PROGRESS, {})
                 this.onGameComplete(this.activeGame!)
                 this.reset()
 

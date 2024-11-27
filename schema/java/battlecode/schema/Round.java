@@ -20,14 +20,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * A single time-step in a Game.
- * The bulk of the data in the file is stored in tables like this.
- * Note that a struct-of-arrays format is more space efficient than an array-
- * of-structs.
+ * A single time-step in a Game, which contains a list of robot turns
  */
 @SuppressWarnings("unused")
 public final class Round extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
+  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
   public static Round getRootAsRound(ByteBuffer _bb) { return getRootAsRound(_bb, new Round()); }
   public static Round getRootAsRound(ByteBuffer _bb, Round obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
@@ -51,406 +48,59 @@ public final class Round extends Table {
   public IntVector teamResourceAmountsVector(IntVector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
   public ByteBuffer teamResourceAmountsAsByteBuffer() { return __vector_as_bytebuffer(6, 4); }
   public ByteBuffer teamResourceAmountsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 6, 4); }
-  public battlecode.schema.CommTable teamCommunication() { return teamCommunication(new battlecode.schema.CommTable()); }
-  public battlecode.schema.CommTable teamCommunication(battlecode.schema.CommTable obj) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public int robotIds(int j) { int o = __offset(10); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int robotIdsLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector robotIdsVector() { return robotIdsVector(new IntVector()); }
-  public IntVector robotIdsVector(IntVector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer robotIdsAsByteBuffer() { return __vector_as_bytebuffer(10, 4); }
-  public ByteBuffer robotIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 10, 4); }
-  public battlecode.schema.VecTable robotLocs() { return robotLocs(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable robotLocs(battlecode.schema.VecTable obj) { int o = __offset(12); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public int robotMoveCooldowns(int j) { int o = __offset(14); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int robotMoveCooldownsLength() { int o = __offset(14); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector robotMoveCooldownsVector() { return robotMoveCooldownsVector(new IntVector()); }
-  public IntVector robotMoveCooldownsVector(IntVector obj) { int o = __offset(14); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer robotMoveCooldownsAsByteBuffer() { return __vector_as_bytebuffer(14, 4); }
-  public ByteBuffer robotMoveCooldownsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 14, 4); }
-  public int robotActionCooldowns(int j) { int o = __offset(16); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int robotActionCooldownsLength() { int o = __offset(16); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector robotActionCooldownsVector() { return robotActionCooldownsVector(new IntVector()); }
-  public IntVector robotActionCooldownsVector(IntVector obj) { int o = __offset(16); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer robotActionCooldownsAsByteBuffer() { return __vector_as_bytebuffer(16, 4); }
-  public ByteBuffer robotActionCooldownsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 16, 4); }
-  public int robotHealths(int j) { int o = __offset(18); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int robotHealthsLength() { int o = __offset(18); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector robotHealthsVector() { return robotHealthsVector(new IntVector()); }
-  public IntVector robotHealthsVector(IntVector obj) { int o = __offset(18); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer robotHealthsAsByteBuffer() { return __vector_as_bytebuffer(18, 4); }
-  public ByteBuffer robotHealthsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 18, 4); }
-  public int attacksPerformed(int j) { int o = __offset(20); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int attacksPerformedLength() { int o = __offset(20); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector attacksPerformedVector() { return attacksPerformedVector(new IntVector()); }
-  public IntVector attacksPerformedVector(IntVector obj) { int o = __offset(20); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer attacksPerformedAsByteBuffer() { return __vector_as_bytebuffer(20, 4); }
-  public ByteBuffer attacksPerformedInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 20, 4); }
-  public int attackLevels(int j) { int o = __offset(22); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int attackLevelsLength() { int o = __offset(22); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector attackLevelsVector() { return attackLevelsVector(new IntVector()); }
-  public IntVector attackLevelsVector(IntVector obj) { int o = __offset(22); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer attackLevelsAsByteBuffer() { return __vector_as_bytebuffer(22, 4); }
-  public ByteBuffer attackLevelsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 22, 4); }
-  public int buildsPerformed(int j) { int o = __offset(24); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int buildsPerformedLength() { int o = __offset(24); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector buildsPerformedVector() { return buildsPerformedVector(new IntVector()); }
-  public IntVector buildsPerformedVector(IntVector obj) { int o = __offset(24); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer buildsPerformedAsByteBuffer() { return __vector_as_bytebuffer(24, 4); }
-  public ByteBuffer buildsPerformedInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 24, 4); }
-  public int buildLevels(int j) { int o = __offset(26); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int buildLevelsLength() { int o = __offset(26); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector buildLevelsVector() { return buildLevelsVector(new IntVector()); }
-  public IntVector buildLevelsVector(IntVector obj) { int o = __offset(26); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer buildLevelsAsByteBuffer() { return __vector_as_bytebuffer(26, 4); }
-  public ByteBuffer buildLevelsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 26, 4); }
-  public int healsPerformed(int j) { int o = __offset(28); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int healsPerformedLength() { int o = __offset(28); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector healsPerformedVector() { return healsPerformedVector(new IntVector()); }
-  public IntVector healsPerformedVector(IntVector obj) { int o = __offset(28); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer healsPerformedAsByteBuffer() { return __vector_as_bytebuffer(28, 4); }
-  public ByteBuffer healsPerformedInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 28, 4); }
-  public int healLevels(int j) { int o = __offset(30); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int healLevelsLength() { int o = __offset(30); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector healLevelsVector() { return healLevelsVector(new IntVector()); }
-  public IntVector healLevelsVector(IntVector obj) { int o = __offset(30); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer healLevelsAsByteBuffer() { return __vector_as_bytebuffer(30, 4); }
-  public ByteBuffer healLevelsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 30, 4); }
   /**
-   * New bodies.
+   * Ordered turn data for each robot during the round
    */
-  public battlecode.schema.SpawnedBodyTable spawnedBodies() { return spawnedBodies(new battlecode.schema.SpawnedBodyTable()); }
-  public battlecode.schema.SpawnedBodyTable spawnedBodies(battlecode.schema.SpawnedBodyTable obj) { int o = __offset(32); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public battlecode.schema.Turn turns(int j) { return turns(new battlecode.schema.Turn(), j); }
+  public battlecode.schema.Turn turns(battlecode.schema.Turn obj, int j) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int turnsLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public battlecode.schema.Turn.Vector turnsVector() { return turnsVector(new battlecode.schema.Turn.Vector()); }
+  public battlecode.schema.Turn.Vector turnsVector(battlecode.schema.Turn.Vector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
   /**
    * The IDs of bodies that died.
    */
-  public int diedIds(int j) { int o = __offset(34); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int diedIdsLength() { int o = __offset(34); return o != 0 ? __vector_len(o) : 0; }
+  public int diedIds(int j) { int o = __offset(10); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int diedIdsLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
   public IntVector diedIdsVector() { return diedIdsVector(new IntVector()); }
-  public IntVector diedIdsVector(IntVector obj) { int o = __offset(34); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer diedIdsAsByteBuffer() { return __vector_as_bytebuffer(34, 4); }
-  public ByteBuffer diedIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 34, 4); }
-  /**
-   * The IDs of robots that performed actions.
-   * IDs may repeat.
-   */
-  public int actionIds(int j) { int o = __offset(36); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int actionIdsLength() { int o = __offset(36); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector actionIdsVector() { return actionIdsVector(new IntVector()); }
-  public IntVector actionIdsVector(IntVector obj) { int o = __offset(36); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer actionIdsAsByteBuffer() { return __vector_as_bytebuffer(36, 4); }
-  public ByteBuffer actionIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 36, 4); }
-  /**
-   * The actions performed. These actions allow us to track many things about the current state.
-   */
-  public byte actions(int j) { int o = __offset(38); return o != 0 ? bb.get(__vector(o) + j * 1) : 0; }
-  public int actionsLength() { int o = __offset(38); return o != 0 ? __vector_len(o) : 0; }
-  public ByteVector actionsVector() { return actionsVector(new ByteVector()); }
-  public ByteVector actionsVector(ByteVector obj) { int o = __offset(38); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer actionsAsByteBuffer() { return __vector_as_bytebuffer(38, 1); }
-  public ByteBuffer actionsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 38, 1); }
-  /**
-   * The 'targets' of the performed actions. Actions without targets may have any value
-   */
-  public int actionTargets(int j) { int o = __offset(40); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int actionTargetsLength() { int o = __offset(40); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector actionTargetsVector() { return actionTargetsVector(new IntVector()); }
-  public IntVector actionTargetsVector(IntVector obj) { int o = __offset(40); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer actionTargetsAsByteBuffer() { return __vector_as_bytebuffer(40, 4); }
-  public ByteBuffer actionTargetsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 40, 4); }
-  public battlecode.schema.VecTable claimedResourcePiles() { return claimedResourcePiles(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable claimedResourcePiles(battlecode.schema.VecTable obj) { int o = __offset(42); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public int trapAddedIds(int j) { int o = __offset(44); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int trapAddedIdsLength() { int o = __offset(44); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector trapAddedIdsVector() { return trapAddedIdsVector(new IntVector()); }
-  public IntVector trapAddedIdsVector(IntVector obj) { int o = __offset(44); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer trapAddedIdsAsByteBuffer() { return __vector_as_bytebuffer(44, 4); }
-  public ByteBuffer trapAddedIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 44, 4); }
-  public battlecode.schema.VecTable trapAddedLocations() { return trapAddedLocations(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable trapAddedLocations(battlecode.schema.VecTable obj) { int o = __offset(46); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public byte trapAddedTypes(int j) { int o = __offset(48); return o != 0 ? bb.get(__vector(o) + j * 1) : 0; }
-  public int trapAddedTypesLength() { int o = __offset(48); return o != 0 ? __vector_len(o) : 0; }
-  public ByteVector trapAddedTypesVector() { return trapAddedTypesVector(new ByteVector()); }
-  public ByteVector trapAddedTypesVector(ByteVector obj) { int o = __offset(48); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer trapAddedTypesAsByteBuffer() { return __vector_as_bytebuffer(48, 1); }
-  public ByteBuffer trapAddedTypesInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 48, 1); }
-  public byte trapAddedTeams(int j) { int o = __offset(50); return o != 0 ? bb.get(__vector(o) + j * 1) : 0; }
-  public int trapAddedTeamsLength() { int o = __offset(50); return o != 0 ? __vector_len(o) : 0; }
-  public ByteVector trapAddedTeamsVector() { return trapAddedTeamsVector(new ByteVector()); }
-  public ByteVector trapAddedTeamsVector(ByteVector obj) { int o = __offset(50); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer trapAddedTeamsAsByteBuffer() { return __vector_as_bytebuffer(50, 1); }
-  public ByteBuffer trapAddedTeamsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 50, 1); }
-  public int trapTriggeredIds(int j) { int o = __offset(52); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int trapTriggeredIdsLength() { int o = __offset(52); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector trapTriggeredIdsVector() { return trapTriggeredIdsVector(new IntVector()); }
-  public IntVector trapTriggeredIdsVector(IntVector obj) { int o = __offset(52); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer trapTriggeredIdsAsByteBuffer() { return __vector_as_bytebuffer(52, 4); }
-  public ByteBuffer trapTriggeredIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 52, 4); }
-  public battlecode.schema.VecTable digLocations() { return digLocations(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable digLocations(battlecode.schema.VecTable obj) { int o = __offset(54); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public battlecode.schema.VecTable fillLocations() { return fillLocations(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable fillLocations(battlecode.schema.VecTable obj) { int o = __offset(56); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * The IDs of the robots who changed their indicator strings
-   */
-  public int indicatorStringIds(int j) { int o = __offset(58); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int indicatorStringIdsLength() { int o = __offset(58); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector indicatorStringIdsVector() { return indicatorStringIdsVector(new IntVector()); }
-  public IntVector indicatorStringIdsVector(IntVector obj) { int o = __offset(58); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer indicatorStringIdsAsByteBuffer() { return __vector_as_bytebuffer(58, 4); }
-  public ByteBuffer indicatorStringIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 58, 4); }
-  /**
-   * The messages of the robots who changed their indicator strings
-   */
-  public String indicatorStrings(int j) { int o = __offset(60); return o != 0 ? __string(__vector(o) + j * 4) : null; }
-  public int indicatorStringsLength() { int o = __offset(60); return o != 0 ? __vector_len(o) : 0; }
-  public StringVector indicatorStringsVector() { return indicatorStringsVector(new StringVector()); }
-  public StringVector indicatorStringsVector(StringVector obj) { int o = __offset(60); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
-  /**
-   * The IDs of bodies that set indicator dots
-   */
-  public int indicatorDotIds(int j) { int o = __offset(62); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int indicatorDotIdsLength() { int o = __offset(62); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector indicatorDotIdsVector() { return indicatorDotIdsVector(new IntVector()); }
-  public IntVector indicatorDotIdsVector(IntVector obj) { int o = __offset(62); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer indicatorDotIdsAsByteBuffer() { return __vector_as_bytebuffer(62, 4); }
-  public ByteBuffer indicatorDotIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 62, 4); }
-  /**
-   * The location of the indicator dots
-   */
-  public battlecode.schema.VecTable indicatorDotLocs() { return indicatorDotLocs(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable indicatorDotLocs(battlecode.schema.VecTable obj) { int o = __offset(64); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * The RGB values of the indicator dots
-   */
-  public battlecode.schema.RGBTable indicatorDotRgbs() { return indicatorDotRgbs(new battlecode.schema.RGBTable()); }
-  public battlecode.schema.RGBTable indicatorDotRgbs(battlecode.schema.RGBTable obj) { int o = __offset(66); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * The IDs of bodies that set indicator lines
-   */
-  public int indicatorLineIds(int j) { int o = __offset(68); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int indicatorLineIdsLength() { int o = __offset(68); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector indicatorLineIdsVector() { return indicatorLineIdsVector(new IntVector()); }
-  public IntVector indicatorLineIdsVector(IntVector obj) { int o = __offset(68); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer indicatorLineIdsAsByteBuffer() { return __vector_as_bytebuffer(68, 4); }
-  public ByteBuffer indicatorLineIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 68, 4); }
-  /**
-   * The start location of the indicator lines
-   */
-  public battlecode.schema.VecTable indicatorLineStartLocs() { return indicatorLineStartLocs(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable indicatorLineStartLocs(battlecode.schema.VecTable obj) { int o = __offset(70); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * The end location of the indicator lines
-   */
-  public battlecode.schema.VecTable indicatorLineEndLocs() { return indicatorLineEndLocs(new battlecode.schema.VecTable()); }
-  public battlecode.schema.VecTable indicatorLineEndLocs(battlecode.schema.VecTable obj) { int o = __offset(72); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * The RGB values of the indicator lines
-   */
-  public battlecode.schema.RGBTable indicatorLineRgbs() { return indicatorLineRgbs(new battlecode.schema.RGBTable()); }
-  public battlecode.schema.RGBTable indicatorLineRgbs(battlecode.schema.RGBTable obj) { int o = __offset(74); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public IntVector diedIdsVector(IntVector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer diedIdsAsByteBuffer() { return __vector_as_bytebuffer(10, 4); }
+  public ByteBuffer diedIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 10, 4); }
   /**
    * The first sent Round in a match should have index 1. (The starting state,
    * created by the MatchHeader, can be thought to have index 0.)
    * It should increase by one for each following round.
    */
-  public int roundId() { int o = __offset(76); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  /**
-   * The IDs of player bodies.
-   */
-  public int bytecodeIds(int j) { int o = __offset(78); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int bytecodeIdsLength() { int o = __offset(78); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector bytecodeIdsVector() { return bytecodeIdsVector(new IntVector()); }
-  public IntVector bytecodeIdsVector(IntVector obj) { int o = __offset(78); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer bytecodeIdsAsByteBuffer() { return __vector_as_bytebuffer(78, 4); }
-  public ByteBuffer bytecodeIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 78, 4); }
-  /**
-   * The bytecodes used by the player bodies.
-   */
-  public int bytecodesUsed(int j) { int o = __offset(80); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int bytecodesUsedLength() { int o = __offset(80); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector bytecodesUsedVector() { return bytecodesUsedVector(new IntVector()); }
-  public IntVector bytecodesUsedVector(IntVector obj) { int o = __offset(80); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer bytecodesUsedAsByteBuffer() { return __vector_as_bytebuffer(80, 4); }
-  public ByteBuffer bytecodesUsedInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 80, 4); }
+  public int roundId() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
   public static int createRound(FlatBufferBuilder builder,
       int teamIdsOffset,
       int teamResourceAmountsOffset,
-      int teamCommunicationOffset,
-      int robotIdsOffset,
-      int robotLocsOffset,
-      int robotMoveCooldownsOffset,
-      int robotActionCooldownsOffset,
-      int robotHealthsOffset,
-      int attacksPerformedOffset,
-      int attackLevelsOffset,
-      int buildsPerformedOffset,
-      int buildLevelsOffset,
-      int healsPerformedOffset,
-      int healLevelsOffset,
-      int spawnedBodiesOffset,
+      int turnsOffset,
       int diedIdsOffset,
-      int actionIdsOffset,
-      int actionsOffset,
-      int actionTargetsOffset,
-      int claimedResourcePilesOffset,
-      int trapAddedIdsOffset,
-      int trapAddedLocationsOffset,
-      int trapAddedTypesOffset,
-      int trapAddedTeamsOffset,
-      int trapTriggeredIdsOffset,
-      int digLocationsOffset,
-      int fillLocationsOffset,
-      int indicatorStringIdsOffset,
-      int indicatorStringsOffset,
-      int indicatorDotIdsOffset,
-      int indicatorDotLocsOffset,
-      int indicatorDotRgbsOffset,
-      int indicatorLineIdsOffset,
-      int indicatorLineStartLocsOffset,
-      int indicatorLineEndLocsOffset,
-      int indicatorLineRgbsOffset,
-      int roundId,
-      int bytecodeIdsOffset,
-      int bytecodesUsedOffset) {
-    builder.startTable(39);
-    Round.addBytecodesUsed(builder, bytecodesUsedOffset);
-    Round.addBytecodeIds(builder, bytecodeIdsOffset);
+      int roundId) {
+    builder.startTable(5);
     Round.addRoundId(builder, roundId);
-    Round.addIndicatorLineRgbs(builder, indicatorLineRgbsOffset);
-    Round.addIndicatorLineEndLocs(builder, indicatorLineEndLocsOffset);
-    Round.addIndicatorLineStartLocs(builder, indicatorLineStartLocsOffset);
-    Round.addIndicatorLineIds(builder, indicatorLineIdsOffset);
-    Round.addIndicatorDotRgbs(builder, indicatorDotRgbsOffset);
-    Round.addIndicatorDotLocs(builder, indicatorDotLocsOffset);
-    Round.addIndicatorDotIds(builder, indicatorDotIdsOffset);
-    Round.addIndicatorStrings(builder, indicatorStringsOffset);
-    Round.addIndicatorStringIds(builder, indicatorStringIdsOffset);
-    Round.addFillLocations(builder, fillLocationsOffset);
-    Round.addDigLocations(builder, digLocationsOffset);
-    Round.addTrapTriggeredIds(builder, trapTriggeredIdsOffset);
-    Round.addTrapAddedTeams(builder, trapAddedTeamsOffset);
-    Round.addTrapAddedTypes(builder, trapAddedTypesOffset);
-    Round.addTrapAddedLocations(builder, trapAddedLocationsOffset);
-    Round.addTrapAddedIds(builder, trapAddedIdsOffset);
-    Round.addClaimedResourcePiles(builder, claimedResourcePilesOffset);
-    Round.addActionTargets(builder, actionTargetsOffset);
-    Round.addActions(builder, actionsOffset);
-    Round.addActionIds(builder, actionIdsOffset);
     Round.addDiedIds(builder, diedIdsOffset);
-    Round.addSpawnedBodies(builder, spawnedBodiesOffset);
-    Round.addHealLevels(builder, healLevelsOffset);
-    Round.addHealsPerformed(builder, healsPerformedOffset);
-    Round.addBuildLevels(builder, buildLevelsOffset);
-    Round.addBuildsPerformed(builder, buildsPerformedOffset);
-    Round.addAttackLevels(builder, attackLevelsOffset);
-    Round.addAttacksPerformed(builder, attacksPerformedOffset);
-    Round.addRobotHealths(builder, robotHealthsOffset);
-    Round.addRobotActionCooldowns(builder, robotActionCooldownsOffset);
-    Round.addRobotMoveCooldowns(builder, robotMoveCooldownsOffset);
-    Round.addRobotLocs(builder, robotLocsOffset);
-    Round.addRobotIds(builder, robotIdsOffset);
-    Round.addTeamCommunication(builder, teamCommunicationOffset);
+    Round.addTurns(builder, turnsOffset);
     Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
     Round.addTeamIds(builder, teamIdsOffset);
     return Round.endRound(builder);
   }
 
-  public static void startRound(FlatBufferBuilder builder) { builder.startTable(39); }
+  public static void startRound(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addTeamIds(FlatBufferBuilder builder, int teamIdsOffset) { builder.addOffset(0, teamIdsOffset, 0); }
   public static int createTeamIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startTeamIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addTeamResourceAmounts(FlatBufferBuilder builder, int teamResourceAmountsOffset) { builder.addOffset(1, teamResourceAmountsOffset, 0); }
   public static int createTeamResourceAmountsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startTeamResourceAmountsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addTeamCommunication(FlatBufferBuilder builder, int teamCommunicationOffset) { builder.addOffset(2, teamCommunicationOffset, 0); }
-  public static void addRobotIds(FlatBufferBuilder builder, int robotIdsOffset) { builder.addOffset(3, robotIdsOffset, 0); }
-  public static int createRobotIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startRobotIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addRobotLocs(FlatBufferBuilder builder, int robotLocsOffset) { builder.addOffset(4, robotLocsOffset, 0); }
-  public static void addRobotMoveCooldowns(FlatBufferBuilder builder, int robotMoveCooldownsOffset) { builder.addOffset(5, robotMoveCooldownsOffset, 0); }
-  public static int createRobotMoveCooldownsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startRobotMoveCooldownsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addRobotActionCooldowns(FlatBufferBuilder builder, int robotActionCooldownsOffset) { builder.addOffset(6, robotActionCooldownsOffset, 0); }
-  public static int createRobotActionCooldownsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startRobotActionCooldownsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addRobotHealths(FlatBufferBuilder builder, int robotHealthsOffset) { builder.addOffset(7, robotHealthsOffset, 0); }
-  public static int createRobotHealthsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startRobotHealthsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addAttacksPerformed(FlatBufferBuilder builder, int attacksPerformedOffset) { builder.addOffset(8, attacksPerformedOffset, 0); }
-  public static int createAttacksPerformedVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startAttacksPerformedVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addAttackLevels(FlatBufferBuilder builder, int attackLevelsOffset) { builder.addOffset(9, attackLevelsOffset, 0); }
-  public static int createAttackLevelsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startAttackLevelsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addBuildsPerformed(FlatBufferBuilder builder, int buildsPerformedOffset) { builder.addOffset(10, buildsPerformedOffset, 0); }
-  public static int createBuildsPerformedVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBuildsPerformedVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addBuildLevels(FlatBufferBuilder builder, int buildLevelsOffset) { builder.addOffset(11, buildLevelsOffset, 0); }
-  public static int createBuildLevelsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBuildLevelsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addHealsPerformed(FlatBufferBuilder builder, int healsPerformedOffset) { builder.addOffset(12, healsPerformedOffset, 0); }
-  public static int createHealsPerformedVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startHealsPerformedVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addHealLevels(FlatBufferBuilder builder, int healLevelsOffset) { builder.addOffset(13, healLevelsOffset, 0); }
-  public static int createHealLevelsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startHealLevelsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addSpawnedBodies(FlatBufferBuilder builder, int spawnedBodiesOffset) { builder.addOffset(14, spawnedBodiesOffset, 0); }
-  public static void addDiedIds(FlatBufferBuilder builder, int diedIdsOffset) { builder.addOffset(15, diedIdsOffset, 0); }
+  public static void addTurns(FlatBufferBuilder builder, int turnsOffset) { builder.addOffset(2, turnsOffset, 0); }
+  public static int createTurnsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
+  public static void startTurnsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addDiedIds(FlatBufferBuilder builder, int diedIdsOffset) { builder.addOffset(3, diedIdsOffset, 0); }
   public static int createDiedIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startDiedIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addActionIds(FlatBufferBuilder builder, int actionIdsOffset) { builder.addOffset(16, actionIdsOffset, 0); }
-  public static int createActionIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startActionIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addActions(FlatBufferBuilder builder, int actionsOffset) { builder.addOffset(17, actionsOffset, 0); }
-  public static int createActionsVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
-  public static int createActionsVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }
-  public static void startActionsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
-  public static void addActionTargets(FlatBufferBuilder builder, int actionTargetsOffset) { builder.addOffset(18, actionTargetsOffset, 0); }
-  public static int createActionTargetsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startActionTargetsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addClaimedResourcePiles(FlatBufferBuilder builder, int claimedResourcePilesOffset) { builder.addOffset(19, claimedResourcePilesOffset, 0); }
-  public static void addTrapAddedIds(FlatBufferBuilder builder, int trapAddedIdsOffset) { builder.addOffset(20, trapAddedIdsOffset, 0); }
-  public static int createTrapAddedIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startTrapAddedIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addTrapAddedLocations(FlatBufferBuilder builder, int trapAddedLocationsOffset) { builder.addOffset(21, trapAddedLocationsOffset, 0); }
-  public static void addTrapAddedTypes(FlatBufferBuilder builder, int trapAddedTypesOffset) { builder.addOffset(22, trapAddedTypesOffset, 0); }
-  public static int createTrapAddedTypesVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
-  public static int createTrapAddedTypesVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }
-  public static void startTrapAddedTypesVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
-  public static void addTrapAddedTeams(FlatBufferBuilder builder, int trapAddedTeamsOffset) { builder.addOffset(23, trapAddedTeamsOffset, 0); }
-  public static int createTrapAddedTeamsVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
-  public static int createTrapAddedTeamsVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }
-  public static void startTrapAddedTeamsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
-  public static void addTrapTriggeredIds(FlatBufferBuilder builder, int trapTriggeredIdsOffset) { builder.addOffset(24, trapTriggeredIdsOffset, 0); }
-  public static int createTrapTriggeredIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startTrapTriggeredIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addDigLocations(FlatBufferBuilder builder, int digLocationsOffset) { builder.addOffset(25, digLocationsOffset, 0); }
-  public static void addFillLocations(FlatBufferBuilder builder, int fillLocationsOffset) { builder.addOffset(26, fillLocationsOffset, 0); }
-  public static void addIndicatorStringIds(FlatBufferBuilder builder, int indicatorStringIdsOffset) { builder.addOffset(27, indicatorStringIdsOffset, 0); }
-  public static int createIndicatorStringIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startIndicatorStringIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addIndicatorStrings(FlatBufferBuilder builder, int indicatorStringsOffset) { builder.addOffset(28, indicatorStringsOffset, 0); }
-  public static int createIndicatorStringsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
-  public static void startIndicatorStringsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addIndicatorDotIds(FlatBufferBuilder builder, int indicatorDotIdsOffset) { builder.addOffset(29, indicatorDotIdsOffset, 0); }
-  public static int createIndicatorDotIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startIndicatorDotIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addIndicatorDotLocs(FlatBufferBuilder builder, int indicatorDotLocsOffset) { builder.addOffset(30, indicatorDotLocsOffset, 0); }
-  public static void addIndicatorDotRgbs(FlatBufferBuilder builder, int indicatorDotRgbsOffset) { builder.addOffset(31, indicatorDotRgbsOffset, 0); }
-  public static void addIndicatorLineIds(FlatBufferBuilder builder, int indicatorLineIdsOffset) { builder.addOffset(32, indicatorLineIdsOffset, 0); }
-  public static int createIndicatorLineIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startIndicatorLineIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addIndicatorLineStartLocs(FlatBufferBuilder builder, int indicatorLineStartLocsOffset) { builder.addOffset(33, indicatorLineStartLocsOffset, 0); }
-  public static void addIndicatorLineEndLocs(FlatBufferBuilder builder, int indicatorLineEndLocsOffset) { builder.addOffset(34, indicatorLineEndLocsOffset, 0); }
-  public static void addIndicatorLineRgbs(FlatBufferBuilder builder, int indicatorLineRgbsOffset) { builder.addOffset(35, indicatorLineRgbsOffset, 0); }
-  public static void addRoundId(FlatBufferBuilder builder, int roundId) { builder.addInt(36, roundId, 0); }
-  public static void addBytecodeIds(FlatBufferBuilder builder, int bytecodeIdsOffset) { builder.addOffset(37, bytecodeIdsOffset, 0); }
-  public static int createBytecodeIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBytecodeIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addBytecodesUsed(FlatBufferBuilder builder, int bytecodesUsedOffset) { builder.addOffset(38, bytecodesUsedOffset, 0); }
-  public static int createBytecodesUsedVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startBytecodesUsedVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addRoundId(FlatBufferBuilder builder, int roundId) { builder.addInt(4, roundId, 0); }
   public static int endRound(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;
