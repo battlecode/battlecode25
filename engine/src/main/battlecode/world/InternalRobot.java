@@ -62,14 +62,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team, UnitType type) {
+    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc) {
         this.gameWorld = gw;
 
         this.ID = id;
         this.team = team;
         this.type = type;
 
-        this.location = null;
+        this.location = loc;
         this.diedLocation = null;
         this.health = GameConstants.DEFAULT_HEALTH;
         this.spawned = false;
@@ -596,7 +596,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if (!indicatorString.equals("")) {
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
         }
-        this.gameWorld.getMatchMaker().endTurn(this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
+        this.gameWorld.getMatchMaker().endTurn(this.ID, this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
         this.roundsAlive++;
     }
 

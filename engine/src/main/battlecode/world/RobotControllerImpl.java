@@ -360,11 +360,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** READINESS METHODS **********
     // ***********************************
 
+    //TODO: get rid of this assert
     private void assertIsSpawned() throws GameActionException {
-        if (!this.robot.isSpawned()) {
-            throw new GameActionException(IS_NOT_READY,
-                    "This robot is not spawned in.");
-        }
+        // if (!this.robot.isSpawned()) {
+        //     throw new GameActionException(IS_NOT_READY,
+        //             "This robot is not spawned in.");
+        // }
+        return;
     }
 
     @Override

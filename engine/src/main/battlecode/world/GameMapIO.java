@@ -326,12 +326,13 @@ public final strictfp class GameMapIO {
             int ruinLocations = FlatHelpers.createVecTable(builder, ruinXsList, ruinYsList);
 
             int robotIdOffsets = InitialBodyTable.createRobotIdsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
-            int[] spawnedRobotOffsets = new int[bodyIDs.size()];
-            for (int i = 0; i < spawnedRobotOffsets.length; i++){
-                int offset = SpawnAction.createSpawnAction(builder, bodyLocsXs.get(i), bodyLocsYs.get(i), bodyTeamIDs.get(i), bodyTypes.get(i));
-                spawnedRobotOffsets[i] = offset;
-            }
-            int spawnActionVectorOffset = createSpawnActionsVector(builder, spawnedRobotOffsets);
+            // int[] spawnedRobotOffsets = new int[bodyIDs.size()];
+            // for (int i = 0; i < spawnedRobotOffsets.length; i++){
+            //     int offset = SpawnAction.createSpawnAction(builder, bodyLocsXs.get(i), bodyLocsYs.get(i), bodyTeamIDs.get(i), bodyTypes.get(i));
+            //     spawnedRobotOffsets[i] = offset;
+            // }
+            // int spawnActionVectorOffset = createSpawnActionsVector(builder, spawnedRobotOffsets);
+            int spawnActionVectorOffset = createSpawnActionsVector2(builder, bodyLocsXs, bodyLocsYs, bodyTeamIDs, bodyTypes);
             int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVectorOffset);
 
             // Build LiveMap for flatbuffer
@@ -357,16 +358,11 @@ public final strictfp class GameMapIO {
         private static void initInitialBodiesFromSchemaBodyTable(InitialBodyTable bodyTable, ArrayList<RobotInfo> initialBodies, boolean teamsReversed) {
             for (int i = 0; i < bodyTable.robotIdsLength(); i++){
                 int curId = bodyTable.robotIds(i);
-                System.out.println(curId); //ok
                 battlecode.schema.SpawnAction curSpawnAction = bodyTable.spawnActions(i);
                 UnitType bodyType = FlatHelpers.getUnitTypeFromRobotType(curSpawnAction.robotType());
-                System.out.println(curSpawnAction.robotType()); //not ok
-                System.out.println(bodyType);
                 int bodyX = curSpawnAction.x();
                 int bodyY = curSpawnAction.y();
-                System.out.println(bodyX);
-                System.out.println(bodyY);
-                System.out.println("before crashing");
+                System.out.println("SpawnAction says robot " + curId + " is at position (" + bodyX + "," + bodyY + ")");
                 Team bodyTeam = TeamMapping.team(curSpawnAction.team());
                 if (teamsReversed){
                     bodyTeam = bodyTeam.opponent();
@@ -376,14 +372,36 @@ public final strictfp class GameMapIO {
             }
         }
 
+        private static int createSpawnActionsVector2(FlatBufferBuilder builder, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
+            ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
+            // builder.startVector(6, xs.size(), 2);
+            // int vectorOffset = builder.endVector();
+            // int curOffset = vectorOffset;
+            for (int i = 0; i < xs.size(); i++){
+                bb.putShort((short)(int)xs.get(i));
+                bb.putShort((short)(int)ys.get(i));
+                bb.put(teams.get(i));
+                bb.put(types.get(i));
+                // builder.addShort(curOffset, (short)(int)xs.get(i), -1);
+                // builder.addShort(curOffset+2, (short)(int) ys.get(i), -1);
+                // builder.addByte(curOffset+4, teams.get(i), -1);
+                // builder.addByte(curOffset+5, types.get(i), -1);
+                // curOffset += 6;
+            }
+
+            return builder.endVector();
+        }
+
         private static int createSpawnActionsVector(FlatBufferBuilder builder, int[] data){
             //TODO: don't hardcode this or things will mysteriously break if we change # of starting towers
             //todo: I think this method also doesn't work lol
 
             //structs are stored inline so the vector data should be stored inline?
-            builder.startVector(4, data.length, 4); 
-            for (int i = data.length - 1; i >= 0; i--) 
+            builder.startVector(6, data.length, 4);  //short + short + byte + byte
+
+            for (int i = data.length - 1; i >= 0; i--) {
                 builder.addOffset(data[i]); 
+            }
             return builder.endVector();
             // InitialBodyTable.startSpawnActionsVector(builder, data.length);
             // for (int i = data.length - 1; i >= 0; i--){

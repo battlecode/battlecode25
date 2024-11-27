@@ -278,7 +278,7 @@ public strictfp class GameWorld {
     public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
-        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type);
+        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center);
         addRobot(center, unit);
     }
 
@@ -789,7 +789,7 @@ public strictfp class GameWorld {
     // *********************************
 
     public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
-        InternalRobot robot = new InternalRobot(this, ID, team, type);
+        InternalRobot robot = new InternalRobot(this, ID, team, type, location);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);

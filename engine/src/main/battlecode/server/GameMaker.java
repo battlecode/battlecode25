@@ -438,13 +438,13 @@ public strictfp class GameMaker {
                 int teamIDsP = Round.createTeamIdsVector(builder, teamIDs.toArray());
                 int teamMoneyAmountsP = Round.createTeamResourceAmountsVector(builder, teamMoneyAmounts.toArray());
                 int diedIdsP = Round.createDiedIdsVector(builder, diedIds.toArray());
+                int turnsOffset = Round.createTurnsVector(builder, ArrayUtils.toPrimitive(this.turns.toArray(new Integer[this.turns.size()])));
 
                 Round.startRound(builder);
                 Round.addTeamIds(builder, teamIDsP);
                 Round.addRoundId(builder, this.currentRound);
                 Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
-                int turnsOffset = Round.createTurnsVector(builder, ArrayUtils.toPrimitive(this.turns.toArray(new Integer[this.turns.size()])));
                 Round.addTurns(builder, turnsOffset);
                 int round = Round.endRound(builder);
                 return EventWrapper.createEventWrapper(builder, Event.Round, round);
@@ -454,15 +454,19 @@ public strictfp class GameMaker {
         }
 
         public void startTurn(int robotID){
-            Turn.startTurn(fileBuilder);
-            Turn.addRobotId(fileBuilder, robotID);
+            //TODO: intiialize anything needed here
+            return;
         }
 
-        public void endTurn(int health, int paint, int movementCooldown, int actionCooldown, int bytecodesUsed, 
+        public void endTurn(int robotID, int health, int paint, int movementCooldown, int actionCooldown, int bytecodesUsed, 
         MapLocation loc){
             int actionsOffset = Turn.createActionsVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActions.toArray(new Integer[this.currentActions.size()])));
-            Turn.addActions(fileBuilder, actionsOffset);
+            
             int actionTypesOffsets = Turn.createActionsTypeVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActionTypes.toArray(new Byte[this.currentActionTypes.size()])));
+
+            Turn.startTurn(fileBuilder);
+            Turn.addRobotId(fileBuilder, robotID);
+            Turn.addActions(fileBuilder, actionsOffset);
             Turn.addActionsType(fileBuilder, actionTypesOffsets);
             Turn.addHealth(fileBuilder, health);
             Turn.addPaint(fileBuilder, paint);
