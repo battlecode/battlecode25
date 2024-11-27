@@ -136,6 +136,7 @@ public strictfp class GameWorld {
             updateDynamicBodies();
 
             this.controlProvider.roundEnded();
+            this.processEndOfRound();
 
             if (!this.isRunning()) {
                 this.controlProvider.matchEnded();
