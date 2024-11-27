@@ -37,7 +37,6 @@ public class RobotInfo {
      */
     public final int paintAmount;
 
-
     public RobotInfo(int ID, Team team, UnitType type, int health, MapLocation location, int paintAmount) {
         super();
         this.ID = ID;

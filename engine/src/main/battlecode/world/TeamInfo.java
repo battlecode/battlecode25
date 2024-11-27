@@ -1,9 +1,7 @@
 package battlecode.world;
 
 import battlecode.common.GameConstants;
-import battlecode.common.GlobalUpgrade;
 import battlecode.common.MapLocation;
-import battlecode.common.SkillType;
 import battlecode.common.Team;
 import java.util.*;
 import static battlecode.common.GameActionExceptionType.*;
@@ -33,10 +31,8 @@ public class TeamInfo {
     public TeamInfo(GameWorld gameWorld) {
         this.gameWorld = gameWorld;
         this.moneyCounts = new int[2];
-        this.sharedArrays = new int[2][GameConstants.SHARED_ARRAY_LENGTH];
         this.totalFlagsCaptured = new int[2];
         this.oldMoneyCounts = new int[2];
-        this.globalUpgrades = new boolean[2][GlobalUpgrade.values().length];
         this.globalUpgradePoints = new int[2];
         this.totalFlagsPickedUp = new int[2];
         this.totalPaintedSquares = new int[2];
@@ -77,6 +73,15 @@ public class TeamInfo {
      public int getNumberOfPaintedSquares(Team team) {
         return this.totalPaintedSquares[team.ordinal()];
     }
+
+    /**
+     * Change the total number of squares painted by the team over the game
+     * @param team the team to query
+     */
+
+     public void addPaintedSquares(int num, Team team) {
+        this.totalPaintedSquares[team.ordinal()] += num;
+    }    
     
     /**
      * Reads the shared array value.
@@ -122,35 +127,6 @@ public class TeamInfo {
     }
 
     /**
-     * Select a global upgrade to make
-     * 
-     * @param team
-     * @param upgrade
-     * @return if upgrade successful
-     */
-    public boolean makeGlobalUpgrade(Team team, GlobalUpgrade upgrade) {
-        if (this.globalUpgradePoints[team.ordinal()] > 0) {
-            if ((upgrade == GlobalUpgrade.ATTACK || upgrade == GlobalUpgrade.ACTION)
-                    && !this.globalUpgrades[team.ordinal()][0]) {
-                this.globalUpgrades[team.ordinal()][0] = true;
-                this.globalUpgradePoints[team.ordinal()]--;
-                return true;
-            }
-            if (upgrade == GlobalUpgrade.CAPTURING && !this.globalUpgrades[team.ordinal()][1]) {
-                this.globalUpgrades[team.ordinal()][1] = true;
-                this.globalUpgradePoints[team.ordinal()]--;
-                return true;
-            }
-            if (upgrade == GlobalUpgrade.HEALING && !this.globalUpgrades[team.ordinal()][2]) {
-                this.globalUpgrades[team.ordinal()][2] = true;
-                this.globalUpgradePoints[team.ordinal()]--;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Add to the amount of money. If amount is negative, subtract from money
      * instead.
      * 
@@ -171,19 +147,7 @@ public class TeamInfo {
             throw new InternalError("Reporting incorrect win");
         }
         this.gameWorld.gameStats.setWinner(team);
-        this.gameWorld.gameStats.setDominationFactor(DominationFactor.CAPTURE);
-    }
-
-    /**
-     * Increment the number of flags captured for a team.
-     * 
-     * @param team the team to query
-     */
-    public void captureFlag(Team team) {
-        this.totalFlagsCaptured[team.ordinal()]++;
-        if (this.totalFlagsCaptured[team.ordinal()] >= GameConstants.NUMBER_FLAGS) {
-            checkWin(team);
-        }
+        this.gameWorld.gameStats.setDominationFactor(DominationFactor.PAINT_ENOUGH_AREA);
     }
 
     /**
@@ -207,65 +171,6 @@ public class TeamInfo {
         return totalFlagsPickedUp[team.ordinal()];
     }
 
-    /**
-     * Counts number of tier 3 units.
-     * 
-     * @param team to query
-     * @return number of level 3 units
-     */
-    public int getTierThree(Team team) {
-        ArrayList<InternalRobot> robots = new ArrayList<InternalRobot>();
-        SkillType[] skills = { SkillType.HEAL, SkillType.ATTACK, SkillType.BUILD };
-        gameWorld.getObjectInfo().eachRobot((robot) -> {
-            for (SkillType s : skills) {
-                if (robot.getLevel(s) >= 3) {
-                    robots.add(robot);
-                    return true;
-                }
-            }
-            return true;
-        });
-        return robots.size();
-    }
-
-    /**
-     * Counts number of tier 2 units.
-     * 
-     * @param team to query
-     * @return number of level 2 units
-     */
-    public int getTierTwo(Team team) {
-        ArrayList<InternalRobot> robots = new ArrayList<InternalRobot>();
-        SkillType[] skills = { SkillType.HEAL, SkillType.ATTACK, SkillType.BUILD };
-        gameWorld.getObjectInfo().eachRobot((robot) -> {
-            for (SkillType s : skills) {
-                if (robot.getLevel(s) >= 3) {
-                    return true;
-                }
-            }
-            for (SkillType s : skills) {
-                if (robot.getLevel(s) == 2) {
-                    robots.add(robot);
-                    return true;
-                }
-            }
-            return true;
-        });
-        return robots.size();
-    }
-
-    public int getLevelSum(Team team) {
-        SkillType[] skills = { SkillType.HEAL, SkillType.ATTACK, SkillType.BUILD };
-        int sum = 0;
-        for (InternalRobot robot : gameWorld.getObjectInfo().robots()) {
-            if (robot.getTeam() != team)
-                continue;
-            for (SkillType s : skills) {
-                sum += robot.getLevel(s);
-            }
-        }
-        return sum;
-    }
 
     /**
      * Sets an index in the team's shared array to a given value.
