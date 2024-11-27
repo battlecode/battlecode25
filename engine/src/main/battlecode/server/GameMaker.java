@@ -1,10 +1,7 @@
 package battlecode.server;
 
 import battlecode.common.GameConstants;
-import battlecode.common.GlobalUpgrade;
 import battlecode.common.MapLocation;
-import battlecode.common.SkillType;
-import battlecode.common.TrapType;
 import battlecode.common.UnitType;
 import battlecode.common.Team;
 import battlecode.instrumenter.profiler.Profiler;
@@ -599,6 +596,10 @@ public strictfp class GameMaker {
 
         public void addBytecodes(int bytecodes) {
             Turn.addBytecodesUsed(fileBuilder, bytecodes);
+        }
+
+        public void addDied(int id) {
+            diedIds.add(id);
         }
 
         private int locationToInt(MapLocation loc){

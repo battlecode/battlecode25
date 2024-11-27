@@ -1,7 +1,5 @@
 package battlecode.util;
 
-import battlecode.common.GlobalUpgrade;
-import battlecode.common.TrapType;
 import battlecode.common.UnitType;
 import battlecode.schema.VecTable;
 import battlecode.schema.WinType;

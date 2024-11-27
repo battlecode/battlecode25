@@ -18,6 +18,7 @@ public class MapBuilder {
     public MapLocation origin;
     public int seed;
     private MapSymmetry symmetry;
+    //TODO; clean up this very outdated file lol
     private boolean[] wallArray;
     private boolean[] damArray;
     private boolean[] waterArray;
@@ -26,6 +27,9 @@ public class MapBuilder {
     private int[] islandArray;
     private int[] resourceArray;
     private int[] spawnZoneArray;
+    private int[] patternArray = new int[4];
+    private boolean[] ruinArray;
+    private int[] paintArray;
 
     private int idCounter;
 
@@ -56,6 +60,8 @@ public class MapBuilder {
         this.islandArray = new int[numSquares];
         this.resourceArray = new int[numSquares];
         this.spawnZoneArray = new int[numSquares];
+        this.ruinArray = new boolean[numSquares];
+        this.paintArray = new int[numSquares];
     }
 
     // ********************
@@ -76,29 +82,29 @@ public class MapBuilder {
         return loc.x + loc.y * width;
     }
 
-    public void setWall(int x, int y, boolean value) {
-        this.wallArray[locationToIndex(x, y)] = value;
-    }
+    // public void setWall(int x, int y, boolean value) {
+    //     this.wallArray[locationToIndex(x, y)] = value;
+    // }
 
-    public void setCloud(int x, int y, boolean value) {
-        this.cloudArray[locationToIndex(x, y)] = value;
-    }
+    // public void setCloud(int x, int y, boolean value) {
+    //     this.cloudArray[locationToIndex(x, y)] = value;
+    // }
 
-    public void setCurrent(int x, int y, int value) {
-        this.currentArray[locationToIndex(x, y)] = value;
-    }
+    // public void setCurrent(int x, int y, int value) {
+    //     this.currentArray[locationToIndex(x, y)] = value;
+    // }
 
-    public void setIsland(int x, int y, int value) {
-        this.islandArray[locationToIndex(x, y)] = value;
-    }
+    // public void setIsland(int x, int y, int value) {
+    //     this.islandArray[locationToIndex(x, y)] = value;
+    // }
 
-    public void setResource(int x, int y, int value) {
-        this.resourceArray[locationToIndex(x, y)] = value;
-    }
+    // public void setResource(int x, int y, int value) {
+    //     this.resourceArray[locationToIndex(x, y)] = value;
+    // }
 
-    public void setSpawnZone(int x, int y, int value) {
-        this.spawnZoneArray[locationToIndex(x, y)] = value;
-    }
+    // public void setSpawnZone(int x, int y, int value) {
+    //     this.spawnZoneArray[locationToIndex(x, y)] = value;
+    // }
 
     public void setSymmetry(MapSymmetry symmetry) {
         this.symmetry = symmetry;
@@ -147,41 +153,42 @@ public class MapBuilder {
         this.wallArray[locationToIndex(symmetricX(x), symmetricY(y))] = value;
     }
 
-    public void setSymmetricCloud(int x, int y, boolean value) {
-        this.cloudArray[locationToIndex(x, y)] = value;
-        this.cloudArray[locationToIndex(symmetricX(x), symmetricY(y))] = value;
-    }
+    //TODO: kept for now for reference 
+    // public void setSymmetricCloud(int x, int y, boolean value) {
+    //     this.cloudArray[locationToIndex(x, y)] = value;
+    //     this.cloudArray[locationToIndex(symmetricX(x), symmetricY(y))] = value;
+    // }
 
-    private int getSymmetricCurrent(int value) {
-        Direction currentDirection = Direction.DIRECTION_ORDER[value];
-        return currentDirection.opposite().getDirectionOrderNum();
-    }
+    // private int getSymmetricCurrent(int value) {
+    //     Direction currentDirection = Direction.DIRECTION_ORDER[value];
+    //     return currentDirection.opposite().getDirectionOrderNum();
+    // }
 
-    public void setSymmetricCurrent(int x, int y, int value) {
-        this.currentArray[locationToIndex(x, y)] = value;
-        this.currentArray[locationToIndex(symmetricX(x), symmetricY(y))] = getSymmetricCurrent(value);
-    }
+    // public void setSymmetricCurrent(int x, int y, int value) {
+    //     this.currentArray[locationToIndex(x, y)] = value;
+    //     this.currentArray[locationToIndex(symmetricX(x), symmetricY(y))] = getSymmetricCurrent(value);
+    // }
 
-    private int getSymmetricIsland(int id) {
-        return id == 0 ? 0 : this.islandArray.length-id;
-    }
+    // private int getSymmetricIsland(int id) {
+    //     return id == 0 ? 0 : this.islandArray.length-id;
+    // }
 
-    public void setSymmetricIsland(int x, int y, int id) {
-        this.islandArray[locationToIndex(x, y)] = id;
-        this.islandArray[locationToIndex(symmetricX(x), symmetricY(y))] = getSymmetricIsland(id);
-    }
+    // public void setSymmetricIsland(int x, int y, int id) {
+    //     this.islandArray[locationToIndex(x, y)] = id;
+    //     this.islandArray[locationToIndex(symmetricX(x), symmetricY(y))] = getSymmetricIsland(id);
+    // }
 
-    public void setSymmetricResource(int x, int y, int id) {
-        this.resourceArray[locationToIndex(x, y)] = id;
-        this.resourceArray[locationToIndex(symmetricX(x), symmetricY(y))] = id;
-    }
+    // public void setSymmetricResource(int x, int y, int id) {
+    //     this.resourceArray[locationToIndex(x, y)] = id;
+    //     this.resourceArray[locationToIndex(symmetricX(x), symmetricY(y))] = id;
+    // }
 
     // ********************
     // BUILDING AND SAVING
     // ********************
 
     public LiveMap build() {
-        return new LiveMap(width, height, origin, seed, 2000, name, symmetry, wallArray, waterArray, damArray, resourceArray, spawnZoneArray);
+        return new LiveMap(width, height, origin, seed, 2000, name, symmetry, wallArray, paintArray, ruinArray, patternArray, bodies.toArray(new RobotInfo[bodies.size()]));
     }
 
     /**
@@ -212,6 +219,7 @@ public class MapBuilder {
      * @return the list of symmetries, empty if map is invalid
      */
     private ArrayList<MapSymmetry> getSymmetry(RobotInfo[] robots) {
+        //TODO: not properly implemented
         ArrayList<MapSymmetry> possible = new ArrayList<MapSymmetry>();
         possible.add(MapSymmetry.ROTATIONAL);
         possible.add(MapSymmetry.HORIZONTAL);
@@ -227,15 +235,15 @@ public class MapBuilder {
                     if (wallArray[curIdx] != wallArray[symIdx]) {
                         possible.remove(symmetry);
                     }
-                    else if (cloudArray[curIdx] != cloudArray[symIdx]) {
-                        possible.remove(symmetry);
-                    }
-                    else if (getSymmetricCurrent(currentArray[curIdx]) != currentArray[symIdx]) {
-                        possible.remove(symmetry);
-                    }
-                    else if (getSymmetricIsland(islandArray[curIdx]) != islandArray[symIdx]) {
-                        possible.remove(symmetry);
-                    }
+                    // else if (cloudArray[curIdx] != cloudArray[symIdx]) {
+                    //     possible.remove(symmetry);
+                    // }
+                    // else if (getSymmetricCurrent(currentArray[curIdx]) != currentArray[symIdx]) {
+                    //     possible.remove(symmetry);
+                    // }
+                    // else if (getSymmetricIsland(islandArray[curIdx]) != islandArray[symIdx]) {
+                    //     possible.remove(symmetry);
+                    // }
                     else if (resourceArray[curIdx] != resourceArray[symIdx]) {
                         possible.remove(symmetry);
                     }

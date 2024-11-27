@@ -176,17 +176,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 && cachedRobotInfo.team == team
                 && cachedRobotInfo.health == health
                 && cachedRobotInfo.paintAmount == paintAmount
-                && cachedRobotInfo.location.equals(location)
-                && cachedRobotInfo.hasFlag == (flag != null)
-                && cachedRobotInfo.attackLevel == SkillType.ATTACK.getLevel(attackExp)
-                && cachedRobotInfo.healLevel == SkillType.HEAL.getLevel(healExp)
-                && cachedRobotInfo.buildLevel == SkillType.BUILD.getLevel(buildExp)) {
+                && cachedRobotInfo.location.equals(location)) {
             return cachedRobotInfo;
         }
 
-        this.cachedRobotInfo = new RobotInfo(ID, team, health, location, flag != null,
-                SkillType.ATTACK.getLevel(attackExp), SkillType.HEAL.getLevel(healExp),
-                SkillType.BUILD.getLevel(buildExp), paintAmount);
+        this.cachedRobotInfo = new RobotInfo(ID, team, type, health, location, paintAmount);
         return this.cachedRobotInfo;
     }
 
@@ -261,8 +255,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     public void setLocation(MapLocation loc) {
         this.gameWorld.moveRobot(getLocation(), loc);
         this.gameWorld.getObjectInfo().moveRobot(this, loc);
-        if (flag != null)
-            flag.setLoc(loc);
         this.location = loc;
     }
 
@@ -355,8 +347,9 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void soldierAttack(MapLocation loc, boolean useSecondaryColor) {
-        if(this.type != UnitType.SOLDIER)
-            throw new GameActionException(CANT_DO_THAT, "Unit must be a soldier");
+        //TODO: fix these assertions (CANT_DO_THAT doesn't exist in this file)
+        // if(this.type != UnitType.SOLDIER)
+        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a soldier");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
         
         // This attack costs some paint
@@ -365,24 +358,27 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         // Attack if it's a tower
         if(this.gameWorld.getRobot(loc) != null && UnitType.isTowerType(this.gameWorld.getRobot(loc).getType())) {
             InternalRobot tower = this.gameWorld.getRobot(loc);
-            if(this.team != tower.getTeam())
+            if(this.team != tower.getTeam()){
                 tower.addHealth(-UnitType.SOLDIER.attackStrength);
+                this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SOLDIER.attackStrength);
+            }
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
             if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                 this.gameWorld.setPaint(loc, paintType);
+                this.gameWorld.getMatchMaker().addPaintAction(loc);
             }
         }
 
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
+        //TODO: fix matchmaker usage here and for all other actions
     }
     public void soldierAttack(MapLocation loc) {
         soldierAttack(loc, false);
     }
 
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
-        if(this.type != UnitType.SPLASHER)
-            throw new GameActionException(CANT_DO_THAT, "Unit must be a splasher");
+        // if(this.type != UnitType.SPLASHER)
+        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a splasher");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
@@ -393,20 +389,21 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             // Attack if it's a tower (only if different team)
             if(this.gameWorld.getRobot(newLoc) != null && UnitType.isTowerType(this.gameWorld.getRobot(newLoc).getType())) {
                 InternalRobot tower = this.gameWorld.getRobot(newLoc);
-                if(this.team != tower.getTeam())
+                if(this.team != tower.getTeam()){
                     tower.addHealth(-UnitType.SPLASHER.attackStrength);
+                    this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.attackStrength);
+                }
             } else { // otherwise, maybe paint
                 // If the tile is empty or same team paint, paint it
                 if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                     this.gameWorld.setPaint(loc, paintType);
+                    this.gameWorld.getMatchMaker().addPaintAction(loc);
                 } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
                     if(loc.isWithinDistanceSquared(newLoc, 2))
                         this.gameWorld.setPaint(loc, paintType);
                 }
             }
         }
-
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
     public void splasherAttack(MapLocation loc) {
         splasherAttack(loc, false);
@@ -414,8 +411,9 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // This is the first kind of attack for moppers which only targets one location
     public void mopperAttack(MapLocation loc, boolean useSecondaryColor) {
-        if(this.type != UnitType.MOPPER)
-            throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
+        //TODO: schema
+        // if(this.type != UnitType.MOPPER)
+        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack should be free (but this is here just in case)
@@ -435,15 +433,15 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             this.gameWorld.setPaint(loc, 0);
         }
 
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
     public void mopperAttack(MapLocation loc) {
         mopperAttack(loc, false);
     }
 
     public void towerAttack(MapLocation loc) {
-        if(!UnitType.isTowerType(this.type))
-            throw new GameActionException(CANT_DO_THAT, "Unit must be a tower");
+        //TODO schema
+        // if(!UnitType.isTowerType(this.type))
+        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a tower");
 
         if(loc == null) { // area attack
             this.towerHasAreaAttacked = true;
@@ -467,15 +465,16 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
+        // this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
 
     public void mopSwing(Direction dir) { // NOTE: only works for moppers!
+        //todo schema
         // swing even if there's not 3 robots there, just remove from existing
-        if(this.type != UnitType.MOPPER)
-            throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
-        if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
-            throw new GameActionException(CANT_DO_THAT, "Direction must be a cardinal direction");
+        // if(this.type != UnitType.MOPPER)
+        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
+        // if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
+        //     throw new GameActionException(CANT_DO_THAT, "Direction must be a cardinal direction");
 
         // NORTH, SOUTH, EAST, WEST
         int[][] dx = {{-1, 0, 1}, {-1, 0, 1}, {1, 1, 1}, {-1, -1, -1}};
@@ -498,7 +497,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+        // this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
     }
 
     /**
@@ -510,13 +509,13 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      */
     public void attack(MapLocation loc, boolean useSecondaryColor) {
         switch(this.getType()) {
-            case UnitType.SOLDIER:
+            case SOLDIER:
                 soldierAttack(loc, useSecondaryColor);
                 break;
-            case UnitType.SPLASHER:
+            case SPLASHER:
                 splasherAttack(loc, useSecondaryColor);
                 break;
-            case UnitType.MOPPER:
+            case MOPPER:
                 mopperAttack(loc, useSecondaryColor);
                 break; 
             default:
@@ -543,7 +542,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void popMessage() {
-        if (!incomingMessages.empty())
+        if (!incomingMessages.isEmpty())
             incomingMessages.remove();
     }
 
@@ -620,7 +619,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
+        //TODO: do we need the below?
+        // this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
         this.gameWorld.destroyRobot(getID());
     }
 

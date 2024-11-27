@@ -17,11 +17,11 @@ public class MapInfo {
 
     private int crumbsAmount;
 
-    private TrapType trapType;
-
     private Team territory;
 
-    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, boolean isDam, int spawnZone, boolean isWater, int crumbsAmount, TrapType trapType, Team territory){
+
+    //TODO: update this method and usage (bobby pr)
+    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, boolean isDam, int spawnZone, boolean isWater, int crumbsAmount, Team territory){
         this.loc = loc;
         this.isPassable = isPassable;
         this.isWall = isWall;
@@ -29,7 +29,6 @@ public class MapInfo {
         this.spawnZone = spawnZone;
         this.isWater = isWater;
         this.crumbsAmount = crumbsAmount;
-        this.trapType = trapType;
         this.territory = territory;
     }
 
@@ -124,16 +123,6 @@ public class MapInfo {
         return crumbsAmount;
     }
 
-    /**
-     * Returns the trap type of a friendly trap. TrapType.NONE if there
-     * is no trap or there is an enemy trap.
-     * @return The trap type
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public TrapType getTrapType() {
-        return trapType;
-    }
 
     /**
      * Returns the location of this square
@@ -167,7 +156,6 @@ public class MapInfo {
                 (spawnZone == 1 ? ", team A spawn zone" : "") +
                 (spawnZone == 2 ? ", team B spawn zone" : "") +
                 (crumbsAmount == 0 ? "" : ", crumbs=" + crumbsAmount) +
-                (trapType == null ? "" : ", trap=" + trapType) +
                 '}';
     }
 
