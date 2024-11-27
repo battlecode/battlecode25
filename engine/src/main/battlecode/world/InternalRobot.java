@@ -28,6 +28,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private MapLocation location;
     private MapLocation diedLocation;
     private int health;
+    //TODO; get rid fo all isSpawned and spawned references
     private boolean spawned;
 
     private long controlBits;
@@ -330,6 +331,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc the new location of the robot
      */
     public void spawn(MapLocation loc) {
+        //TODO: we can delete this (not called anymore)
         this.spawned = true;
         this.location = loc;
         this.roundsAlive = 0;

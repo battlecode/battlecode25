@@ -1,6 +1,7 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.schema.RobotType;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +81,23 @@ public class MapBuilder {
 
     private int locationToIndex(MapLocation loc) {
         return loc.x + loc.y * width;
+    }
+
+    public void addTower(int id, Team team, MapLocation loc) {
+        // check if something already exists here, if so shout
+        for (RobotInfo r : bodies) {
+            if (r.location.equals(loc)) {
+                throw new RuntimeException("CANNOT ADD ROBOT TO SAME LOCATION AS OTHER ROBOT");
+            }
+        }
+        bodies.add(new RobotInfo(
+                id,
+                team,
+                UnitType.LEVEL_ONE_PAINT_TOWER,
+                UnitType.LEVEL_ONE_PAINT_TOWER.health,
+                loc,
+                GameConstants.INITIAL_PAINT_TOWER_PAINT
+        ));
     }
 
     // public void setWall(int x, int y, boolean value) {

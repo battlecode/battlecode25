@@ -793,6 +793,7 @@ public strictfp class GameWorld {
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
+        this.matchMaker.addSpawnAction(location, team, type);
         return ID;
     }
 
