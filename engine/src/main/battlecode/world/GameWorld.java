@@ -243,6 +243,10 @@ public strictfp class GameWorld {
                                 dx2 = -dy;
                                 dy2 = -dx;
                                 break;
+                            default:
+                                dx2 = 0;
+                                dy2 = 0;
+                                break;
                         }
 
                         int paint = getPaint(center.translate(dx2, dy2));
@@ -407,10 +411,6 @@ public strictfp class GameWorld {
         );
     }
 
-    public int getTeamSide(MapLocation loc) {
-        return teamSides[locationToIndex(loc)];
-    }
-
     public boolean isPassable(MapLocation loc) {
         if (currentRound <= GameConstants.SETUP_ROUNDS){
             return !this.walls[locationToIndex(loc)];
@@ -514,8 +514,8 @@ public strictfp class GameWorld {
     }
 
     public boolean connectedByPaint(MapLocation loc1, MapLocation loc2) {
-        if(getPaint(loc1) == 0 || getPaint(loc2) == 0 || teamFromPaint(loc1) != teamFromPaint(loc2)) return false;
-        Team t = teamFromPaint(loc1);
+        if(getPaint(loc1) == 0 || getPaint(loc2) == 0 || teamFromPaint(getPaint(loc1)) != teamFromPaint(getPaint(loc2))) return false;
+        Team t = teamFromPaint(getPaint(loc1));
         Queue<MapLocation> q = new LinkedList<MapLocation>();
         Set<MapLocation> vis = new HashSet<MapLocation>();
         q.add(loc1);
@@ -524,7 +524,7 @@ public strictfp class GameWorld {
         while(!q.isEmpty()) {
             cur = q.peek();
             q.remove();
-            if(getGameMap().onTheMap(cur) || vis.contains(cur) || teamFromPaint(cur) != t) continue;
+            if(getGameMap().onTheMap(cur) || vis.contains(cur) || teamFromPaint(getPaint(cur)) != t) continue;
             vis.add(cur);
             if(cur == loc2)
                 return true;
@@ -622,22 +622,6 @@ public strictfp class GameWorld {
             return true;
         }
 
-        return false;
-    }
-
-    /**
-     * @return whether a team has a higher total robot level
-     */
-    public boolean setWinnerIfGreaterLevelSum() {
-        int sumA = teamInfo.getLevelSum(Team.A), sumB = teamInfo.getLevelSum(Team.B);
-        if(sumA > sumB) {
-            setWinner(Team.A, DominationFactor.LEVEL_SUM);
-            return true;
-        }
-        else if(sumB > sumA) {
-            setWinner(Team.B, DominationFactor.LEVEL_SUM);
-            return true;
-        }
         return false;
     }
 
@@ -759,8 +743,6 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getBread(Team.A), this.teamInfo.getSharedArray(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getBread(Team.B), this.teamInfo.getSharedArray(Team.B));
         this.teamInfo.processEndOfRound();
 
         objectInfo.eachRobot((robot) -> {
@@ -817,7 +799,7 @@ public strictfp class GameWorld {
         
         if (loc != null)
         {
-            if (robot.getType().isTowerType()) {
+            if (UnitType.isTowerType(robot.getType())) {
                 this.towersByLoc[locationToIndex(loc)] = Team.NEUTRAL;
                 this.towerLocations.remove(loc);
             }

@@ -474,6 +474,7 @@ public strictfp interface RobotController {
     // *********** BUILDING **************
     // ***********************************
 
+    /**
      * Checks if a tower can spawn a robot at the given location.
      * Robots can spawn within a circle of radius of sqrt(4) of the tower.
      * 

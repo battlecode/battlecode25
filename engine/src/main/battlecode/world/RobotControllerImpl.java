@@ -77,10 +77,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
 
-        Trap trap = gw.getTrap(loc);
-        TrapType type = (trap != null && trap.getTeam() == robot.getTeam()) ? trap.getType() : TrapType.NONE;
-
-        int territory = gameWorld.getTeamSide(loc);
+        int territory = gw.teamFromPaint(gw.getPaint(loc)).ordinal();
         Team territoryTeam = null;
         if (territory == 0)
             territoryTeam = Team.NEUTRAL;
@@ -124,6 +121,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public Team getTeam() {
         return this.robot.getTeam();
+    }
+
+    @Override
+    public int getPaint() {
+        return this.robot.getPaint();
     }
 
     @Override
@@ -456,23 +458,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.setLocation(nextLoc);
         this.robot.addMovementCooldownTurns();
 
-        Team nextTeam = this.gameWorld.getTeam(nextLoc);
+        Team nextTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(nextLoc));
 
         if (nextTeam == Team.NEUTRAL) {
             this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
         } else if (nextTeam == this.robot.getTeam().opponent()) {
             this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
         }
-    }
-
-    // ***********************************
-    // ************ SPAWNING *************
-    // ***********************************
-
-    public MapLocation[] getAllySpawnLocations() {
-        MapLocation[] allyLocations = this.gameWorld.getSpawnLocations(getTeam());
-        return Arrays.copyOf(allyLocations, allyLocations.length);
-
     }
 
     // ***********************************
@@ -562,7 +554,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void markTowerPattern(MapLocation loc) throws GameActionException {
+    public void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertCanMarkTowerPattern(loc);
         throw new NotImplementedException();
         // TODO not implemented
@@ -573,7 +565,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(loc);
         InternalRobot robot = this.gameWorld.getRobot(loc);
 
-        if (! isTowerType(this.robot.getType())){ 
+        if (! UnitType.isTowerType(this.robot.getType())){ 
             throw new GameActionException(CANT_DO_THAT, "No tower at the location");
         }
 
@@ -584,11 +576,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         UnitType type = robot.getType();
         int moneyRequired = 0;
 
-        if (!type.canUpgradeType()){
+        if (!UnitType.canUpgradeType(type)){
             throw new GameActionException(CANT_DO_THAT, "Cannot upgrade tower of this level!");
         }
 
-        UnitType nextType = type.getNextLevel();
+        UnitType nextType = UnitType.getNextLevel(type);
         moneyRequired = nextType.moneyCost;
 
         if (this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < moneyRequired){
@@ -612,7 +604,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         UnitType type = robot.getType();
         int moneyRequired = 0;
-        UnitType newType = type.getNextLevel();
+        UnitType newType = UnitType.getNextLevel(type);
         moneyRequired += newType.moneyCost;
         this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
         robot.upgradeTower(newType);
@@ -765,24 +757,19 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
-            case UnitType.SOLDIER:
+            case SOLDIER:
                 assertCanAttackSoldier(loc);
                 break;
-            case UnitType.SPLASHER:
+            case SPLASHER:
                 assertCanAttackSplasher(loc);
                 break;
-            case UnitType.MOPPER:
+            case MOPPER:
                 assertCanAttackMopper(loc);
                 break; 
             default:
                 assertCanAttackTower(loc);
                 break;
         }
-    }
-
-    @Override
-    public int getAttackDamage() {
-        return this.robot.getDamage();
     }
 
     @Override
@@ -798,7 +785,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
-        this.robot.addActionCooldownTurns(this.robot.getType().attackCooldown);
+        this.robot.addActionCooldownTurns(this.robot.getType().actionCooldown);
         this.robot.attack(loc, useSecondaryColor);
     }
 
@@ -836,7 +823,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** COMMUNICATION METHODS ******
     // ***********************************
 
-    @Override
     private void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
