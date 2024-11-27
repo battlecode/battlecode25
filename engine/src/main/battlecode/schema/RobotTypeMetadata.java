@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
 public final class RobotTypeMetadata extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_24_3_25(); }
+  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
   public static RobotTypeMetadata getRootAsRobotTypeMetadata(ByteBuffer _bb) { return getRootAsRobotTypeMetadata(_bb, new RobotTypeMetadata()); }
   public static RobotTypeMetadata getRootAsRobotTypeMetadata(ByteBuffer _bb, RobotTypeMetadata obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

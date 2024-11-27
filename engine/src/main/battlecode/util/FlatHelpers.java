@@ -38,6 +38,9 @@ public class FlatHelpers {
                 return UnitType.SPLASHER;
             case 6:
                 return UnitType.MOPPER;
+            //TODO: fix
+            case 0:
+                return UnitType.LEVEL_ONE_PAINT_TOWER;
             default:
                 throw new RuntimeException("No unit type for " + b);
         }

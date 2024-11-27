@@ -253,7 +253,7 @@ public final strictfp class GameMapIO {
             initInitialBodiesFromSchemaBodyTable(bodyTable, initBodies, teamsReversed);
 
             RobotInfo[] initialBodies = initBodies.toArray(new RobotInfo[initBodies.size()]);
-
+        
             return new LiveMap(
                 width, height, origin, seed, rounds, mapName, symmetry, wallArray, paintArray, ruinArray, patternArray, initialBodies);
         }
@@ -273,7 +273,6 @@ public final strictfp class GameMapIO {
             int[] paintArray = gameMap.getPaintArray();
             boolean[] ruinArray = gameMap.getRuinArray();
             int[] patternArray = gameMap.getPatternArray();
-
 
             // Make body tables
             ArrayList<Integer> bodyIDs = new ArrayList<>();
@@ -332,8 +331,8 @@ public final strictfp class GameMapIO {
                 int offset = SpawnAction.createSpawnAction(builder, bodyLocsXs.get(i), bodyLocsYs.get(i), bodyTeamIDs.get(i), bodyTypes.get(i));
                 spawnedRobotOffsets[i] = offset;
             }
-            int spawnActionVector = createSpawnActionsVector(builder, spawnedRobotOffsets);
-            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVector);
+            int spawnActionVectorOffset = createSpawnActionsVector(builder, spawnedRobotOffsets);
+            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVectorOffset);
 
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
@@ -358,10 +357,16 @@ public final strictfp class GameMapIO {
         private static void initInitialBodiesFromSchemaBodyTable(InitialBodyTable bodyTable, ArrayList<RobotInfo> initialBodies, boolean teamsReversed) {
             for (int i = 0; i < bodyTable.robotIdsLength(); i++){
                 int curId = bodyTable.robotIds(i);
+                System.out.println(curId); //ok
                 battlecode.schema.SpawnAction curSpawnAction = bodyTable.spawnActions(i);
                 UnitType bodyType = FlatHelpers.getUnitTypeFromRobotType(curSpawnAction.robotType());
+                System.out.println(curSpawnAction.robotType()); //not ok
+                System.out.println(bodyType);
                 int bodyX = curSpawnAction.x();
                 int bodyY = curSpawnAction.y();
+                System.out.println(bodyX);
+                System.out.println(bodyY);
+                System.out.println("before crashing");
                 Team bodyTeam = TeamMapping.team(curSpawnAction.team());
                 if (teamsReversed){
                     bodyTeam = bodyTeam.opponent();
@@ -372,10 +377,19 @@ public final strictfp class GameMapIO {
         }
 
         private static int createSpawnActionsVector(FlatBufferBuilder builder, int[] data){
-            builder.startVector(6, data.length, 2);
+            //TODO: don't hardcode this or things will mysteriously break if we change # of starting towers
+            //todo: I think this method also doesn't work lol
+
+            //structs are stored inline so the vector data should be stored inline?
+            builder.startVector(4, data.length, 4); 
             for (int i = data.length - 1; i >= 0; i--) 
                 builder.addOffset(data[i]); 
             return builder.endVector();
+            // InitialBodyTable.startSpawnActionsVector(builder, data.length);
+            // for (int i = data.length - 1; i >= 0; i--){
+            //     InitialBodyTable.addSpawnActions(builder, data[i]);
+            // }
+            // return 
         }
         
     }
