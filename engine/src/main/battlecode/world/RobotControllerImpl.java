@@ -77,7 +77,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
 
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaint(loc), gw.getMark(loc), gw.hasRuin(loc));
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
 
         return currentLocInfo;
     }
@@ -734,13 +734,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
-            case UnitType.SOLDIER:
+            case SOLDIER:
                 assertCanAttackSoldier(loc);
                 break;
-            case UnitType.SPLASHER:
+            case SPLASHER:
                 assertCanAttackSplasher(loc);
                 break;
-            case UnitType.MOPPER:
+            case MOPPER:
                 assertCanAttackMopper(loc);
                 break; 
             default:
@@ -893,7 +893,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.getTeamInfo().writeSharedArray(getTeam(), index, value);
     }
 
-    @Override
     private void assertCanSendMessage(MapLocation loc, Message message) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);

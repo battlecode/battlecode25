@@ -8,13 +8,13 @@ public class MapInfo {
 
     private boolean isWall;
 
-    private int paint;
+    private PaintType paint;
 
     private int mark;
 
     private boolean hasRuin;
 
-    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, int paint, int mark, boolean hasRuin){
+    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, PaintType paint, int mark, boolean hasRuin){
         this.loc = loc;
         this.isPassable = isPassable;
         this.isWall = isWall;
@@ -63,7 +63,7 @@ public class MapInfo {
      * 
      * @battlecode.doc.costlymethod
      */
-    public int getPaint() {
+    public PaintType getPaint() {
         return paint;
     }
 
@@ -91,10 +91,10 @@ public class MapInfo {
 
     public String toString(){
         return "Location{" +
-                "loc=" + loc +
+                "loc=" + loc.toString() +
                 (isWall ? ", wall" : "") +
                 (hasRuin ? ", with ruin" : "") +
-                ", paint=" + Integer.toString(paint) + 
+                ", paint=" + paint.toString() +
                 ", mark=" + Integer.toString(mark) +
                 "}";
     }

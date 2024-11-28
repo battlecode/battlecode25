@@ -366,6 +366,22 @@ public strictfp class GameWorld {
         return this.colorLocations[locationToIndex(loc)];
     }
 
+    public PaintType paintTypeFromInt(Team team, int paint) {
+        Team paintTeam = teamFromPaint(paint);
+
+        if (paintTeam == Team.NEUTRAL) {
+            return PaintType.EMPTY;
+        } else if (paintTeam == team) {
+            return isPrimaryPaint(paint) ? PaintType.ALLY_PRIMARY : PaintType.ALLY_SECONDARY;
+        } else {
+            return isPrimaryPaint(paint) ? PaintType.ENEMY_PRIMARY : PaintType.ENEMY_SECONDARY;
+        }
+    }
+
+    public PaintType getPaintType(Team team, MapLocation loc) {
+        return paintTypeFromInt(team, getPaint(loc));
+    }
+
     public boolean isRunning() {
         return this.running;
     }
@@ -483,15 +499,23 @@ public strictfp class GameWorld {
         }
     }
 
+    public boolean isPrimaryPaint(int paint) {
+        return paint == 1 || paint == 3;
+    }
+
     public int getPrimaryPaint(Team team) {
-        if(team == Team.A) return 1;
-        else if(team == Team.B) return 3;
+        if (team == Team.A)
+            return 1;
+        else if (team == Team.B)
+            return 3;
         return 0;
     }
 
     public int getSecondaryPaint(Team team) {
-        if(team == Team.A) return 2;
-        else if(team == Team.B) return 4;
+        if (team == Team.A)
+            return 2;
+        else if(team == Team.B)
+            return 4;
         return 0;
     }
 
