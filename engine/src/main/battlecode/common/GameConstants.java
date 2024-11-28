@@ -76,6 +76,9 @@ public class GameConstants {
     /** The amount of a paint a paint tower starts with. */
     public static final int INITIAL_PAINT_TOWER_PAINT = 500;
 
+    /** The amount of money each team starts with. */
+    public static final int INITIAL_TEAM_MONEY = 1000;
+
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;
 

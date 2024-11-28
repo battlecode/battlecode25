@@ -80,6 +80,8 @@ public strictfp class GameWorld {
         this.controlProvider.matchStarted(this);
 
         this.teamInfo = new TeamInfo(this);
+        this.teamInfo.addMoney(Team.A, GameConstants.INITIAL_TEAM_MONEY);
+        this.teamInfo.addMoney(Team.B, GameConstants.INITIAL_TEAM_MONEY);
 
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
