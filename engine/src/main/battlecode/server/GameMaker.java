@@ -5,6 +5,7 @@ import battlecode.common.GlobalUpgrade;
 import battlecode.common.MapLocation;
 import battlecode.common.SkillType;
 import battlecode.common.TrapType;
+import battlecode.common.UnitType;
 import battlecode.common.Team;
 import battlecode.instrumenter.profiler.Profiler;
 import battlecode.instrumenter.profiler.ProfilerCollection;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.*;
 import java.util.function.ToIntFunction;
@@ -262,120 +264,49 @@ public strictfp class GameMaker {
             int[] teamsVec = { teamAOffset, teamBOffset };
 
             int teamsOffset = GameHeader.createTeamsVector(builder, teamsVec);
-            int specializationMetadataOffset = makeSpecializationMetadata(builder);
-            int buildActionMetadataOffset = makeBuildActionMetadata(builder);
-            int globalUpgradeMetadataOffset = makeGlobalUpgradeMetadata(builder);
+            int robotTypeMetaDataOffset = makeRobotTypeMetadata(builder);
 
             GameplayConstants.startGameplayConstants(builder);
-            GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
-            GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
-            GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
-            GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
-            GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
-            GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
-            GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
+            //TODO: what gameplay constants do we need?
+            // GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
+            // GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
+            // GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
+            // GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
+            // GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
+            // GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
+            // GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
             int constantsOffset = GameplayConstants.endGameplayConstants(builder);
 
             GameHeader.startGameHeader(builder);
             GameHeader.addSpecVersion(builder, specVersionOffset);
             GameHeader.addTeams(builder, teamsOffset);
-            GameHeader.addSpecializationMetadata(builder, specializationMetadataOffset);
-            GameHeader.addBuildActionMetadata(builder, buildActionMetadataOffset);
-            GameHeader.addGlobalUpgradeMetadata(builder, globalUpgradeMetadataOffset);
             GameHeader.addConstants(builder, constantsOffset);
+            GameHeader.addRobotTypeMetadata(builder, robotTypeMetaDataOffset);
             int gameHeaderOffset = GameHeader.endGameHeader(builder);
 
             return EventWrapper.createEventWrapper(builder, Event.GameHeader, gameHeaderOffset);
         });
     }
 
-    public int makeSpecializationMetadata(FlatBufferBuilder builder) {
-        TIntArrayList specializationMetadataOffsets = new TIntArrayList();
-
-        for (SkillType type : SkillType.values()) {
-            for (int l = 0; l <= 6; l++) {
-                SpecializationMetadata.startSpecializationMetadata(builder);
-                SpecializationMetadata.addType(builder, skillTypeToSpecializationType(type));
-                SpecializationMetadata.addLevel(builder, l);
-                SpecializationMetadata.addCooldownReduction(builder, type.getCooldown(l));
-                int effect = type.getSkillEffect(l);
-                if (type == SkillType.ATTACK) {
-                    SpecializationMetadata.addDamageIncrease(builder, effect);
-                    SpecializationMetadata.addHealIncrease(builder, 0);
-                } else if (type == SkillType.BUILD) {
-                    SpecializationMetadata.addDamageIncrease(builder, 0);
-                    SpecializationMetadata.addHealIncrease(builder, 0);
-                } else if (type == SkillType.HEAL) {
-                    SpecializationMetadata.addDamageIncrease(builder, 0);
-                    SpecializationMetadata.addHealIncrease(builder, effect);
-                }
-                specializationMetadataOffsets.add(SpecializationMetadata.endSpecializationMetadata(builder));
+    public int makeRobotTypeMetadata(FlatBufferBuilder builder){
+        TIntArrayList robotTypeMetadataOffsets = new TIntArrayList();
+        for (UnitType type : UnitType.values()){
+            //turns all types into level 1 to convert easily into RobotType
+            UnitType levelOneType = FlatHelpers.getUnitTypeFromRobotType(FlatHelpers.getRobotTypeFromUnitType(type));
+            if (type != levelOneType){
+                continue; //avoid double counting
             }
+            RobotTypeMetadata.startRobotTypeMetadata(builder);
+            RobotTypeMetadata.addType(builder, FlatHelpers.getRobotTypeFromUnitType(type));
+            RobotTypeMetadata.addActionCooldown(builder, type.actionCooldown);
+            RobotTypeMetadata.addActionRadiusSquared(builder, type.actionRadiusSquared);
+            RobotTypeMetadata.addBaseHealth(builder,type.health);
+            RobotTypeMetadata.addBytecodeLimit(builder, 1000); //TODO: decide on bytecode limits
+            RobotTypeMetadata.addMovementCooldown(builder, GameConstants.MOVEMENT_COOLDOWN); 
+            RobotTypeMetadata.addVisionRadiusSquared(builder, GameConstants.VISION_RADIUS_SQUARED);
+            robotTypeMetadataOffsets.add(RobotTypeMetadata.endRobotTypeMetadata(builder));
         }
-        return GameHeader.createSpecializationMetadataVector(builder, specializationMetadataOffsets.toArray());
-    }
-
-    public int makeBuildActionMetadata(FlatBufferBuilder builder) {
-        TIntArrayList buildActionMetadataOffsets = new TIntArrayList();
-        for (TrapType type : TrapType.values()) {
-            BuildActionMetadata.startBuildActionMetadata(builder);
-            BuildActionMetadata.addType(builder, trapTypeToBuildActionType(type));
-            BuildActionMetadata.addCost(builder, type.buildCost);
-            BuildActionMetadata.addBuildCooldown(builder, type.actionCooldownIncrease);
-            buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        }
-        BuildActionMetadata.startBuildActionMetadata(builder);
-        BuildActionMetadata.addType(builder, BuildActionType.DIG);
-        BuildActionMetadata.addCost(builder, GameConstants.DIG_COST);
-        BuildActionMetadata.addBuildCooldown(builder, GameConstants.DIG_COOLDOWN);
-        buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        BuildActionMetadata.startBuildActionMetadata(builder);
-        BuildActionMetadata.addType(builder, BuildActionType.FILL);
-        BuildActionMetadata.addCost(builder, GameConstants.FILL_COST);
-        BuildActionMetadata.addBuildCooldown(builder, GameConstants.FILL_COOLDOWN);
-        buildActionMetadataOffsets.add(BuildActionMetadata.endBuildActionMetadata(builder));
-        return GameHeader.createBuildActionMetadataVector(builder, buildActionMetadataOffsets.toArray());
-    }
-
-    public int makeGlobalUpgradeMetadata(FlatBufferBuilder builder) {
-        TIntArrayList globalUpgradeMetadataOffsets = new TIntArrayList();
-        for (GlobalUpgrade upgrade : GlobalUpgrade.values()) {
-            GlobalUpgradeMetadata.startGlobalUpgradeMetadata(builder);
-            GlobalUpgradeMetadata.addType(builder, FlatHelpers.getGlobalUpgradeTypeFromGlobalUpgrade(upgrade));
-            GlobalUpgradeMetadata.addUpgradeAmount(builder, getUpgradeAmount(upgrade));
-            globalUpgradeMetadataOffsets.add(GlobalUpgradeMetadata.endGlobalUpgradeMetadata(builder));
-        }
-        return GameHeader.createGlobalUpgradeMetadataVector(builder, globalUpgradeMetadataOffsets.toArray());
-    }
-
-    private byte skillTypeToSpecializationType(SkillType type) {
-        if (type == SkillType.ATTACK)
-            return SpecializationType.ATTACK;
-        if (type == SkillType.BUILD)
-            return SpecializationType.BUILD;
-        if (type == SkillType.HEAL)
-            return SpecializationType.HEAL;
-        return Byte.MIN_VALUE;
-    }
-
-    private byte trapTypeToBuildActionType(TrapType type) {
-        if (type == TrapType.EXPLOSIVE)
-            return BuildActionType.EXPLOSIVE_TRAP;
-        if (type == TrapType.WATER)
-            return BuildActionType.WATER_TRAP;
-        if (type == TrapType.STUN)
-            return BuildActionType.STUN_TRAP;
-        return Byte.MIN_VALUE;
-    }
-
-    private int getUpgradeAmount(GlobalUpgrade gu) {
-        if (gu == GlobalUpgrade.ATTACK)
-            return gu.baseAttackChange;
-        if (gu == GlobalUpgrade.HEALING)
-            return gu.baseHealChange;
-        if (gu == GlobalUpgrade.CAPTURING)
-            return gu.flagReturnDelayChange;
-        return 0;
+        return GameHeader.createRobotTypeMetadataVector(builder, robotTypeMetadataOffsets.toArray());
     }
 
     public void makeGameFooter(Team winner) {
@@ -394,143 +325,43 @@ public strictfp class GameMaker {
      * There is only one of these per GameMaker.
      */
     public class MatchMaker {
-        private TIntArrayList robotIds;
-        private TIntArrayList robotLocsX;
-        private TIntArrayList robotLocsY;
-        private TIntArrayList robotMoveCooldowns;
-        private TIntArrayList robotActionCooldowns;
-        private TIntArrayList robotHealths;
-        private TIntArrayList attacksPerformed;
-        private TIntArrayList attackLevels;
-        private TIntArrayList buildsPerformed;
-        private TIntArrayList buildLevels;
-        private TIntArrayList healsPerformed;
-        private TIntArrayList healLevels;
-
-        private TIntArrayList spawnedIds;
-        private TByteArrayList spawnedTeams;
-        private TIntArrayList spawnedLocsX;
-        private TIntArrayList spawnedLocsY;
-        private TIntArrayList diedIds; // ints
-
-        private TIntArrayList actionIds; // ints
-        private TByteArrayList actions; // Actions
-        private TIntArrayList actionTargets; // ints (IDs)
-
-        private TIntArrayList claimedResourcesX;
-        private TIntArrayList claimedResourcesY;
 
         // Round statistics
         private TIntArrayList teamIDs;
-        private TIntArrayList teamBreadAmounts;
-        private TIntArrayList teamAComm;
-        private TIntArrayList teamBComm;
+        private TIntArrayList teamMoneyAmounts;
 
-        private TIntArrayList trapAddedIds;
-        private TIntArrayList trapAddedX;
-        private TIntArrayList trapAddedY;
-        private TByteArrayList trapAddedTypes;
-        private TByteArrayList trapAddedTeams;
+        private ArrayList<Integer> turns; 
 
-        private TIntArrayList trapTriggeredIds;
+        private TIntArrayList diedIds; // ints
 
-        private TIntArrayList digLocsX;
-        private TIntArrayList digLocsY;
-        private TIntArrayList fillLocsX;
-        private TIntArrayList fillLocsY;
+        private int currentRound;
+        
+        //helpers to store all of a robot's actions before commiting them at the end of a turn
+        private ArrayList<Integer> currentActions; 
+        private ArrayList<Byte> currentActionTypes;
 
-        private TIntArrayList indicatorStringIds;
-        private ArrayList<String> indicatorStrings;
+        private int currentMapWidth = -1;
 
-        // Indicator dots with locations and RGB values
-        private TIntArrayList indicatorDotIds;
-        private TIntArrayList indicatorDotLocsX;
-        private TIntArrayList indicatorDotLocsY;
-        private TIntArrayList indicatorDotRGBsRed;
-        private TIntArrayList indicatorDotRGBsGreen;
-        private TIntArrayList indicatorDotRGBsBlue;
-
-        // Indicator lines with locations and RGB values
-        private TIntArrayList indicatorLineIds;
-        private TIntArrayList indicatorLineStartLocsX;
-        private TIntArrayList indicatorLineStartLocsY;
-        private TIntArrayList indicatorLineEndLocsX;
-        private TIntArrayList indicatorLineEndLocsY;
-        private TIntArrayList indicatorLineRGBsRed;
-        private TIntArrayList indicatorLineRGBsGreen;
-        private TIntArrayList indicatorLineRGBsBlue;
-
-        // Robot IDs and their bytecode usage
-        private TIntArrayList bytecodeIds;
-        private TIntArrayList bytecodesUsed;
 
         // Used to write logs.
         private final ByteArrayOutputStream logger;
 
         public MatchMaker() {
-            this.robotIds = new TIntArrayList();
-            this.robotLocsX = new TIntArrayList();
-            this.robotLocsY = new TIntArrayList();
-            this.robotMoveCooldowns = new TIntArrayList();
-            this.robotActionCooldowns = new TIntArrayList();
-            this.robotHealths = new TIntArrayList();
-            this.attacksPerformed = new TIntArrayList();
-            this.attackLevels = new TIntArrayList();
-            this.buildsPerformed = new TIntArrayList();
-            this.buildLevels = new TIntArrayList();
-            this.healsPerformed = new TIntArrayList();
-            this.healLevels = new TIntArrayList();
-            this.spawnedIds = new TIntArrayList();
-            this.spawnedTeams = new TByteArrayList();
-            this.spawnedLocsX = new TIntArrayList();
-            this.spawnedLocsY = new TIntArrayList();
-            this.diedIds = new TIntArrayList();
-            this.actionIds = new TIntArrayList();
-            this.actions = new TByteArrayList();
-            this.actionTargets = new TIntArrayList();
-            this.claimedResourcesX = new TIntArrayList();
-            this.claimedResourcesY = new TIntArrayList();
             this.teamIDs = new TIntArrayList();
-            this.teamBreadAmounts = new TIntArrayList();
-            this.teamAComm = new TIntArrayList();
-            this.teamBComm = new TIntArrayList();
-            this.trapAddedIds = new TIntArrayList();
-            this.trapAddedX = new TIntArrayList();
-            this.trapAddedY = new TIntArrayList();
-            this.trapAddedTypes = new TByteArrayList();
-            this.trapAddedTeams = new TByteArrayList();
-            this.trapTriggeredIds = new TIntArrayList();
-            this.digLocsX = new TIntArrayList();
-            this.digLocsY = new TIntArrayList();
-            this.fillLocsX = new TIntArrayList();
-            this.fillLocsY = new TIntArrayList();
-            this.indicatorStringIds = new TIntArrayList();
-            this.indicatorStrings = new ArrayList<>();
-            this.indicatorDotIds = new TIntArrayList();
-            this.indicatorDotLocsX = new TIntArrayList();
-            this.indicatorDotLocsY = new TIntArrayList();
-            this.indicatorDotRGBsRed = new TIntArrayList();
-            this.indicatorDotRGBsBlue = new TIntArrayList();
-            this.indicatorDotRGBsGreen = new TIntArrayList();
-            this.indicatorLineIds = new TIntArrayList();
-            this.indicatorLineStartLocsX = new TIntArrayList();
-            this.indicatorLineStartLocsY = new TIntArrayList();
-            this.indicatorLineEndLocsX = new TIntArrayList();
-            this.indicatorLineEndLocsY = new TIntArrayList();
-            this.indicatorLineRGBsRed = new TIntArrayList();
-            this.indicatorLineRGBsBlue = new TIntArrayList();
-            this.indicatorLineRGBsGreen = new TIntArrayList();
-            this.bytecodeIds = new TIntArrayList();
-            this.bytecodesUsed = new TIntArrayList();
+            this.teamMoneyAmounts = new TIntArrayList();
+            this.turns = new ArrayList<>();
+            this.diedIds = new TIntArrayList();
+            this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
+            this.currentActions = new ArrayList<>();
+            this.currentActionTypes = new ArrayList<>();
         }
 
         public void makeMatchHeader(LiveMap gameMap) {
             changeState(State.IN_GAME, State.IN_MATCH);
-
+            this.currentMapWidth = gameMap.getWidth();
             createEvent((builder) -> {
                 int map = GameMapIO.Serial.serialize(builder, gameMap);
-
                 return EventWrapper.createEventWrapper(builder, Event.MatchHeader,
                         MatchHeader.createMatchHeader(builder, map, gameMap.getRounds()));
             });
@@ -591,7 +422,7 @@ public strictfp class GameMaker {
             matchFooters.add(events.size() - 1);
         }
 
-        public void makeRound(int roundNum) {
+        public void startRound(int roundNum) {
             assertState(State.IN_MATCH);
 
             try {
@@ -601,130 +432,52 @@ public strictfp class GameMaker {
             }
             // byte[] logs = this.logger.toByteArray();
             this.logger.reset();
+            this.currentRound = roundNum;
+        }
 
+        public void endRound(){
             createEvent((builder) -> {
-
                 // Round statistics
                 int teamIDsP = Round.createTeamIdsVector(builder, teamIDs.toArray());
-                int teamBreadAmountsP = Round.createTeamResourceAmountsVector(builder, teamBreadAmounts.toArray());
-                int teamACommVector = CommTable.createTeam1Vector(builder, teamAComm.toArray());
-                int teamBCommVector = CommTable.createTeam2Vector(builder, teamBComm.toArray());
-                CommTable.startCommTable(builder);
-                CommTable.addTeam1(builder, teamACommVector);
-                CommTable.addTeam2(builder, teamBCommVector);
-                int teamCommunicationP = CommTable.endCommTable(builder);
-
-                int robotIDsP = Round.createRobotIdsVector(builder, robotIds.toArray());
-                int robotLocsP = createVecTable(builder, robotLocsX, robotLocsY);
-                int robotMoveCooldownsP = Round.createRobotMoveCooldownsVector(builder, robotMoveCooldowns.toArray());
-                int robotActionCooldownsP = Round.createRobotActionCooldownsVector(builder,
-                        robotActionCooldowns.toArray());
-                int robotHealthsP = Round.createRobotHealthsVector(builder, robotHealths.toArray());
-                int attacksPerformedP = Round.createAttacksPerformedVector(builder, attacksPerformed.toArray());
-                int attackLevelsP = Round.createAttackLevelsVector(builder, attackLevels.toArray());
-                int buildsPerformedP = Round.createBuildsPerformedVector(builder, buildsPerformed.toArray());
-                int buildLevelsP = Round.createBuildLevelsVector(builder, buildLevels.toArray());
-                int healsPerformedP = Round.createAttacksPerformedVector(builder, healsPerformed.toArray());
-                int healLevelsP = Round.createHealLevelsVector(builder, healLevels.toArray());
-
-                int spawnedRobotIdsP = SpawnedBodyTable.createRobotIdsVector(builder, spawnedIds.toArray());
-                int spawnedTeamsP = SpawnedBodyTable.createTeamIdsVector(builder, spawnedTeams.toArray());
-                int spawnedLocsP = createVecTable(builder, spawnedLocsX, spawnedLocsY);
-                SpawnedBodyTable.startSpawnedBodyTable(builder);
-                SpawnedBodyTable.addRobotIds(builder, spawnedRobotIdsP);
-                SpawnedBodyTable.addTeamIds(builder, spawnedTeamsP);
-                SpawnedBodyTable.addLocs(builder, spawnedLocsP);
-                int spawnedBodiesP = SpawnedBodyTable.endSpawnedBodyTable(builder);
-
+                int teamMoneyAmountsP = Round.createTeamResourceAmountsVector(builder, teamMoneyAmounts.toArray());
                 int diedIdsP = Round.createDiedIdsVector(builder, diedIds.toArray());
-
-                // The actions that happened
-                int actionIdsP = Round.createActionIdsVector(builder, actionIds.toArray());
-                int actionsP = Round.createActionsVector(builder, actions.toArray());
-                int actionTargetsP = Round.createActionTargetsVector(builder, actionTargets.toArray());
-
-                int claimedResourcesP = FlatHelpers.createVecTable(builder, claimedResourcesX, claimedResourcesY);
-
-                int trapAddedIdsP = Round.createTrapAddedIdsVector(builder, trapAddedIds.toArray());
-                int trapAddedLocsP = createVecTable(builder, trapAddedX, trapAddedY);
-                int trapAddedTypesP = Round.createTrapAddedTypesVector(builder, trapAddedTypes.toArray());
-                int trapAddedTeamsP = Round.createTrapAddedTeamsVector(builder, trapAddedTeams.toArray());
-
-                int trapTriggeredIdsP = Round.createTrapTriggeredIdsVector(builder, trapTriggeredIds.toArray());
-
-                int digLocsP = createVecTable(builder, digLocsX, digLocsY);
-                int fillLocsP = createVecTable(builder, fillLocsX, fillLocsY);
-
-                // The indicator strings that were set
-                int indicatorStringIDsP = Round.createIndicatorStringIdsVector(builder, indicatorStringIds.toArray());
-                TIntArrayList indicatorStringsIntList = new TIntArrayList();
-                for (String s : indicatorStrings) {
-                    indicatorStringsIntList.add(builder.createString(s));
-                }
-                int indicatorStringsP = Round.createIndicatorStringsVector(builder, indicatorStringsIntList.toArray());
-
-                // The indicator dots that were set
-                int indicatorDotIDsP = Round.createIndicatorDotIdsVector(builder, indicatorDotIds.toArray());
-                int indicatorDotLocsP = createVecTable(builder, indicatorDotLocsX, indicatorDotLocsY);
-                int indicatorDotRGBsP = createRGBTable(builder, indicatorDotRGBsRed, indicatorDotRGBsGreen,
-                        indicatorDotRGBsBlue);
-
-                // The indicator lines that were set
-                int indicatorLineIDsP = Round.createIndicatorLineIdsVector(builder, indicatorLineIds.toArray());
-                int indicatorLineStartLocsP = createVecTable(builder, indicatorLineStartLocsX, indicatorLineStartLocsY);
-                int indicatorLineEndLocsP = createVecTable(builder, indicatorLineEndLocsX, indicatorLineEndLocsY);
-                int indicatorLineRGBsP = createRGBTable(builder, indicatorLineRGBsRed, indicatorLineRGBsGreen,
-                        indicatorLineRGBsBlue);
-
-                // The bytecode usage
-                int bytecodeIDsP = Round.createBytecodeIdsVector(builder, bytecodeIds.toArray());
-                int bytecodesUsedP = Round.createBytecodesUsedVector(builder, bytecodesUsed.toArray());
 
                 Round.startRound(builder);
                 Round.addTeamIds(builder, teamIDsP);
-                Round.addTeamCommunication(builder, teamCommunicationP);
-                Round.addTeamResourceAmounts(builder, teamBreadAmountsP);
-                Round.addRobotIds(builder, robotIDsP);
-                Round.addRobotLocs(builder, robotLocsP);
-                Round.addRobotMoveCooldowns(builder, robotMoveCooldownsP);
-                Round.addRobotActionCooldowns(builder, robotActionCooldownsP);
-                Round.addRobotHealths(builder, robotHealthsP);
-                Round.addAttacksPerformed(builder, attacksPerformedP);
-                Round.addAttackLevels(builder, attackLevelsP);
-                Round.addBuildsPerformed(builder, buildsPerformedP);
-                Round.addBuildLevels(builder, buildLevelsP);
-                Round.addHealsPerformed(builder, healsPerformedP);
-                Round.addHealLevels(builder, healLevelsP);
-                Round.addSpawnedBodies(builder, spawnedBodiesP);
+                Round.addRoundId(builder, this.currentRound);
+                Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
-                Round.addActionIds(builder, actionIdsP);
-                Round.addActions(builder, actionsP);
-                Round.addActionTargets(builder, actionTargetsP);
-                Round.addClaimedResourcePiles(builder, claimedResourcesP);
-                Round.addTrapAddedIds(builder, trapAddedIdsP);
-                Round.addTrapAddedLocations(builder, trapAddedLocsP);
-                Round.addTrapAddedTypes(builder, trapAddedTypesP);
-                Round.addTrapAddedTeams(builder, trapAddedTeamsP);
-                Round.addTrapTriggeredIds(builder, trapTriggeredIdsP);
-                Round.addDigLocations(builder, digLocsP);
-                Round.addFillLocations(builder, fillLocsP);
-                Round.addIndicatorStringIds(builder, indicatorStringIDsP);
-                Round.addIndicatorStrings(builder, indicatorStringsP);
-                Round.addIndicatorDotIds(builder, indicatorDotIDsP);
-                Round.addIndicatorDotLocs(builder, indicatorDotLocsP);
-                Round.addIndicatorDotRgbs(builder, indicatorDotRGBsP);
-                Round.addIndicatorLineIds(builder, indicatorLineIDsP);
-                Round.addIndicatorLineStartLocs(builder, indicatorLineStartLocsP);
-                Round.addIndicatorLineEndLocs(builder, indicatorLineEndLocsP);
-                Round.addIndicatorLineRgbs(builder, indicatorLineRGBsP);
-                Round.addRoundId(builder, roundNum);
-                Round.addBytecodeIds(builder, bytecodeIDsP);
-                Round.addBytecodesUsed(builder, bytecodesUsedP);
+                int turnsOffset = Round.createTurnsVector(builder, ArrayUtils.toPrimitive(this.turns.toArray(new Integer[this.turns.size()])));
+                Round.addTurns(builder, turnsOffset);
                 int round = Round.endRound(builder);
                 return EventWrapper.createEventWrapper(builder, Event.Round, round);
             });
 
             clearData();
+        }
+
+        public void startTurn(int robotID){
+            Turn.startTurn(fileBuilder);
+            Turn.addRobotId(fileBuilder, robotID);
+        }
+
+        public void endTurn(int health, int paint, int movementCooldown, int actionCooldown, int bytecodesUsed, 
+        MapLocation loc){
+            int actionsOffset = Turn.createActionsVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActions.toArray(new Integer[this.currentActions.size()])));
+            Turn.addActions(fileBuilder, actionsOffset);
+            int actionTypesOffsets = Turn.createActionsTypeVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActionTypes.toArray(new Byte[this.currentActionTypes.size()])));
+            Turn.addActionsType(fileBuilder, actionTypesOffsets);
+            Turn.addHealth(fileBuilder, health);
+            Turn.addPaint(fileBuilder, paint);
+            Turn.addMoveCooldown(fileBuilder, movementCooldown);
+            Turn.addActionCooldown(fileBuilder, actionCooldown);
+            Turn.addBytecodesUsed(fileBuilder, bytecodesUsed);
+            Turn.addX(fileBuilder, loc.x);
+            Turn.addY(fileBuilder, loc.y);
+            int turnOffset = Turn.endTurn(fileBuilder);
+            this.turns.add(turnOffset);
+            this.currentActions.clear();
+            this.currentActionTypes.clear();
         }
 
         /**
@@ -734,177 +487,130 @@ public strictfp class GameMaker {
             return logger;
         }
 
-        public void addRobot(InternalRobot robot) {
-            MapLocation loc = robot.getLocation();
-            if (robot.getLocation() == null) {
-                // When dead, send the last known location
-                loc = robot.getDiedLocation();
-            }
-            if (loc == null) {
-                return;
-            }
-            robotIds.add(robot.getID());
-            robotLocsX.add(loc.x);
-            robotLocsY.add(loc.y);
-            robotMoveCooldowns.add(robot.getMovementCooldownTurns());
-            robotActionCooldowns.add(robot.getActionCooldownTurns());
-            robotHealths.add(robot.getHealth());
-            attacksPerformed.add(robot.getAttackExp());
-            attackLevels.add(robot.getLevel(SkillType.ATTACK));
-            buildsPerformed.add(robot.getBuildExp());
-            buildLevels.add(robot.getLevel(SkillType.BUILD));
-            healsPerformed.add(robot.getHealExp());
-            healLevels.add(robot.getLevel(SkillType.HEAL));
+        /// Generic action representing damage to a robot
+        public void addDamageAction(int damagedRobotID, int damage){
+            int action = DamageAction.createDamageAction(fileBuilder, damagedRobotID, damage);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.DamageAction);
         }
 
-        public void addSpawned(int id, Team team, MapLocation loc) {
-            spawnedIds.add(id);
-            spawnedTeams.add(TeamMapping.id(team));
-            spawnedLocsX.add(loc.x);
-            spawnedLocsY.add(loc.y);
+
+        /// Visually indicate a tile has been painted
+        public void addPaintAction(MapLocation loc){ 
+            //TODO: this should probably also have a primary/secondary boolean
+            int action = PaintAction.createPaintAction(fileBuilder, locationToInt(loc));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.PaintAction);
         }
 
-        public void addDied(int id) {
-            diedIds.add(id);
+        /// Visually indicate a tile's paint has been removed
+        public void addUnpaintAction(MapLocation loc){
+            int action = UnpaintAction.createUnpaintAction(fileBuilder, locationToInt(loc));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.UnpaintAction);
         }
 
-        public void addAction(int userID, byte action, int targetID) {
-            actionIds.add(userID);
-            actions.add(action);
-            actionTargets.add(targetID);
+        /// Visually indicate an attack
+        public void addAttackAction(int otherID){
+            int action = AttackAction.createAttackAction(fileBuilder, otherID);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.AttackAction);
         }
 
-        public void addClaimedResource(MapLocation loc) {
-            claimedResourcesX.add(loc.x);
-            claimedResourcesY.add(loc.y);
+        /// Visually indicate a mop attack
+        public void addMopAction(MapLocation loc){
+            int action = MopAction.createMopAction(fileBuilder, locationToInt(loc));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.MopAction);
         }
 
-        public void addTrap(Trap trap) {
-            trapAddedIds.add(trap.getId());
-            MapLocation loc = trap.getLocation();
-            trapAddedX.add(loc.x);
-            trapAddedY.add(loc.y);
-            trapAddedTypes.add(FlatHelpers.getBuildActionFromTrapType(trap.getType()));
-            trapAddedTeams.add(TeamMapping.id(trap.getTeam()));
+        /// Visually indicate a tower being built
+        public void addBuildAction(int towerID){
+            int action = BuildAction.createBuildAction(fileBuilder, towerID);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.BuildAction);
         }
 
-        public void addTriggeredTrap(int id) {
-            trapTriggeredIds.add(id);
+
+        /// Visually indicate transferring paint from one robot to another
+        public void addTransferAction(int otherRobotID){
+            int action = TransferAction.createTransferAction(fileBuilder, otherRobotID);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.TransferAction);
         }
 
-        public void addDigLocation(MapLocation loc) {
-            digLocsX.add(loc.x);
-            digLocsY.add(loc.y);
+        /// Visually indicate messaging from one robot to another
+        public void addMessageAction(int receiverID, int data){
+            int action = MessageAction.createMessageAction(fileBuilder, receiverID, data);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.MessageAction);
         }
 
-        public void addFillLocation(MapLocation loc) {
-            fillLocsX.add(loc.x);
-            fillLocsY.add(loc.y);
+        /// Indicate that this robot was spawned on this turn
+        public void addSpawnAction(MapLocation loc, Team team, UnitType type){
+            byte teamID = TeamMapping.id(team);
+            byte robotType = FlatHelpers.getRobotTypeFromUnitType(type);
+            int action = SpawnAction.createSpawnAction(fileBuilder, loc.x, loc.y, teamID, robotType);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.SpawnAction);
         }
 
-        public void addTeamInfo(Team team, int breadAmount, int[] sharedArray) {
+        //visually indicates tower has been upgraded
+        public void addUpgradeAction(int towerID){
+            int action = UpgradeAction.createUpgradeAction(fileBuilder, towerID);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.UpgradeAction);
+        }
+
+        public void addTeamInfo(Team team, int moneyAmount) {
             teamIDs.add(TeamMapping.id(team));
-            teamBreadAmounts.add(breadAmount);
-            if (team == Team.A)
-                teamAComm = new TIntArrayList(sharedArray);
-            else if (team == Team.B)
-                teamBComm = new TIntArrayList(sharedArray);
+            teamMoneyAmounts.add(moneyAmount);
         }
 
+        /// Update the indicator string for this robot
         public void addIndicatorString(int id, String string) {
             if (!showIndicators) {
                 return;
             }
-            indicatorStringIds.add(id);
-            indicatorStrings.add(string);
+            int action = IndicatorStringAction.createIndicatorStringAction(fileBuilder, fileBuilder.createString(string));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.IndicatorStringAction);
         }
 
+        /// Update the indicator dot for this robot
         public void addIndicatorDot(int id, MapLocation loc, int red, int green, int blue) {
             if (!showIndicators) {
                 return;
             }
-            indicatorDotIds.add(id);
-            indicatorDotLocsX.add(loc.x);
-            indicatorDotLocsY.add(loc.y);
-            indicatorDotRGBsRed.add(red);
-            indicatorDotRGBsGreen.add(green);
-            indicatorDotRGBsBlue.add(blue);
+            int action = IndicatorDotAction.createIndicatorDotAction(fileBuilder, locationToInt(loc), FlatHelpers.RGBtoInt(red, green, blue));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.IndicatorDotAction);
         }
 
+        /// Update the indicator line for this robot
         public void addIndicatorLine(int id, MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
             if (!showIndicators) {
                 return;
             }
-            indicatorLineIds.add(id);
-            indicatorLineStartLocsX.add(startLoc.x);
-            indicatorLineStartLocsY.add(startLoc.y);
-            indicatorLineEndLocsX.add(endLoc.x);
-            indicatorLineEndLocsY.add(endLoc.y);
-            indicatorLineRGBsRed.add(red);
-            indicatorLineRGBsGreen.add(green);
-            indicatorLineRGBsBlue.add(blue);
+            int action = IndicatorLineAction.createIndicatorLineAction(fileBuilder, locationToInt(startLoc), locationToInt(endLoc), FlatHelpers.RGBtoInt(red, green, blue));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.IndicatorLineAction);
         }
 
-        public void addBytecodes(int id, int bytecodes) {
-            bytecodeIds.add(id);
-            bytecodesUsed.add(bytecodes);
+        public void addBytecodes(int bytecodes) {
+            Turn.addBytecodesUsed(fileBuilder, bytecodes);
         }
+
+        private int locationToInt(MapLocation loc){
+            return loc.x + this.currentMapWidth * loc.y;
+        }
+
 
         private void clearData() {
-            robotIds.clear();
-            robotLocsX.clear();
-            robotLocsY.clear();
-            robotMoveCooldowns.clear();
-            robotActionCooldowns.clear();
-            robotHealths.clear();
-            attacksPerformed.clear();
-            attackLevels.clear();
-            buildsPerformed.clear();
-            buildLevels.clear();
-            healsPerformed.clear();
-            healLevels.clear();
-            spawnedIds.clear();
-            spawnedTeams.clear();
-            spawnedLocsX.clear();
-            spawnedLocsY.clear();
-            diedIds.clear();
-            actionIds.clear();
-            actions.clear();
-            actionTargets.clear();
-            claimedResourcesX.clear();
-            claimedResourcesY.clear();
-            teamIDs.clear();
-            teamBreadAmounts.clear();
-            teamAComm.clear();
-            teamBComm.clear();
-            trapAddedIds.clear();
-            trapAddedX.clear();
-            trapAddedY.clear();
-            trapAddedTypes.clear();
-            trapAddedTeams.clear();
-            trapTriggeredIds.clear();
-            digLocsX.clear();
-            digLocsY.clear();
-            fillLocsX.clear();
-            fillLocsY.clear();
-            indicatorStringIds.clear();
-            indicatorStrings.clear();
-            indicatorDotIds.clear();
-            indicatorDotLocsX.clear();
-            indicatorDotLocsY.clear();
-            indicatorDotRGBsRed.clear();
-            indicatorDotRGBsBlue.clear();
-            indicatorDotRGBsGreen.clear();
-            indicatorLineIds.clear();
-            indicatorLineStartLocsX.clear();
-            indicatorLineStartLocsY.clear();
-            indicatorLineEndLocsX.clear();
-            indicatorLineEndLocsY.clear();
-            indicatorLineRGBsRed.clear();
-            indicatorLineRGBsBlue.clear();
-            indicatorLineRGBsGreen.clear();
-            bytecodeIds.clear();
-            bytecodesUsed.clear();
+            this.teamIDs.clear();
+            this.teamMoneyAmounts.clear();
+            this.turns.clear();
+            this.diedIds.clear();
         }
     }
 }
