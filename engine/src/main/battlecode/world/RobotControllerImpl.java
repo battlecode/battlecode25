@@ -529,7 +529,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMark(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.MARK_RADIUS_SQUARED);
     }
 
     @Override
@@ -551,7 +551,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.MARK_RADIUS_SQUARED);
 
         if (this.gameWorld.getMarker(getTeam(), loc) == 0) {
             throw new GameActionException(CANT_DO_THAT, "Cannot remove a nonexistent marker!");
@@ -577,7 +577,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
 
         if (!this.gameWorld.hasRuin(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -614,7 +614,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
         this.gameWorld.markTowerPattern(type, getTeam(), loc, rotationAngle, reflect);
     }
-
 
     private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
         assertNotNull(loc);
@@ -667,7 +666,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
         if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -702,7 +701,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
 
         if (this.gameWorld.hasTower(loc)) {
             throw new GameActionException(CANT_DO_THAT,
@@ -749,7 +748,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanCompleteResourcePattern(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
-        assertCanActLocation(loc, GameConstants.INTERACT_RADIUS_SQUARED);
+        assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
         if (!this.gameWorld.isValidPatternCenter(loc)) {
             throw new GameActionException(CANT_DO_THAT,
