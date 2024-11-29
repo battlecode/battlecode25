@@ -60,22 +60,30 @@ const ColorPicker = (props: {name: Colors}) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.name]
 
+    useEffect(() => {
+        console.log('currentColors updated!');
+        
+        //GameRenderer.render();
+    }, [currentColors.GAMEAREA_BACKGROUND]);
+
     const onChange = (newColor: any) => {
         updateGlobalColor(props.name, newColor.hex);
         context.setState((prevState) => ({
             ...prevState,
             config: { ...prevState.config, colors: {...prevState.config.colors, [props.name]: newColor.hex} }
         }))
+
         localStorage.setItem('config' + props.name, JSON.stringify(newColor.hex))
         // hopefully after the setState is done
-        setTimeout(() => GameRenderer.render(), 10)
+        //setTimeout(() => GameRenderer.render(), 10)
     }
 
-    return <ChromePicker
-        color={color}
-        onChange={onChange}
-    />
-
+    return <>
+        <ChromePicker
+            color={value}
+            onChange={onChange}
+        />
+    </>
 }
 
 export const ConfigPage: React.FC<Props> = (props) => {

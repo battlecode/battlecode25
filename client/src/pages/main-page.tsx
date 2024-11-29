@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AppContextProvider } from '../app-context'
 import { ControlsBar } from '../components/controls-bar/controls-bar'
 import { Sidebar } from '../components/sidebar/sidebar'
@@ -11,7 +11,7 @@ export const MainPage: React.FC = () => {
 
     return (
         <AppContextProvider>
-            <div className="flex overflow-hidden" style={{ backgroundColor: currentColors[Colors.GAMEAREA_BACKGROUND] }}>
+            <div className="flex overflow-hidden" style={{ backgroundColor: currentColors.GAMEAREA_BACKGROUND }}>
                 <Sidebar />
                 <div className="w-full h-screen flex justify-center">
                     <GameArea />
