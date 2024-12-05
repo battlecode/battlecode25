@@ -42,6 +42,8 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)
 
+    const mapEmpty = () => !turn || (turn.map.isEmpty() && turn.bodies.isEmpty())
+
     const undoStack = React.useRef<RingBuffer<UndoFunction>>(new RingBuffer(UNDO_STACK_SIZE))
     const currentUndoStack = React.useRef<UndoFunction[]>([])
     const handleUndo = () => {
@@ -74,15 +76,13 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [undoStack])
+    }, [undoStack, turn])
 
     const openBrush = brushes.find((b) => b.open)
 
     const setOpenBrush = (brush: MapEditorBrush | null) => {
         setBrushes(brushes.map((b) => b.opened(b === brush)))
     }
-
-    const mapEmpty = () => !turn || (turn.map.isEmpty() && turn.bodies.isEmpty())
 
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
