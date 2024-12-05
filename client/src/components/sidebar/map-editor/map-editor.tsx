@@ -57,7 +57,6 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     }
 
     useEffect(() => {
-        console.log('canvasMouseDown', canvasMouseDown)
         if (!canvasMouseDown && currentUndoStack.current.length > 0) {
             const currentStack = currentUndoStack.current
             undoStack.current.push(() => {
