@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ChromePicker } from 'react-color'
-import { useAppContext } from './app-context'
+import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
 import { Colors, currentColors, updateGlobalColor, getGlobalColor, resetGlobalColors } from './colors'
 
@@ -33,7 +33,7 @@ const DEFAULT_CONFIG = {
 
         [Colors.ATTACK_COLOR]: '#db6b5c',
         [Colors.BUILD_COLOR]: '#c573c9',
-        [Colors.HEAL_COLOR]: '#f2b804',
+        [Colors.HEAL_COLOR]: '#f2b804'
     } as Record<Colors, string>
 }
 
@@ -53,37 +53,49 @@ export function getDefaultConfig(): ClientConfig {
         const value = localStorage.getItem('config' + key)
         if (value) config[key as keyof ClientConfig] = JSON.parse(value)
     }
+
+    for (const key in config.colors) {
+        const value = localStorage.getItem('config-colors' + key)
+        if (value) {
+            config.colors[key as Colors] = JSON.parse(value)
+            updateGlobalColor(key as Colors, JSON.parse(value))
+        }
+    }
+
     return config
 }
 
-const ColorPicker = (props: {name: Colors}) => {
+const ColorPicker = (props: { name: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.name]
 
-    useEffect(() => {
-        console.log('currentColors updated!');
-        
-        //GameRenderer.render();
-    }, [currentColors.GAMEAREA_BACKGROUND]);
+    const [displayColorPicker, setDisplayColorPicker] = useState(false)
 
-    const onChange = (newColor: any) => {
-        updateGlobalColor(props.name, newColor.hex);
-        context.setState((prevState) => ({
-            ...prevState,
-            config: { ...prevState.config, colors: {...prevState.config.colors, [props.name]: newColor.hex} }
-        }))
-
-        localStorage.setItem('config' + props.name, JSON.stringify(newColor.hex))
-        // hopefully after the setState is done
-        //setTimeout(() => GameRenderer.render(), 10)
+    const handleClick = () => {
+        setDisplayColorPicker(!displayColorPicker)
     }
 
-    return <>
-        <ChromePicker
-            color={value}
-            onChange={onChange}
-        />
-    </>
+    const handleClose = () => {
+        setDisplayColorPicker(false)
+    }
+
+    const onChange = (newColor: any) => {
+        updateGlobalColor(props.name, newColor.hex)
+        context.setState((prevState) => ({
+            ...prevState,
+            config: { ...prevState.config, colors: { ...prevState.config.colors, [props.name]: newColor.hex } }
+        }))
+
+        localStorage.setItem('config-colors' + props.name, JSON.stringify(newColor.hex))
+        // hopefully after the setState is done
+        setTimeout(() => GameRenderer.render(), 10)
+    }
+
+    return (
+        <>
+            <ChromePicker color={value} onChange={onChange} />
+        </>
+    )
 }
 
 export const ConfigPage: React.FC<Props> = (props) => {
@@ -97,7 +109,10 @@ export const ConfigPage: React.FC<Props> = (props) => {
                 if (typeof value === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
                 if (typeof value === 'number') return <ConfigNumberElement configKey={key} key={key} />
             })}
-            <div><br></br></div>
+
+            <div>
+                <br></br>
+            </div>
             <div className="color-pickers">Customize Colors:</div>
             <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
         </div>
@@ -122,9 +137,7 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
                     setTimeout(() => GameRenderer.render(), 10)
                 }}
             />
-            <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}
-
-            </div>
+            <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
         </div>
     )
 }
