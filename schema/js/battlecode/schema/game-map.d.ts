@@ -17,10 +17,13 @@ export declare class GameMap {
     walls(index: number): boolean | null;
     wallsLength(): number;
     wallsArray(): Int8Array | null;
-    paint(index: number): boolean | null;
+    paint(index: number): number | null;
     paintLength(): number;
-    paintArray(): Int8Array | null;
+    paintArray(): Int32Array | null;
     ruins(obj?: VecTable): VecTable | null;
+    paintPatterns(index: number): number | null;
+    paintPatternsLength(): number;
+    paintPatternsArray(): Int32Array | null;
     static startGameMap(builder: flatbuffers.Builder): void;
     static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset): void;
     static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset): void;
@@ -31,8 +34,19 @@ export declare class GameMap {
     static createWallsVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
     static startWallsVector(builder: flatbuffers.Builder, numElems: number): void;
     static addPaint(builder: flatbuffers.Builder, paintOffset: flatbuffers.Offset): void;
-    static createPaintVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
+    static createPaintVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
+    /**
+     * @deprecated This Uint8Array overload will be removed in the future.
+     */
+    static createPaintVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
     static startPaintVector(builder: flatbuffers.Builder, numElems: number): void;
     static addRuins(builder: flatbuffers.Builder, ruinsOffset: flatbuffers.Offset): void;
+    static addPaintPatterns(builder: flatbuffers.Builder, paintPatternsOffset: flatbuffers.Offset): void;
+    static createPaintPatternsVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
+    /**
+     * @deprecated This Uint8Array overload will be removed in the future.
+     */
+    static createPaintPatternsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
+    static startPaintPatternsVector(builder: flatbuffers.Builder, numElems: number): void;
     static endGameMap(builder: flatbuffers.Builder): flatbuffers.Offset;
 }

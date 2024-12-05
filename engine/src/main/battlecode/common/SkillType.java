@@ -91,26 +91,6 @@ public enum SkillType{
     }
 
     /**
-     * Returns the penalty of experience points from being jailed in each level
-     * 
-     * @param level the level
-     * @return penalty of experience points from being jailed in each level
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public int getPenalty(int level){
-        int[] attackPenalty = {-1, -2, -2, -5, -5, -10, -12};
-        int[] buildPenalty = {-1, -2, -2, -3, -3, -4, -6};
-        int[] healPenalty = {-1, -5, -5, -10, -10, -15, -18};
-        switch(this){
-            case ATTACK: return attackPenalty[level];
-            case BUILD: return buildPenalty[level];
-            case HEAL: return healPenalty[level];
-        }
-        return 0;
-    }
-
-    /**
      * Returns the level of specialization a robot is given their experience
      * 
      * @param experience how much experience in the skill the robot has

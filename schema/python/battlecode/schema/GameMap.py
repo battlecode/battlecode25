@@ -99,14 +99,14 @@ class GameMap(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             a = self._tab.Vector(o)
-            return self._tab.Get(flatbuffers.number_types.BoolFlags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
         return 0
 
     # GameMap
     def PaintAsNumpy(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
-            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.BoolFlags, o)
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
         return 0
 
     # GameMap
@@ -132,8 +132,35 @@ class GameMap(object):
             return obj
         return None
 
+    # GameMap
+    def PaintPatterns(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
+        return 0
+
+    # GameMap
+    def PaintPatternsAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
+        return 0
+
+    # GameMap
+    def PaintPatternsLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # GameMap
+    def PaintPatternsIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        return o == 0
+
 def GameMapStart(builder):
-    builder.StartObject(8)
+    builder.StartObject(9)
 
 def Start(builder):
     GameMapStart(builder)
@@ -187,7 +214,7 @@ def AddPaint(builder, paint):
     GameMapAddPaint(builder, paint)
 
 def GameMapStartPaintVector(builder, numElems):
-    return builder.StartVector(1, numElems, 1)
+    return builder.StartVector(4, numElems, 4)
 
 def StartPaintVector(builder, numElems):
     return GameMapStartPaintVector(builder, numElems)
@@ -197,6 +224,18 @@ def GameMapAddRuins(builder, ruins):
 
 def AddRuins(builder, ruins):
     GameMapAddRuins(builder, ruins)
+
+def GameMapAddPaintPatterns(builder, paintPatterns):
+    builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(paintPatterns), 0)
+
+def AddPaintPatterns(builder, paintPatterns):
+    GameMapAddPaintPatterns(builder, paintPatterns)
+
+def GameMapStartPaintPatternsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartPaintPatternsVector(builder, numElems):
+    return GameMapStartPaintPatternsVector(builder, numElems)
 
 def GameMapEnd(builder):
     return builder.EndObject()
