@@ -7,13 +7,14 @@ import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
 import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
-import { MapEditorBrush } from './MapEditorBrush'
+import { MapEditorBrush, UndoFunction } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
 import gameRunner, { useTurn } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
+import { RingBuffer } from '../../../util/ring-buffer'
 
 type MapParams = {
     width: number
@@ -26,6 +27,8 @@ interface Props {
     open: boolean
 }
 
+const UNDO_STACK_SIZE = 100
+
 export const MapEditorPage: React.FC<Props> = (props) => {
     const turn = useTurn()
     const [cleared, setCleared] = React.useState(true)
@@ -34,9 +37,45 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const [mapNameOpen, setMapNameOpen] = React.useState(false)
     const [clearConfirmOpen, setClearConfirmOpen] = React.useState(false)
     const [mapError, setMapError] = React.useState('')
+    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
 
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)
+
+    const undoStack = React.useRef<RingBuffer<UndoFunction>>(new RingBuffer(UNDO_STACK_SIZE))
+    const currentUndoStack = React.useRef<UndoFunction[]>([])
+    const handleUndo = () => {
+        if (currentUndoStack.current.length > 0) {
+            const undo = currentUndoStack.current.pop()
+            if (undo) undo()
+        } else {
+            const undo = undoStack.current.pop()
+            if (undo) undo()
+        }
+        GameRenderer.fullRender()
+        setCleared(mapEmpty())
+    }
+
+    useEffect(() => {
+        console.log('canvasMouseDown', canvasMouseDown)
+        if (!canvasMouseDown && currentUndoStack.current.length > 0) {
+            const currentStack = currentUndoStack.current
+            undoStack.current.push(() => {
+                currentStack.forEach((undo) => undo && undo())
+            })
+            currentUndoStack.current = []
+        }
+    }, [canvasMouseDown])
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') handleUndo()
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [undoStack])
 
     const openBrush = brushes.find((b) => b.open)
 
@@ -49,7 +88,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
 
-        openBrush.apply(point.x, point.y, openBrush.fields)
+        currentUndoStack.current.push(openBrush.apply(point.x, point.y, openBrush.fields))
         GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
@@ -82,8 +121,6 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setCleared(true)
         setMapParams({ ...mapParams, imported: null })
     }
-
-    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
 
     useEffect(() => {
         if (canvasMouseDown && hoveredTile) applyBrush(hoveredTile)

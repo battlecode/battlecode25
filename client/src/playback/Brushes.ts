@@ -58,6 +58,7 @@ export class WallsBrush extends SymmetricMapEditorBrush<CurrentMap> {
                 this.map.water[idx] = 0
             }
         })
+        return () => {}
     }
 }
 
@@ -86,6 +87,7 @@ export class DividerBrush extends SymmetricMapEditorBrush<StaticMap> {
             if (this.map.spawnLocations.find((l) => l.x == x && l.y == y)) return
             this.map.divider[idx] = fields.should_add.value ? 1 : 0
         })
+        return () => {}
     }
 }
 
@@ -126,6 +128,7 @@ export class SpawnZoneBrush extends SymmetricMapEditorBrush<CurrentMap> {
             spawnLocs[i] = spawnLocs[i + 1]
         }
         spawnLocs.pop()
+        return () => {}
     }
 }
 
@@ -148,14 +151,25 @@ export class WaterBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        const changes: { idx: number; previousWater: number }[] = []
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
             const { x, y } = this.map.indexToLocation(idx)
             if (this.map.staticMap.spawnLocations.find((l) => l.x == x && l.y == y)) return
-            const add = fields.should_add.value && this.map.staticMap.walls[idx] == 0
-            this.map.water[idx] = add ? 1 : 0
-            this.map.staticMap.initialWater[idx] = add ? 1 : 0
+            const value = fields.should_add.value && this.map.staticMap.walls[idx] == 0 ? 1 : 0
+            const previousWater = this.map.water[idx]
+            if (previousWater !== value) {
+                changes.push({ idx, previousWater })
+                this.map.water[idx] = value
+                this.map.staticMap.initialWater[idx] = value
+            }
         })
+        return () => {
+            changes.forEach(({ idx, previousWater }) => {
+                this.map.water[idx] = previousWater
+                this.map.staticMap.initialWater[idx] = previousWater
+            })
+        }
     }
 }
 
@@ -197,6 +211,7 @@ export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
             this.map.staticMap.resourcePileLocations[i] = this.map.staticMap.resourcePileLocations[i + 1]
         this.map.staticMap.resourcePileLocations.pop()
         this.map.resourcePileData.delete(schemaIdx)
+        return () => {}
     }
 }
 
