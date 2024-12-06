@@ -4,7 +4,7 @@ import { Vector } from './Vector'
 import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
-import { DividerBrush, ResourcePileBrush, SpawnZoneBrush, WallsBrush, PaintBrush } from './Brushes'
+import { RuinsBrush, WallsBrush, PaintBrush, TowerBrush } from './Brushes'
 import { DIVIDER_COLOR, GRASS_COLOR, WALLS_COLOR, PAINT_COLOR, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
@@ -199,10 +199,11 @@ export class CurrentMap {
 
     getEditorBrushes() {
         const brushes: MapEditorBrush[] = [
+            // ruins brush
+            // tower brush
             new PaintBrush(this),
-            new ResourcePileBrush(this),
-            new SpawnZoneBrush(this),
-            new WallsBrush(this)
+            new RuinsBrush(this.staticMap),
+            new WallsBrush(this.staticMap)
         ]
         return brushes.concat(this.staticMap.getEditorBrushes())
     }
@@ -370,6 +371,15 @@ export class StaticMap {
                 }
                 */
 
+                // if (this.ruins[schemaIdx]) {
+                //     renderUtils.renderCenteredImageOrLoadingIndicator(
+                //         ctx,
+                //         getImageIfLoaded(this.imgPath),
+                //         ruin,
+                //         this.size
+                //     )
+                // }
+
                 // Draw grid
                 const showGrid = true
                 if (showGrid) {
@@ -396,6 +406,6 @@ export class StaticMap {
     }
 
     getEditorBrushes(): MapEditorBrush[] {
-        return [new DividerBrush(this)]
+        return []
     }
 }
