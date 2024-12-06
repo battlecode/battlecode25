@@ -220,10 +220,7 @@ export class CurrentMap {
             builder,
             Array.from(this.staticMap.walls).map((x) => !!x)
         )
-        const paintOffset = schema.GameMap.createPaintVector(
-            builder,
-            Array.from(this.staticMap.initialPaint).map((x) => !!x)
-        )
+        const paintOffset = schema.GameMap.createPaintVector(builder, this.staticMap.initialPaint)
         const ruinsOffset = packVecTable(builder, this.staticMap.ruins)
 
         return {
@@ -252,7 +249,7 @@ export class StaticMap {
         public readonly dimension: Dimension,
         public readonly walls: Int8Array,
         public readonly ruins: Vector[],
-        public readonly initialPaint: Int8Array
+        public readonly initialPaint: Int32Array
     ) {
         if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
 
@@ -299,7 +296,7 @@ export class StaticMap {
 
         const walls = new Int8Array(width * height)
         const ruins: Vector[] = []
-        const initialPaint = new Int8Array(width * height)
+        const initialPaint = new Int32Array(width * height)
         return new StaticMap(name, randomSeed, symmetry, dimension, walls, ruins, initialPaint)
     }
 
