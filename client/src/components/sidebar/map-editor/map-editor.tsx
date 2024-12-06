@@ -57,6 +57,10 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
+    const clearUndoStack = () => {
+        undoStack.current = new RingBuffer(UNDO_STACK_SIZE)
+        currentUndoStack.current = []
+    }
 
     useEffect(() => {
         if (!canvasMouseDown && currentUndoStack.current.length > 0) {
@@ -95,15 +99,18 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const changeWidth = (newWidth: number) => {
         newWidth = Math.max(MAP_SIZE_RANGE.min, Math.min(MAP_SIZE_RANGE.max, newWidth))
         setMapParams({ ...mapParams, width: newWidth, imported: null })
+        clearUndoStack()
     }
     const changeHeight = (newHeight: number) => {
         newHeight = Math.max(MAP_SIZE_RANGE.min, Math.min(MAP_SIZE_RANGE.max, newHeight))
         setMapParams({ ...mapParams, height: newHeight, imported: null })
+        clearUndoStack()
     }
     const changeSymmetry = (symmetry: string) => {
         const symmetryInt = parseInt(symmetry)
         if (symmetryInt < 0 || symmetryInt > 2) throw new Error('invalid symmetry value')
         setMapParams({ ...mapParams, symmetry: symmetryInt, imported: null })
+        clearUndoStack()
     }
 
     const fileUploaded = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +119,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         loadFileAsMap(file).then((game) => {
             const map = game.currentMatch!.currentTurn!.map
             setMapParams({ width: map.width, height: map.height, symmetry: map.staticMap.symmetry, imported: game })
+            clearUndoStack()
         })
     }
 
@@ -119,6 +127,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setClearConfirmOpen(false)
         setCleared(true)
         setMapParams({ ...mapParams, imported: null })
+        clearUndoStack()
     }
 
     useEffect(() => {
