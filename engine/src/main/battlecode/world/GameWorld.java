@@ -115,7 +115,7 @@ public strictfp class GameWorld {
         for (int i = 0; i < initialBodies.length; i++) {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
-            spawnRobot(robot.ID, robot.type, newLocation, robot.team);
+            spawnRobot(robot.ID, robot.type, newLocation, robot.team, true);
             this.towerLocations.add(newLocation);
             towersByLoc[locationToIndex(newLocation)] = robot.team;
         }
@@ -790,18 +790,19 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team, boolean skipAction){
         InternalRobot robot = new InternalRobot(this, ID, team, type, location);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
-        this.matchMaker.addSpawnAction(location, team, type);
+        if (!skipAction)
+            this.matchMaker.addSpawnAction(location, team, type);
         return ID;
     }
 
     public int spawnRobot(UnitType type, MapLocation location, Team team){
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, location, team);
+        return spawnRobot(ID, type, location, team, false);
     }
 
     // *********************************

@@ -304,7 +304,6 @@ public final strictfp class GameMapIO {
                     ruinXs.add(loc.x);
                     ruinYs.add(loc.y);
                 }
-                paintArrayList.add(paintArray[i]);
             }
             for (int i = 0; i < 4; i++){
                 patternArrayList.add(patternArray[i]);
