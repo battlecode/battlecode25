@@ -20,9 +20,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private final RobotControllerImpl controller;
     protected final GameWorld gameWorld;
 
-    private int buildExp;
-    private int healExp;
-    private int attackExp;
     private int paintAmount;
     private UnitType type;
 
@@ -42,9 +39,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private int movementCooldownTurns;
     private int spawnCooldownTurns;
 
-    private Flag flag;
-    private ArrayList<Trap> trapsToTrigger;
-    private ArrayList<Boolean> enteredTraps;
     private Queue<Message> incomingMessages;
     private boolean towerHasSingleAttacked;
     private boolean towerHasAreaAttacked;
@@ -78,14 +72,9 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.diedLocation = null;
         this.health = GameConstants.DEFAULT_HEALTH;
         this.spawned = false;
-        this.trapsToTrigger = new ArrayList<>();
-        this.enteredTraps = new ArrayList<>();
         this.incomingMessages = new LinkedList<>();
         this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
 
-        this.buildExp = 0;
-        this.healExp = 0;
-        this.attackExp = 0;
         this.paintAmount = 0;
 
         this.controlBits = 0;
@@ -136,26 +125,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public int getHealth() {
         return health;
-    }
-
-    public int getExp(SkillType skill) {
-        if (skill == SkillType.BUILD)
-            return buildExp;
-        if (skill == SkillType.HEAL)
-            return healExp;
-        if (skill == SkillType.ATTACK)
-            return attackExp;
-        return 0;
-    }
-
-    public int getLevel(SkillType skill) {
-        int exp = this.getExp(skill);
-        for (int i = 0; i <= 5; i++) {
-            if (exp < skill.getExperience(i + 1)) {
-                return i;
-            }
-        }
-        return 6;
     }
 
     public int getPaint() {
@@ -298,6 +267,17 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     /**
+     * Upgrades the level of a tower.
+     * 
+     * @param robot the tower to be upgraded
+     */
+    public void upgradeTower(UnitType newType) {
+        int damage = this.type.health - getHealth();
+        this.type = newType;
+        this.health = newType.health - damage; 
+    }
+
+    /**
      * Resets the action cooldown.
      */
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
@@ -348,27 +328,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
     }
 
-    /**
-     * increment exp for a robot
-     */
-    public void incrementSkill(SkillType skill) {
-        if (skill == SkillType.BUILD)
-            if (this.buildExp < skill.getExperience(3)
-                    || (getLevel(SkillType.HEAL) < 4 && getLevel(SkillType.ATTACK) < 4)) {
-                this.buildExp++;
-            }
-        if (skill == SkillType.HEAL)
-            if (this.healExp < skill.getExperience(3)
-                    || (getLevel(SkillType.BUILD) < 4 && getLevel(SkillType.ATTACK) < 4)) {
-                this.healExp++;
-            }
-        if (skill == SkillType.ATTACK)
-            if (this.attackExp < skill.getExperience(3)
-                    || (getLevel(SkillType.BUILD) < 4 && getLevel(SkillType.HEAL) < 4)) {
-                this.attackExp++;
-            }
-    }
-
     // *********************************
     // ****** ACTION METHODS *********
     // *********************************
@@ -389,15 +348,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public boolean isSpawned() {
         return this.spawned;
-    }
-
-    public int getDamage() {
-        int baseDamage = SkillType.ATTACK.skillEffect;
-        if (this.gameWorld.getTeamInfo().getGlobalUpgrades(team)[0])
-            baseDamage += GlobalUpgrade.ATTACK.baseAttackChange;
-        int damage = Math.round(
-                baseDamage * ((float) SkillType.ATTACK.getSkillEffect(this.getLevel(SkillType.ATTACK)) / 100 + 1));
-        return damage;
     }
 
     private int locationToInt(MapLocation loc) {
@@ -617,37 +567,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****** GETTER METHODS ******
     // ****************************
 
-    public void buildRobot(UnitType type, MapLocation loc) {
-        throw new NotImplementedException();
-        // TODO not implemented
-    }
-
-    public int getHeal() {
-        int base_heal = SkillType.HEAL.skillEffect;
-        // check for upgrade
-        if (this.gameWorld.getTeamInfo().getGlobalUpgrades(team)[2]) {
-            base_heal += GlobalUpgrade.HEALING.baseHealChange;
-        }
-        return Math.round(base_heal * ((float) SkillType.HEAL.getSkillEffect(this.getLevel(SkillType.HEAL)) / 100 + 1));
-    }
-
-    public int getBuildExp() {
-        return this.buildExp;
-    }
-
-    public int getHealExp() {
-        return this.healExp;
-    }
-
-    public int getAttackExp() {
-        return this.attackExp;
-    }
-
-    public void addTrapTrigger(Trap t, boolean entered) {
-        this.trapsToTrigger.add(t);
-        this.enteredTraps.add(entered);
-    }
-
     // *********************************
     // ****** GAMEPLAY METHODS *********
     // *********************************
@@ -668,24 +587,15 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.gameWorld.getMatchMaker().startTurn(this.ID);
     }
 
     public void processEndOfTurn() {
-        for (int i = 0; i < trapsToTrigger.size(); i++) {
-            this.gameWorld.triggerTrap(trapsToTrigger.get(i), this, enteredTraps.get(i));
-        }
-
-        this.trapsToTrigger = new ArrayList<>();
-        this.enteredTraps = new ArrayList<>();
-        
-        // bytecode stuff!
-        this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
-
         // indicator strings!
         if (!indicatorString.equals("")) {
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
         }
-
+        this.gameWorld.getMatchMaker().endTurn(this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
         this.roundsAlive++;
     }
 

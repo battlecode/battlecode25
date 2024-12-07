@@ -1,4 +1,4 @@
-import { EventType, publishEvent } from '../app-events'
+import { GameRenderer } from '../playback/GameRenderer'
 
 const IMAGE_DIRECTORY = 'static/img/'
 
@@ -30,8 +30,8 @@ export const loadImage = (path: string): Promise<HTMLImageElement> => {
             onLoadCallbacks.get('')?.forEach((callback) => callback())
 
             // We want to rerender when an image loads so the user
-            // doesn't have to look at placeholders until they progress the turn
-            publishEvent(EventType.RENDER, {})
+            // doesn't have to look at placeholders until they progress the round
+            GameRenderer.fullRender()
         }
         img.onerror = reject
     })

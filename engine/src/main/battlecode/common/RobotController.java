@@ -96,26 +96,6 @@ public strictfp interface RobotController {
     int getPaint();
 
     /**
-     * Returns the robot's current experience in the specified skill.
-     * 
-     * @param skill the skill that we want to get the robot's experience in
-     * @return the robot's experience in the skill
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    int getExperience(SkillType skill);
-
-    /**
-     * Returns the robot's current level in the specified skill.
-     * 
-     * @param skill the skill that we want to get the robot's level in
-     * @return the robot's level in the skill
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    int getLevel(SkillType skill);
-
-    /**
      * Returns the amount of money that this robot's team has.
      *
      * @return the amount of money this robot's team has
@@ -282,20 +262,7 @@ public strictfp interface RobotController {
     RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException;
 
     /**
-     * Returns all locations that contain crumbs within a certain radius of the
-     * robot.
-     * 
-     * @param radiusSquared return crumbs within this distance; if -1 is passed, all
-     *                      crumbs within
-     *                      vision radius are returned
-     * @return array of MapLocations of crumbs
-     * @throws GameActionException if the radius is negative and not -1
-     */
-    MapLocation[] senseNearbyCrumbs(int radiusSquared) throws GameActionException;
-
-    /**
-     * Given a senseable location, returns whether that location is passable (not
-     * water, a wall, or a dam).
+     * Given a senseable location, returns whether that location is passable (a wall).
      * 
      * @param loc the given location
      * @return whether that location is passable
@@ -553,7 +520,26 @@ public strictfp interface RobotController {
      * 
      * @battlecode.doc.costlymethod
      */
-    void markTowerPattern(MapLocation loc) throws GameActionException;
+    void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Checks if a tower can be upgraded by verifying conditions on the location, team, 
+     * tower level, and cost.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canUpgradeTower(MapLocation loc);
+
+    /**
+     * Upgrades a tower if possible; subtracts the corresponding amount of money from the team.
+     * 
+     * @param loc the location to upgrade the tower at
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void upgradeTower(MapLocation loc) throws GameActionException;
 
     /**
      * Checks if the robot can mark a 5x5 special resource pattern centered at the
@@ -626,15 +612,6 @@ public strictfp interface RobotController {
     // ****************************
 
     /**
-     * Gets the true attack damage of this robot accounting for all effects.
-     *
-     * @return The attack damage
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int getAttackDamage();
-
-    /**
      * Tests whether this robot can attack the given location. Types of
      * attacks for specific units determine whether or not towers, other
      * robots, or empty tiles can be attacked. 
@@ -691,78 +668,37 @@ public strictfp interface RobotController {
      */
     void mopSwing(Direction dir) throws GameActionException;
 
-    /**
-     * Gets the true healing amount of this robot accounting for all effects.
-     *
-     * @return The heal amount
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int getHealAmount();
-
-    /**
-     * Tests whether this robot can heal a nearby friendly unit.
-     * 
-     * Checks that this robot can heal and whether the friendly unit is within
-     * range. Also checks that
-     * there are no cooldown turns remaining.
-     * 
-     * @param loc location of friendly unit to be healed
-     * @return whether it is possible for this robot to heal
-     *
-     * @battlecode.doc.costlymethod
-     */
-    boolean canHeal(MapLocation loc);
-
-    /**
-     * Heal a nearby friendly unit.
-     * 
-     * @param loc the location of the friendly unit to be healed
-     * @throws GameActionException if conditions for healing are not satisfied
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void heal(MapLocation loc) throws GameActionException;
-
     // ***********************************
     // ****** COMMUNICATION METHODS ******
     // ***********************************
 
     /**
-     * Given an index, returns the value at that index in the team array.
-     *
-     * @param index the index in the team's shared array, 0-indexed
-     * @return the value at that index in the team's shared array,
-     * @throws GameActionException if the index is invalid
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int readSharedArray(int index) throws GameActionException;
-
-    /**
-     * Checks if the given index and value are valid for writing to the shared
-     * array.
+     * Returns true if the unit can send a message to a specific
+     * location, false otherwise. We can send a message to a location
+     * if it is within a specific distance and connected by paint,
+     * and only if one unit is a robot and the other is a tower.
      * 
-     * @param index the index in the team's shared array, 0-indexed
-     * @param value the value to set that index to
-     * @return whether the index and value are valid
+     * @param loc the location to send the message to
+     * @param messageContent an int representing the content of the
+     * message (up to 4 bytes)
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canWriteSharedArray(int index, int value);
+    boolean canSendMessage(MapLocation loc, int messageContent);
 
     /**
-     * Sets the team's array value at a specified index.
-     * No change occurs if the index or value is invalid.
-     *
-     * @param index the index in the team's shared array, 0-indexed
-     * @param value the value to set that index to
-     * @throws GameActionException if the index is invalid or the value
-     *                             is out of bounds.
-     *
+     * Sends a message (contained in an int, so 4 bytes) to a specific
+     * unit at a location on the map, if it is possible
+     * 
+     * @param loc the location to send the message to
+     * @param messageContent an int representing the content of the
+     * message (up to 4 bytes)
+     * @throws GameActionException if conditions for messaging are not 
+     * satisfied
+     * 
      * @battlecode.doc.costlymethod
      */
-    void writeSharedArray(int index, int value) throws GameActionException;
+    void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
 
     // ***********************************
     // ****** OTHER ACTION METHODS *******
@@ -795,40 +731,6 @@ public strictfp interface RobotController {
      *                             location
      */
     void transferPaint(MapLocation loc, int amount) throws GameActionException;
-
-    /**
-     * Tests whether you can buy an upgrade.
-     * 
-     * You can buy the upgrade if you have enough points and
-     * haven't bought the upgrade before.
-     * 
-     * @param ug the global upgrade
-     * @return whether it is valid for you to buy the upgrade
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    boolean canBuyGlobal(GlobalUpgrade ug);
-
-    /**
-     * Purchases the global upgrade and applies the effect to the game.
-     * 
-     * @param ug the global upgrade
-     * @throws GameActionException if the robot is not able to buy the upgrade
-     * 
-     * @battlecode.doc.costlymethod
-     **/
-    void buyGlobal(GlobalUpgrade ug) throws GameActionException;
-
-    /**
-     * Returns the global upgrades that the given team has
-     * 
-     * @param team the team to get global upgrades for
-     * 
-     * @return The global upgrades that the team has
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    GlobalUpgrade[] getGlobalUpgrades(Team team);
 
     /**
      * Causes your team to lose the game. It's like typing "gg."

@@ -6,6 +6,7 @@ import { Button } from '../../button'
 import { FiUpload } from 'react-icons/fi'
 import Game from '../../../playback/Game'
 import { QueuedGame } from './queue-game'
+import gameRunner from '../../../playback/GameRunner'
 
 interface Props {
     open: boolean
@@ -31,10 +32,9 @@ export const QueuePage: React.FC<Props> = (props) => {
 
             context.setState((prevState) => ({
                 ...prevState,
-                queue: queue.concat([game]),
-                activeGame: game,
-                activeMatch: selectedMatch
+                queue: queue.concat([game])
             }))
+            gameRunner.setMatch(selectedMatch)
         }
         reader.readAsArrayBuffer(file)
     }

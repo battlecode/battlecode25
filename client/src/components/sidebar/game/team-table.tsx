@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react'
-import { useAppContext } from '../../../app-context'
-import { useForceUpdate } from '../../../util/react-util'
-import { useListenEvent, EventType } from '../../../app-events'
-import { getImageIfLoaded, imageSource, removeTriggerOnImageLoad, triggerOnImageLoad } from '../../../util/ImageLoader'
+import React from 'react'
+import { imageSource } from '../../../util/ImageLoader'
 import { TEAM_COLOR_NAMES } from '../../../constants'
 import { schema } from 'battlecode-schema'
-import { TeamTurnStat } from '../../../playback/TurnStat'
+import { TeamRoundStat } from '../../../playback/RoundStat'
 import { DoubleChevronUpIcon } from '../../../icons/chevron'
 import { CurrentMap } from '../../../playback/Map'
+import { useRound } from '../../../playback/GameRunner'
 
 interface UnitsIconProps {
     teamIdx: 0 | 1
@@ -30,31 +28,26 @@ interface TeamTableProps {
 }
 
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
-    const context = useAppContext()
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
-
-    const match = context.state.activeMatch
-    const teamStat = match?.currentTurn?.stat.getTeamStat(match.game.teams[props.teamIdx])
-
-    const map = match?.currentTurn?.map
+    const round = useRound()
+    const teamStat = round?.stat.getTeamStat(round?.match.game.teams[props.teamIdx])
+    const map = round?.map
 
     return (
         <div className="flex flex-col">
             <UnitsTable teamStat={teamStat} teamIdx={props.teamIdx} />
             <ResourceTable map={map} teamStat={teamStat} teamIdx={props.teamIdx} />
-            <GlobalUpgradeSection teamStat={teamStat} />
         </div>
     )
 }
 
 interface ResourceTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     map: CurrentMap | undefined
     teamIdx: 0 | 1
 }
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, teamIdx }) => {
+    /*
     let flags = 3
     let carried = 0
     let crumbs = 0
@@ -95,14 +88,17 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, tea
             </div>
         </div>
     )
+    */
+    return <div>TODO: Resource table</div>
 }
 
 interface UnitsTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     teamIdx: 0 | 1
 }
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
+    /*
     const columns: Array<[string, React.ReactElement]> = [
         ['Base', <UnitsIcon teamIdx={teamIdx} robotType="base" key="0" />],
         ['Attack', <UnitsIcon teamIdx={teamIdx} robotType="attack" key="1" />],
@@ -157,26 +153,7 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
             </table>
         </>
     )
-}
+    */
 
-const GlobalUpgradeSection: React.FC<{ teamStat: TeamTurnStat | undefined }> = ({ teamStat }) => {
-    const upgradeTypes: Record<schema.GlobalUpgradeType, string> = {
-        [schema.GlobalUpgradeType.ACTION_UPGRADE]: 'Global Attack Upgrade',
-        [schema.GlobalUpgradeType.CAPTURING_UPGRADE]: 'Global Capturing Upgrade',
-        [schema.GlobalUpgradeType.HEALING_UPGRADE]: 'Global Healing Upgrade'
-    }
-    if (!teamStat) return <> </>
-    return (
-        <>
-            {teamStat.globalUpgrades.map(
-                (type) =>
-                    upgradeTypes[type] && (
-                        <div className="text-sm flex flex-row justify-center font-bold" key={type}>
-                            <DoubleChevronUpIcon />
-                            {upgradeTypes[type]}
-                        </div>
-                    )
-            )}
-        </>
-    )
+    return <div>TODO: Units table</div>
 }

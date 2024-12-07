@@ -2,13 +2,11 @@ package battlecode.util;
 
 import battlecode.common.GlobalUpgrade;
 import battlecode.common.TrapType;
+import battlecode.common.UnitType;
 import battlecode.schema.VecTable;
 import battlecode.schema.WinType;
 import battlecode.world.DominationFactor;
 import battlecode.schema.Action;
-import battlecode.schema.BuildActionType;
-import battlecode.schema.GlobalUpgradeType;
-import battlecode.schema.RGBTable;
 import com.google.flatbuffers.FlatBufferBuilder;
 import gnu.trove.TByteCollection;
 import gnu.trove.list.TByteList;
@@ -27,42 +25,97 @@ import java.util.function.ObjIntConsumer;
  */
 public class FlatHelpers {
 
-    public static byte getTrapActionFromTrapType(TrapType type) {
-        switch (type) {
-            case EXPLOSIVE:
-                return Action.EXPLOSIVE_TRAP;
-            case WATER:
-                return Action.WATER_TRAP;
-            case STUN:
-                return Action.STUN_TRAP;
+    //assumes all robots are level 1 (can change levels manually if needed)
+    public static UnitType getUnitTypeFromRobotType(byte b){
+        switch (b){
+            case 1:
+                return UnitType.LEVEL_ONE_PAINT_TOWER;
+            case 2:
+                return UnitType.LEVEL_ONE_MONEY_TOWER;
+            case 3:
+                return UnitType.LEVEL_ONE_DEFENSE_TOWER;
+            case 4:
+                return UnitType.SOLDIER;
+            case 5:
+                return UnitType.SPLASHER;
+            case 6:
+                return UnitType.MOPPER;
             default:
-                throw new RuntimeException("No action type for " + type);
+                throw new RuntimeException("No unit type for " + b);
         }
     }
 
-    public static byte getBuildActionFromTrapType(TrapType type) {
-        switch (type) {
-            case EXPLOSIVE:
-                return BuildActionType.EXPLOSIVE_TRAP;
-            case WATER:
-                return BuildActionType.WATER_TRAP;
-            case STUN:
-                return BuildActionType.STUN_TRAP;
+    public static byte getRobotTypeFromUnitType(UnitType type){
+        switch(type) {
+            case LEVEL_ONE_PAINT_TOWER:
+                return 1;
+            case LEVEL_TWO_PAINT_TOWER:
+                return 1;
+            case LEVEL_THREE_PAINT_TOWER:
+                return 1;
+            case LEVEL_ONE_MONEY_TOWER:
+                return 2;
+            case LEVEL_TWO_MONEY_TOWER:
+                return 2;
+            case LEVEL_THREE_MONEY_TOWER:
+                return 2;
+            case LEVEL_ONE_DEFENSE_TOWER:
+                return 3;
+            case LEVEL_TWO_DEFENSE_TOWER:
+                return 3;
+            case LEVEL_THREE_DEFENSE_TOWER:
+                return 3;
+            case SOLDIER:
+                return 4;
+            case SPLASHER:
+                return 5;
+            case MOPPER:
+                return 6;
             default:
-                throw new RuntimeException("No build action type for " + type);
+                throw new RuntimeException("Cannot find byte encoding for " + type);
         }
     }
+
+    // public static byte getTrapActionFromTrapType(TrapType type) {
+    //     switch (type) {
+    //         case EXPLOSIVE:
+    //             return Action.EXPLOSIVE_TRAP;
+    //         case WATER:
+    //             return Action.WATER_TRAP;
+    //         case STUN:
+    //             return Action.STUN_TRAP;
+    //         default:
+    //             throw new RuntimeException("No action type for " + type);
+    //     }
+    // }
+
+    // public static byte getBuildActionFromTrapType(TrapType type) {
+    //     switch (type) {
+    //         case EXPLOSIVE:
+    //             return BuildActionType.EXPLOSIVE_TRAP;
+    //         case WATER:
+    //             return BuildActionType.WATER_TRAP;
+    //         case STUN:
+    //             return BuildActionType.STUN_TRAP;
+    //         default:
+    //             throw new RuntimeException("No build action type for " + type);
+    //     }
+    // }
 
     public static byte getWinTypeFromDominationFactor(DominationFactor factor) {
         switch (factor) {
-            case CAPTURE:
-                return WinType.CAPTURE;
-            case MORE_FLAG_CAPTURES:
-                return WinType.MORE_FLAG_CAPTURES;
-            case LEVEL_SUM:
-                return WinType.LEVEL_SUM;
-            case MORE_BREAD:
-                return WinType.MORE_BREAD;
+            case PAINT_ENOUGH_AREA:
+                return WinType.MAJORITY_PAINTED;
+            case MORE_SQUARES_PAINTED:
+                return WinType.AREA_PAINTED;
+            case MORE_TOWERS_ALIVE:
+                return WinType.MORE_TOWERS;
+            case MORE_MONEY:
+                return WinType.MORE_MONEY;
+            case MORE_PAINT_IN_UNITS:
+                return WinType.MORE_STORED_PAINT;
+            case MORE_ROBOTS_ALIVE:
+                return WinType.MORE_ROBOTS;
             case WON_BY_DUBIOUS_REASONS:
                 return WinType.COIN_FLIP;
             case RESIGNATION:
@@ -72,15 +125,15 @@ public class FlatHelpers {
         }
     }
 
-    public static byte getGlobalUpgradeTypeFromGlobalUpgrade(GlobalUpgrade gu) {
-        if (gu == GlobalUpgrade.ATTACK || gu == GlobalUpgrade.ACTION)
-            return GlobalUpgradeType.ACTION_UPGRADE;
-        if (gu == GlobalUpgrade.HEALING)
-            return GlobalUpgradeType.HEALING_UPGRADE;
-        if (gu == GlobalUpgrade.CAPTURING)
-            return GlobalUpgradeType.CAPTURING_UPGRADE;
-        return Byte.MIN_VALUE;
-    }
+    // public static byte getGlobalUpgradeTypeFromGlobalUpgrade(GlobalUpgrade gu) {
+    //     if (gu == GlobalUpgrade.ATTACK || gu == GlobalUpgrade.ACTION)
+    //         return GlobalUpgradeType.ACTION_UPGRADE;
+    //     if (gu == GlobalUpgrade.HEALING)
+    //         return GlobalUpgradeType.HEALING_UPGRADE;
+    //     if (gu == GlobalUpgrade.CAPTURING)
+    //         return GlobalUpgradeType.CAPTURING_UPGRADE;
+    //     return Byte.MIN_VALUE;
+    // }
 
     /**
      * DO NOT CALL THIS WITH OFFSETS!
@@ -173,16 +226,7 @@ public class FlatHelpers {
         return VecTable.createVecTable(builder, xsP, ysP);
     }
 
-    public static int createRGBTable(FlatBufferBuilder builder, TIntList red, TIntList green, TIntList blue) {
-        if (red.size() != green.size() || green.size() != blue.size()) {
-            throw new RuntimeException("Mismatched lengths: " + red.size() + ", " + green.size() + ", " + blue.size());
-        }
-        // int redP = intVector(builder, red, RGBTable::startRedVector);
-        // int greenP = intVector(builder, green, RGBTable::startGreenVector);
-        // int blueP = intVector(builder, blue, RGBTable::startBlueVector);
-        int redP = RGBTable.createRedVector(builder, red.toArray());
-        int greenP = RGBTable.createGreenVector(builder, green.toArray());
-        int blueP = RGBTable.createGreenVector(builder, blue.toArray());
-        return RGBTable.createRGBTable(builder, redP, greenP, blueP);
+    public static int RGBtoInt(int red, int green, int blue){
+        return (red << 16) + (green << 8) + blue;
     }
 }
