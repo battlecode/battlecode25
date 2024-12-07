@@ -3,7 +3,14 @@ import React, { useEffect, useState, MouseEvent, PropsWithChildren } from 'react
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
-import { Colors, currentColors, updateGlobalColor, getGlobalColor, resetGlobalColors } from './colors'
+import {
+    Colors,
+    currentColors,
+    updateGlobalColor,
+    getGlobalColor,
+    resetGlobalColors,
+    DEFAULT_GLOBAL_COLORS
+} from './colors'
 import { BrightButton, Button } from './components/button'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
@@ -87,8 +94,6 @@ const ColorPicker = (props: { name: Colors }) => {
             ...prevState,
             config: { ...prevState.config, colors: { ...prevState.config.colors, [props.name]: newColor.hex } }
         }))
-
-        localStorage.setItem('config-colors' + props.name, JSON.stringify(newColor.hex))
         // hopefully after the setState is done
         setTimeout(() => GameRenderer.render(), 10)
     }
@@ -107,6 +112,7 @@ const ColorPicker = (props: { name: Colors }) => {
 
 export const ConfigPage: React.FC<Props> = (props) => {
     if (!props.open) return null
+    const context = useAppContext()
 
     return (
         <div className={'flex flex-col'}>
@@ -120,10 +126,22 @@ export const ConfigPage: React.FC<Props> = (props) => {
             <div>
                 <br></br>
             </div>
-            <div className="color-pickers">Customize Colors:</div>
-            <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
+            <div className="color-pickers">
+                Customize Colors:
+                <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
+            </div>
             <div className="flex flex-row mt-8">
-                <BrightButton className="" onClick={() => {}}>
+                <BrightButton
+                    className=""
+                    onClick={() => {
+                        resetGlobalColors()
+
+                        context.setState((prevState) => ({
+                            ...prevState,
+                            config: { ...prevState.config, colors: { ...DEFAULT_GLOBAL_COLORS } }
+                        }))
+                    }}
+                >
                     Reset Colors
                 </BrightButton>
             </div>

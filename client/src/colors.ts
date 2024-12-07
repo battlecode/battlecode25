@@ -16,7 +16,7 @@ export enum Colors {
     HEAL_COLOR = 'HEAL_COLOR',    //'#f2b804'
 }
 
-export const currentColors: Record<Colors, string> = {
+export const DEFAULT_GLOBAL_COLORS = {
     [Colors.TEAM_ONE]: '#8648d9',
     [Colors.TEAM_TWO]: '#ffadcd',
 
@@ -34,28 +34,21 @@ export const currentColors: Record<Colors, string> = {
     [Colors.HEAL_COLOR]: '#f2b804',
 }
 
+export const currentColors: Record<Colors, string> = { ...DEFAULT_GLOBAL_COLORS }
+
 export const updateGlobalColor = (color: Colors, value: string) => {
     currentColors[color] = value
+    localStorage.setItem('config-colors' + color, JSON.stringify(currentColors[color]))
 }
 
 export const getGlobalColor = (color: Colors) => {
     return currentColors[color]
 }
 
-export const resetGlobalColors = {
-    [currentColors[Colors.TEAM_ONE]]: '#8648d9',
-    [currentColors[Colors.TEAM_TWO]]: '#ffadcd',
-
-    [currentColors[Colors.PAINT_TEAMONE_ONE]]: '#1d4f6c',
-    [currentColors[Colors.PAINT_TEAMONE_TWO]]: '#ffffff',
-    [currentColors[Colors.PAINT_TEAMTWO_ONE]]: '#ffffff',
-    [currentColors[Colors.PAINT_TEAMTWO_TWO]]: '#ffffff',
-    [currentColors[Colors.WALLS_COLOR]]: '#3B6B4C',
-    [currentColors[Colors.DIVIDER_COLOR]]: '#7b4724',
-    [currentColors[Colors.RUINS_COLOR]]: '#153e30',
-    [currentColors[Colors.GAMEAREA_BACKGROUND]]: '#313847',
-
-    [currentColors[Colors.ATTACK_COLOR]]: '#db6b5c',
-    [currentColors[Colors.BUILD_COLOR]]: '#c573c9',
-    [currentColors[Colors.HEAL_COLOR]]: '#f2b804',
+export const resetGlobalColors = () => {
+    for (const key in currentColors) {
+        //console.log("Hello. =^-w-^=")
+        updateGlobalColor(key as Colors, DEFAULT_GLOBAL_COLORS[key as Colors])
+        
+    }
 }
