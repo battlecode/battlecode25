@@ -60,7 +60,14 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const match = useMatch();
     const down = useRef(false);
 
-    const markers = appContext.state.timelineMarkers || [];
+    // Hard-coded timeline markers
+    const markers: TimelineMarker[] = [
+        { round: 10, label: 'Early Game' },
+        { round: 50, label: 'Mid Game' },
+        { round: 100, label: 'Late Game' },
+        { round: 150, label: 'End Game' },
+        { round: 200, label: 'Final Rounds' }
+    ];
     
     // Ensure maxRound is always a number
     const maxRound = match ? (appContext.state.tournament ? GAME_MAX_TURNS : match.maxRound) : GAME_MAX_TURNS;
