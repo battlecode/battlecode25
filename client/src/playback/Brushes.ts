@@ -304,16 +304,17 @@ export class TowerBrush extends SymmetricMapEditorBrush<StaticMap> {
         super(map)
     }
 
-    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>, robotOne: boolean) {
         const is_tower: boolean = fields.is_tower.value
         const towerType = fields.tower_type.value
         if (is_tower) {
             if (this.bodies.getBodyAtLocation(x, y)) return
+            const team = robotOne ? 0 : 1;
             const towerClass = BODY_DEFINITIONS[towerType as keyof typeof BODY_DEFINITIONS]
             const tower = new towerClass(
                 this.bodies.game,
                 { x, y },
-                this.bodies.game.teams[fields.team.value],
+                this.bodies.game.teams[team],
                 this.bodies.getNextID(),
             )
             this.bodies.bodies.set(tower.id, tower)

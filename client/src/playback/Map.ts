@@ -4,7 +4,7 @@ import { Vector } from './Vector'
 import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
-import { RuinsBrush, WallsBrush, PaintBrush, TowerBrush } from './Brushes'
+import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
 import { DIVIDER_COLOR, GRASS_COLOR, WALLS_COLOR, PAINT_COLOR, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
@@ -370,16 +370,33 @@ export class StaticMap {
                     })
                 }
                 */
+                
+                // Render ruins
+                this.ruins.forEach(({ x, y }, index) => {
+                    const coords = renderUtils.getRenderCoords(x, y, this.dimension);
 
-                // if (this.ruins[schemaIdx]) {
-                //     renderUtils.renderCenteredImageOrLoadingIndicator(
-                //         ctx,
-                //         getImageIfLoaded(this.imgPath),
-                //         ruin,
-                //         this.size
-                //     )
-                // }
+                    const teamIndex = index % 2;
+                    const teamColor = TEAM_COLORS[teamIndex];
 
+                    const HEX_TO_COLOR_NAME = {
+                        "#bfbaa8": "Silver",
+                        "#9c8362": "Gold"
+                    };
+
+                    const colorName = HEX_TO_COLOR_NAME[teamColor.toLowerCase() as keyof typeof HEX_TO_COLOR_NAME];
+                    const imgPath = `ruins/${colorName.toLowerCase()}_64x64.png`
+                    const ruinImage = getImageIfLoaded(imgPath);
+
+                    if (ruinImage) {
+                        renderUtils.renderCenteredImageOrLoadingIndicator(
+                            ctx,
+                            ruinImage,
+                            { x: coords.x + 0.5, y: coords.y + 0.5 }, // Centered at the ruin
+                            1.0 
+                        );
+                    }
+                });
+    
                 // Draw grid
                 const showGrid = true
                 if (showGrid) {

@@ -49,7 +49,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
 
-        openBrush.apply(point.x, point.y, openBrush.fields)
+        openBrush.apply(point.x, point.y, openBrush.fields, true)
         GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
