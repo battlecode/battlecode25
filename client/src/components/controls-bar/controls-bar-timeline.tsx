@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useAppContext } from '../../app-context';
 import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner';
 import { GAME_MAX_TURNS } from '../../constants';
@@ -16,23 +16,29 @@ interface Props {
 
 const TimelineMarkers: React.FC<{ markers: TimelineMarker[]; maxRound: number }> = ({ markers, maxRound }) => {
     return (
-        <div className="absolute left-0 right-0 bottom-[5px] h-[15px]">
+        <div 
+            className="absolute left-0 right-0 bottom-[5px] h-[15px] border border-red-500"
+        >
             {markers.map((marker, index) => {
                 const position = (marker.round / maxRound) * TIMELINE_WIDTH;
                 return (
                     <div
                         key={index}
                         className="group relative"
+                        onClick={() => {
+                            // Jump to the round when the marker is clicked
+                            gameRunner.jumpToRound(marker.round);
+                        }}
                     >
                         <div
-                            className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1 hover:bg-blue-400 transition-colors cursor-pointer"
+                            className="absolute w-4 h-4 bg-red-500 rounded-full -translate-x-1/2 hover:bg-red-400 transition-colors cursor-pointer z-10"
                             style={{
                                 left: `${position}px`,
                                 bottom: '5px'
                             }}
                         />
                         <div
-                            className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap"
+                            className="absolute block bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap z-20"
                             style={{
                                 left: `${position}px`,
                             }}
@@ -63,10 +69,10 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     // Hard-coded timeline markers
     const markers: TimelineMarker[] = [
         { round: 10, label: 'Early Game' },
-        { round: 50, label: 'Mid Game' },
-        { round: 100, label: 'Late Game' },
-        { round: 150, label: 'End Game' },
-        { round: 200, label: 'Final Rounds' }
+        { round: 500, label: 'Mid Game' },
+        { round: 1000, label: 'Late Game' },
+        { round: 1500, label: 'End Game' },
+        { round: 2000, label: 'Final Rounds' }
     ];
     
     // Ensure maxRound is always a number
