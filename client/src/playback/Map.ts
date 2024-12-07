@@ -391,7 +391,7 @@ export class StaticMap {
                         renderUtils.renderCenteredImageOrLoadingIndicator(
                             ctx,
                             ruinImage,
-                            { x: coords.x + 0.5, y: coords.y + 0.5 }, // Centered at the ruin
+                            { x: coords.x, y: coords.y }, // Centered at the ruin
                             1.0 
                         );
                     }
