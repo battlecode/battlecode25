@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, MouseEvent, PropsWithChildren } from 'react'
+
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
 import { Colors, currentColors, updateGlobalColor, getGlobalColor, resetGlobalColors } from './colors'
+import { Button, PaintButton } from './components/button'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -93,7 +95,12 @@ const ColorPicker = (props: { name: Colors }) => {
 
     return (
         <>
-            <ChromePicker color={value} onChange={onChange} />
+            <button
+                className={'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
+                style={{ backgroundColor: value }}
+                onClick={handleClick}
+            ></button>
+            {displayColorPicker && <ChromePicker color={value} onChange={onChange} />}
         </>
     )
 }
@@ -115,6 +122,9 @@ export const ConfigPage: React.FC<Props> = (props) => {
             </div>
             <div className="color-pickers">Customize Colors:</div>
             <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
+            <div className="flex flex-row mt-8">
+                <PaintButton className="" onClick={() => {}}></PaintButton>
+            </div>
         </div>
     )
 }
