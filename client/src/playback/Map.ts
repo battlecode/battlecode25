@@ -372,19 +372,10 @@ export class StaticMap {
                 */
                 
                 // Render ruins
-                this.ruins.forEach(({ x, y }, index) => {
+                this.ruins.forEach(({ x, y }) => {
                     const coords = renderUtils.getRenderCoords(x, y, this.dimension);
 
-                    const teamIndex = index % 2;
-                    const teamColor = TEAM_COLORS[teamIndex];
-
-                    const HEX_TO_COLOR_NAME = {
-                        "#bfbaa8": "Silver",
-                        "#9c8362": "Gold"
-                    };
-
-                    const colorName = HEX_TO_COLOR_NAME[teamColor.toLowerCase() as keyof typeof HEX_TO_COLOR_NAME];
-                    const imgPath = `ruins/${colorName.toLowerCase()}_64x64.png`
+                    const imgPath = `ruins/silver_64x64.png`
                     const ruinImage = getImageIfLoaded(imgPath);
 
                     if (ruinImage) {
