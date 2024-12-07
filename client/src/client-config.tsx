@@ -4,7 +4,7 @@ import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
 import { Colors, currentColors, updateGlobalColor, getGlobalColor, resetGlobalColors } from './colors'
-import { Button, PaintButton } from './components/button'
+import { BrightButton, Button } from './components/button'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -123,7 +123,9 @@ export const ConfigPage: React.FC<Props> = (props) => {
             <div className="color-pickers">Customize Colors:</div>
             <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
             <div className="flex flex-row mt-8">
-                <PaintButton className="" onClick={() => {}}></PaintButton>
+                <BrightButton className="" onClick={() => {}}>
+                    Reset Colors
+                </BrightButton>
             </div>
         </div>
     )
