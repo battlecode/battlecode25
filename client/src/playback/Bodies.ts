@@ -2,16 +2,11 @@ import { flatbuffers, schema } from 'battlecode-schema'
 import assert from 'assert'
 import Game, { Team } from './Game'
 import Round from './Round'
-import RoundStat from './RoundStat'
-import { getImageIfLoaded } from '../util/ImageLoader'
 import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
 import { Vector } from './Vector'
 import {
-    ATTACK_COLOR,
-    BUILD_COLOR,
-    HEAL_COLOR,
     INDICATOR_DOT_SIZE,
     INDICATOR_LINE_WIDTH,
     TOOLTIP_PATH_DECAY_OPACITY,
@@ -21,6 +16,8 @@ import {
 } from '../constants'
 import Match from './Match'
 import { ClientConfig } from '../client-config'
+import { TowerBrush } from './Brushes'
+import { getImageIfLoaded } from '../util/ImageLoader'
 
 export default class Bodies {
     public bodies: Map<number, Body> = new Map()
@@ -171,7 +168,7 @@ export default class Bodies {
     }
 
     getEditorBrushes(map: StaticMap): MapEditorBrush[] {
-        return []
+        return [new TowerBrush(this, map)]
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
@@ -210,6 +207,7 @@ export class Body {
     public robotName: string = ''
     public robotType: schema.RobotType = schema.RobotType.NONE
     protected imgPath: string = ''
+    protected size: number = 1
     public nextPos: Vector
     private prevSquares: Vector[]
     public indicatorDots: { location: Vector; color: string }[] = []
@@ -250,7 +248,14 @@ export class Body {
     ): void {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
+        
         if (this.dead) ctx.globalAlpha = 0.5
+        renderUtils.renderCenteredImageOrLoadingIndicator(
+            ctx,
+            getImageIfLoaded(this.imgPath),
+            renderCoords,
+            this.size
+        )
         ctx.globalAlpha = 1
 
         if (selected || hovered) this.drawPath(match, overlayCtx)
@@ -314,21 +319,84 @@ export class Body {
         }
     }
 
+    private getAllLocationsWithinRadiusSquared(match: Match, location: Vector, radius: number) {
+        const ceiledRadius = Math.ceil(Math.sqrt(radius)) + 1
+        const minX = Math.max(location.x - ceiledRadius, 0)
+        const minY = Math.max(location.y - ceiledRadius, 0)
+        const maxX = Math.min(location.x + ceiledRadius, match.map.width - 1)
+        const maxY = Math.min(location.y + ceiledRadius, match.map.height - 1)
+
+        const coords: Vector[] = []
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                const dx = x - location.x
+                const dy = y - location.y
+                if (dx * dx + dy * dy <= radius) {
+                    coords.push({ x, y })
+                }
+            }
+        }
+
+        return coords
+    }
+
+    private drawEdges(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean, squares: Array<Vector>) {
+        for (let i = 0; i < squares.length; ++i) {
+            const squarePos = squares[i]
+            const renderCoords = renderUtils.getRenderCoords(
+                squarePos.x,
+                squarePos.y,
+                match.currentRound.map.staticMap.dimension
+            )
+
+            const hasTopNeighbor = squares.some((square) => square.x === squarePos.x && square.y === squarePos.y + 1)
+            const hasBottomNeighbor = squares.some((square) => square.x === squarePos.x && square.y === squarePos.y - 1)
+            const hasLeftNeighbor = squares.some((square) => square.x === squarePos.x - 1 && square.y === squarePos.y)
+            const hasRightNeighbor = squares.some((square) => square.x === squarePos.x + 1 && square.y === squarePos.y)
+
+            ctx.beginPath()
+
+            if (!hasTopNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y)
+            }
+
+            if (!hasBottomNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y + 1)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1)
+            }
+
+            if (!hasLeftNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y)
+                ctx.lineTo(renderCoords.x, renderCoords.y + 1)
+            }
+
+            if (!hasRightNeighbor) {
+                ctx.moveTo(renderCoords.x + 1, renderCoords.y)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1)
+            }
+
+            ctx.stroke()
+        }
+    }
+
     private drawRadii(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean) {
-        const pos = this.getInterpolatedCoords(match)
+        // const pos = this.getInterpolatedCoords(match)
+        const pos = this.pos
+
         if (lightly) ctx.globalAlpha = 0.5
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
+        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.actionRadius)
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.actionRadius), 0, 360)
-        ctx.stroke()
+        this.drawEdges(match, ctx, lightly, squares)
 
         ctx.beginPath()
         ctx.strokeStyle = 'blue'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.visionRadius), 0, 360)
-        ctx.stroke()
+        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.visionRadius)
+        this.drawEdges(match, ctx, lightly, squares2)
+
         ctx.globalAlpha = 1
     }
 
@@ -372,7 +440,7 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
         // TODO: adjust
-        const maxHP = this.metadata.baseHealth()
+        const maxHP = this.game.playable ? this.metadata.baseHealth() : 1
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
@@ -476,6 +544,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} DefenseTower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
@@ -486,7 +556,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -503,6 +572,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} MoneyTower`
             this.robotType = schema.RobotType.MONEY_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
@@ -513,34 +584,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
-        }
-    },
-
-    [schema.RobotType.MOPPER]: class Mopper extends Body {
-        public robotName = 'Mopper'
-
-        constructor(game: Game, pos: Vector, team: Team, id: number) {
-            super(game, pos, team, id)
-            this.robotName = `${team.colorName} Mopper`
-            this.robotType = schema.RobotType.MOPPER
-        }
-
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -557,6 +600,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} PaintTower`
             this.robotType = schema.RobotType.PAINT_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
@@ -567,7 +612,33 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+
+            const interpCoords = this.getInterpolatedCoords(match)
+            // for (const [color, level, [dx, dy]] of levelIndicators) {
+            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
+            // }
+        }
+    },
+
+    [schema.RobotType.MOPPER]: class Mopper extends Body {
+        public robotName = 'Mopper'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Mopper`
+            this.robotType = schema.RobotType.MOPPER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/mopper_64x64.png`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -584,6 +655,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} Soldier`
             this.robotType = schema.RobotType.SOLDIER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/soldier_64x64.png`
         }
 
         public draw(
@@ -594,7 +666,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
@@ -611,6 +682,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             super(game, pos, team, id)
             this.robotName = `${team.colorName} Splasher`
             this.robotType = schema.RobotType.SPLASHER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/splasher_64x64.png`
         }
 
         public draw(
@@ -621,7 +693,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
 
             const interpCoords = this.getInterpolatedCoords(match)
