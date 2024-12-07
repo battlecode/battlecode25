@@ -138,7 +138,7 @@ const ZoomableGameRenderer: React.FC<{
                 </GameRendererCanvases>
             </Space>
             {canResetCamera && (
-                <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-30" onClick={resetCamera}>
+                <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-50 fill-white" onClick={resetCamera}>
                     <ResetZoomIcon />
                 </button>
             )}

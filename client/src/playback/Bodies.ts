@@ -16,6 +16,8 @@ import {
 } from '../constants'
 import Match from './Match'
 import { ClientConfig } from '../client-config'
+import { TowerBrush } from './Brushes'
+import { getImageIfLoaded } from '../util/ImageLoader'
 
 export default class Bodies {
     public bodies: Map<number, Body> = new Map()
@@ -166,7 +168,7 @@ export default class Bodies {
     }
 
     getEditorBrushes(map: StaticMap): MapEditorBrush[] {
-        return []
+        return [new TowerBrush(this, map)]
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
@@ -205,6 +207,7 @@ export class Body {
     public robotName: string = ''
     public robotType: schema.RobotType = schema.RobotType.NONE
     protected imgPath: string = ''
+    protected size: number = 1
     public nextPos: Vector
     private prevSquares: Vector[]
     public indicatorDots: { location: Vector; color: string }[] = []
@@ -245,7 +248,14 @@ export class Body {
     ): void {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
+        
         if (this.dead) ctx.globalAlpha = 0.5
+        renderUtils.renderCenteredImageOrLoadingIndicator(
+            ctx,
+            getImageIfLoaded(this.imgPath),
+            renderCoords,
+            this.size
+        )
         ctx.globalAlpha = 1
 
         if (selected || hovered) this.drawPath(match, overlayCtx)
@@ -535,6 +545,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} DefenseTower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
@@ -562,6 +573,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} MoneyTower`
             this.robotType = schema.RobotType.MONEY_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
@@ -589,6 +601,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} PaintTower`
             this.robotType = schema.RobotType.PAINT_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
+            this.size = 2
         }
 
         public draw(
