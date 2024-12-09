@@ -165,7 +165,7 @@ table GameMap {
     initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
-    paint: [int];
+    paint: [byte];
     ruins: VecTable;
     paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
 }
