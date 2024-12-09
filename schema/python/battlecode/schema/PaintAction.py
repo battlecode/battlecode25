@@ -12,7 +12,7 @@ class PaintAction(object):
 
     @classmethod
     def SizeOf(cls):
-        return 2
+        return 4
 
     # PaintAction
     def Init(self, buf, pos):
@@ -20,8 +20,12 @@ class PaintAction(object):
 
     # PaintAction
     def Loc(self): return self._tab.Get(flatbuffers.number_types.Uint16Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(0))
+    # PaintAction
+    def IsSecondary(self): return self._tab.Get(flatbuffers.number_types.Int8Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(2))
 
-def CreatePaintAction(builder, loc):
-    builder.Prep(2, 2)
+def CreatePaintAction(builder, loc, isSecondary):
+    builder.Prep(2, 4)
+    builder.Pad(1)
+    builder.PrependInt8(isSecondary)
     builder.PrependUint16(loc)
     return builder.Offset()
