@@ -16,11 +16,13 @@ public final class Action {
   public static final byte MessageAction = 8;
   public static final byte SpawnAction = 9;
   public static final byte UpgradeAction = 10;
-  public static final byte IndicatorStringAction = 11;
-  public static final byte IndicatorDotAction = 12;
-  public static final byte IndicatorLineAction = 13;
+  public static final byte DieExceptionAction = 11;
+  public static final byte TimelineMarkerAction = 12;
+  public static final byte IndicatorStringAction = 13;
+  public static final byte IndicatorDotAction = 14;
+  public static final byte IndicatorLineAction = 15;
 
-  public static final String[] names = { "NONE", "DamageAction", "PaintAction", "UnpaintAction", "AttackAction", "MopAction", "BuildAction", "TransferAction", "MessageAction", "SpawnAction", "UpgradeAction", "IndicatorStringAction", "IndicatorDotAction", "IndicatorLineAction", };
+  public static final String[] names = { "NONE", "DamageAction", "PaintAction", "UnpaintAction", "AttackAction", "MopAction", "BuildAction", "TransferAction", "MessageAction", "SpawnAction", "UpgradeAction", "DieExceptionAction", "TimelineMarkerAction", "IndicatorStringAction", "IndicatorDotAction", "IndicatorLineAction", };
 
   public static String name(int e) { return names[e]; }
 }
