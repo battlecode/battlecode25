@@ -1,6 +1,7 @@
 import { AttackAction } from '../../battlecode/schema/attack-action';
 import { BuildAction } from '../../battlecode/schema/build-action';
 import { DamageAction } from '../../battlecode/schema/damage-action';
+import { DieExceptionAction } from '../../battlecode/schema/die-exception-action';
 import { IndicatorDotAction } from '../../battlecode/schema/indicator-dot-action';
 import { IndicatorLineAction } from '../../battlecode/schema/indicator-line-action';
 import { IndicatorStringAction } from '../../battlecode/schema/indicator-string-action';
@@ -8,6 +9,7 @@ import { MessageAction } from '../../battlecode/schema/message-action';
 import { MopAction } from '../../battlecode/schema/mop-action';
 import { PaintAction } from '../../battlecode/schema/paint-action';
 import { SpawnAction } from '../../battlecode/schema/spawn-action';
+import { TimelineMarkerAction } from '../../battlecode/schema/timeline-marker-action';
 import { TransferAction } from '../../battlecode/schema/transfer-action';
 import { UnpaintAction } from '../../battlecode/schema/unpaint-action';
 import { UpgradeAction } from '../../battlecode/schema/upgrade-action';
@@ -23,9 +25,11 @@ export declare enum Action {
     MessageAction = 8,
     SpawnAction = 9,
     UpgradeAction = 10,
-    IndicatorStringAction = 11,
-    IndicatorDotAction = 12,
-    IndicatorLineAction = 13
+    DieExceptionAction = 11,
+    TimelineMarkerAction = 12,
+    IndicatorStringAction = 13,
+    IndicatorDotAction = 14,
+    IndicatorLineAction = 15
 }
-export declare function unionToAction(type: Action, accessor: (obj: AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null): AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null;
-export declare function unionListToAction(type: Action, accessor: (index: number, obj: AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null, index: number): AttackAction | BuildAction | DamageAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null;
+export declare function unionToAction(type: Action, accessor: (obj: AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction | null): AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction | null;
+export declare function unionListToAction(type: Action, accessor: (index: number, obj: AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction | null, index: number): AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TimelineMarkerAction | TransferAction | UnpaintAction | UpgradeAction | null;

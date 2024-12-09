@@ -18,11 +18,16 @@ var PaintAction = /** @class */ (function () {
     PaintAction.prototype.loc = function () {
         return this.bb.readUint16(this.bb_pos);
     };
-    PaintAction.sizeOf = function () {
-        return 2;
+    PaintAction.prototype.isSecondary = function () {
+        return this.bb.readInt8(this.bb_pos + 2);
     };
-    PaintAction.createPaintAction = function (builder, loc) {
-        builder.prep(2, 2);
+    PaintAction.sizeOf = function () {
+        return 4;
+    };
+    PaintAction.createPaintAction = function (builder, loc, isSecondary) {
+        builder.prep(2, 4);
+        builder.pad(1);
+        builder.writeInt8(isSecondary);
         builder.writeInt16(loc);
         return builder.offset();
     };
