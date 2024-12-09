@@ -497,9 +497,8 @@ public strictfp class GameMaker {
 
 
         /// Visually indicate a tile has been painted
-        public void addPaintAction(MapLocation loc){ 
-            //TODO: this should probably also have a primary/secondary boolean
-            int action = PaintAction.createPaintAction(fileBuilder, locationToInt(loc));
+        public void addPaintAction(MapLocation loc, boolean isSecondary){ 
+            int action = PaintAction.createPaintAction(fileBuilder, locationToInt(loc), isSecondary ? (byte) 1 : 0);
             this.currentActions.add(action);
             this.currentActionTypes.add(Action.PaintAction);
         }
@@ -563,9 +562,21 @@ public strictfp class GameMaker {
             this.currentActionTypes.add(Action.UpgradeAction);
         }
 
+        public void addDieExceptionAction(){
+            int action = DieExceptionAction.createDieExceptionAction(fileBuilder, (byte) -1);
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.DieExceptionAction);
+        }
+
         public void addTeamInfo(Team team, int moneyAmount) {
             teamIDs.add(TeamMapping.id(team));
             teamMoneyAmounts.add(moneyAmount);
+        }
+
+        public void addTimelineMarker(String label){
+            int action = TimelineMarkerAction.createTimelineMarkerAction(fileBuilder, fileBuilder.createString(label));
+            this.currentActions.add(action);
+            this.currentActionTypes.add(Action.TimelineMarkerAction);
         }
 
         /// Update the indicator string for this robot

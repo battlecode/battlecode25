@@ -28,14 +28,13 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private MapLocation location;
     private MapLocation diedLocation;
     private int health;
-    //TODO; get rid fo all isSpawned and spawned references
-    private boolean spawned;
 
     private long controlBits;
     private int currentBytecodeLimit;
     private int bytecodesUsed;
 
     private int roundsAlive;
+    private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
     private int spawnCooldownTurns;
@@ -62,7 +61,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc) {
+    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc, boolean skipSpawnAction) {
         this.gameWorld = gw;
 
         this.ID = id;
@@ -72,7 +71,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.location = loc;
         this.diedLocation = null;
         this.health = GameConstants.DEFAULT_HEALTH;
-        this.spawned = false;
         this.incomingMessages = new LinkedList<>();
         this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
 
@@ -83,6 +81,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
+        this.hasSentSpawnAction = skipSpawnAction;
         this.actionCooldownTurns = GameConstants.COOLDOWN_LIMIT;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
         this.spawnCooldownTurns = 0;
@@ -325,25 +324,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****** ACTION METHODS *********
     // *********************************
 
-    /**
-     * Spawns the robot at the location provided
-     * 
-     * @param loc the new location of the robot
-     */
-    public void spawn(MapLocation loc) {
-        //TODO: we can delete this (not called anymore)
-        this.spawned = true;
-        this.location = loc;
-        this.roundsAlive = 0;
-        this.health = GameConstants.DEFAULT_HEALTH;
-        // this.actionCooldownTurns = GameConstants.COOLDOWN_LIMIT;
-        // this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
-    }
-
-    public boolean isSpawned() {
-        return this.spawned;
-    }
-
     private int locationToInt(MapLocation loc) {
         return this.gameWorld.locationToIndex(loc);
     }
@@ -368,7 +348,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             // If the tile is empty or same team paint, paint it
             if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                 this.gameWorld.setPaint(loc, paintType);
-                this.gameWorld.getMatchMaker().addPaintAction(loc);
+                this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
             }
         }
 
@@ -399,7 +379,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 // If the tile is empty or same team paint, paint it
                 if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                     this.gameWorld.setPaint(loc, paintType);
-                    this.gameWorld.getMatchMaker().addPaintAction(loc);
+                    this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
                 } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
                     if(loc.isWithinDistanceSquared(newLoc, 2))
                         this.gameWorld.setPaint(loc, paintType);
@@ -589,6 +569,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
+        if (!this.hasSentSpawnAction){
+            this.gameWorld.getMatchMaker().addSpawnAction(this.location, this.team, this.type);
+            this.hasSentSpawnAction = true;
+        }
     }
 
     public void processEndOfTurn() {

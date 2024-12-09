@@ -213,7 +213,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public boolean canSenseRobot(int id) {
         InternalRobot sensedRobot = getRobotByID(id);
-        return sensedRobot == null || !sensedRobot.isSpawned() ? false : canSenseLocation(sensedRobot.getLocation());
+        return sensedRobot == null || canSenseLocation(sensedRobot.getLocation());
     }
 
     @Override

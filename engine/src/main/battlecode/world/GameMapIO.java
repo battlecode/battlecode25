@@ -232,7 +232,7 @@ public final strictfp class GameMapIO {
             int size = width*height;
             boolean[] wallArray = new boolean[size];
             boolean[] ruinArray = new boolean[size];
-            int[] paintArray = new int[size];
+            byte[] paintArray = new byte[size];
             int[] patternArray = new int[4];
             for (int i = 0; i < wallArray.length; i++) {
                 wallArray[i] = raw.walls(i);
@@ -270,7 +270,7 @@ public final strictfp class GameMapIO {
             int name = builder.createString(gameMap.getMapName());
             int randomSeed = gameMap.getSeed();
             boolean[] wallArray = gameMap.getWallArray();
-            int[] paintArray = gameMap.getPaintArray();
+            byte[] paintArray = gameMap.getPaintArray();
             boolean[] ruinArray = gameMap.getRuinArray();
             int[] patternArray = gameMap.getPatternArray();
 
@@ -282,7 +282,7 @@ public final strictfp class GameMapIO {
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
 
             ArrayList<Boolean> wallArrayList = new ArrayList<>();
-            ArrayList<Integer> paintArrayList = new ArrayList<>();
+            ArrayList<Byte> paintArrayList = new ArrayList<>();
             ArrayList<Integer> patternArrayList = new ArrayList<>();
 
             ArrayList<Integer> ruinXs = new ArrayList<>();
@@ -320,17 +320,11 @@ public final strictfp class GameMapIO {
             TIntArrayList ruinYsList = new TIntArrayList(ruinYsArray);
 
             int wallArrayInt = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallArrayList.toArray(new Boolean[wallArrayList.size()])));
-            int paintArrayInt = battlecode.schema.GameMap.createPaintVector(builder, ArrayUtils.toPrimitive(paintArrayList.toArray(new Integer[paintArrayList.size()])));
+            int paintArrayInt = battlecode.schema.GameMap.createPaintVector(builder, ArrayUtils.toPrimitive(paintArrayList.toArray(new Byte[paintArrayList.size()])));
             int patternArrayInt = battlecode.schema.GameMap.createPaintPatternsVector(builder, ArrayUtils.toPrimitive(patternArrayList.toArray(new Integer[patternArrayList.size()])));
             int ruinLocations = FlatHelpers.createVecTable(builder, ruinXsList, ruinYsList);
 
             int robotIdOffsets = InitialBodyTable.createRobotIdsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
-            // int[] spawnedRobotOffsets = new int[bodyIDs.size()];
-            // for (int i = 0; i < spawnedRobotOffsets.length; i++){
-            //     int offset = SpawnAction.createSpawnAction(builder, bodyLocsXs.get(i), bodyLocsYs.get(i), bodyTeamIDs.get(i), bodyTypes.get(i));
-            //     spawnedRobotOffsets[i] = offset;
-            // }
-            // int spawnActionVectorOffset = createSpawnActionsVector(builder, spawnedRobotOffsets);
             int spawnActionVectorOffset = createSpawnActionsVector2(builder, bodyLocsXs, bodyLocsYs, bodyTeamIDs, bodyTypes);
             int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVectorOffset);
 
@@ -361,7 +355,6 @@ public final strictfp class GameMapIO {
                 UnitType bodyType = FlatHelpers.getUnitTypeFromRobotType(curSpawnAction.robotType());
                 int bodyX = curSpawnAction.x();
                 int bodyY = curSpawnAction.y();
-                System.out.println("SpawnAction says robot " + curId + " is at position (" + bodyX + "," + bodyY + ")");
                 Team bodyTeam = TeamMapping.team(curSpawnAction.team());
                 if (teamsReversed){
                     bodyTeam = bodyTeam.opponent();
@@ -373,40 +366,13 @@ public final strictfp class GameMapIO {
 
         private static int createSpawnActionsVector2(FlatBufferBuilder builder, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
             ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
-            // builder.startVector(6, xs.size(), 2);
-            // int vectorOffset = builder.endVector();
-            // int curOffset = vectorOffset;
             for (int i = 0; i < xs.size(); i++){
                 bb.putShort((short)(int)xs.get(i));
                 bb.putShort((short)(int)ys.get(i));
                 bb.put(teams.get(i));
                 bb.put(types.get(i));
-                // builder.addShort(curOffset, (short)(int)xs.get(i), -1);
-                // builder.addShort(curOffset+2, (short)(int) ys.get(i), -1);
-                // builder.addByte(curOffset+4, teams.get(i), -1);
-                // builder.addByte(curOffset+5, types.get(i), -1);
-                // curOffset += 6;
-            }
-
-            return builder.endVector();
-        }
-
-        private static int createSpawnActionsVector(FlatBufferBuilder builder, int[] data){
-            //TODO: don't hardcode this or things will mysteriously break if we change # of starting towers
-            //todo: I think this method also doesn't work lol
-
-            //structs are stored inline so the vector data should be stored inline?
-            builder.startVector(6, data.length, 4);  //short + short + byte + byte
-
-            for (int i = data.length - 1; i >= 0; i--) {
-                builder.addOffset(data[i]); 
             }
             return builder.endVector();
-            // InitialBodyTable.startSpawnActionsVector(builder, data.length);
-            // for (int i = data.length - 1; i >= 0; i--){
-            //     InitialBodyTable.addSpawnActions(builder, data[i]);
-            // }
-            // return 
         }
         
     }

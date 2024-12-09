@@ -43,7 +43,7 @@ public strictfp class LiveMap {
     /**
      * What kind of paint is on the square.
      */
-    private int[] paintArray;
+    private byte[] paintArray;
 
     /**
      * Whether each square is a ruin.
@@ -96,7 +96,7 @@ public strictfp class LiveMap {
         this.initialBodies = Arrays.copyOf(initialBodies, initialBodies.length);
         int numSquares = width * height;
         this.wallArray = new boolean[numSquares];
-        this.paintArray = new int[numSquares];
+        this.paintArray = new byte[numSquares];
         this.ruinArray = new boolean[numSquares];
         this.patternArray = new int[4];
 
@@ -112,7 +112,7 @@ public strictfp class LiveMap {
                    String mapName,
                    MapSymmetry symmetry,
                    boolean[] wallArray,
-                   int[] paintArray,
+                   byte[] paintArray,
                    boolean[] ruinArray,
                    int[] patternArray,
                    RobotInfo[] initialBodies) {
@@ -128,7 +128,7 @@ public strictfp class LiveMap {
         for (int i = 0; i < wallArray.length; i++) {
             this.wallArray[i] = wallArray[i];
         }
-        this.paintArray = new int[paintArray.length];
+        this.paintArray = new byte[paintArray.length];
         for (int i = 0; i < paintArray.length; i++){
             this.paintArray[i] = paintArray[i];
         }
@@ -318,7 +318,7 @@ public strictfp class LiveMap {
     /**
      * @return the paint array of the map
      */
-    public int[] getPaintArray() {
+    public byte[] getPaintArray() {
         return paintArray;
     }
 

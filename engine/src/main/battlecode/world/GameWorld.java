@@ -791,12 +791,10 @@ public strictfp class GameWorld {
     // *********************************
 
     public int spawnRobot(int ID, UnitType type, MapLocation location, Team team, boolean skipAction){
-        InternalRobot robot = new InternalRobot(this, ID, team, type, location);
+        InternalRobot robot = new InternalRobot(this, ID, team, type, location, skipAction);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
-        if (!skipAction)
-            this.matchMaker.addSpawnAction(location, team, type);
         return ID;
     }
 
