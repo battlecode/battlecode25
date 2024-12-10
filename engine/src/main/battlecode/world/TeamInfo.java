@@ -94,7 +94,7 @@ public class TeamInfo {
      public void addPaintedSquares(int num, Team team) {
         this.totalPaintedSquares[team.ordinal()] += num;
         int areaWithoutWalls = this.gameWorld.getAreaWithoutWalls();
-        if (this.totalPaintedSquares[team.ordinal()] / (double) areaWithoutWalls * 100 < GameConstants.PAINT_PERCENT_TO_WIN) {
+        if (this.totalPaintedSquares[team.ordinal()] / (double) areaWithoutWalls * 100 >= GameConstants.PAINT_PERCENT_TO_WIN) {
             checkWin(team);
         }
     }    
