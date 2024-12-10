@@ -54,7 +54,7 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        System.out.println("I'm alive");
+        //System.out.println("I'm alive");
 
         // You can also use indicators to save debug notes in replays.
         rc.setIndicatorString("Hello world!");
@@ -69,9 +69,18 @@ public strictfp class RobotPlayer {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode.
             try {
                 MapLocation nextLoc = rc.adjacentLocation(Direction.NORTH);
-                if (rc.canBuildRobot(UnitType.SOLDIER, nextLoc)){
+                int robotType = rng.nextInt(3);
+                if (robotType == 0 && rc.canBuildRobot(UnitType.SOLDIER, nextLoc)){
                     rc.buildRobot(UnitType.SOLDIER, nextLoc);
-                    System.out.println("SPAWNED A UNIT");
+                    System.out.println("SPAWNED A SOLDIER");
+                }
+                else if (robotType == 1 && rc.canBuildRobot(UnitType.MOPPER, nextLoc)){
+                    rc.buildRobot(UnitType.MOPPER, nextLoc);
+                    System.out.println("SPAWNED A MOPPER");
+                }
+                else if (robotType == 2 && rc.canBuildRobot(UnitType.SPLASHER, nextLoc)){
+                    rc.buildRobot(UnitType.SPLASHER, nextLoc);
+                    System.out.println("SPAWNED A SPLASHER");
                 }
                 // Make sure you spawn your robot in before you attempt to take any actions!
                 // Robots not spawned in do not have vision of any tiles and cannot perform any actions.
@@ -101,9 +110,13 @@ public strictfp class RobotPlayer {
                     if (rc.canMove(dir)){
                         rc.move(dir);
                     }
+                    if (rc.canMopSwing(dir)){
+                        rc.mopSwing(dir);
+                        System.out.println("Mop Swing! Booyah!");
+                    }
                     else if (rc.canAttack(nextLoc)){
                         rc.attack(nextLoc);
-                        System.out.println("Take that! Damaged an enemy that was in our way!");
+                       //System.out.println("Take that! Damaged an enemy that was in our way!");
                     }
 
                     // Rarely attempt placing traps behind the robot.
@@ -148,11 +161,14 @@ public strictfp class RobotPlayer {
             for (int i = 0; i < enemyRobots.length; i++){
                 enemyLocations[i] = enemyRobots[i].getLocation();
             }
-            // Let the rest of our team know how many enemy robots we see!
-            // if (rc.canWriteSharedArray(0, enemyRobots.length)){
-            //     rc.writeSharedArray(0, enemyRobots.length);
-            //     int numEnemies = rc.readSharedArray(0);
-            // }
+            RobotInfo[] allyRobots = rc.senseNearbyRobots(-1, rc.getTeam());
+            if (rc.getRoundNum() % 20 == 0){
+                for (RobotInfo ally : allyRobots){
+                    if (rc.canSendMessage(ally.location, turnCount)){
+                        rc.sendMessage(ally.location, turnCount);
+                    }
+                }
+            }
         }
     }
 }

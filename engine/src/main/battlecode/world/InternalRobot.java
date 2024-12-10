@@ -343,6 +343,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             if(this.team != tower.getTeam()){
                 tower.addHealth(-UnitType.SOLDIER.attackStrength);
                 this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SOLDIER.attackStrength);
+                this.gameWorld.getMatchMaker().addAttackAction(tower.ID);
             }
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
@@ -352,7 +353,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         }
 
-        //TODO: fix matchmaker usage here and for all other actions
     }
     public void soldierAttack(MapLocation loc) {
         soldierAttack(loc, false);
@@ -374,6 +374,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 if(this.team != tower.getTeam()){
                     tower.addHealth(-UnitType.SPLASHER.attackStrength);
                     this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.attackStrength);
+                    this.gameWorld.getMatchMaker().addAttackAction(tower.ID);
                 }
             } else { // otherwise, maybe paint
                 // If the tile is empty or same team paint, paint it
@@ -381,8 +382,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                     this.gameWorld.setPaint(loc, paintType);
                     this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
                 } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
-                    if(loc.isWithinDistanceSquared(newLoc, 2))
+                    if(loc.isWithinDistanceSquared(newLoc, 2)){
                         this.gameWorld.setPaint(loc, paintType);
+                        this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
+                    }
                 }
             }
         }
@@ -393,7 +396,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // This is the first kind of attack for moppers which only targets one location
     public void mopperAttack(MapLocation loc, boolean useSecondaryColor) {
-        //TODO: schema
         // if(this.type != UnitType.MOPPER)
         //     throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
@@ -407,12 +409,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             if(this.team != robot.getTeam()) {
                 robot.addPaint(-GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
                 addPaint(GameConstants.MOPPER_ATTACK_PAINT_ADDITION);
+                this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
             }
         }
         
         // Either way, mop this tile if it has enemy paint
         if(this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
             this.gameWorld.setPaint(loc, 0);
+            this.gameWorld.getMatchMaker().addUnpaintAction(loc);
         }
 
     }
@@ -421,7 +425,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void towerAttack(MapLocation loc) {
-        //TODO schema
         // if(!UnitType.isTowerType(this.type))
         //     throw new GameActionException(CANT_DO_THAT, "Unit must be a tower");
 
@@ -433,8 +436,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 // Attack if there is a unit (only if different team)
                 if(this.gameWorld.getRobot(newLoc) != null) {
                     InternalRobot unit = this.gameWorld.getRobot(newLoc);
-                    if(this.team != unit.getTeam())
+                    if(this.team != unit.getTeam()){
                         unit.addHealth(-this.type.aoeAttackStrength);
+                        this.gameWorld.getMatchMaker().addAttackAction(unit.getID());
+                        this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), this.type.attackStrength);
+                    }
                 }
             }
         } else { // single attack
@@ -442,12 +448,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
             if(this.gameWorld.getRobot(loc) != null) {
                 InternalRobot unit = this.gameWorld.getRobot(loc);
-                if(this.team != unit.getTeam())
+                if(this.team != unit.getTeam()){
                     unit.addHealth(-this.type.attackStrength);
+                    this.gameWorld.getMatchMaker().addAttackAction(unit.getID());
+                    this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), this.type.attackStrength);
+                }
             }
         }
 
-        // this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID()); // TODO: change this once schema is finalized
     }
 
     public void mopSwing(Direction dir) { // NOTE: only works for moppers!
@@ -474,12 +482,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             // Attack if it's a robot (only if different team)
             if(this.gameWorld.getRobot(newLoc) != null && UnitType.isRobotType(this.gameWorld.getRobot(newLoc).getType())) {
                 InternalRobot robot = this.gameWorld.getRobot(newLoc);
-                if(this.team != robot.getTeam())
+                if(this.team != robot.getTeam()){
                     robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
+                    this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
+                }
             }
         }
-
-        // this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+        MapLocation centerLoc = this.location.add(dir);
+        this.gameWorld.getMatchMaker().addMopAction(centerLoc);
     }
 
     /**
@@ -605,8 +615,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        //TODO: do we need the below?
-        // this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
+        this.gameWorld.getMatchMaker().addDieExceptionAction();
         this.gameWorld.destroyRobot(getID());
     }
 

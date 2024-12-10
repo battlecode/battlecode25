@@ -574,6 +574,9 @@ public strictfp class GameMaker {
         }
 
         public void addTimelineMarker(String label){
+            if (!showIndicators){
+                return;
+            }
             int action = TimelineMarkerAction.createTimelineMarkerAction(fileBuilder, fileBuilder.createString(label));
             this.currentActions.add(action);
             this.currentActionTypes.add(Action.TimelineMarkerAction);

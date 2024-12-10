@@ -49,6 +49,9 @@ public class GameConstants {
      */
     public static final int INDICATOR_STRING_MAX_LENGTH = 64;
 
+    /** The maximum length of a label to add to the timeline. */
+    public static final int TIMELINE_LABEL_MAX_LENGTH = 64;
+
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
 

@@ -778,4 +778,16 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+
+    /**
+     * Adds a marker to the timeline at the current 
+     * round for debugging purposes.
+     * Only the first
+     * {@link GameConstants#TIMELINE_LABEL_MAX_LENGTH} characters are used.
+     * 
+     * @param label the label for the timeline marker
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void setTimelineMarker(String label);
 }

@@ -611,6 +611,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         moneyRequired += newType.moneyCost;
         this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
         robot.upgradeTower(newType);
+        this.gameWorld.getMatchMaker().addUpgradeAction(robot.getID());
     }
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {
@@ -686,6 +687,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
+        InternalRobot tower = this.gameWorld.getRobot(loc);
+        this.gameWorld.getMatchMaker().addBuildAction(tower.getID());
     }
 
     private void assertCanCompleteResourcePattern(MapLocation loc) throws GameActionException {
@@ -863,6 +866,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanSendMessage(loc, message);
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
+        this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
     }
 
     // ***********************************
@@ -916,6 +920,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         robot.addPaint(amount);
         this.robot.addActionCooldownTurns(GameConstants.PAINT_TRANSFER_COOLDOWN);
+        this.gameWorld.getMatchMaker().addTransferAction(robot.getID());
     }
 
     @Override
@@ -953,5 +958,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(startLoc);
         assertNotNull(endLoc);
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);
+    }
+
+    @Override 
+    public void setTimelineMarker(String label){
+        if (label.length() > GameConstants.TIMELINE_LABEL_MAX_LENGTH){
+            label = label.substring(0, GameConstants.TIMELINE_LABEL_MAX_LENGTH);
+        }
+        this.gameWorld.getMatchMaker().addTimelineMarker(label);
     }
 }

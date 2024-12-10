@@ -30,7 +30,7 @@ public class MapBuilder {
     private int[] spawnZoneArray;
     private int[] patternArray = new int[4];
     private boolean[] ruinArray;
-    private int[] paintArray;
+    private byte[] paintArray;
 
     private int idCounter;
 
@@ -62,7 +62,7 @@ public class MapBuilder {
         this.resourceArray = new int[numSquares];
         this.spawnZoneArray = new int[numSquares];
         this.ruinArray = new boolean[numSquares];
-        this.paintArray = new int[numSquares];
+        this.paintArray = new byte[numSquares];
     }
 
     // ********************
