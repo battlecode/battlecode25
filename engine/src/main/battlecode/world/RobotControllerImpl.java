@@ -658,6 +658,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
                     "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because the paint pattern is wrong");
         }
+
+
+        if (this.gameWorld.getTeamInfo().getTotalNumberOfTowers(getTeam()) >= GameConstants.MAX_NUMBER_OF_TOWERS){
+            throw new GameActionException(CANT_DO_THAT,
+                    "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                            + ") because limit number of towers was reached");
+        }
     }
 
     @Override

@@ -54,13 +54,20 @@ public strictfp class GameWorld {
     private final RobotControlProvider controlProvider;
     private Random rand;
     private final GameMaker.MatchMaker matchMaker;
+    private int areaWithoutWalls;
 
     @SuppressWarnings("unchecked")
     public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) {
         int width = gm.getWidth();
         int height = gm.getHeight();
         int numSquares = width * height;
-
+        int numWalls = 0;
+        for (boolean wall : walls){
+            if (wall) {
+                numWalls += 1;
+            }
+        }
+        this.areaWithoutWalls = numSquares - numWalls;
         this.walls = gm.getWallArray();
         this.robots = new InternalRobot[width][height]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
@@ -180,6 +187,10 @@ public strictfp class GameWorld {
 
     public int getTowerPatternBit(int dx, int dy) {
         return getPatternBit(this.towerPattern, dx, dy);
+    }
+
+    public int getAreaWithoutWalls() {
+        return this.areaWithoutWalls;
     }
 
     public int getPatternBit(int pattern, int dx, int dy) {
@@ -802,6 +813,9 @@ public strictfp class GameWorld {
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
+        if (UnitType.isTowerType(type)){
+            this.teamInfo.addTowers(1, team);
+        }
         return ID;
     }
 
@@ -826,6 +840,7 @@ public strictfp class GameWorld {
             if (UnitType.isTowerType(robot.getType())) {
                 this.towersByLoc[locationToIndex(loc)] = Team.NEUTRAL;
                 this.towerLocations.remove(loc);
+                this.teamInfo.addTowers(-1, robot.getTeam());
             }
 
             removeRobot(loc);
