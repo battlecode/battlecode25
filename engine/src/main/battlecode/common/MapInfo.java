@@ -8,28 +8,20 @@ public class MapInfo {
 
     private boolean isWall;
 
-    private boolean isDam;
+    private PaintType paint;
 
-    // 1 = Team A, 2 = Team B, 0 = not a spawn zone
-    private int spawnZone;
+    private int mark;
 
-    private boolean isWater;
-
-    private int crumbsAmount;
-
-    private Team territory;
+    private boolean hasRuin;
 
 
-    //TODO: update this method and usage (bobby pr)
-    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, boolean isDam, int spawnZone, boolean isWater, int crumbsAmount, Team territory){
+    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, PaintType paint, int mark, boolean hasRuin){
         this.loc = loc;
         this.isPassable = isPassable;
         this.isWall = isWall;
-        this.isDam = isDam;
-        this.spawnZone = spawnZone;
-        this.isWater = isWater;
-        this.crumbsAmount = crumbsAmount;
-        this.territory = territory;
+        this.paint = paint;
+        this.mark = mark;
+        this.hasRuin = hasRuin;
     }
 
     /**
@@ -55,74 +47,37 @@ public class MapInfo {
     }
 
     /**
-     * Returns if this square is a dam
+     * Returns if this square has a ruin.
      * 
-     * @return whether this square is a dam
+     * @return whether this square has a ruin
      * 
      * @battlecode.doc.costlymethod
      */
-    public boolean isDam() {
-        return isDam;
+    public boolean hasRuin() {
+        return hasRuin;
     }
 
     /**
-     * Returns if this square is a spawn zone.
+     * Returns the paint value of this square
      * 
-     * @return whether this square is a spawn zone
+     * @return the paint value of this square
      * 
      * @battlecode.doc.costlymethod
      */
-    public boolean isSpawnZone() {
-        return spawnZone > 0;
+    public PaintType getPaint() {
+        return paint;
     }
 
     /**
-     * Returns 1 if this square is a Team A spawn zone,
-     * 2 if this square is a Team B spawn zone, and
-     * 0 if this square is not a spawn zone.
+     * Returns the mark value of this square
      * 
-     * @return 1 or 2 if the square is a Team A or B spawn zone, respectively; 0 otherwise
+     * @return the mark value of this square
      * 
      * @battlecode.doc.costlymethod
      */
-    public int getSpawnZoneTeam() {
-        return spawnZone;
+    public int getMark() {
+        return mark;
     }
-
-    /**
-     * Returns the team that owns that spawn zone at this location, or Team.NEUTRAL if the location is not a spawn zone.
-     * 
-     * @return The team that owns the spawn zone, or Team.NEUTRAL
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public Team getSpawnZoneTeamObject() {
-        return spawnZone == 0 ? Team.NEUTRAL : (spawnZone == 1 ? Team.A : Team.B);
-    }
-
-    /**
-     * Returns if this square has water in it.
-     * 
-     * @return whether this square has water
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public boolean isWater() {
-        return isWater;
-    }
-
-    /**
-     * Returns the amount of crumbs on this square.
-     * If there are no crumbs on the square, returns 0.
-     * 
-     * @return the amount of crumbs on the square
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public int getCrumbs() {
-        return crumbsAmount;
-    }
-
 
     /**
      * Returns the location of this square
@@ -135,28 +90,13 @@ public class MapInfo {
         return loc;
     }
 
-    /**
-     * Returns which team's territory this location is a part of. A location is in a team's territory
-     * if it was accessible to that team's robots during the setup phase. Locations initially inaccessible to
-     * either team will return Team.NEUTRAL.
-     * 
-     * @return The team territory that this location is a part of
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    public Team getTeamTerritory() {
-        return territory;
-    }
-
     public String toString(){
         return "Location{" +
-                "loc=" + loc +
+                "loc=" + loc.toString() +
                 (isWall ? ", wall" : "") +
-                (isWater ? ", water" : "") +
-                (spawnZone == 1 ? ", team A spawn zone" : "") +
-                (spawnZone == 2 ? ", team B spawn zone" : "") +
-                (crumbsAmount == 0 ? "" : ", crumbs=" + crumbsAmount) +
-                '}';
+                (hasRuin ? ", with ruin" : "") +
+                ", paint=" + paint.toString() +
+                ", mark=" + Integer.toString(mark) +
+                "}";
     }
-
 }

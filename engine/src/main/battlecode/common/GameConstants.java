@@ -85,6 +85,9 @@ public class GameConstants {
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;
 
+     /** The maximum number of towers that a team can have. */
+     public static final int MAX_NUMBER_OF_TOWERS = 25;
+
     // *********************************
     // ****** GAME MECHANICS ***********
     // *********************************

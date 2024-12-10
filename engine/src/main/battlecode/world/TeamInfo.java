@@ -18,6 +18,7 @@ public class TeamInfo {
     private int[] totalFlagsCaptured;
     private int[] totalFlagsPickedUp;
     private int[] totalPaintedSquares;
+    private int[] totalNumberOfTowers;
 
     private int[] oldMoneyCounts;
     private boolean[][] globalUpgrades;
@@ -36,6 +37,7 @@ public class TeamInfo {
         this.globalUpgradePoints = new int[2];
         this.totalFlagsPickedUp = new int[2];
         this.totalPaintedSquares = new int[2];
+        this.totalNumberOfTowers = new int[2];
     }
 
     // *********************************
@@ -75,12 +77,35 @@ public class TeamInfo {
     }
 
     /**
+     * Get the total number of towers belonging to a team
+     * @param team the team to query
+     * @return the number of towers the team has
+     */
+
+     public int getTotalNumberOfTowers(Team team) {
+        return this.totalNumberOfTowers[team.ordinal()];
+    }
+
+    /**
      * Change the total number of squares painted by the team over the game
      * @param team the team to query
      */
 
      public void addPaintedSquares(int num, Team team) {
         this.totalPaintedSquares[team.ordinal()] += num;
+        int areaWithoutWalls = this.gameWorld.getAreaWithoutWalls();
+        if (this.totalPaintedSquares[team.ordinal()] / (double) areaWithoutWalls * 100 >= GameConstants.PAINT_PERCENT_TO_WIN) {
+            checkWin(team);
+        }
+    }    
+
+    /**
+     * Change the total number of towers belonging to a team
+     * @param team the team to query
+     */
+
+     public void addTowers(int num, Team team) {
+        this.totalNumberOfTowers[team.ordinal()] += num;
     }    
     
     /**
@@ -142,8 +167,8 @@ public class TeamInfo {
     }
 
     private void checkWin(Team team) {
-        int totalSquares = this.gameWorld.getGameMap().getHeight() * this.gameWorld.getGameMap().getWidth();
-        if (this.totalPaintedSquares[team.ordinal()] / (double) totalSquares * 100 < GameConstants.PAINT_PERCENT_TO_WIN) {
+        int areaWithoutWalls = this.gameWorld.getAreaWithoutWalls();
+        if (this.totalPaintedSquares[team.ordinal()] / (double) areaWithoutWalls * 100 < GameConstants.PAINT_PERCENT_TO_WIN) {
             throw new InternalError("Reporting incorrect win");
         }
         this.gameWorld.gameStats.setWinner(team);
