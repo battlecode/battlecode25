@@ -77,16 +77,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
 
-        int territory = gw.teamFromPaint(gw.getPaint(loc)).ordinal();
-        Team territoryTeam = null;
-        if (territory == 0)
-            territoryTeam = Team.NEUTRAL;
-        else
-            territoryTeam = territory == 1 ? Team.A : Team.B;
-
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getDam(loc),
-                gw.getSpawnZone(loc), gw.getWater(loc), gw.getBreadAmount(loc), type, territoryTeam);
-
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
         return currentLocInfo;
     }
 
