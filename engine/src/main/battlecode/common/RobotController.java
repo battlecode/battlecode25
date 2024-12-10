@@ -385,15 +385,6 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Checks whether a robot is spawned.
-     * 
-     * @return whether or no a specific robot instance is spawned.
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isSpawned();
-
-    /**
      * Tests whether the robot can act.
      * 
      * @return true if the robot can act

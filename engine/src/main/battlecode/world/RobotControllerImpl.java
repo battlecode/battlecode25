@@ -76,7 +76,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
+        //TODO: fix once max's marking pr gets merged
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), 0, gw.hasRuin(loc));//gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
         return currentLocInfo;
     }
 
@@ -147,7 +148,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanSenseLocation(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        assertIsSpawned();
         if (!this.gameWorld.getGameMap().onTheMap(loc))
             throw new GameActionException(CANT_SENSE_THAT,
                     "Target location is not on the map");
@@ -158,7 +158,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanActLocation(MapLocation loc, int maxRadius) throws GameActionException {
         assertNotNull(loc);
-        assertIsSpawned();
         if (getLocation().distanceSquaredTo(loc) > maxRadius)
             throw new GameActionException(OUT_OF_RANGE,
                     "Target location not within action range");
@@ -243,7 +242,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException {
         assertNotNull(center);
-        assertIsSpawned();
         assertRadiusNonNegative(radiusSquared);
         int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
                 : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
@@ -273,7 +271,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public MapLocation[] senseNearbyRuins(int radiusSquared) throws GameActionException {
         assertRadiusNonNegative(radiusSquared);
-        assertIsSpawned();
         int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
                 : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
         return this.gameWorld.getAllRuinsWithinRadiusSquared(getLocation(), actualRadiusSquared);
@@ -310,7 +307,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // @Override
     // public MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException {
     //     assertNotNull(center);
-    //     assertIsSpawned();
     //     assertRadiusNonNegative(radiusSquared);
     //     int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
     //             : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
@@ -349,27 +345,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** READINESS METHODS **********
     // ***********************************
 
-    //TODO: get rid of this assert
-    private void assertIsSpawned() throws GameActionException {
-        // if (!this.robot.isSpawned()) {
-        //     throw new GameActionException(IS_NOT_READY,
-        //             "This robot is not spawned in.");
-        // }
-        return;
-    }
-
-    @Override
-    public boolean isSpawned() {
-        try {
-            assertIsSpawned();
-            return true;
-        } catch (GameActionException e) {
-            return false;
-        }
-    }
-
     private void assertIsActionReady() throws GameActionException {
-        assertIsSpawned();
         if (!this.robot.canActCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's action cooldown has not expired.");
@@ -391,7 +367,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void assertIsMovementReady() throws GameActionException {
-        assertIsSpawned();
         if (!this.robot.canMoveCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's movement cooldown has not expired.");
@@ -419,7 +394,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMove(Direction dir) throws GameActionException {
         assertNotNull(dir);
         assertIsMovementReady();
-        assertIsSpawned();
         MapLocation loc = adjacentLocation(dir);
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
@@ -446,7 +420,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void move(Direction dir) throws GameActionException {
         assertCanMove(dir);
         MapLocation nextLoc = adjacentLocation(dir);
-        Team[] allSpawnZones = { null, Team.A, Team.B };
         this.robot.setLocation(nextLoc);
         this.robot.addMovementCooldownTurns();
 

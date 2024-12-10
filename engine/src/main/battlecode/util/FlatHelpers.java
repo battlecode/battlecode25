@@ -38,9 +38,6 @@ public class FlatHelpers {
                 return UnitType.SPLASHER;
             case 6:
                 return UnitType.MOPPER;
-            //TODO: fix
-            case 0:
-                return UnitType.LEVEL_ONE_PAINT_TOWER;
             default:
                 throw new RuntimeException("No unit type for " + b);
         }
@@ -77,32 +74,6 @@ public class FlatHelpers {
         }
     }
 
-    // public static byte getTrapActionFromTrapType(TrapType type) {
-    //     switch (type) {
-    //         case EXPLOSIVE:
-    //             return Action.EXPLOSIVE_TRAP;
-    //         case WATER:
-    //             return Action.WATER_TRAP;
-    //         case STUN:
-    //             return Action.STUN_TRAP;
-    //         default:
-    //             throw new RuntimeException("No action type for " + type);
-    //     }
-    // }
-
-    // public static byte getBuildActionFromTrapType(TrapType type) {
-    //     switch (type) {
-    //         case EXPLOSIVE:
-    //             return BuildActionType.EXPLOSIVE_TRAP;
-    //         case WATER:
-    //             return BuildActionType.WATER_TRAP;
-    //         case STUN:
-    //             return BuildActionType.STUN_TRAP;
-    //         default:
-    //             throw new RuntimeException("No build action type for " + type);
-    //     }
-    // }
-
     public static byte getWinTypeFromDominationFactor(DominationFactor factor) {
         switch (factor) {
             case PAINT_ENOUGH_AREA:
@@ -125,16 +96,6 @@ public class FlatHelpers {
                 return Byte.MIN_VALUE;
         }
     }
-
-    // public static byte getGlobalUpgradeTypeFromGlobalUpgrade(GlobalUpgrade gu) {
-    //     if (gu == GlobalUpgrade.ATTACK || gu == GlobalUpgrade.ACTION)
-    //         return GlobalUpgradeType.ACTION_UPGRADE;
-    //     if (gu == GlobalUpgrade.HEALING)
-    //         return GlobalUpgradeType.HEALING_UPGRADE;
-    //     if (gu == GlobalUpgrade.CAPTURING)
-    //         return GlobalUpgradeType.CAPTURING_UPGRADE;
-    //     return Byte.MIN_VALUE;
-    // }
 
     /**
      * DO NOT CALL THIS WITH OFFSETS!
