@@ -19,26 +19,33 @@ import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Indicate that this robot was spawned on this turn
+ */
 @SuppressWarnings("unused")
-public final class GameplayConstants extends Table {
-  public static void ValidateVersion() { Constants.FLATBUFFERS_23_5_26(); }
-  public static GameplayConstants getRootAsGameplayConstants(ByteBuffer _bb) { return getRootAsGameplayConstants(_bb, new GameplayConstants()); }
-  public static GameplayConstants getRootAsGameplayConstants(ByteBuffer _bb, GameplayConstants obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
+public final class SpawnAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public GameplayConstants __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public SpawnAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  public int x() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int y() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
+  public byte team() { return bb.get(bb_pos + 4); }
+  public byte robotType() { return bb.get(bb_pos + 5); }
 
-  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(0); }
-  public static int endGameplayConstants(FlatBufferBuilder builder) {
-    int o = builder.endTable();
-    return o;
+  public static int createSpawnAction(FlatBufferBuilder builder, int x, int y, byte team, byte robotType) {
+    builder.prep(2, 6);
+    builder.putByte(robotType);
+    builder.putByte(team);
+    builder.putShort((short) y);
+    builder.putShort((short) x);
+    return builder.offset();
   }
 
   public static final class Vector extends BaseVector {
     public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
 
-    public GameplayConstants get(int j) { return get(new GameplayConstants(), j); }
-    public GameplayConstants get(GameplayConstants obj, int j) {  return obj.__assign(__indirect(__element(j), bb), bb); }
+    public SpawnAction get(int j) { return get(new SpawnAction(), j); }
+    public SpawnAction get(SpawnAction obj, int j) {  return obj.__assign(__element(j), bb); }
   }
 }
 
