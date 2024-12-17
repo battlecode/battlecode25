@@ -102,13 +102,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     //old DieException
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
-            const target = round.bodies.getById(this.actionData.id());
+            const target = round.bodies.getById(this.actionData.id())
             if (!target) {
-                throw new Error(`Target ${this.actionData.id()} not found for damage action`);
+                throw new Error(`Target ${this.actionData.id()} not found for damage action`)
             }
-    
+
             // Apply damage to the target
-            target.hp -= this.actionData.damage();
+            target.hp -= this.actionData.damage()
         }
     },
     [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
@@ -264,8 +264,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
             // This assumes ids are never reused
-            assert(!round.bodies.hasId(this.robotId), 'Spawned robot already exists')
-
             round.bodies.spawnBody(this.robotId, this.actionData)
         }
     },
