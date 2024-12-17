@@ -37,7 +37,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
-    private int spawnCooldownTurns;
 
     private Queue<Message> incomingMessages;
     private boolean towerHasSingleAttacked;
@@ -70,7 +69,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.location = loc;
         this.diedLocation = null;
-        this.health = GameConstants.DEFAULT_HEALTH;
+        this.health = type.health;
         this.incomingMessages = new LinkedList<>();
         this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
 
@@ -82,9 +81,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.roundsAlive = 0;
         this.hasSentSpawnAction = skipSpawnAction;
-        this.actionCooldownTurns = GameConstants.COOLDOWN_LIMIT;
+        this.actionCooldownTurns = type.actionCooldown;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
-        this.spawnCooldownTurns = 0;
 
         this.indicatorString = "";
 
@@ -187,13 +185,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // **********************************
     // ****** CHECK METHODS *************
     // **********************************
-
-    /**
-     * Returns whether the robot can spawn, based on cooldowns.
-     */
-    public boolean canSpawnCooldown() {
-        return this.spawnCooldownTurns < GameConstants.COOLDOWN_LIMIT;
-    }
 
     /**
      * Returns whether the robot can perform actions, based on cooldowns.
@@ -314,7 +305,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      */
     public void addHealth(int healthAmount) {
         this.health += healthAmount;
-        this.health = Math.min(this.health, GameConstants.DEFAULT_HEALTH);
+        this.health = Math.min(this.health, this.type.health);
         if (this.health <= 0) {
             this.gameWorld.destroyRobot(this.ID);
         }
@@ -576,7 +567,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
         this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.spawnCooldownTurns = Math.max(0, this.spawnCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
         if (!this.hasSentSpawnAction){

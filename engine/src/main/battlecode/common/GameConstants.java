@@ -55,9 +55,6 @@ public class GameConstants {
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
 
-    /** Health each robot starts with */
-    public static final int DEFAULT_HEALTH = 1000;
-
     /** Paint penalty for moving into enemy territory */
     public static final int PENALTY_ENEMY_TERRITORY = 2;
 
