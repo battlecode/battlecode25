@@ -19,7 +19,7 @@ export declare class GameMap {
     wallsArray(): Int8Array | null;
     paint(index: number): number | null;
     paintLength(): number;
-    paintArray(): Int32Array | null;
+    paintArray(): Int8Array | null;
     ruins(obj?: VecTable): VecTable | null;
     paintPatterns(index: number): number | null;
     paintPatternsLength(): number;
@@ -34,7 +34,7 @@ export declare class GameMap {
     static createWallsVector(builder: flatbuffers.Builder, data: boolean[]): flatbuffers.Offset;
     static startWallsVector(builder: flatbuffers.Builder, numElems: number): void;
     static addPaint(builder: flatbuffers.Builder, paintOffset: flatbuffers.Offset): void;
-    static createPaintVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
+    static createPaintVector(builder: flatbuffers.Builder, data: number[] | Int8Array): flatbuffers.Offset;
     /**
      * @deprecated This Uint8Array overload will be removed in the future.
      */

@@ -59,6 +59,7 @@ struct DamageAction {
 /// Visually indicate a tile has been painted
 struct PaintAction {
     loc: ushort;
+    isSecondary: byte;
 }
 
 /// Visually indicate a tile's paint has been removed
@@ -105,6 +106,16 @@ struct UpgradeAction {
     id: ushort;
 }
 
+/// Indicates that the robot died due to an uncaught exception
+struct DieExceptionAction {
+    value: byte; //size 0 structs not allowed
+}
+
+/// Adds a marker to the timeline at the current round
+table TimelineMarkerAction{
+    label: string;
+}
+
 /// Update the indicator string for this robot
 table IndicatorStringAction {
     value: string;
@@ -134,6 +145,8 @@ union Action {
     MessageAction,
     SpawnAction,
     UpgradeAction,
+    DieExceptionAction, 
+    TimelineMarkerAction,
     IndicatorStringAction,
     IndicatorDotAction,
     IndicatorLineAction
@@ -152,7 +165,7 @@ table GameMap {
     initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
-    paint: [int];
+    paint: [byte];
     ruins: VecTable;
     paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
 }
