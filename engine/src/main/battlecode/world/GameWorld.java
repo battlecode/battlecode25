@@ -63,12 +63,6 @@ public strictfp class GameWorld {
         int height = gm.getHeight();
         int numSquares = width * height;
         int numWalls = 0;
-        for (boolean wall : walls){
-            if (wall) {
-                numWalls += 1;
-            }
-        }
-        this.areaWithoutWalls = numSquares - numWalls;
         this.walls = gm.getWallArray();
         this.robots = new InternalRobot[width][height]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
@@ -77,6 +71,13 @@ public strictfp class GameWorld {
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
         this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
+
+        for (boolean wall : walls){
+            if (wall) {
+                numWalls += 1;
+            }
+        }
+        this.areaWithoutWalls = numSquares - numWalls;
 
         this.profilerCollections = new HashMap<>();
 
