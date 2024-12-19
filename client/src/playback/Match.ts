@@ -18,10 +18,10 @@ export default class Match {
     private readonly snapshots: Round[]
     public readonly stats: RoundStat[]
     private currentSimulationStep: number = 0
+    private readonly deltas: schema.Round[]
+    public maxRound: number = 0
     constructor(
         public readonly game: Game,
-        private readonly deltas: schema.Round[],
-        public maxRound: number,
         public winner: Team | null,
         public winType: schema.WinType | null,
         public readonly map: StaticMap,
@@ -32,6 +32,7 @@ export default class Match {
         this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
         this.snapshots = [this.currentRound.copy()]
         this.stats = []
+        this.deltas = []
     }
 
     get constants(): schema.GameplayConstants {
@@ -42,7 +43,7 @@ export default class Match {
      * Creates a blank match for use in the map editor.
      */
     public static createBlank(game: Game, bodies: Bodies, map: StaticMap): Match {
-        return new Match(game, [], 0, game.teams[0], null, map, bodies)
+        return new Match(game, game.teams[0], null, map, bodies)
     }
 
     /**
@@ -52,33 +53,16 @@ export default class Match {
         const map = StaticMap.fromSchema(schemaMap)
         const mapBodies = schemaMap.initialBodies()
         const bodies = new Bodies(game, mapBodies ?? undefined)
-        return new Match(game, [], 0, game.teams[0], null, map, bodies)
+        return new Match(game, game.teams[0], null, map, bodies)
     }
 
-    public static fromSchema(
-        game: Game,
-        header: schema.MatchHeader,
-        rounds: schema.Round[],
-        footer?: schema.MatchFooter
-    ) {
+    public static fromSchema(game: Game, header: schema.MatchHeader) {
         const mapData = header.map() ?? assert.fail('Map data not found in header')
         const map = StaticMap.fromSchema(mapData)
 
         const initialBodies = new Bodies(game, mapData.initialBodies() ?? undefined)
 
-        // header.maxRounds() is always 2000
-
-        const deltas = rounds
-        deltas.forEach((delta, i) =>
-            assert(delta.roundId() === i + 1, `Wrong round ID: is ${delta.roundId()}, should be ${i}`)
-        )
-
-        const maxRound = deltas.length
-
-        const match = new Match(game, deltas, maxRound, null, null, map, initialBodies)
-        if (footer) {
-            match.addMatchFooter(footer)
-        }
+        const match = new Match(game, null, null, map, initialBodies)
 
         return match
     }
@@ -87,6 +71,13 @@ export default class Match {
      * Add a new round to the match. Used for live match replaying.
      */
     public addNewRound(round: schema.Round): void {
+        // Update the 0th round with round 1 positions for interpolation.
+        // For all other rounds, the next positions are updated in the applyDelta method.
+        if (this.deltas.length === 0) {
+            this.currentRound.updateNextPositions(round)
+            // Since we changed the 0th round, we need to update the snapshot of it
+            this.snapshots[0] = this.currentRound.copy()
+        }
         this.deltas.push(round)
         this.maxRound++
     }

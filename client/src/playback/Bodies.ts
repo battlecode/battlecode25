@@ -108,6 +108,8 @@ export default class Bodies {
         body.moveCooldown = turn.moveCooldown()
         body.actionCooldown = turn.actionCooldown()
         body.bytecodesUsed = turn.bytecodesUsed()
+
+        body.addToPrevSquares()
     }
 
     getById(id: number): Body {

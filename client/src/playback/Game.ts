@@ -96,7 +96,7 @@ export default class Game {
             }
             case schema.Event.MatchHeader: {
                 const header = event.e(new schema.MatchHeader()) as schema.MatchHeader
-                this.matches.push(Match.fromSchema(this, header, []))
+                this.matches.push(Match.fromSchema(this, header))
                 this.currentMatch = this.matches[this.matches.length - 1]
                 return
             }
