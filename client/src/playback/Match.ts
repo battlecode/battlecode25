@@ -68,7 +68,7 @@ export default class Match {
     }
 
     /*
-     * Add a new round to the match. Used for live match replaying.
+     * Add a new round to the match.
      */
     public addNewRound(round: schema.Round): void {
         // Update the 0th round with round 1 positions for interpolation.
@@ -83,7 +83,7 @@ export default class Match {
     }
 
     /*
-     * Add the match footer to the match. Used for live match replaying.
+     * Add the match footer to the match.
      */
     public addMatchFooter(footer: schema.MatchFooter): void {
         this.winner = this.game.teams[footer.winner() - 1]

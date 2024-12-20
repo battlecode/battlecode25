@@ -87,7 +87,7 @@ export default class Game {
     }
 
     /*
-     * Adds a new game event to the game. Used for live match replaying.
+     * Adds a new game event to the game.
      */
     public addEvent(event: schema.EventWrapper): void {
         switch (event.eType()) {
