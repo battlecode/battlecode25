@@ -78,7 +78,17 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
     React.useEffect(() => {
         GameRenderer.addCanvasesToDOM(divRef.current)
     }, [])
-    return <div ref={divRef}>{children}</div>
+    return (
+        <div
+            ref={divRef}
+            onClick={(e) => {
+                // Dont clear the GameRenderer selection
+                e.stopPropagation()
+            }}
+        >
+            {children}
+        </div>
+    )
 }
 
 const ZoomableGameRenderer: React.FC<{
@@ -117,7 +127,7 @@ const ZoomableGameRenderer: React.FC<{
     React.useEffect(resetCamera, [match])
 
     return (
-        <>
+        <div onClick={() => GameRenderer.clearSelected()}>
             <Space
                 ref={spaceRef}
                 onUpdated={(vp) => {
@@ -138,11 +148,18 @@ const ZoomableGameRenderer: React.FC<{
                 </GameRendererCanvases>
             </Space>
             {canResetCamera && (
-                <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-50 fill-white" onClick={resetCamera}>
+                <button
+                    className="absolute top-0 z-10 right-0 m-2 p-2 opacity-50 fill-white"
+                    onClick={(e) => {
+                        resetCamera()
+                        // Dont clear the GameRenderer selection
+                        if (e) e.stopPropagation()
+                    }}
+                >
                     <ResetZoomIcon />
                 </button>
             )}
-        </>
+        </div>
     )
 })
 
