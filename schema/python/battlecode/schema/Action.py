@@ -15,7 +15,6 @@ class Action(object):
     SpawnAction = 9
     UpgradeAction = 10
     DieExceptionAction = 11
-    TimelineMarkerAction = 12
-    IndicatorStringAction = 13
-    IndicatorDotAction = 14
-    IndicatorLineAction = 15
+    IndicatorStringAction = 12
+    IndicatorDotAction = 13
+    IndicatorLineAction = 14

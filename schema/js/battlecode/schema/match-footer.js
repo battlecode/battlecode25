@@ -5,6 +5,7 @@ exports.MatchFooter = void 0;
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 var flatbuffers = require("flatbuffers");
 var profiler_file_1 = require("../../battlecode/schema/profiler-file");
+var timeline_marker_1 = require("../../battlecode/schema/timeline-marker");
 var win_type_1 = require("../../battlecode/schema/win-type");
 /**
  * Sent to end a match.
@@ -48,18 +49,29 @@ var MatchFooter = /** @class */ (function () {
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
     /**
-     * Profiler data for team A and B if profiling is enabled.
+     * Markers for this match.
      */
-    MatchFooter.prototype.profilerFiles = function (index, obj) {
+    MatchFooter.prototype.timelineMarkers = function (index, obj) {
         var offset = this.bb.__offset(this.bb_pos, 10);
-        return offset ? (obj || new profiler_file_1.ProfilerFile()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+        return offset ? (obj || new timeline_marker_1.TimelineMarker()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
     };
-    MatchFooter.prototype.profilerFilesLength = function () {
+    MatchFooter.prototype.timelineMarkersLength = function () {
         var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
+    /**
+     * Profiler data for team A and B if profiling is enabled.
+     */
+    MatchFooter.prototype.profilerFiles = function (index, obj) {
+        var offset = this.bb.__offset(this.bb_pos, 12);
+        return offset ? (obj || new profiler_file_1.ProfilerFile()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+    };
+    MatchFooter.prototype.profilerFilesLength = function () {
+        var offset = this.bb.__offset(this.bb_pos, 12);
+        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+    };
     MatchFooter.startMatchFooter = function (builder) {
-        builder.startObject(4);
+        builder.startObject(5);
     };
     MatchFooter.addWinner = function (builder, winner) {
         builder.addFieldInt8(0, winner, 0);
@@ -70,8 +82,21 @@ var MatchFooter = /** @class */ (function () {
     MatchFooter.addTotalRounds = function (builder, totalRounds) {
         builder.addFieldInt32(2, totalRounds, 0);
     };
+    MatchFooter.addTimelineMarkers = function (builder, timelineMarkersOffset) {
+        builder.addFieldOffset(3, timelineMarkersOffset, 0);
+    };
+    MatchFooter.createTimelineMarkersVector = function (builder, data) {
+        builder.startVector(4, data.length, 4);
+        for (var i = data.length - 1; i >= 0; i--) {
+            builder.addOffset(data[i]);
+        }
+        return builder.endVector();
+    };
+    MatchFooter.startTimelineMarkersVector = function (builder, numElems) {
+        builder.startVector(4, numElems, 4);
+    };
     MatchFooter.addProfilerFiles = function (builder, profilerFilesOffset) {
-        builder.addFieldOffset(3, profilerFilesOffset, 0);
+        builder.addFieldOffset(4, profilerFilesOffset, 0);
     };
     MatchFooter.createProfilerFilesVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
@@ -87,11 +112,12 @@ var MatchFooter = /** @class */ (function () {
         var offset = builder.endObject();
         return offset;
     };
-    MatchFooter.createMatchFooter = function (builder, winner, winType, totalRounds, profilerFilesOffset) {
+    MatchFooter.createMatchFooter = function (builder, winner, winType, totalRounds, timelineMarkersOffset, profilerFilesOffset) {
         MatchFooter.startMatchFooter(builder);
         MatchFooter.addWinner(builder, winner);
         MatchFooter.addWinType(builder, winType);
         MatchFooter.addTotalRounds(builder, totalRounds);
+        MatchFooter.addTimelineMarkers(builder, timelineMarkersOffset);
         MatchFooter.addProfilerFiles(builder, profilerFilesOffset);
         return MatchFooter.endMatchFooter(builder);
     };

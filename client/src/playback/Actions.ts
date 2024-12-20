@@ -312,12 +312,5 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 color: renderUtils.colorToHexString(this.actionData.colorHex())
             })
         }
-    },
-    [schema.Action.TimelineMarkerAction]: class TimelineMarkerAction extends Action<schema.TimelineMarkerAction> {
-        apply(round: Round): void {
-            const body = round.bodies.getById(this.robotId)
-            const string = this.actionData.label!
-            //body.indicatorString = string
-        }
     }
 }
