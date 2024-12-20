@@ -377,15 +377,7 @@ export class StaticMap {
 
                     const imgPath = `ruins/silver_64x64.png`
                     const ruinImage = getImageIfLoaded(imgPath)
-
-                    if (ruinImage) {
-                        renderUtils.renderCenteredImageOrLoadingIndicator(
-                            ctx,
-                            ruinImage,
-                            { x: coords.x, y: coords.y }, // Centered at the ruin
-                            1.0
-                        )
-                    }
+                    renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
                 })
 
                 // Draw grid
