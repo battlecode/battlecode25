@@ -37,23 +37,12 @@ export default class Bodies {
             body.indicatorDots = []
             body.indicatorLines = []
             body.indicatorString = ''
+            body.lastPos = body.pos
 
             // Remove if dead
             if (body.dead) {
                 this.bodies.delete(body.id) // safe
             }
-        }
-    }
-
-    updateNextPositions(nextDelta: schema.Round) {
-        for (let i = 0; i < nextDelta.turnsLength(); i++) {
-            const turn = nextDelta.turns(i)!
-            const body = this.bodies.get(turn.robotId())
-
-            // Body can be null here since they may have not been spawned for the next turn
-            if (!body) return
-
-            body.moveTo({ x: turn.x(), y: turn.y() })
         }
     }
 
@@ -107,7 +96,7 @@ export default class Bodies {
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
-    applyTurn(round: Round, turn: schema.Turn): void {
+    applyTurnDelta(round: Round, turn: schema.Turn): void {
         const body = this.getById(turn.robotId())
 
         // Update properties
@@ -225,7 +214,7 @@ export class Body {
     public robotType: schema.RobotType = schema.RobotType.NONE
     protected imgPath: string = ''
     protected size: number = 1
-    public nextPos: Vector
+    public lastPos: Vector
     private prevSquares: Vector[]
     public indicatorDots: { location: Vector; color: string }[] = []
     public indicatorLines: { start: Vector; end: Vector; color: string }[] = []
@@ -246,7 +235,7 @@ export class Body {
         // upgradeLevel
         // moneyLevel (for money towers)
     ) {
-        this.nextPos = this.pos
+        this.lastPos = this.pos
         this.prevSquares = [this.pos]
     }
 
@@ -467,7 +456,7 @@ export class Body {
     }
 
     public getInterpolatedCoords(match: Match): Vector {
-        return renderUtils.getInterpolatedCoords(this.pos, this.nextPos, match.getInterpolationFactor())
+        return renderUtils.getInterpolatedCoords(this.lastPos, this.pos, match.getInterpolationFactor())
     }
 
     public onHoverInfo(): string[] {
@@ -494,17 +483,6 @@ export class Body {
         const newBody = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
         newBody.prevSquares = [...this.prevSquares]
         return newBody
-    }
-
-    public moveTo(pos: Vector): void {
-        this.pos = this.nextPos
-        this.nextPos = pos
-    }
-
-    public resetPos(pos: Vector): void {
-        this.pos = pos
-        this.nextPos = pos
-        this.prevSquares = [pos]
     }
 
     public addToPrevSquares(): void {

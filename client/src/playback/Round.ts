@@ -5,14 +5,18 @@ import { Team } from './Game'
 import { CurrentMap } from './Map'
 import Match from './Match'
 import RoundStat from './RoundStat'
+import assert from 'assert'
 
 export default class Round {
+    public nextTurnIndex: number = 0
+    private initialRoundState: Round | null = null
     constructor(
         public readonly match: Match,
         public roundNumber: number = 0,
         public map: CurrentMap,
         public bodies: Bodies,
-        public actions: Actions
+        public actions: Actions,
+        private currentDelta: schema.Round | null = null
     ) {}
 
     get teams(): Team[] {
@@ -27,46 +31,79 @@ export default class Round {
         return newStat
     }
 
-    /**
-     * Mutates this round to reflect the given delta.
-     */
-    public applyDelta(delta: schema.Round, nextDelta: schema.Round | null): void {
-        this.roundNumber += 1
-
-        // Prepare the bodies to receive the set of turn deltas
-        this.bodies.prepareForNextRound()
-
-        // Apply the round delta to the map
-        this.map.applyDelta(delta)
-
-        // Apply all robot turns in order
-        for (let i = 0; i < delta.turnsLength(); i++) {
-            const turn = delta.turns(i)!
-
-            // Need to apply actions before bodies because of spawn action
-            this.actions.applyTurn(this, turn)
-            this.bodies.applyTurn(this, turn)
-        }
-
-        // Update robot next positions for interpolation based on the next delta
-        if (nextDelta) {
-            this.updateNextPositions(nextDelta)
-        }
-
-        // Flag all died robots as so
-        // TODO: revisit?
-        this.bodies.processDiedIds(delta)
-
-        // Update any statistics for this round
-        this.stat.applyDelta(this, delta)
+    get turnsLength(): number {
+        return this.currentDelta?.turnsLength() ?? 0
     }
 
-    public updateNextPositions(nextDelta: schema.Round): void {
-        this.bodies.updateNextPositions(nextDelta)
+    /**
+     * Mutates the round to start applying a new round.
+     * If delta is null, this is the final round of the game, since the final round
+     * is only used to show the state of the game after the previous round ended and does not have a delta.
+     */
+    public startApplyNewRound(delta: schema.Round | null): void {
+        assert(
+            this.nextTurnIndex === this.turnsLength,
+            `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
+        )
+
+        // finish the previous round if it exists
+        if (this.currentDelta) {
+            this.bodies.processDiedIds(this.currentDelta)
+            this.stat.applyRoundDelta(this, this.currentDelta)
+        }
+
+        this.roundNumber += 1
+        this.bodies.prepareForNextRound()
+        this.actions.prepareForNextRound()
+        this.initialRoundState = null
+        this.nextTurnIndex = 0
+        this.currentDelta = delta
+    }
+
+    /**
+     *  Jumps to a specific turn in the round.
+     */
+    public jumpToTurn(turnNumber: number): void {
+        if (!this.currentDelta) return // Final round does not have a delta, so there is nothing to jump to
+        if (turnNumber < this.nextTurnIndex) {
+            assert(this.initialRoundState, 'Cannot reset to start of a round without initial bodies')
+            this.bodies = this.initialRoundState.bodies.copy()
+            this.actions = this.initialRoundState.actions.copy()
+            this.map = this.initialRoundState.map.copy()
+            this.nextTurnIndex = 0
+        }
+        while (this.nextTurnIndex < turnNumber) {
+            this.stepTurn()
+        }
+    }
+
+    private stepTurn(): void {
+        assert(this.nextTurnIndex < this.turnsLength, 'Cannot step a round that is at the end')
+
+        const turn = this.currentDelta!.turns(this.nextTurnIndex)
+        assert(turn, 'Turn not found to step to')
+
+        if (!this.initialRoundState) {
+            // Store the initial round state for resetting only after stepping, that way snapshots dont need to store it, halving memory usage
+            assert(this.nextTurnIndex === 0, 'Initial round state should only be set at turn 0')
+            this.initialRoundState = this.copy()
+        }
+
+        this.map.applyTurnDelta(turn)
+        this.actions.applyTurnDelta(this, turn)
+        this.bodies.applyTurnDelta(this, turn)
+        this.nextTurnIndex += 1
     }
 
     public copy(): Round {
-        return new Round(this.match, this.roundNumber, this.map.copy(), this.bodies.copy(), this.actions.copy())
+        return new Round(
+            this.match,
+            this.roundNumber,
+            this.map.copy(),
+            this.bodies.copy(),
+            this.actions.copy(),
+            this.currentDelta // snapshots store the delta for their round, since they are stored at turn 0 and need to be able to apply their turns
+        )
     }
 
     public isStart() {

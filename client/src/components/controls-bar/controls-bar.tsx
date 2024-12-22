@@ -39,7 +39,7 @@ export const ControlsBar: React.FC = () => {
         }
         applyArrows()
 
-        if (keyboard.keyCode === 'Comma') gameRunner.jumpToRound(0)
+        if (keyboard.keyCode === 'Comma') gameRunner.jumpToStart()
         if (keyboard.keyCode === 'Period') gameRunner.jumpToEnd()
 
         const initalDelay = 250
@@ -132,7 +132,7 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
                     tooltip="Jump To Start"
-                    onClick={() => gameRunner.jumpToRound(0)}
+                    onClick={() => gameRunner.jumpToStart()}
                     disabled={atStart}
                 />
                 <ControlsBarButton

@@ -48,9 +48,7 @@ class gameRunnerClass {
             }
 
             if (prevRound != this.match.currentRound.roundNumber) {
-                this.currentUPSBuffer.push(Date.now())
-                while (this.currentUPSBuffer.length > 0 && this.currentUPSBuffer[0] < Date.now() - 1000)
-                    this.currentUPSBuffer.shift()
+                this.addNowToUPSBuffer()
             }
 
             if (this.match.currentRound.isEnd() && this.targetUPS > 0) {
@@ -59,6 +57,12 @@ class gameRunnerClass {
                 this.setPaused(true)
             }
         }, SIMULATION_UPDATE_INTERVAL_MS)
+    }
+
+    private addNowToUPSBuffer(): void {
+        this.currentUPSBuffer.push(Date.now())
+        while (this.currentUPSBuffer.length > 0 && this.currentUPSBuffer[0] < Date.now() - 1000)
+            this.currentUPSBuffer.shift()
     }
 
     private stopEventLoop(): void {
@@ -98,7 +102,7 @@ class gameRunnerClass {
         if (match) {
             match.game.currentMatch = match
             this.setGame(match.game)
-            match._jumpToRound(0)
+            match._jumpToStart()
             match._roundSimulation()
             GameRenderer.render()
         }
@@ -135,6 +139,15 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToRound(round)
+        this.match._roundSimulation()
+        GameRenderer.render()
+        this._trigger(this._roundListeners)
+    }
+
+    jumpToStart() {
+        if (!this.match) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._jumpToStart()
         this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)

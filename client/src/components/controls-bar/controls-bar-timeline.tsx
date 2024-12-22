@@ -33,13 +33,14 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     }
 
     const timelineLeave = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const EDGES_PADDING = 2
         if (down.current) {
             // if exiting from left or right, jump to min or max round
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
-            if (x <= 0) {
-                gameRunner.jumpToRound(0)
-            } else if (x >= rect.width) {
+            if (x <= EDGES_PADDING) {
+                gameRunner.jumpToStart()
+            } else if (x >= rect.width - EDGES_PADDING) {
                 gameRunner.jumpToEnd()
             }
         }
@@ -49,10 +50,10 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!match) return
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
-        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound)
-        gameRunner.jumpToRound(round)
+        gameRunner.jumpToRound(match.progressToRoundNumber(x / TIMELINE_WIDTH))
     }
 
     if (!match)

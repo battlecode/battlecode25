@@ -14,7 +14,6 @@ export default class WebSocketListener {
     pollEvery: number = 500
     activeGame: Game | null = null
     stream: boolean = false
-    lastSetRound: number = 0
     constructor(
         private shouldStream: boolean,
         readonly onGameCreated: (game: Game) => void,
@@ -30,7 +29,6 @@ export default class WebSocketListener {
 
     private reset() {
         this.activeGame = null
-        this.lastSetRound = 0
     }
 
     private poll() {
@@ -60,15 +58,11 @@ export default class WebSocketListener {
         if (match && match === gameRunner.match) {
             // Auto progress the round if the user hasn't done it themselves
             // We only want to do this if the currently selected match is the one being updated
-
-            if (match.maxRound > 0 && match.currentRound.roundNumber == this.lastSetRound) {
-                // Jump to the second to last round so that we ensure nextDelta always
-                // exists (fixes bug where snapshot rounds don't have nextDelta which
-                // causes a visual jump)
+            if (match.currentRound.roundNumber >= match.maxRound - 1) {
+                // Jump to second to last round because the last one is the "end" state and doesnt have an animation to play
                 gameRunner.jumpToRound(match.maxRound - 1)
-                this.lastSetRound = match.currentRound.roundNumber
             } else {
-                // Trigger match update so anyone accessing round/max round gets updated
+                // Trigger match update so anywhere accessing round/max round gets updated
                 gameRunner.setMatch(match)
             }
         }
@@ -107,7 +101,6 @@ export default class WebSocketListener {
 
                 const match = this.activeGame.matches[this.activeGame.matches.length - 1]
                 this.onMatchCreated(match)
-                this.lastSetRound = 0
 
                 break
             }

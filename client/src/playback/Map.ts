@@ -94,9 +94,9 @@ export class CurrentMap {
     }
 
     /**
-     * Mutates this currentMap to reflect the given delta.
+     * Mutates this currentMap to reflect the given turn.
      */
-    applyDelta(delta: schema.Round): void {}
+    applyTurnDelta(turn: schema.Turn): void {}
 
     draw(
         match: Match,
