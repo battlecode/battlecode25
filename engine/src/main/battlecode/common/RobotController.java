@@ -282,8 +282,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    //TODO: add map info stuff back
-    // MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
+    MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
 
     /**
      * Return map info for all senseable locations.
@@ -293,7 +292,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos();
+    MapInfo[] senseNearbyMapInfos();
 
     /**
      * Return map info for all senseable locations within a radius squared.
@@ -308,7 +307,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within vision radius of a center
@@ -321,7 +320,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within a radius squared of a
@@ -338,7 +337,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
 
     /**
      * Returns the location of all nearby ruins that are visible to the robot.

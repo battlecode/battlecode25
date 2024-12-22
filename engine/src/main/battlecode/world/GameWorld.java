@@ -472,12 +472,12 @@ public strictfp class GameWorld {
         }
     }
 
-    public void markTowerPattern(Team team, MapLocation loc, int rotationAngle, boolean reflect) {
-        markPattern(this.towerPattern, team, loc, rotationAngle, reflect);
+    public void markTowerPattern(UnitType type, Team team, MapLocation loc, int rotationAngle, boolean reflect) {
+        markPattern(this.getTowerPattern(type), team, loc, rotationAngle, reflect);
     }
 
     public void markResourcePattern(Team team, MapLocation loc, int rotationAngle, boolean reflect) {
-        markPattern(this.resourcePattern, team, loc, rotationAngle, reflect);
+        markPattern(this.getResourcePattern(), team, loc, rotationAngle, reflect);
     }
 
     public boolean hasTower(MapLocation loc) {
@@ -578,7 +578,6 @@ public strictfp class GameWorld {
     }
 
     private int towerTypeToPatternIndex(UnitType towerType){
-        //TODO: this whole index stuff should be cleaned up but I'm just trying to get to a functional state
         int index = DEFENSE_INDEX;
         if (towerType == UnitType.LEVEL_ONE_MONEY_TOWER) index = MONEY_INDEX;
         if (towerType == UnitType.LEVEL_ONE_PAINT_TOWER) index = PAINT_INDEX;

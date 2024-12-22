@@ -76,8 +76,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
-        //TODO: fix once max's marking pr gets merged
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), 0, gw.hasRuin(loc));//gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
         return currentLocInfo;
     }
 
@@ -276,52 +275,52 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getAllRuinsWithinRadiusSquared(getLocation(), actualRadiusSquared);
     }
 
-    // @Override
-    // public MapInfo senseMapInfo(MapLocation loc) throws GameActionException {
-    //     assertNotNull(loc);
-    //     assertCanSenseLocation(loc);
-    //     return getMapInfo(loc);
-    // }
+    @Override
+    public MapInfo senseMapInfo(MapLocation loc) throws GameActionException {
+        assertNotNull(loc);
+        assertCanSenseLocation(loc);
+        return getMapInfo(loc);
+    }
 
-    // @Override
-    // public MapInfo[] senseNearbyMapInfos() {
-    //     try {
-    //         return senseNearbyMapInfos(-1);
-    //     } catch (GameActionException e) {
-    //         return new MapInfo[0];
-    //     }
-    // }
+    @Override
+    public MapInfo[] senseNearbyMapInfos() {
+        try {
+            return senseNearbyMapInfos(-1);
+        } catch (GameActionException e) {
+            return new MapInfo[0];
+        }
+    }
 
-    // @Override
-    // public MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException {
-    //     assertRadiusNonNegative(radiusSquared);
-    //     return senseNearbyMapInfos(getLocation(), radiusSquared);
-    // }
+    @Override
+    public MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException {
+        assertRadiusNonNegative(radiusSquared);
+        return senseNearbyMapInfos(getLocation(), radiusSquared);
+    }
 
-    // @Override
-    // public MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException {
-    //     assertNotNull(center);
-    //     return senseNearbyMapInfos(center, -1);
-    // }
+    @Override
+    public MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException {
+        assertNotNull(center);
+        return senseNearbyMapInfos(center, -1);
+    }
 
-    // @Override
-    // public MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException {
-    //     assertNotNull(center);
-    //     assertRadiusNonNegative(radiusSquared);
-    //     int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
-    //             : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
-    //     MapLocation[] allSensedLocs = gameWorld.getAllLocationsWithinRadiusSquared(center, actualRadiusSquared);
-    //     List<MapInfo> validSensedMapInfo = new ArrayList<>();
-    //     for (MapLocation mapLoc : allSensedLocs) {
-    //         // Can't actually sense location
-    //         if (!canSenseLocation(mapLoc)) {
-    //             continue;
-    //         }
-    //         MapInfo mapInfo = getMapInfo(mapLoc);
-    //         validSensedMapInfo.add(mapInfo);
-    //     }
-    //     return validSensedMapInfo.toArray(new MapInfo[validSensedMapInfo.size()]);
-    // }
+    @Override
+    public MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException {
+        assertNotNull(center);
+        assertRadiusNonNegative(radiusSquared);
+        int actualRadiusSquared = radiusSquared == -1 ? GameConstants.VISION_RADIUS_SQUARED
+                : Math.min(radiusSquared, GameConstants.VISION_RADIUS_SQUARED);
+        MapLocation[] allSensedLocs = gameWorld.getAllLocationsWithinRadiusSquared(center, actualRadiusSquared);
+        List<MapInfo> validSensedMapInfo = new ArrayList<>();
+        for (MapLocation mapLoc : allSensedLocs) {
+            // Can't actually sense location
+            if (!canSenseLocation(mapLoc)) {
+                continue;
+            }
+            MapInfo mapInfo = getMapInfo(mapLoc);
+            validSensedMapInfo.add(mapInfo);
+        }
+        return validSensedMapInfo.toArray(new MapInfo[validSensedMapInfo.size()]);
+    }
 
     @Override
     public MapLocation adjacentLocation(Direction dir) {
