@@ -92,6 +92,9 @@ public class GameConstants {
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
 
+    /** The paint cost of marking a resource or tower pattern */
+    public static final int MARK_PATTERN_PAINT_COST = 25;
+
     /** The end of the setup rounds in the game */
     public static final int SETUP_ROUNDS = 200;
 
@@ -107,13 +110,21 @@ public class GameConstants {
     /** The maximum distance from a robot where information can be sensed */
     public static final int VISION_RADIUS_SQUARED = 20;
 
-    /**
-     * The maximum distance for transferring paint from/to an ally robot or tower
-     */
+    /** The maximum distance for marking a map location or removing a marker */
+    public static final int MARK_RADIUS_SQUARED = 2;
+
+    /** The maximum distance for transferring paint from/to an ally robot or tower */
     public static final int PAINT_TRANSFER_RADIUS_SQUARED = 2;
 
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
+
+    /** The maximum distance from a robot for building towers */
+    public static final int BUILD_TOWER_RADIUS_SQUARED = 2;
+
+    /** The maximum distance from a robot for completing special resource patterns */
+    // this is 8 so that the robot can complete the pattern anywhere on the 5x5 grid
+    public static final int RESOURCE_PATTERN_RADIUS_SQUARED = 8;
 
     /** The amount of paint depleted from enemy in a regular mopper attack */
     public static final int MOPPER_ATTACK_PAINT_DEPLETION = 10;
@@ -135,14 +146,14 @@ public class GameConstants {
     public static final int COOLDOWNS_PER_TURN = 10;
 
     /**
-     * The amount added to the movement cooldown counter when moving without a flag
+     * The amount added to the movement cooldown counter when moving
      */
-    public static final int MOVEMENT_COOLDOWN = 10;
+     public static final int MOVEMENT_COOLDOWN = 10;
 
     /**
      * The amount added to the action cooldown counter after a tower builds a robot
      */
-    public static final int BUILD_ROBOT_COOLDOWN = 10;
+     public static final int BUILD_ROBOT_COOLDOWN = 10;
 
     /** The amount added to the action cooldown counter after attacking (as a mopper for the swing attack) */
     public static final int ATTACK_MOPPER_SWING_COOLDOWN = 40;

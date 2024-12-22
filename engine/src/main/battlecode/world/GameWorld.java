@@ -31,6 +31,8 @@ public strictfp class GameWorld {
 
     private boolean[] walls;
     private boolean[] water;
+    private int[] markersA;
+    private int[] markersB;
     private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
@@ -69,13 +71,15 @@ public strictfp class GameWorld {
         }
         this.areaWithoutWalls = numSquares - numWalls;
         this.walls = gm.getWallArray();
+        this.markersA = new int[numSquares];
+        this.markersB = new int[numSquares];
         this.robots = new InternalRobot[width][height]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
         this.idGenerator = new IDGenerator(gm.getSeed());
         this.gameStats = new GameStats();
         this.gameMap = gm;
         this.objectInfo = new ObjectInfo(gm);
-        this.colorLocations = new int[gameMap.getWidth() * gameMap.getHeight()];
+        this.colorLocations = new int[numSquares];
 
         this.profilerCollections = new HashMap<>();
 
@@ -260,10 +264,10 @@ public strictfp class GameWorld {
                                 break;
                         }
 
+                        int bit = getPatternBit(pattern, dx, dy);
                         int paint = getPaint(center.translate(dx2, dy2));
-                        int bit = getPatternBit(pattern, dx2, dy2);
 
-                        if (paint != (bit == 1 ? primary : secondary)) {
+                        if (paint != (bit == 1 ? secondary : primary)) {
                             possibleSymmetries[sym] = false;
                             numRemainingSymmetries -= 1;
                         }
@@ -386,6 +390,84 @@ public strictfp class GameWorld {
         this.getTeamInfo().addPaintedSquares(1, teamFromPaint(paint));
         }
         this.colorLocations[locationToIndex(loc)] = paint;
+    }
+
+    public int[] getmarkersArray(Team team) {
+        switch (team) {
+            case A:
+                return markersA;
+            case B:
+                return markersB;
+            default:
+                return null;
+        }
+    }
+
+    public int getMarker(Team team, MapLocation loc) {
+        return this.getmarkersArray(team)[locationToIndex(loc)];
+    }
+
+    public void setMarker(Team team, MapLocation loc, int marker) {
+        this.getmarkersArray(team)[locationToIndex(loc)] = marker;
+    }
+
+    public void markPattern(int pattern, Team team, MapLocation center, int rotationAngle, boolean reflect) {
+        for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
+            for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
+                int symmetry = 4 * (reflect ? 1 : 0) + rotationAngle;
+                int dx2;
+                int dy2;
+
+                switch (symmetry) {
+                    case 0:
+                        dx2 = dx;
+                        dy2 = dy;
+                        break;
+                    case 1:
+                        dx2 = -dy;
+                        dy2 = dx;
+                        break;
+                    case 2:
+                        dx2 = -dx;
+                        dy2 = -dy;
+                        break;
+                    case 3:
+                        dx2 = dy;
+                        dy2 = -dx;
+                        break;
+                    case 4:
+                        dx2 = -dx;
+                        dy2 = dy;
+                        break;
+                    case 5:
+                        dx2 = dy;
+                        dy2 = dx;
+                        break;
+                    case 6:
+                        dx2 = dx;
+                        dy2 = -dy;
+                        break;
+                    case 7:
+                        dx2 = -dy;
+                        dy2 = -dx;
+                        break;
+                    default:
+                        throw new RuntimeException("THIS ERROR SHOULD NEVER HAPPEN! checkPattern is broken");
+                }
+
+                int bit = getPatternBit(pattern, dx, dy);
+                MapLocation loc = center.translate(dx2, dy2);
+                setMarker(team, loc, bit + 1);
+            }
+        }
+    }
+
+    public void markTowerPattern(Team team, MapLocation loc, int rotationAngle, boolean reflect) {
+        markPattern(this.towerPattern, team, loc, rotationAngle, reflect);
+    }
+
+    public void markResourcePattern(Team team, MapLocation loc, int rotationAngle, boolean reflect) {
+        markPattern(this.resourcePattern, team, loc, rotationAngle, reflect);
     }
 
     public boolean hasTower(MapLocation loc) {
@@ -808,7 +890,7 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team) {
         InternalRobot robot = new InternalRobot(this, ID, team, type);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
@@ -819,7 +901,7 @@ public strictfp class GameWorld {
         return ID;
     }
 
-    public int spawnRobot(UnitType type, MapLocation location, Team team){
+    public int spawnRobot(UnitType type, MapLocation location, Team team) {
         int ID = idGenerator.nextID();
         return spawnRobot(ID, type, location, team);
     }
