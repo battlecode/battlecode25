@@ -880,8 +880,4 @@ public strictfp class GameWorld {
         profilerCollections.put(team, profilerCollection);
     }
     
-    public boolean isSetupPhase() {
-        return currentRound <= GameConstants.SETUP_ROUNDS;
-    }
-    
 }

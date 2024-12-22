@@ -778,8 +778,11 @@ public strictfp interface RobotController {
      * {@link GameConstants#TIMELINE_LABEL_MAX_LENGTH} characters are used.
      * 
      * @param label the label for the timeline marker
+     * @param red the red component of the marker's color
+     * @param green the green component of the marker's color
+     * @param blue the blue component of the marker's color
      * 
      * @battlecode.doc.costlymethod
      */
-    void setTimelineMarker(String label);
+    void setTimelineMarker(String label, int red, int green, int blue);
 }

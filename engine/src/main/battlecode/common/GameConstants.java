@@ -30,6 +30,9 @@ public class GameConstants {
     /** The minimum distance between ruins on the map */
     public static final int MIN_RUIN_SPACING_SQUARED = 25;
 
+    /** The maximum percentage of the map that can be walls */
+    public static final int MAX_WALL_PERCENTAGE = 20;
+
     // *********************************
     // ****** GAME PARAMETERS **********
     // *********************************
@@ -55,10 +58,10 @@ public class GameConstants {
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
 
-    /** Paint penalty for moving into enemy territory */
+    /** Paint penalty for ending a turn on enemy territory */
     public static final int PENALTY_ENEMY_TERRITORY = 2;
 
-    /** Paint penalty for moving into neutral territory */
+    /** Paint penalty for ending a turn on neutral territory */
     public static final int PENALTY_NEUTRAL_TERRITORY = 1;
 
     /** The total number of robots a team has (both despawned or spawned). */
@@ -90,7 +93,16 @@ public class GameConstants {
     // *********************************
 
     /** The number of towers a player starts with. */
-    public static final int NUMBER_INITIAL_TOWERS = 3;
+    public static final int NUMBER_INITIAL_TOWERS = 2;
+
+    /** The number of paint towers a player starts with */
+    public static final int NUMBER_INITIAL_PAINT_TOWERS = 1;
+
+    /** The number of money towers a player starts with */
+    public static final int NUMBER_INITIAL_MONEY_TOWERS = 1;
+
+    /** The number of defense towers a player starts with */
+    public static final int NUMBER_INITIAL_DEFENSE_TOWERS = 0;
 
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
@@ -98,14 +110,20 @@ public class GameConstants {
     /** The end of the setup rounds in the game */
     public static final int SETUP_ROUNDS = 200;
 
+    /** Maximum amount of turns a robot can go at 0 paint without dying */
+    public static final int MAX_TURNS_WITHOUT_PAINT = 10;
+
     /** Maximum percent amount of paint to start cooldown */
     public static final int DECREASED_MOVEMENT_THRESHOLD = 50;
 
-    /** Intercept in the formula for the cooldown */
+    /** Intercept in the formula for the movement cooldown */
     public static final int MOVEMENT_COOLDOWN_INTERCEPT = 100;
 
-    /** Slope in the formula for the cooldown */
+    /** Slope of paint in the formula for the movement cooldown */
     public static final int MOVEMENT_COOLDOWN_SLOPE = -2;
+
+    /** Multiplier for paint penalties moppers face for ending on non-ally territory. */
+    public static final int MOPPER_PAINT_PENALTY_MULTIPLIER = 2;
 
     /** The maximum distance from a robot where information can be sensed */
     public static final int VISION_RADIUS_SQUARED = 20;

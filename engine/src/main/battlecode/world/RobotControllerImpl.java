@@ -349,6 +349,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canActCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's action cooldown has not expired.");
+        if (this.robot.getPaint() == 0){
+            throw new GameActionException(IS_NOT_READY, "This robot can't act at 0 paint.");
+        }
     }
 
     @Override
@@ -370,6 +373,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canMoveCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's movement cooldown has not expired.");
+        if (this.robot.getPaint() == 0){
+            throw new GameActionException(IS_NOT_READY, "This robot can't move at 0 paint.");
+        }
     }
 
     @Override
@@ -422,14 +428,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         MapLocation nextLoc = adjacentLocation(dir);
         this.robot.setLocation(nextLoc);
         this.robot.addMovementCooldownTurns();
-
-        Team nextTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(nextLoc));
-
-        if (nextTeam == Team.NEUTRAL) {
-            this.robot.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
-        } else if (nextTeam == this.robot.getTeam().opponent()) {
-            this.robot.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
-        }
     }
 
     // ***********************************
@@ -626,6 +624,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
                             + ") because it is too close to the edge of the map");
         }
 
+        if (this.gameWorld.getRobot(loc) != null){
+            throw new GameActionException(CANT_DO_THAT,
+             "Cannot complete tower pattern at  (" + loc.x + ", " + loc.y
+                    + ") because there is a robot at the center of the ruin");
+        }
+
         boolean valid = this.gameWorld.checkTowerPattern(getTeam(), loc, type);
 
         if (!valid) {
@@ -726,10 +730,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assert(loc != null || UnitType.isTowerType(this.robot.getType()));
         assertIsActionReady();
 
-        if(gameWorld.isSetupPhase()) {
-            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
-        }
-
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
             case SOLDIER:
@@ -774,10 +774,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertIsActionReady();
         assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
         assert(this.robot.getType() == UnitType.MOPPER);
-
-        if(gameWorld.isSetupPhase()) {
-            throw new GameActionException(CANT_DO_THAT, "Cannot attack during setup phase");
+        MapLocation nextLoc = this.robot.getLocation().add(dir);
+        if (!onTheMap(nextLoc)){
+            throw new GameActionException(CANT_DO_THAT, "Can't do a mop swing off the edge of the map!");
         }
+
     }
 
     @Override
@@ -930,7 +931,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override 
-    public void setTimelineMarker(String label){
+    public void setTimelineMarker(String label, int red, int green, int blue){
         if (label.length() > GameConstants.TIMELINE_LABEL_MAX_LENGTH){
             label = label.substring(0, GameConstants.TIMELINE_LABEL_MAX_LENGTH);
         }
