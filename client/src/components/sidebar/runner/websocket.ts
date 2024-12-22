@@ -63,7 +63,7 @@ export default class WebSocketListener {
                 gameRunner.jumpToRound(match.maxRound - 1)
             } else {
                 // Trigger match update so anywhere accessing round/max round gets updated
-                gameRunner.setMatch(match)
+                gameRunner.signalMatchInternalChange()
             }
         }
 

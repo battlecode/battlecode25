@@ -47,8 +47,7 @@ export default class Match {
         this._playbackPerTurn = value
         this.currentSimulationStep = 0
         this.currentRound.jumpToTurn(value ? 0 : this.currentRound.turnsLength)
-        // Trigger match update so anywhere accessing round/turn will get the correct values
-        gameRunner.setMatch(this)
+        gameRunner.signalMatchInternalChange()
     }
 
     /**
@@ -127,7 +126,7 @@ export default class Match {
                 this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
             }
         } else {
-            // ensure all turns are applied if were in round playback
+            // ensure all turns are applied if we're in round playback
             this.currentRound.jumpToTurn(this.currentRound.turnsLength)
             this._updateSimulationRoundsByTime(deltaTime)
         }
@@ -232,6 +231,9 @@ export default class Match {
         }
 
         this.currentRound = updatingRound
+        // ensure all turns are applied if we're in round playback
+        // we have to do this here as well as in step simulation because rendering could occur before the sim is stepped
+        if (!this.playbackPerTurn) this.currentRound.jumpToTurn(this.currentRound.turnsLength)
     }
 
     private getClosestSnapshot(roundNumber: number): Round {

@@ -114,6 +114,11 @@ class gameRunnerClass {
         GameRenderer.onMatchChange()
     }
 
+    signalMatchInternalChange(): void {
+        this._trigger(this._matchListeners)
+        GameRenderer.render()
+    }
+
     multiplyUpdatesPerSecond(multiplier: number) {
         if (!this.match) return
         const scaled = this.targetUPS * multiplier
