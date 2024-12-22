@@ -43,32 +43,45 @@ public final class MatchFooter extends Table {
    */
   public int totalRounds() { int o = __offset(8); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
   /**
+   * Markers for this match.
+   */
+  public battlecode.schema.TimelineMarker timelineMarkers(int j) { return timelineMarkers(new battlecode.schema.TimelineMarker(), j); }
+  public battlecode.schema.TimelineMarker timelineMarkers(battlecode.schema.TimelineMarker obj, int j) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int timelineMarkersLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
+  public battlecode.schema.TimelineMarker.Vector timelineMarkersVector() { return timelineMarkersVector(new battlecode.schema.TimelineMarker.Vector()); }
+  public battlecode.schema.TimelineMarker.Vector timelineMarkersVector(battlecode.schema.TimelineMarker.Vector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
+  /**
    * Profiler data for team A and B if profiling is enabled.
    */
   public battlecode.schema.ProfilerFile profilerFiles(int j) { return profilerFiles(new battlecode.schema.ProfilerFile(), j); }
-  public battlecode.schema.ProfilerFile profilerFiles(battlecode.schema.ProfilerFile obj, int j) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int profilerFilesLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
+  public battlecode.schema.ProfilerFile profilerFiles(battlecode.schema.ProfilerFile obj, int j) { int o = __offset(12); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int profilerFilesLength() { int o = __offset(12); return o != 0 ? __vector_len(o) : 0; }
   public battlecode.schema.ProfilerFile.Vector profilerFilesVector() { return profilerFilesVector(new battlecode.schema.ProfilerFile.Vector()); }
-  public battlecode.schema.ProfilerFile.Vector profilerFilesVector(battlecode.schema.ProfilerFile.Vector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
+  public battlecode.schema.ProfilerFile.Vector profilerFilesVector(battlecode.schema.ProfilerFile.Vector obj) { int o = __offset(12); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
 
   public static int createMatchFooter(FlatBufferBuilder builder,
       byte winner,
       byte winType,
       int totalRounds,
+      int timelineMarkersOffset,
       int profilerFilesOffset) {
-    builder.startTable(4);
+    builder.startTable(5);
     MatchFooter.addProfilerFiles(builder, profilerFilesOffset);
+    MatchFooter.addTimelineMarkers(builder, timelineMarkersOffset);
     MatchFooter.addTotalRounds(builder, totalRounds);
     MatchFooter.addWinType(builder, winType);
     MatchFooter.addWinner(builder, winner);
     return MatchFooter.endMatchFooter(builder);
   }
 
-  public static void startMatchFooter(FlatBufferBuilder builder) { builder.startTable(4); }
+  public static void startMatchFooter(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addWinner(FlatBufferBuilder builder, byte winner) { builder.addByte(0, winner, 0); }
   public static void addWinType(FlatBufferBuilder builder, byte winType) { builder.addByte(1, winType, 0); }
   public static void addTotalRounds(FlatBufferBuilder builder, int totalRounds) { builder.addInt(2, totalRounds, 0); }
-  public static void addProfilerFiles(FlatBufferBuilder builder, int profilerFilesOffset) { builder.addOffset(3, profilerFilesOffset, 0); }
+  public static void addTimelineMarkers(FlatBufferBuilder builder, int timelineMarkersOffset) { builder.addOffset(3, timelineMarkersOffset, 0); }
+  public static int createTimelineMarkersVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
+  public static void startTimelineMarkersVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addProfilerFiles(FlatBufferBuilder builder, int profilerFilesOffset) { builder.addOffset(4, profilerFilesOffset, 0); }
   public static int createProfilerFilesVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
   public static void startProfilerFilesVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endMatchFooter(FlatBufferBuilder builder) {

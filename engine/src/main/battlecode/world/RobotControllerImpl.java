@@ -963,6 +963,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (label.length() > GameConstants.TIMELINE_LABEL_MAX_LENGTH){
             label = label.substring(0, GameConstants.TIMELINE_LABEL_MAX_LENGTH);
         }
-        this.gameWorld.getMatchMaker().addTimelineMarker(label);
+        this.gameWorld.getMatchMaker().addTimelineMarker(label, red, green, blue);
     }
 }
