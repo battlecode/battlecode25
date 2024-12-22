@@ -704,30 +704,42 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
         assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
-        assert(this.robot.getPaint() >= UnitType.SOLDIER.attackCost);
+        if (this.robot.getPaint() < UnitType.SOLDIER.attackCost){
+            throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a soldier attack");
+        }
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
         assertCanActLocation(loc, UnitType.SPLASHER.actionRadiusSquared);
-        assert(this.robot.getPaint() >= UnitType.SPLASHER.attackCost);
+        if (this.robot.getPaint() < UnitType.SPLASHER.attackCost){
+            throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a splasher attack");
+        }
     }
 
     private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
         assertCanActLocation(loc, UnitType.MOPPER.actionRadiusSquared);
-        assert(this.robot.getPaint() >= UnitType.MOPPER.attackCost);
+        if (this.robot.getPaint() < UnitType.MOPPER.attackCost){
+            throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a mopper attack");
+        }
     }
 
     private void assertCanAttackTower(MapLocation loc) throws GameActionException {
         if(loc == null) { // area attack
-            assert(!this.robot.hasTowerAreaAttacked());
+            if (this.robot.hasTowerAreaAttacked()){
+                throw new GameActionException(CANT_DO_THAT, "Tower has already done an area attack this turn");
+            }
         } else { // single attack
-            assert(!this.robot.hasTowerSingleAttacked());
+            if (this.robot.hasTowerSingleAttacked()){
+                throw new GameActionException(CANT_DO_THAT, "Tower has already done a single cell attack this turn");
+            }
             assertCanActLocation(loc, this.robot.getType().actionRadiusSquared);
         }
     }
 
     private void assertCanAttack(MapLocation loc) throws GameActionException {
-        assert(loc != null || UnitType.isTowerType(this.robot.getType()));
+        if (loc == null && !UnitType.isTowerType(this.robot.getType())){
+            throw new GameActionException(CANT_DO_THAT, "Robot units must specify a location to attack");
+        }
         assertIsActionReady();
 
         // note: paint type is irrelevant for checking attack validity
@@ -772,8 +784,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMopSwing(Direction dir) throws GameActionException {
         assertNotNull(dir);
         assertIsActionReady();
-        assert(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST);
-        assert(this.robot.getType() == UnitType.MOPPER);
+        if (!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST)){
+            throw new GameActionException(CANT_DO_THAT, "Must pass in a cardinal direction to mop swing");
+        }
+        if (this.robot.getType() != UnitType.MOPPER){
+            throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper!");
+        }
         MapLocation nextLoc = this.robot.getLocation().add(dir);
         if (!onTheMap(nextLoc)){
             throw new GameActionException(CANT_DO_THAT, "Can't do a mop swing off the edge of the map!");
@@ -803,20 +819,32 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.MESSAGE_RADIUS_SQUARED);
         assertNotNull(this.gameWorld.getRobot(loc));
-        assert (getTeam() == this.gameWorld.getRobot(loc).getTeam());
+        if (getTeam() != this.gameWorld.getRobot(loc).getTeam()){
+            throw new GameActionException(CANT_DO_THAT, "Cannot send messages to robots of the enemy team!");
+        }
         assertNotNull(message);
 
         // we also need them to be different (i.e. only robot to tower or vice versa)
-        assert(UnitType.isRobotType(this.robot.getType()) ^ UnitType.isRobotType(this.gameWorld.getRobot(loc).getType()));
+        if (UnitType.isRobotType(this.robot.getType()) == UnitType.isRobotType(this.gameWorld.getRobot(loc).getType())){
+            throw new GameActionException(CANT_DO_THAT, "Only (robot <-> tower) communication is allowed!");
+        }
         if (UnitType.isRobotType(this.robot.getType())) {
-            assert (this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_ROBOT);
+            if (this.robot.getSentMessagesCount() >= GameConstants.MAX_MESSAGES_SENT_ROBOT){
+                throw new GameActionException(CANT_DO_THAT, "Robot has already sent too many messages this round!");
+            }
         } else {
-            assert (this.robot.getSentMessagesCount() < GameConstants.MAX_MESSAGES_SENT_TOWER);
+            if (this.robot.getSentMessagesCount() >= GameConstants.MAX_MESSAGES_SENT_TOWER){
+                throw new GameActionException(CANT_DO_THAT, "Tower has already sent too many messages this round!");
+            }
         }
         
         // make sure the other unit is within the right distance and connected by paint
-        assert(this.robot.getLocation().distanceSquaredTo(loc) <= GameConstants.MESSAGE_RADIUS_SQUARED);
-        assert(this.gameWorld.connectedByPaint(this.robot.getLocation(), loc));
+        if (this.robot.getLocation().distanceSquaredTo(loc) > GameConstants.MESSAGE_RADIUS_SQUARED){
+            throw new GameActionException(CANT_DO_THAT, "Location specified is not within the message radius!");
+        }
+        if (!this.gameWorld.connectedByPaint(this.robot.getLocation(), loc)){
+            throw new GameActionException(CANT_DO_THAT, "Location specified is not connected to current location by paint!");
+        }
     }
 
     @Override
