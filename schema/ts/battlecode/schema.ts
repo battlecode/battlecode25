@@ -31,7 +31,7 @@ export { RobotTypeMetadata } from './schema/robot-type-metadata';
 export { Round } from './schema/round';
 export { SpawnAction } from './schema/spawn-action';
 export { TeamData } from './schema/team-data';
-export { TimelineMarkerAction } from './schema/timeline-marker-action';
+export { TimelineMarker } from './schema/timeline-marker';
 export { TransferAction } from './schema/transfer-action';
 export { Turn } from './schema/turn';
 export { UnpaintAction } from './schema/unpaint-action';

@@ -50,7 +50,7 @@ export default class Round {
 
         // Update robot next positions for interpolation based on the next delta
         if (nextDelta) {
-            this.bodies.updateNextPositions(nextDelta)
+            this.updateNextPositions(nextDelta)
         }
 
         // Flag all died robots as so
@@ -59,6 +59,10 @@ export default class Round {
 
         // Update any statistics for this round
         this.stat.applyDelta(this, delta)
+    }
+
+    public updateNextPositions(nextDelta: schema.Round): void {
+        this.bodies.updateNextPositions(nextDelta)
     }
 
     public copy(): Round {

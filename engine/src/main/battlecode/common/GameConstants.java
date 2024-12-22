@@ -49,17 +49,11 @@ public class GameConstants {
      */
     public static final int INDICATOR_STRING_MAX_LENGTH = 64;
 
-    /** The length of each team's shared communication array. */
-    public static final int SHARED_ARRAY_LENGTH = 64;
-
-    /** The maximum value in shared communication arrays. */
-    public static final int MAX_SHARED_ARRAY_VALUE = (1 << 16) - 1;
+    /** The maximum length of a label to add to the timeline. */
+    public static final int TIMELINE_LABEL_MAX_LENGTH = 64;
 
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
-
-    /** Health each robot starts with */
-    public static final int DEFAULT_HEALTH = 1000;
 
     /** Paint penalty for moving into enemy territory */
     public static final int PENALTY_ENEMY_TERRITORY = 2;
@@ -79,8 +73,17 @@ public class GameConstants {
     /** Paint capacity for mopper robots */
     public static final int PAINT_CAPACITY_MOPPER = 100;
 
+    /** The amount of a paint a paint tower starts with. */
+    public static final int INITIAL_PAINT_TOWER_PAINT = 500;
+
+    /** The amount of money each team starts with. */
+    public static final int INITIAL_TEAM_MONEY = 1000;
+
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;
+
+     /** The maximum number of towers that a team can have. */
+     public static final int MAX_NUMBER_OF_TOWERS = 25;
 
     // *********************************
     // ****** GAME MECHANICS ***********
@@ -89,43 +92,8 @@ public class GameConstants {
     /** The number of towers a player starts with. */
     public static final int NUMBER_INITIAL_TOWERS = 3;
 
-    /** Crumbs cost for digging. */
-    public static final int DIG_COST = 20;
-
-    /** Crumbs cost for filling */
-    public static final int FILL_COST = 30;
-
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
-
-    /**
-     * Number of rounds between updating the random noisy flag broadcast location
-     */
-    public static final int FLAG_BROADCAST_UPDATE_INTERVAL = 100;
-
-    /**
-     * The maximum squared distance bewteen the actual flag location and the noisy
-     * broadcast location
-     */
-    public static final int FLAG_BROADCAST_NOISE_RADIUS = 100;
-
-    /**
-     * The default number of rounds before dropped flags reset to their default
-     * locations
-     */
-    public static final int FLAG_DROPPED_RESET_ROUNDS = 4;
-
-    /** The initial amount of crumbs each team starts with. */
-    public static final int INITIAL_CRUMBS_AMOUNT = 400;
-
-    /** The amount of crumbs each team gains per turn. */
-    public static final int PASSIVE_CRUMBS_INCREASE = 10;
-
-    /**
-     * The amount of crumbs you gain if your bot kills an enemy while in enemy
-     * territory
-     */
-    public static final int KILL_CRUMB_REWARD = 30;
 
     /** The end of the setup rounds in the game */
     public static final int SETUP_ROUNDS = 200;
@@ -139,31 +107,25 @@ public class GameConstants {
     /** Slope in the formula for the cooldown */
     public static final int MOVEMENT_COOLDOWN_SLOPE = -2;
 
-    /** Number of rounds between adding a global upgrade point */
-    public static final int GLOBAL_UPGRADE_ROUNDS = 600;
-
     /** The maximum distance from a robot where information can be sensed */
     public static final int VISION_RADIUS_SQUARED = 20;
-
-    /** The maximum distance for attacking an enemy robot */
-    public static final int ATTACK_RADIUS_SQUARED = 4;
-
-    /** The maximum distance for healing an ally robot */
-    public static final int HEAL_RADIUS_SQUARED = 4;
 
     /**
      * The maximum distance for transferring paint from/to an ally robot or tower
      */
     public static final int PAINT_TRANSFER_RADIUS_SQUARED = 2;
 
-    /**
-     * The maximum distnace for picking up / dropping flags, building traps,
-     * digging, and filling
-     */
-    public static final int INTERACT_RADIUS_SQUARED = 2;
-
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
+
+    /** The amount of paint depleted from enemy in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_DEPLETION = 10;
+
+    /** The amount of paint added to self in a regular mopper attack */
+    public static final int MOPPER_ATTACK_PAINT_ADDITION = 5;
+
+    /** The amount of paint depleted from enemies in a swing mopper attack */
+    public static final int MOPPER_SWING_PAINT_DEPLETION = 5;
 
     // *********************************
     // ****** COOLDOWNS ****************
@@ -181,33 +143,12 @@ public class GameConstants {
     public static final int MOVEMENT_COOLDOWN = 10;
 
     /**
-     * The amount added to the movement cooldown counter when moving while carrying
-     * a flag
-     */
-    public static final int FLAG_MOVEMENT_COOLDOWN = 20;
-
-    /**
-     * The amount added to the action cooldown counter after picking up or dropping
-     * a flag
-     */
-    public static final int PICKUP_DROP_COOLDOWN = 10;
-
-    /**
      * The amount added to the action cooldown counter after a tower builds a robot
      */
     public static final int BUILD_ROBOT_COOLDOWN = 10;
 
-    /** The amount added to the action cooldown counter after attacking */
-    public static final int ATTACK_COOLDOWN = 20;
-
-    /** The amount added to the action cooldown counter after healing */
-    public static final int HEAL_COOLDOWN = 30;
-
-    /** The amount added to the action cooldown counter after digging */
-    public static final int DIG_COOLDOWN = 20;
-
-    /** The amount added to the action cooldown counter after filling */
-    public static final int FILL_COOLDOWN = 30;
+    /** The amount added to the action cooldown counter after attacking (as a mopper for the swing attack) */
+    public static final int ATTACK_MOPPER_SWING_COOLDOWN = 40;
 
     /** THe amount added to the action cooldown counter after transferring paint */
     public static final int PAINT_TRANSFER_COOLDOWN = 10;
