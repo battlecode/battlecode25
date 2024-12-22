@@ -2,12 +2,12 @@ import { schema } from 'battlecode-schema'
 
 export const GAME_VERSION = '3.0.6'
 export const SPEC_VERSION = '3.0.6'
-export const BATTLECODE_YEAR: number = 2024
+export const BATTLECODE_YEAR: number = 2025
 export const MAP_SIZE_RANGE = {
     min: 30,
     max: 60
 }
-
+export const GAME_MAX_TURNS = 2000
 /*
  * General constants
  */
@@ -114,7 +114,7 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
 export const TEAM_WHITE = '#bfbaa8'
 export const TEAM_BROWN = '#9c8362' //'#b99c76'
 export const TEAM_COLORS = [TEAM_WHITE, TEAM_BROWN]
-export const TEAM_COLOR_NAMES = ['White', 'Brown']
+export const TEAM_COLOR_NAMES = ['Silver', 'Gold']
 
 export const PAINT_COLOR = '#1d4f6c' // brighter version '#29B0D9'
 export const WALLS_COLOR = '#3B6B4C'

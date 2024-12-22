@@ -28,9 +28,12 @@ public final class PaintAction extends Struct {
   public PaintAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int loc() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public byte isSecondary() { return bb.get(bb_pos + 2); }
 
-  public static int createPaintAction(FlatBufferBuilder builder, int loc) {
-    builder.prep(2, 2);
+  public static int createPaintAction(FlatBufferBuilder builder, int loc, byte isSecondary) {
+    builder.prep(2, 4);
+    builder.pad(1);
+    builder.putByte(isSecondary);
     builder.putShort((short) loc);
     return builder.offset();
   }

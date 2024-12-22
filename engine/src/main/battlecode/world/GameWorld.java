@@ -30,7 +30,6 @@ public strictfp class GameWorld {
     protected final GameStats gameStats;
 
     private boolean[] walls;
-    private boolean[] water;
     private int[] markersA;
     private int[] markersB;
     private int[] colorLocations; // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
@@ -39,10 +38,12 @@ public strictfp class GameWorld {
     private final TeamInfo teamInfo;
     private final ObjectInfo objectInfo;
 
-    private int resourcePattern;
+    private final static int RESOURCE_INDEX = 0, DEFENSE_INDEX = 1, MONEY_INDEX = 2, PAINT_INDEX = 3;
+    private int[] patternArray; // 0 = resource pattern, 1 = defense tower, 2 = money tower, 3 = paint tower
+
+
     private ArrayList<MapLocation> resourcePatternCenters;
     private Team[] resourcePatternCentersByLoc;
-    private int towerPattern;
     private ArrayList<MapLocation> towerLocations;
     private Team[] towersByLoc; // indexed by location
 
@@ -64,12 +65,6 @@ public strictfp class GameWorld {
         int height = gm.getHeight();
         int numSquares = width * height;
         int numWalls = 0;
-        for (boolean wall : walls){
-            if (wall) {
-                numWalls += 1;
-            }
-        }
-        this.areaWithoutWalls = numSquares - numWalls;
         this.walls = gm.getWallArray();
         this.markersA = new int[numSquares];
         this.markersB = new int[numSquares];
@@ -81,6 +76,13 @@ public strictfp class GameWorld {
         this.objectInfo = new ObjectInfo(gm);
         this.colorLocations = new int[numSquares];
 
+        for (boolean wall : walls){
+            if (wall) {
+                numWalls += 1;
+            }
+        }
+        this.areaWithoutWalls = numSquares - numWalls;
+
         this.profilerCollections = new HashMap<>();
 
         this.controlProvider = cp;
@@ -90,11 +92,13 @@ public strictfp class GameWorld {
         this.controlProvider.matchStarted(this);
 
         this.teamInfo = new TeamInfo(this);
+        this.teamInfo.addMoney(Team.A, GameConstants.INITIAL_TEAM_MONEY);
+        this.teamInfo.addMoney(Team.B, GameConstants.INITIAL_TEAM_MONEY);
 
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
-        this.resourcePattern = gm.getResourcePattern();
+        this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
 
@@ -102,22 +106,30 @@ public strictfp class GameWorld {
             this.resourcePatternCentersByLoc[i] = Team.NEUTRAL;
         }
 
-        this.allRuins = gm.getRuinArray();
-        this.allRuinsByLoc = new boolean[numSquares];
+        this.allRuinsByLoc = gm.getRuinArray();
+        this.allRuins = new ArrayList<MapLocation>();
+        for (int i = 0; i < numSquares; i++){
+            if (this.allRuinsByLoc[i]){
+                this.allRuins.add(indexToLocation(i));
+            }
+        }
 
         for (MapLocation ruin : this.allRuins){
             this.allRuinsByLoc[locationToIndex(ruin)] = true;
         }
       
-        this.towerPattern = gm.getTowerPattern();
+        RobotInfo[] initialBodies = gm.getInitialBodies(); 
         this.towerLocations = new ArrayList<MapLocation>();
-        this.towersByLoc = gm.getInitialTowers();
-        int curA = 0, curB = 0;
-
-        for (int i = 0; i < numSquares; i++) {
-            if (this.towersByLoc[i] != Team.NEUTRAL) {
-                towerLocations.add(indexToLocation(i));
-            }
+        this.towersByLoc = new Team[numSquares]; //idk if both of these are used but I instantiated for now
+        for (int i = 0; i < numSquares; i++){
+            towersByLoc[i] = Team.NEUTRAL;  
+        }
+        for (int i = 0; i < initialBodies.length; i++) {
+            RobotInfo robot = initialBodies[i];
+            MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
+            spawnRobot(robot.ID, robot.type, newLocation, robot.team, true);
+            this.towerLocations.add(newLocation);
+            towersByLoc[locationToIndex(newLocation)] = robot.team;
         }
     }
 
@@ -157,9 +169,7 @@ public strictfp class GameWorld {
             // TODO throw out file?
             return GameState.DONE;
         }
-        
-        // Write out round data
-        matchMaker.makeRound(currentRound);
+        //todo: should I end the round here or in processEndofRound?
         return GameState.RUNNING;
     }
 
@@ -186,11 +196,11 @@ public strictfp class GameWorld {
     }
 
     public int getResourcePatternBit(int dx, int dy) {
-        return getPatternBit(this.resourcePattern, dx, dy);
+        return getPatternBit(this.patternArray[RESOURCE_INDEX], dx, dy);
     }
 
-    public int getTowerPatternBit(int dx, int dy) {
-        return getPatternBit(this.towerPattern, dx, dy);
+    public int getTowerPatternBit(int dx, int dy, UnitType towerType) {
+        return getPatternBit(this.patternArray[towerTypeToPatternIndex(towerType)], dx, dy);
     }
 
     public int getAreaWithoutWalls() {
@@ -205,11 +215,11 @@ public strictfp class GameWorld {
     }
 
     public boolean checkResourcePattern(Team team, MapLocation center) {
-        return checkPattern(this.resourcePattern, team, center);
+        return checkPattern(this.patternArray[RESOURCE_INDEX], team, center);
     }
 
-    public boolean checkTowerPattern(Team team, MapLocation center) {
-        return checkPattern(this.towerPattern, team, center);
+    public boolean checkTowerPattern(Team team, MapLocation center, UnitType towerType) {
+        return checkPattern(this.patternArray[towerTypeToPatternIndex(towerType)], team, center);
     }
 
     public boolean checkPattern(int pattern, Team team, MapLocation center) {
@@ -286,7 +296,7 @@ public strictfp class GameWorld {
     public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
-        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type);
+        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center, false);
         addRobot(center, unit);
     }
 
@@ -498,7 +508,7 @@ public strictfp class GameWorld {
      * @return the resource pattern for this map
      */
     public int getResourcePattern() {
-        return this.resourcePattern;
+        return this.patternArray[RESOURCE_INDEX];
     }
 
     /**
@@ -508,8 +518,8 @@ public strictfp class GameWorld {
      * is stored in the place value 2^({@value GameConstants#PATTERN_SIZE} * a + b).
      * @return the tower pattern for this map
      */
-    public int getTowerPattern() {
-        return this.towerPattern;
+    public int getTowerPattern(UnitType towerType) {
+        return this.patternArray[towerTypeToPatternIndex(towerType)];
     }
 
     public boolean isValidPatternCenter(MapLocation loc) {
@@ -565,6 +575,14 @@ public strictfp class GameWorld {
         else if(team == Team.B)
             return 4;
         return 0;
+    }
+
+    private int towerTypeToPatternIndex(UnitType towerType){
+        //TODO: this whole index stuff should be cleaned up but I'm just trying to get to a functional state
+        int index = DEFENSE_INDEX;
+        if (towerType == UnitType.LEVEL_ONE_MONEY_TOWER) index = MONEY_INDEX;
+        if (towerType == UnitType.LEVEL_ONE_PAINT_TOWER) index = PAINT_INDEX;
+        return index;
     }
 
     /**
@@ -890,8 +908,8 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team) {
-        InternalRobot robot = new InternalRobot(this, ID, team, type);
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team, boolean skipAction){
+        InternalRobot robot = new InternalRobot(this, ID, team, type, location, skipAction);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
@@ -903,7 +921,7 @@ public strictfp class GameWorld {
 
     public int spawnRobot(UnitType type, MapLocation location, Team team) {
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, location, team);
+        return spawnRobot(ID, type, location, team, false);
     }
 
     // *********************************
@@ -942,10 +960,6 @@ public strictfp class GameWorld {
             profilerCollections = new HashMap<>();
         }
         profilerCollections.put(team, profilerCollection);
-    }
-    
-    public boolean isSetupPhase() {
-        return currentRound <= GameConstants.SETUP_ROUNDS;
     }
     
 }

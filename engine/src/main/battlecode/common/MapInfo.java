@@ -14,6 +14,7 @@ public class MapInfo {
 
     private boolean hasRuin;
 
+
     public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, PaintType paint, int mark, boolean hasRuin){
         this.loc = loc;
         this.isPassable = isPassable;

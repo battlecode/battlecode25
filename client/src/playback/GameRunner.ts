@@ -95,7 +95,6 @@ class gameRunnerClass {
 
     setMatch(match: Match | undefined): void {
         this._trigger(this._matchListeners)
-        if (this.match == match) return
         if (match) {
             match.game.currentMatch = match
             this.setGame(match.game)

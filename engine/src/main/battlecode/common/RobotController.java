@@ -282,7 +282,8 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
+    //TODO: add map info stuff back
+    // MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
 
     /**
      * Return map info for all senseable locations.
@@ -292,7 +293,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapInfo[] senseNearbyMapInfos();
+    // MapInfo[] senseNearbyMapInfos();
 
     /**
      * Return map info for all senseable locations within a radius squared.
@@ -307,7 +308,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
+    // MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within vision radius of a center
@@ -320,7 +321,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
+    // MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within a radius squared of a
@@ -337,7 +338,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
+    // MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
 
     /**
      * Returns the location of all nearby ruins that are visible to the robot.
@@ -382,15 +383,6 @@ public strictfp interface RobotController {
     // ***********************************
     // ****** READINESS METHODS **********
     // ***********************************
-
-    /**
-     * Checks whether a robot is spawned.
-     * 
-     * @return whether or no a specific robot instance is spawned.
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    boolean isSpawned();
 
     /**
      * Tests whether the robot can act.
@@ -838,4 +830,19 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+
+    /**
+     * Adds a marker to the timeline at the current 
+     * round for debugging purposes.
+     * Only the first
+     * {@link GameConstants#TIMELINE_LABEL_MAX_LENGTH} characters are used.
+     * 
+     * @param label the label for the timeline marker
+     * @param red the red component of the marker's color
+     * @param green the green component of the marker's color
+     * @param blue the blue component of the marker's color
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void setTimelineMarker(String label, int red, int green, int blue);
 }

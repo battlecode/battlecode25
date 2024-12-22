@@ -49,10 +49,36 @@ class MatchFooter(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
+    # Markers for this match.
+    # MatchFooter
+    def TimelineMarkers(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from battlecode.schema.TimelineMarker import TimelineMarker
+            obj = TimelineMarker()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # MatchFooter
+    def TimelineMarkersLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # MatchFooter
+    def TimelineMarkersIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        return o == 0
+
     # Profiler data for team A and B if profiling is enabled.
     # MatchFooter
     def ProfilerFiles(self, j):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
@@ -65,18 +91,18 @@ class MatchFooter(object):
 
     # MatchFooter
     def ProfilerFilesLength(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # MatchFooter
     def ProfilerFilesIsNone(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         return o == 0
 
 def MatchFooterStart(builder):
-    builder.StartObject(4)
+    builder.StartObject(5)
 
 def Start(builder):
     MatchFooterStart(builder)
@@ -99,8 +125,20 @@ def MatchFooterAddTotalRounds(builder, totalRounds):
 def AddTotalRounds(builder, totalRounds):
     MatchFooterAddTotalRounds(builder, totalRounds)
 
+def MatchFooterAddTimelineMarkers(builder, timelineMarkers):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(timelineMarkers), 0)
+
+def AddTimelineMarkers(builder, timelineMarkers):
+    MatchFooterAddTimelineMarkers(builder, timelineMarkers)
+
+def MatchFooterStartTimelineMarkersVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartTimelineMarkersVector(builder, numElems):
+    return MatchFooterStartTimelineMarkersVector(builder, numElems)
+
 def MatchFooterAddProfilerFiles(builder, profilerFiles):
-    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(profilerFiles), 0)
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(profilerFiles), 0)
 
 def AddProfilerFiles(builder, profilerFiles):
     MatchFooterAddProfilerFiles(builder, profilerFiles)

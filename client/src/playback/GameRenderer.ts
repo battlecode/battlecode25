@@ -45,6 +45,13 @@ class GameRendererClass {
         topCanvas.oncontextmenu = (e) => e.preventDefault()
     }
 
+    clearSelected() {
+        this.selectedTile = undefined
+        this.selectedBodyID = undefined
+        this.render()
+        this._canvasEventListeners.forEach((listener) => listener())
+    }
+
     addCanvasesToDOM(elem: HTMLDivElement | null) {
         if (!elem) return
         for (const canvas of Object.values(this.canvases)) {

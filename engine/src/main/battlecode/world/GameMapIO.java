@@ -232,7 +232,7 @@ public final strictfp class GameMapIO {
             int size = width*height;
             boolean[] wallArray = new boolean[size];
             boolean[] ruinArray = new boolean[size];
-            int[] paintArray = new int[size];
+            byte[] paintArray = new byte[size];
             int[] patternArray = new int[4];
             for (int i = 0; i < wallArray.length; i++) {
                 wallArray[i] = raw.walls(i);
@@ -253,7 +253,7 @@ public final strictfp class GameMapIO {
             initInitialBodiesFromSchemaBodyTable(bodyTable, initBodies, teamsReversed);
 
             RobotInfo[] initialBodies = initBodies.toArray(new RobotInfo[initBodies.size()]);
-
+        
             return new LiveMap(
                 width, height, origin, seed, rounds, mapName, symmetry, wallArray, paintArray, ruinArray, patternArray, initialBodies);
         }
@@ -270,10 +270,9 @@ public final strictfp class GameMapIO {
             int name = builder.createString(gameMap.getMapName());
             int randomSeed = gameMap.getSeed();
             boolean[] wallArray = gameMap.getWallArray();
-            int[] paintArray = gameMap.getPaintArray();
+            byte[] paintArray = gameMap.getPaintArray();
             boolean[] ruinArray = gameMap.getRuinArray();
             int[] patternArray = gameMap.getPatternArray();
-
 
             // Make body tables
             ArrayList<Integer> bodyIDs = new ArrayList<>();
@@ -283,7 +282,7 @@ public final strictfp class GameMapIO {
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
 
             ArrayList<Boolean> wallArrayList = new ArrayList<>();
-            ArrayList<Integer> paintArrayList = new ArrayList<>();
+            ArrayList<Byte> paintArrayList = new ArrayList<>();
             ArrayList<Integer> patternArrayList = new ArrayList<>();
 
             ArrayList<Integer> ruinXs = new ArrayList<>();
@@ -305,7 +304,6 @@ public final strictfp class GameMapIO {
                     ruinXs.add(loc.x);
                     ruinYs.add(loc.y);
                 }
-                paintArrayList.add(paintArray[i]);
             }
             for (int i = 0; i < 4; i++){
                 patternArrayList.add(patternArray[i]);
@@ -322,18 +320,13 @@ public final strictfp class GameMapIO {
             TIntArrayList ruinYsList = new TIntArrayList(ruinYsArray);
 
             int wallArrayInt = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallArrayList.toArray(new Boolean[wallArrayList.size()])));
-            int paintArrayInt = battlecode.schema.GameMap.createPaintVector(builder, ArrayUtils.toPrimitive(paintArrayList.toArray(new Integer[paintArrayList.size()])));
+            int paintArrayInt = battlecode.schema.GameMap.createPaintVector(builder, ArrayUtils.toPrimitive(paintArrayList.toArray(new Byte[paintArrayList.size()])));
             int patternArrayInt = battlecode.schema.GameMap.createPaintPatternsVector(builder, ArrayUtils.toPrimitive(patternArrayList.toArray(new Integer[patternArrayList.size()])));
             int ruinLocations = FlatHelpers.createVecTable(builder, ruinXsList, ruinYsList);
 
             int robotIdOffsets = InitialBodyTable.createRobotIdsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
-            int[] spawnedRobotOffsets = new int[bodyIDs.size()];
-            for (int i = 0; i < spawnedRobotOffsets.length; i++){
-                int offset = SpawnAction.createSpawnAction(builder, bodyLocsXs.get(i), bodyLocsYs.get(i), bodyTeamIDs.get(i), bodyTypes.get(i));
-                spawnedRobotOffsets[i] = offset;
-            }
-            int spawnActionVector = createSpawnActionsVector(builder, spawnedRobotOffsets);
-            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVector);
+            int spawnActionVectorOffset = createSpawnActionsVector2(builder, bodyLocsXs, bodyLocsYs, bodyTeamIDs, bodyTypes);
+            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVectorOffset);
 
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
@@ -371,10 +364,14 @@ public final strictfp class GameMapIO {
             }
         }
 
-        private static int createSpawnActionsVector(FlatBufferBuilder builder, int[] data){
-            builder.startVector(6, data.length, 2);
-            for (int i = data.length - 1; i >= 0; i--) 
-                builder.addOffset(data[i]); 
+        private static int createSpawnActionsVector2(FlatBufferBuilder builder, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
+            ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
+            for (int i = 0; i < xs.size(); i++){
+                bb.putShort((short)(int)xs.get(i));
+                bb.putShort((short)(int)ys.get(i));
+                bb.put(teams.get(i));
+                bb.put(types.get(i));
+            }
             return builder.endVector();
         }
         

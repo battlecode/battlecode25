@@ -1,6 +1,7 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.util.FlatHelpers;
 
 import java.io.IOException;
 import java.util.*;
@@ -43,7 +44,7 @@ public strictfp class LiveMap {
     /**
      * What kind of paint is on the square.
      */
-    private int[] paintArray;
+    private byte[] paintArray;
 
     /**
      * Whether each square is a ruin.
@@ -96,7 +97,7 @@ public strictfp class LiveMap {
         this.initialBodies = Arrays.copyOf(initialBodies, initialBodies.length);
         int numSquares = width * height;
         this.wallArray = new boolean[numSquares];
-        this.paintArray = new int[numSquares];
+        this.paintArray = new byte[numSquares];
         this.ruinArray = new boolean[numSquares];
         this.patternArray = new int[4];
 
@@ -112,7 +113,7 @@ public strictfp class LiveMap {
                    String mapName,
                    MapSymmetry symmetry,
                    boolean[] wallArray,
-                   int[] paintArray,
+                   byte[] paintArray,
                    boolean[] ruinArray,
                    int[] patternArray,
                    RobotInfo[] initialBodies) {
@@ -128,7 +129,7 @@ public strictfp class LiveMap {
         for (int i = 0; i < wallArray.length; i++) {
             this.wallArray[i] = wallArray[i];
         }
-        this.paintArray = new int[paintArray.length];
+        this.paintArray = new byte[paintArray.length];
         for (int i = 0; i < paintArray.length; i++){
             this.paintArray[i] = paintArray[i];
         }
@@ -318,7 +319,7 @@ public strictfp class LiveMap {
     /**
      * @return the paint array of the map
      */
-    public int[] getPaintArray() {
+    public byte[] getPaintArray() {
         return paintArray;
     }
 
@@ -369,29 +370,60 @@ public strictfp class LiveMap {
         if (this.height < GameConstants.MAP_MIN_HEIGHT) {
             throw new RuntimeException("MAP HEIGHT BENEATH GameConstants.MAP_MIN_HEIGHT");
         }
-        //TODO: map validation checks (if any)
-        for (int i = 0; i < this.width*this.height; i++){
-            // if(this.wallArray[i]) {
-            //     if (this.waterArray[i]) {
-            //         throw new RuntimeException("Walls can't be on the same square as water.");
-            //     }
-            //     if(this.spawnZoneArray[i] != 0) {
-            //         throw new RuntimeException("Walls can't be on the same square as spawn zones.");
-            //     } 
-            // }
-            // if(this.damArray[i]) {
-            //     if(this.spawnZoneArray[i] != 0) {
-            //         throw new RuntimeException("Dams can't be on the same square as spawn zones.");
-            //     }
-            // }
-            // if(this.waterArray[i]) {
-            //     if(this.spawnZoneArray[i] != 0) {
-            //         throw new RuntimeException("Water can't be on the same square as spawn zones.");
-            //     }
-            // }
+        int[] towerCountA = new int[3];
+        int[] towerCountB = new int[3];
+        for (RobotInfo initialBody : initialBodies){
+            if (initialBody.team == Team.A){
+                towerCountA[FlatHelpers.getRobotTypeFromUnitType(initialBody.type)-1] += 1;
+            }
+            else towerCountB[FlatHelpers.getRobotTypeFromUnitType(initialBody.type)-1] += 1;
         }
-        // assertSpawnZoneDistances();
-        // assertSpawnZonesAreValid();
+        if (towerCountA[FlatHelpers.getRobotTypeFromUnitType(UnitType.LEVEL_ONE_PAINT_TOWER) - 1] != GameConstants.NUMBER_INITIAL_PAINT_TOWERS){
+            throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_PAINT_TOWERS + " paint towers!");
+        }  
+        if (towerCountA[FlatHelpers.getRobotTypeFromUnitType(UnitType.LEVEL_ONE_MONEY_TOWER) - 1] != GameConstants.NUMBER_INITIAL_MONEY_TOWERS){
+            throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_MONEY_TOWERS + " money towers!");
+        }
+        if (towerCountA[FlatHelpers.getRobotTypeFromUnitType(UnitType.LEVEL_ONE_DEFENSE_TOWER) - 1] != GameConstants.NUMBER_INITIAL_DEFENSE_TOWERS){
+            throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_DEFENSE_TOWERS + " defense towers!");
+        }
+        for (int i = 0; i < towerCountA.length; i++){
+            if (towerCountA[i] != towerCountB[i]){
+                throw new RuntimeException("Expected both teams to have the same number of towers of type " + FlatHelpers.getUnitTypeFromRobotType((byte)(i+1)));
+            }
+        }
+
+        ArrayList<MapLocation> ruinLocs = new ArrayList<>();
+        int numWalls = 0;
+        for (int i = 0; i < this.width*this.height; i++){
+            if (this.wallArray[i] && this.ruinArray[i]){
+                throw new RuntimeException("Walls can't be on the same square as ruins");
+            }
+            if (this.ruinArray[i])
+                ruinLocs.add(indexToLocation(i));
+            if (this.wallArray[i])
+                numWalls += 1;
+        }
+        if (numWalls * 100 >= this.width * this.height * GameConstants.MAX_WALL_PERCENTAGE){
+            throw new RuntimeException("Too much of the area of the map is composed of walls!");
+        }
+
+        for (int i = 0; i < ruinLocs.size(); i++){
+            MapLocation curRuin = ruinLocs.get(i);
+            for (int j = i + 1; j < ruinLocs.size(); j++){
+                MapLocation otherRuin = ruinLocs.get(j);
+                if (curRuin.distanceSquaredTo(otherRuin) < GameConstants.MIN_RUIN_SPACING_SQUARED)
+                    throw new RuntimeException("Ruins at location " + curRuin.toString() + " and location " + otherRuin.toString() + " are too close to each other!");
+            }
+        }
+        for (int i = 0; i < this.width * this.height; i++){
+            if (this.wallArray[i]){
+                for (MapLocation ruin : ruinLocs){
+                    if (ruin.distanceSquaredTo(indexToLocation(i)) <= 8) // 2^2 + 2^2 
+                        throw new RuntimeException("Wall appears at location " + indexToLocation(i).toString() + " which is too close to ruin " + ruin.toString());
+                }
+            }
+        }
     }
 
     private boolean isTeamNumber(int team) {

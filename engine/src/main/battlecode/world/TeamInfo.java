@@ -176,28 +176,6 @@ public class TeamInfo {
     }
 
     /**
-     * Increment number of flags picked up by 1 if setup phase has ended.
-     * 
-     * @param team the team to query
-     */
-    public void pickupFlag(Team team) {
-        if (!gameWorld.isSetupPhase()) {
-            totalFlagsPickedUp[team.ordinal()] += 1;
-        }
-    }
-
-    /**
-     * Return total number of flags picked up
-     * 
-     * @param team
-     * @return # of flags picked up
-     */
-    public int getFlagsPickedUp(Team team) {
-        return totalFlagsPickedUp[team.ordinal()];
-    }
-
-
-    /**
      * Sets an index in the team's shared array to a given value.
      *
      * @param team  the team to query

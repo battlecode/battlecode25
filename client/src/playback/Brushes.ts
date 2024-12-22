@@ -29,42 +29,8 @@ const applyInRadius = (
     }
 }
 
-export class WallsBrush extends SymmetricMapEditorBrush<CurrentMap> {
+export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public readonly name = 'Walls'
-    public readonly fields = {
-        should_add: {
-            type: MapEditorBrushFieldType.ADD_REMOVE,
-            value: true
-        },
-        radius: {
-            type: MapEditorBrushFieldType.POSITIVE_INTEGER,
-            value: 1,
-            label: 'Radius'
-        }
-    }
-
-    constructor(map: CurrentMap) {
-        super(map)
-    }
-
-    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
-        /*
-        const radius: number = fields.radius.value - 1
-        applyInRadius(this.map, x, y, radius, (idx) => {
-            const { x, y } = this.map.indexToLocation(idx)
-            if (this.map.staticMap.spawnLocations.find((l) => l.x == x && l.y == y)) return
-            this.map.staticMap.walls[idx] = fields.should_add.value ? 1 : 0
-            if (fields.should_add.value) {
-                this.map.staticMap.initialWater[idx] = 0
-                this.map.water[idx] = 0
-            }
-        })
-        */
-    }
-}
-
-export class DividerBrush extends SymmetricMapEditorBrush<StaticMap> {
-    public readonly name = 'Dam'
     public readonly fields = {
         should_add: {
             type: MapEditorBrushFieldType.ADD_REMOVE,
@@ -82,61 +48,116 @@ export class DividerBrush extends SymmetricMapEditorBrush<StaticMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        const radius: number = fields.radius.value - 1
+        applyInRadius(this.map, x, y, radius, (idx) => {
+            this.map.walls[idx] = fields.should_add.value ? 1 : 0
+            if (fields.should_add.value) {
+                this.map.initialPaint[idx] = 0
+                // this.map.paint[idx] = 0
+            }
+        })
+        
         /*
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
             const { x, y } = this.map.indexToLocation(idx)
-            if (this.map.spawnLocations.find((l) => l.x == x && l.y == y)) return
-            this.map.divider[idx] = fields.should_add.value ? 1 : 0
+            if (this.map.staticMap.spawnLocations.find((l) => l.x == x && l.y == y)) return
+            this.map.staticMap.walls[idx] = fields.should_add.value ? 1 : 0
+            if (fields.should_add.value) {
+                this.map.staticMap.initialWater[idx] = 0
+                this.map.water[idx] = 0
+            }
         })
         */
     }
 }
 
-export class SpawnZoneBrush extends SymmetricMapEditorBrush<CurrentMap> {
-    public readonly name = 'Spawn Zones'
+export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
+    public readonly name = 'Ruins'
     public readonly fields = {
         should_add: {
             type: MapEditorBrushFieldType.ADD_REMOVE,
             value: true
+        },
+        radius: {
+            type: MapEditorBrushFieldType.POSITIVE_INTEGER,
+            value: 1,
+            label: 'Radius'
         }
     }
 
-    constructor(map: CurrentMap) {
+    constructor(map: StaticMap) {
         super(map)
     }
 
-    // Also add flags for visual purposes even though they don't get serialized
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
-        /*
-        const spawnLocs = this.map.staticMap.spawnLocations
-        const flagData = this.map.flagData
-        const foundIdx = spawnLocs.findIndex((l) => l.x == x && l.y == y)
+        // const radius: number = fields.radius.value - 1
+        // applyInRadius(this.map, x, y, radius, (idx) => {
+        //     const { x, y } = this.map.indexToLocation(idx)
+        //     this.map.ruins.push({x, y})
+        // })
+        const foundIdx = this.map.ruins.findIndex((l) => l.x == x && l.y == y)
         const schemaIdx = this.map.locationToIndex(x, y)
-        const team = spawnLocs.length % 2
 
         if (fields.should_add.value) {
             if (foundIdx != -1) return
-            flagData.set(schemaIdx, { id: schemaIdx, team, location: { x, y }, carrierId: null })
-            spawnLocs.push({ x, y })
-            this.map.water[this.map.locationToIndex(x, y)] = 0
-            this.map.staticMap.initialWater[this.map.locationToIndex(x, y)] = 0
-            this.map.staticMap.walls[this.map.locationToIndex(x, y)] = 0
-            this.map.staticMap.divider[this.map.locationToIndex(x, y)] = 0
+            // this.map.resourcePileData.set(schemaIdx, { amount: fields.amount.value })
+            this.map.ruins.push({ x, y })
+            return
         }
 
         if (foundIdx == -1) return
-        flagData.delete(schemaIdx)
-        for (let i = foundIdx; i < spawnLocs.length - 1; i++) {
-            spawnLocs[i] = spawnLocs[i + 1]
-        }
-        spawnLocs.pop()
-        */
+        for (let i = foundIdx; i < this.map.ruins.length - 1; i++)
+            this.map.ruins[i] = this.map.ruins[i + 1]
+        this.map.ruins.pop()
+        // this.map.resourcePileData.delete(schemaIdx)
     }
 }
 
+// export class SpawnZoneBrush extends SymmetricMapEditorBrush<CurrentMap> {
+//     public readonly name = 'Spawn Zones'
+//     public readonly fields = {
+//         should_add: {
+//             type: MapEditorBrushFieldType.ADD_REMOVE,
+//             value: true
+//         }
+//     }
+
+//     constructor(map: CurrentMap) {
+//         super(map)
+//     }
+
+//     // Also add flags for visual purposes even though they don't get serialized
+//     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+//         /*
+//         const spawnLocs = this.map.staticMap.spawnLocations
+//         const flagData = this.map.flagData
+//         const foundIdx = spawnLocs.findIndex((l) => l.x == x && l.y == y)
+//         const schemaIdx = this.map.locationToIndex(x, y)
+//         const team = spawnLocs.length % 2
+
+//         if (fields.should_add.value) {
+//             if (foundIdx != -1) return
+//             flagData.set(schemaIdx, { id: schemaIdx, team, location: { x, y }, carrierId: null })
+//             spawnLocs.push({ x, y })
+//             this.map.water[this.map.locationToIndex(x, y)] = 0
+//             this.map.staticMap.initialWater[this.map.locationToIndex(x, y)] = 0
+//             this.map.staticMap.walls[this.map.locationToIndex(x, y)] = 0
+//             this.map.staticMap.divider[this.map.locationToIndex(x, y)] = 0
+//         }
+
+//         if (foundIdx == -1) return
+//         flagData.delete(schemaIdx)
+//         for (let i = foundIdx; i < spawnLocs.length - 1; i++) {
+//             spawnLocs[i] = spawnLocs[i + 1]
+//         }
+//         spawnLocs.pop()
+//         */
+//     }
+// }
+
 export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
-    public readonly name = 'Water'
+    public readonly name = 'Paint'
     public readonly fields = {
         should_add: {
             type: MapEditorBrushFieldType.ADD_REMOVE,
@@ -154,6 +175,12 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+        const radius: number = fields.radius.value - 1
+        applyInRadius(this.map, x, y, radius, (idx)=> {
+            const add = fields.should_add.value && this.map.staticMap.walls[idx] == 0
+            this.map.paint[idx] = add ? 1: 0
+            this.map.staticMap.initialPaint[idx] = add ? 1: 0
+        })
         /*
         const radius: number = fields.radius.value - 1
         applyInRadius(this.map, x, y, radius, (idx) => {
@@ -167,48 +194,48 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 }
 
-export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
-    public readonly name = 'Crumbs'
-    public readonly fields = {
-        should_add: {
-            type: MapEditorBrushFieldType.ADD_REMOVE,
-            value: true
-        },
-        amount: {
-            type: MapEditorBrushFieldType.SINGLE_SELECT,
-            options: [
-                { value: 100, label: '100' },
-                { value: 200, label: '200' },
-                { value: 300, label: '300' }
-            ],
-            label: 'Amount',
-            value: 100
-        }
-    }
-    constructor(map: CurrentMap) {
-        super(map)
-    }
+// export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
+//     public readonly name = 'Crumbs'
+//     public readonly fields = {
+//         should_add: {
+//             type: MapEditorBrushFieldType.ADD_REMOVE,
+//             value: true
+//         },
+//         amount: {
+//             type: MapEditorBrushFieldType.SINGLE_SELECT,
+//             options: [
+//                 { value: 100, label: '100' },
+//                 { value: 200, label: '200' },
+//                 { value: 300, label: '300' }
+//             ],
+//             label: 'Amount',
+//             value: 100
+//         }
+//     }
+//     constructor(map: CurrentMap) {
+//         super(map)
+//     }
 
-    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
-        /*
-        const foundIdx = this.map.staticMap.resourcePileLocations.findIndex((l) => l.x == x && l.y == y)
-        const schemaIdx = this.map.locationToIndex(x, y)
+//     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+//         /*
+//         const foundIdx = this.map.staticMap.resourcePileLocations.findIndex((l) => l.x == x && l.y == y)
+//         const schemaIdx = this.map.locationToIndex(x, y)
 
-        if (fields.should_add.value) {
-            if (foundIdx != -1) return
-            this.map.resourcePileData.set(schemaIdx, { amount: fields.amount.value })
-            this.map.staticMap.resourcePileLocations.push({ x, y })
-            return
-        }
+//         if (fields.should_add.value) {
+//             if (foundIdx != -1) return
+//             this.map.resourcePileData.set(schemaIdx, { amount: fields.amount.value })
+//             this.map.staticMap.resourcePileLocations.push({ x, y })
+//             return
+//         }
 
-        if (foundIdx == -1) return
-        for (let i = foundIdx; i < this.map.staticMap.resourcePileLocations.length - 1; i++)
-            this.map.staticMap.resourcePileLocations[i] = this.map.staticMap.resourcePileLocations[i + 1]
-        this.map.staticMap.resourcePileLocations.pop()
-        this.map.resourcePileData.delete(schemaIdx)
-        */
-    }
-}
+//         if (foundIdx == -1) return
+//         for (let i = foundIdx; i < this.map.staticMap.resourcePileLocations.length - 1; i++)
+//             this.map.staticMap.resourcePileLocations[i] = this.map.staticMap.resourcePileLocations[i + 1]
+//         this.map.staticMap.resourcePileLocations.pop()
+//         this.map.resourcePileData.delete(schemaIdx)
+//         */
+//     }
+// }
 
 // export class TestTrapBrush extends SymmetricMapEditorBrush<CurrentMap> {
 //     public readonly name = 'Traps'
@@ -251,82 +278,51 @@ export class ResourcePileBrush extends SymmetricMapEditorBrush<CurrentMap> {
 //     }
 // }
 
-// export class TestDuckBrush extends MapEditorBrush {
-//     public readonly name = 'Ducks'
-//     public readonly fields = {
-//         is_duck: {
-//             type: MapEditorBrushFieldType.ADD_REMOVE,
-//             value: true
-//         },
-//         team: {
-//             type: MapEditorBrushFieldType.TEAM,
-//             value: 0
-//         },
-//         heal_level: {
-//             type: MapEditorBrushFieldType.SINGLE_SELECT,
-//             options: [
-//                 { value: 0, label: '0' },
-//                 { value: 1, label: '1' },
-//                 { value: 2, label: '2' },
-//                 { value: 3, label: '3' },
-//                 { value: 4, label: '4' },
-//                 { value: 5, label: '5' },
-//                 { value: 6, label: '6' }
-//             ],
-//             value: 1
-//         },
-//         attack_level: {
-//             type: MapEditorBrushFieldType.SINGLE_SELECT,
-//             options: [
-//                 { value: 0, label: '0' },
-//                 { value: 1, label: '1' },
-//                 { value: 2, label: '2' },
-//                 { value: 3, label: '3' },
-//                 { value: 4, label: '4' },
-//                 { value: 5, label: '5' },
-//                 { value: 6, label: '6' }
-//             ],
-//             value: 2
-//         },
-//         build_level: {
-//             type: MapEditorBrushFieldType.SINGLE_SELECT,
-//             options: [
-//                 { value: 0, label: '0' },
-//                 { value: 1, label: '1' },
-//                 { value: 2, label: '2' },
-//                 { value: 3, label: '3' },
-//                 { value: 4, label: '4' },
-//                 { value: 5, label: '5' },
-//                 { value: 6, label: '6' }
-//             ],
-//             value: 5
-//         }
-//     }
+export class TowerBrush extends SymmetricMapEditorBrush<StaticMap> {
+    public readonly name = 'Towers'
+    public readonly fields = {
+        is_tower: {
+            type: MapEditorBrushFieldType.ADD_REMOVE,
+            value: true
+        },
+        team: {
+            type: MapEditorBrushFieldType.TEAM,
+            value: 0
+        },
+        tower_type: {
+            type: MapEditorBrushFieldType.SINGLE_SELECT,
+            value: schema.RobotType.DEFENSE_TOWER,
+            options: [
+                {value: schema.RobotType.DEFENSE_TOWER, label: "Defense Tower"},
+                {value: schema.RobotType.MONEY_TOWER, label: "Money Tower"},
+                {value: schema.RobotType.PAINT_TOWER, label: "Paint Tower"}
+            ]
+        }
+    }
 
-//     constructor(private readonly bodies: Bodies, private readonly map: StaticMap) {
-//         super()
-//     }
+    constructor(private readonly bodies: Bodies, map: StaticMap) {
+        super(map)
+    }
 
-//     public apply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
-//         const is_duck: boolean = fields.is_duck.value
-//         if (is_duck) {
-//             if (this.bodies.getBodyAtLocation(x, y)) return
-//             const duckClass = BODY_DEFINITIONS[0]
-//             const duck = new duckClass(
-//                 { x, y },
-//                 1,
-//                 this.bodies.game.teams[fields.team.value],
-//                 this.bodies.getNextID(),
-//                 fields.heal_level.value,
-//                 fields.attack_level.value,
-//                 fields.build_level.value
-//             )
-//             this.bodies.bodies.set(duck.id, duck)
-//         } else {
-//             let duck = this.bodies.getBodyAtLocation(x, y, undefined)
-//             if (duck) {
-//                 this.bodies.bodies.delete(duck.id)
-//             }
-//         }
-//     }
-// }
+    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>, robotOne: boolean) {
+        const is_tower: boolean = fields.is_tower.value
+        const towerType = fields.tower_type.value
+        if (is_tower) {
+            if (this.bodies.getBodyAtLocation(x, y)) return
+            const team = robotOne ? 0 : 1;
+            const towerClass = BODY_DEFINITIONS[towerType as keyof typeof BODY_DEFINITIONS]
+            const tower = new towerClass(
+                this.bodies.game,
+                { x, y },
+                this.bodies.game.teams[team],
+                this.bodies.getNextID(),
+            )
+            this.bodies.bodies.set(tower.id, tower)
+        } else {
+            let tower = this.bodies.getBodyAtLocation(x, y, undefined)
+            if (tower) {
+                this.bodies.bodies.delete(tower.id)
+            }
+        }
+    }
+}

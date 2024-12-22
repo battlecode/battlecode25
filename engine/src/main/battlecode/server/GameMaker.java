@@ -1,10 +1,7 @@
 package battlecode.server;
 
 import battlecode.common.GameConstants;
-import battlecode.common.GlobalUpgrade;
 import battlecode.common.MapLocation;
-import battlecode.common.SkillType;
-import battlecode.common.TrapType;
 import battlecode.common.UnitType;
 import battlecode.common.Team;
 import battlecode.instrumenter.profiler.Profiler;
@@ -24,7 +21,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.function.ToIntFunction;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
 import static battlecode.util.FlatHelpers.*;
@@ -64,7 +63,7 @@ public strictfp class GameMaker {
     /**
      * We write the whole match to this builder, then write it to a file.
      */
-    private final FlatBufferBuilder fileBuilder;
+    private final FlatBufferBuilderWrapper fileBuilder;
 
     /**
      * Null until the end of the match.
@@ -77,7 +76,7 @@ public strictfp class GameMaker {
      * we
      * can't just cut out chunks of the larger buffer :/
      */
-    private FlatBufferBuilder packetBuilder;
+    private FlatBufferBuilderWrapper packetBuilder;
 
     /**
      * The server we're sending packets on.
@@ -122,10 +121,10 @@ public strictfp class GameMaker {
 
         this.packetSink = packetSink;
         if (packetSink != null) {
-            this.packetBuilder = new FlatBufferBuilder();
+            this.packetBuilder = new FlatBufferBuilderWrapper();
         }
 
-        this.fileBuilder = new FlatBufferBuilder();
+        this.fileBuilder = new FlatBufferBuilderWrapper();
 
         this.events = new TIntArrayList();
         this.matchHeaders = new TIntArrayList();
@@ -212,10 +211,22 @@ public strictfp class GameMaker {
     /**
      * Run the same logic for both builders.
      *
+     * @param perBuilder called with each builder;
+     */
+    private void applyToBuilders(Consumer<FlatBufferBuilderWrapper> perBuilder) {
+        perBuilder.accept(fileBuilder);
+        if (packetSink != null) {
+            perBuilder.accept(packetBuilder);
+        }
+    }
+
+    /**
+     * Run the same logic for both builders.
+     *
      * @param perBuilder called with each builder; return event id. Should not
      *                   mutate state.
      */
-    private void createEvent(ToIntFunction<FlatBufferBuilder> perBuilder) {
+    private void createEvent(ToIntFunction<FlatBufferBuilderWrapper> perBuilder) {
         // make file event and add its offset to the list
         int eventAP = perBuilder.applyAsInt(fileBuilder);
         events.add(eventAP);
@@ -227,7 +238,7 @@ public strictfp class GameMaker {
             packetSink.addEvent(packetBuilder.sizedByteArray());
 
             // reset packet builder
-            packetBuilder = new FlatBufferBuilder(packetBuilder.dataBuffer());
+            packetBuilder = new FlatBufferBuilderWrapper(packetBuilder.dataBuffer());
         }
     }
 
@@ -267,14 +278,6 @@ public strictfp class GameMaker {
             int robotTypeMetaDataOffset = makeRobotTypeMetadata(builder);
 
             GameplayConstants.startGameplayConstants(builder);
-            //TODO: what gameplay constants do we need?
-            // GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
-            // GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
-            // GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
-            // GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
-            // GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
-            // GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
-            // GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
             int constantsOffset = GameplayConstants.endGameplayConstants(builder);
 
             GameHeader.startGameHeader(builder);
@@ -330,18 +333,14 @@ public strictfp class GameMaker {
         private TIntArrayList teamIDs;
         private TIntArrayList teamMoneyAmounts;
 
-        private ArrayList<Integer> turns; 
-
         private TIntArrayList diedIds; // ints
 
         private int currentRound;
-        
-        //helpers to store all of a robot's actions before commiting them at the end of a turn
-        private ArrayList<Integer> currentActions; 
-        private ArrayList<Byte> currentActionTypes;
-
         private int currentMapWidth = -1;
 
+        private ArrayList<Integer> timelineMarkerRounds; 
+        private ArrayList<String> timelineMarkerLabels;
+        private ArrayList<Integer> timelineMarkerColors;
 
         // Used to write logs.
         private final ByteArrayOutputStream logger;
@@ -349,12 +348,12 @@ public strictfp class GameMaker {
         public MatchMaker() {
             this.teamIDs = new TIntArrayList();
             this.teamMoneyAmounts = new TIntArrayList();
-            this.turns = new ArrayList<>();
             this.diedIds = new TIntArrayList();
             this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
-            this.currentActions = new ArrayList<>();
-            this.currentActionTypes = new ArrayList<>();
+            this.timelineMarkerRounds = new ArrayList<>();
+            this.timelineMarkerLabels = new ArrayList<>();
+            this.timelineMarkerColors = new ArrayList<>();
         }
 
         public void makeMatchHeader(LiveMap gameMap) {
@@ -414,9 +413,17 @@ public strictfp class GameMaker {
 
                 int profilerFilesOffset = MatchFooter.createProfilerFilesVector(builder, profilerFiles.toArray());
 
+                TIntArrayList timelineMarkerOffsets = new TIntArrayList();
+                for (int i = 0; i < this.timelineMarkerRounds.size(); i++){
+                    int timelineMarkerOffset = TimelineMarker.createTimelineMarker(builder, timelineMarkerRounds.get(i), 
+                    timelineMarkerColors.get(i), builder.createString(timelineMarkerLabels.get(i)));
+                    timelineMarkerOffsets.add(timelineMarkerOffset);
+                }
+                int timelineMarkersOffset = MatchFooter.createTimelineMarkersVector(builder, timelineMarkerOffsets.toArray());
+
                 return EventWrapper.createEventWrapper(builder, Event.MatchFooter,
                         MatchFooter.createMatchFooter(builder, TeamMapping.id(winTeam),
-                                FlatHelpers.getWinTypeFromDominationFactor(winType), totalRounds, profilerFilesOffset));
+                                FlatHelpers.getWinTypeFromDominationFactor(winType), totalRounds, timelineMarkersOffset, profilerFilesOffset));
             });
 
             matchFooters.add(events.size() - 1);
@@ -442,14 +449,14 @@ public strictfp class GameMaker {
                 int teamMoneyAmountsP = Round.createTeamResourceAmountsVector(builder, teamMoneyAmounts.toArray());
                 int diedIdsP = Round.createDiedIdsVector(builder, diedIds.toArray());
 
-                Round.startRound(builder);
+                builder.startRound();
+
                 Round.addTeamIds(builder, teamIDsP);
                 Round.addRoundId(builder, this.currentRound);
                 Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
-                int turnsOffset = Round.createTurnsVector(builder, ArrayUtils.toPrimitive(this.turns.toArray(new Integer[this.turns.size()])));
-                Round.addTurns(builder, turnsOffset);
-                int round = Round.endRound(builder);
+
+                int round = builder.finishRound();
                 return EventWrapper.createEventWrapper(builder, Event.Round, round);
             });
 
@@ -457,27 +464,24 @@ public strictfp class GameMaker {
         }
 
         public void startTurn(int robotID){
-            Turn.startTurn(fileBuilder);
-            Turn.addRobotId(fileBuilder, robotID);
+            return;
         }
 
-        public void endTurn(int health, int paint, int movementCooldown, int actionCooldown, int bytecodesUsed, 
-        MapLocation loc){
-            int actionsOffset = Turn.createActionsVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActions.toArray(new Integer[this.currentActions.size()])));
-            Turn.addActions(fileBuilder, actionsOffset);
-            int actionTypesOffsets = Turn.createActionsTypeVector(fileBuilder, ArrayUtils.toPrimitive(this.currentActionTypes.toArray(new Byte[this.currentActionTypes.size()])));
-            Turn.addActionsType(fileBuilder, actionTypesOffsets);
-            Turn.addHealth(fileBuilder, health);
-            Turn.addPaint(fileBuilder, paint);
-            Turn.addMoveCooldown(fileBuilder, movementCooldown);
-            Turn.addActionCooldown(fileBuilder, actionCooldown);
-            Turn.addBytecodesUsed(fileBuilder, bytecodesUsed);
-            Turn.addX(fileBuilder, loc.x);
-            Turn.addY(fileBuilder, loc.y);
-            int turnOffset = Turn.endTurn(fileBuilder);
-            this.turns.add(turnOffset);
-            this.currentActions.clear();
-            this.currentActionTypes.clear();
+        public void endTurn(int robotID, int health, int paint, int movementCooldown, int actionCooldown, int bytecodesUsed, MapLocation loc){
+            applyToBuilders((builder) -> {
+                builder.startTurn();
+
+                Turn.addRobotId(builder, robotID);
+                Turn.addHealth(builder, health);
+                Turn.addPaint(builder, paint);
+                Turn.addMoveCooldown(builder, movementCooldown);
+                Turn.addActionCooldown(builder, actionCooldown);
+                Turn.addBytecodesUsed(builder, bytecodesUsed);
+                Turn.addX(builder, loc.x);
+                Turn.addY(builder, loc.y);
+
+                builder.finishTurn();
+            });
         }
 
         /**
@@ -489,77 +493,91 @@ public strictfp class GameMaker {
 
         /// Generic action representing damage to a robot
         public void addDamageAction(int damagedRobotID, int damage){
-            int action = DamageAction.createDamageAction(fileBuilder, damagedRobotID, damage);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.DamageAction);
+            applyToBuilders((builder) -> {
+                int action = DamageAction.createDamageAction(builder, damagedRobotID, damage);
+                builder.addAction(action, Action.DamageAction);
+            });
         }
 
-
         /// Visually indicate a tile has been painted
-        public void addPaintAction(MapLocation loc){ 
-            //TODO: this should probably also have a primary/secondary boolean
-            int action = PaintAction.createPaintAction(fileBuilder, locationToInt(loc));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.PaintAction);
+        public void addPaintAction(MapLocation loc, boolean isSecondary){ 
+            applyToBuilders((builder) -> {
+                int action = PaintAction.createPaintAction(builder, locationToInt(loc), isSecondary ? (byte) 1 : 0);
+                builder.addAction(action, Action.PaintAction);
+            });
         }
 
         /// Visually indicate a tile's paint has been removed
         public void addUnpaintAction(MapLocation loc){
-            int action = UnpaintAction.createUnpaintAction(fileBuilder, locationToInt(loc));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.UnpaintAction);
+            applyToBuilders((builder) -> {
+                int action = UnpaintAction.createUnpaintAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.UnpaintAction);
+            });
         }
 
         /// Visually indicate an attack
         public void addAttackAction(int otherID){
-            int action = AttackAction.createAttackAction(fileBuilder, otherID);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.AttackAction);
+            applyToBuilders((builder) -> {
+                int action = AttackAction.createAttackAction(builder, otherID);
+                builder.addAction(action, Action.AttackAction);
+            });
         }
 
         /// Visually indicate a mop attack
         public void addMopAction(MapLocation loc){
-            int action = MopAction.createMopAction(fileBuilder, locationToInt(loc));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.MopAction);
+            applyToBuilders((builder) -> {
+                int action = MopAction.createMopAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.MopAction);
+            });
         }
 
         /// Visually indicate a tower being built
         public void addBuildAction(int towerID){
-            int action = BuildAction.createBuildAction(fileBuilder, towerID);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.BuildAction);
+            applyToBuilders((builder) -> {
+                int action = BuildAction.createBuildAction(builder, towerID);
+                builder.addAction(action, Action.BuildAction);
+            });
         }
-
 
         /// Visually indicate transferring paint from one robot to another
         public void addTransferAction(int otherRobotID){
-            int action = TransferAction.createTransferAction(fileBuilder, otherRobotID);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.TransferAction);
+            applyToBuilders((builder) -> {
+                int action = TransferAction.createTransferAction(builder, otherRobotID);
+                builder.addAction(action, Action.TransferAction);
+            });
         }
 
         /// Visually indicate messaging from one robot to another
         public void addMessageAction(int receiverID, int data){
-            int action = MessageAction.createMessageAction(fileBuilder, receiverID, data);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.MessageAction);
+            applyToBuilders((builder) -> {
+                int action = MessageAction.createMessageAction(builder, receiverID, data);
+                builder.addAction(action, Action.MessageAction);
+            });
         }
 
         /// Indicate that this robot was spawned on this turn
         public void addSpawnAction(MapLocation loc, Team team, UnitType type){
-            byte teamID = TeamMapping.id(team);
-            byte robotType = FlatHelpers.getRobotTypeFromUnitType(type);
-            int action = SpawnAction.createSpawnAction(fileBuilder, loc.x, loc.y, teamID, robotType);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.SpawnAction);
+            applyToBuilders((builder) -> {
+                byte teamID = TeamMapping.id(team);
+                byte robotType = FlatHelpers.getRobotTypeFromUnitType(type);
+                int action = SpawnAction.createSpawnAction(builder, loc.x, loc.y, teamID, robotType);
+                builder.addAction(action, Action.SpawnAction);
+            });
         }
 
         //visually indicates tower has been upgraded
         public void addUpgradeAction(int towerID){
-            int action = UpgradeAction.createUpgradeAction(fileBuilder, towerID);
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.UpgradeAction);
+            applyToBuilders((builder) -> {
+                int action = UpgradeAction.createUpgradeAction(builder, towerID);
+                builder.addAction(action, Action.UpgradeAction);
+            });
+        }
+
+        public void addDieExceptionAction(){
+            applyToBuilders((builder) -> {
+                int action = DieExceptionAction.createDieExceptionAction(builder, (byte) -1);
+                builder.addAction(action, Action.DieExceptionAction);
+            });
         }
 
         public void addTeamInfo(Team team, int moneyAmount) {
@@ -567,14 +585,25 @@ public strictfp class GameMaker {
             teamMoneyAmounts.add(moneyAmount);
         }
 
+        public void addTimelineMarker(String label, int red, int green, int blue){
+            if (!showIndicators){
+                return;
+            }
+            this.timelineMarkerRounds.add(this.currentRound);
+            this.timelineMarkerLabels.add(label);
+            int color = FlatHelpers.RGBtoInt(red, green, blue);
+            this.timelineMarkerColors.add(color);
+        }
+
         /// Update the indicator string for this robot
         public void addIndicatorString(int id, String string) {
             if (!showIndicators) {
                 return;
             }
-            int action = IndicatorStringAction.createIndicatorStringAction(fileBuilder, fileBuilder.createString(string));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.IndicatorStringAction);
+            applyToBuilders((builder) -> {
+                int action = IndicatorStringAction.createIndicatorStringAction(builder, builder.createString(string));
+                builder.addAction(action, Action.IndicatorStringAction);
+            });
         }
 
         /// Update the indicator dot for this robot
@@ -582,9 +611,10 @@ public strictfp class GameMaker {
             if (!showIndicators) {
                 return;
             }
-            int action = IndicatorDotAction.createIndicatorDotAction(fileBuilder, locationToInt(loc), FlatHelpers.RGBtoInt(red, green, blue));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.IndicatorDotAction);
+            applyToBuilders((builder) -> {
+                int action = IndicatorDotAction.createIndicatorDotAction(builder, locationToInt(loc), FlatHelpers.RGBtoInt(red, green, blue));
+                builder.addAction(action, Action.IndicatorDotAction);
+            });
         }
 
         /// Update the indicator line for this robot
@@ -592,25 +622,76 @@ public strictfp class GameMaker {
             if (!showIndicators) {
                 return;
             }
-            int action = IndicatorLineAction.createIndicatorLineAction(fileBuilder, locationToInt(startLoc), locationToInt(endLoc), FlatHelpers.RGBtoInt(red, green, blue));
-            this.currentActions.add(action);
-            this.currentActionTypes.add(Action.IndicatorLineAction);
+            applyToBuilders((builder) -> {
+                int action = IndicatorLineAction.createIndicatorLineAction(builder, locationToInt(startLoc), locationToInt(endLoc), FlatHelpers.RGBtoInt(red, green, blue));
+                builder.addAction(action, Action.IndicatorLineAction);
+            });
         }
 
-        public void addBytecodes(int bytecodes) {
-            Turn.addBytecodesUsed(fileBuilder, bytecodes);
+        public void addDied(int id) {
+            diedIds.add(id);
         }
 
         private int locationToInt(MapLocation loc){
             return loc.x + this.currentMapWidth * loc.y;
         }
 
-
         private void clearData() {
             this.teamIDs.clear();
             this.teamMoneyAmounts.clear();
-            this.turns.clear();
             this.diedIds.clear();
+        }
+    }
+
+    public class FlatBufferBuilderWrapper extends FlatBufferBuilder {
+        private ArrayList<Integer> turnOffsets = new ArrayList<>(); 
+        private ArrayList<Integer> actionOffsets = new ArrayList<>(); 
+        private ArrayList<Byte> actionTypes = new ArrayList<>();
+
+        public FlatBufferBuilderWrapper() {
+            super();
+        }
+
+        public FlatBufferBuilderWrapper(ByteBuffer data) {
+            super(data);
+        }
+
+        public void addAction(int offset, byte actionType) {
+            this.actionOffsets.add(offset);
+            this.actionTypes.add(actionType);
+        }
+
+        public void startTurn() {
+            int actionsOffset = Turn.createActionsVector(this, ArrayUtils.toPrimitive(this.actionOffsets.toArray(new Integer[this.actionOffsets.size()])));
+            int actionTypesOffsets = Turn.createActionsTypeVector(this, ArrayUtils.toPrimitive(this.actionTypes.toArray(new Byte[this.actionTypes.size()])));
+
+            Turn.startTurn(this);
+            Turn.addActions(this, actionsOffset);
+            Turn.addActionsType(this, actionTypesOffsets);
+        }
+
+        public void finishTurn() {
+            int turnOffset = Turn.endTurn(this);
+
+            this.turnOffsets.add(turnOffset);
+
+            // Reset per-turn data
+            this.actionOffsets.clear();
+            this.actionTypes.clear();
+        }
+
+        public void startRound() {
+            int turnsOffset = Round.createTurnsVector(this, ArrayUtils.toPrimitive(this.turnOffsets.toArray(new Integer[this.turnOffsets.size()])));
+
+            Round.startRound(this);
+            Round.addTurns(this, turnsOffset);
+
+            this.turnOffsets.clear();
+        }
+
+        public int finishRound() {
+            int round = Round.endRound(this);
+            return round;
         }
     }
 }
