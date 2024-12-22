@@ -11,6 +11,13 @@ export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
     const round = useRound()
     const [minimized, setMinimized] = React.useState(false)
+    const [playbackPerTurn, setPlaybackPerTurnRaw] = React.useState(round?.match.playbackPerTurn || false)
+    const setPlaybackPerTurn = (value: boolean) => {
+        if (round) {
+            round.match.playbackPerTurn = value
+            setPlaybackPerTurnRaw(value)
+        }
+    }
     const keyboard = useKeyboard()
     const { paused, targetUPS } = useControls()
 
@@ -27,11 +34,14 @@ export const ControlsBar: React.FC = () => {
         if (keyboard.keyCode === 'Space') gameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
+        if (keyboard.keyCode === 'KeyV') setPlaybackPerTurn(!playbackPerTurn)
 
         const applyArrows = () => {
             if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepRound(1)
-                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepRound(-1)
+                if (keyboard.keyCode === 'ArrowRight')
+                    playbackPerTurn ? gameRunner.stepTurn(1) : gameRunner.stepRound(1)
+                if (keyboard.keyCode === 'ArrowLeft')
+                    playbackPerTurn ? gameRunner.stepTurn(-1) : gameRunner.stepRound(-1)
             } else {
                 if (keyboard.keyCode === 'ArrowRight') gameRunner.multiplyUpdatesPerSecond(2)
                 if (keyboard.keyCode === 'ArrowLeft') gameRunner.multiplyUpdatesPerSecond(0.5)
@@ -79,10 +89,14 @@ export const ControlsBar: React.FC = () => {
             <div
                 className={
                     (minimized ? 'opacity-10 pointer-events-none' : 'opacity-90 pointer-events-auto') +
-                    ' flex bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
+                    ' flex items-center bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
-                <ControlsBarTimeline targetUPS={targetUPS} />
+                <ControlsBarTimeline
+                    targetUPS={targetUPS}
+                    playbackPerTurn={playbackPerTurn}
+                    setPlaybackPerTurn={setPlaybackPerTurn}
+                />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
                     tooltip="Reverse"

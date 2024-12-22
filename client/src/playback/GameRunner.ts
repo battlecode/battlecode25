@@ -20,6 +20,7 @@ class gameRunnerClass {
     _gameListeners: (() => void)[] = []
     _matchListeners: (() => void)[] = []
     _roundListeners: (() => void)[] = []
+    _turnListeners: (() => void)[] = []
 
     eventLoop: NodeJS.Timeout | undefined = undefined
 
@@ -37,7 +38,7 @@ class gameRunnerClass {
             const msPerUpdate = 1000 / this.targetUPS
             const updatesPerInterval = SIMULATION_UPDATE_INTERVAL_MS / msPerUpdate
 
-            const roundChanged = this.match!._stepSimulation(updatesPerInterval)
+            const [roundChanged, turnChanged] = this.match!._stepSimulationByTime(updatesPerInterval)
 
             // Always rerender, so this assumes the simulation pauses when the simulation
             // is over
@@ -45,6 +46,9 @@ class gameRunnerClass {
 
             if (roundChanged) {
                 this._trigger(this._roundListeners)
+            }
+            if (turnChanged) {
+                this._trigger(this._turnListeners)
             }
 
             if (prevRound != this.match.currentRound.roundNumber) {
@@ -135,13 +139,31 @@ class gameRunnerClass {
         this._trigger(this._roundListeners)
     }
 
-    jumpToRound(round: number) {
+    stepTurn(delta: number) {
         if (!this.match) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._stepTurn(delta)
+        this.match._roundSimulation()
+        GameRenderer.render()
+        this._trigger(this._turnListeners)
+    }
+
+    jumpToRound(round: number) {
+        if (!this.match || this.match.currentRound.roundNumber == round) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToRound(round)
         this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
+    }
+
+    jumpToTurn(turn: number) {
+        if (!this.match || this.match.currentRound.nextTurnIndex == turn) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._jumpToTurn(turn)
+        this.match._roundSimulation()
+        GameRenderer.render()
+        this._trigger(this._turnListeners)
     }
 
     jumpToStart() {
@@ -223,6 +245,31 @@ export function useRound(): Round | undefined {
         }
     }, [match])
     return match?.currentRound
+}
+
+export function useTurnNumber(): { current: number; max: number } | undefined {
+    const round = useRound()
+    const [turnIdentifierNumber, setTurnIdentifierNumber] = React.useState(
+        round ? round.roundNumber * round.match.maxRound + round.nextTurnIndex : undefined
+    )
+    React.useEffect(() => {
+        const listener = () =>
+            setTurnIdentifierNumber(round ? round.roundNumber * round.match.maxRound + round.nextTurnIndex : undefined)
+        gameRunner._turnListeners.push(listener)
+        return () => {
+            gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
+        }
+    }, [round])
+    return React.useMemo(
+        () =>
+            round
+                ? {
+                      current: round.nextTurnIndex,
+                      max: round.turnsLength || 0
+                  }
+                : undefined,
+        [round, turnIdentifierNumber, round?.nextTurnIndex]
+    )
 }
 
 export function useControls(): {
