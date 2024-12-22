@@ -111,11 +111,6 @@ struct DieExceptionAction {
     value: byte; //size 0 structs not allowed
 }
 
-/// Adds a marker to the timeline at the current round
-table TimelineMarkerAction{
-    label: string;
-}
-
 /// Update the indicator string for this robot
 table IndicatorStringAction {
     value: string;
@@ -146,7 +141,6 @@ union Action {
     SpawnAction,
     UpgradeAction,
     DieExceptionAction, 
-    TimelineMarkerAction,
     IndicatorStringAction,
     IndicatorDotAction,
     IndicatorLineAction
@@ -165,9 +159,16 @@ table GameMap {
     initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
-    paint: [int];
+    paint: [byte];
     ruins: VecTable;
     paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
+}
+
+/// Markers for events during the game indicated by the user
+table TimelineMarker{
+    round: int;
+    colorHex: int;
+    label: string;
 }
 
 //========================================================================================
@@ -258,6 +259,8 @@ table MatchFooter {
     winType: WinType;
     /// The number of rounds played.
     totalRounds: int;
+    /// Markers for this match.
+    timelineMarkers: [TimelineMarker];
     /// Profiler data for team A and B if profiling is enabled.
     profilerFiles: [ProfilerFile];
 }

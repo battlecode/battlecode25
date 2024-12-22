@@ -250,7 +250,7 @@ export class StaticMap {
         public readonly dimension: Dimension,
         public readonly walls: Int8Array,
         public readonly ruins: Vector[],
-        public readonly initialPaint: Int32Array
+        public readonly initialPaint: Int8Array
     ) {
         if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
 
@@ -297,7 +297,7 @@ export class StaticMap {
 
         const walls = new Int8Array(width * height)
         const ruins: Vector[] = []
-        const initialPaint = new Int32Array(width * height)
+        const initialPaint = new Int8Array(width * height)
         return new StaticMap(name, randomSeed, symmetry, dimension, walls, ruins, initialPaint)
     }
 
@@ -370,24 +370,16 @@ export class StaticMap {
                     })
                 }
                 */
-                
+
                 // Render ruins
                 this.ruins.forEach(({ x, y }) => {
-                    const coords = renderUtils.getRenderCoords(x, y, this.dimension);
+                    const coords = renderUtils.getRenderCoords(x, y, this.dimension)
 
                     const imgPath = `ruins/silver_64x64.png`
-                    const ruinImage = getImageIfLoaded(imgPath);
+                    const ruinImage = getImageIfLoaded(imgPath)
+                    renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
+                })
 
-                    if (ruinImage) {
-                        renderUtils.renderCenteredImageOrLoadingIndicator(
-                            ctx,
-                            ruinImage,
-                            { x: coords.x, y: coords.y }, // Centered at the ruin
-                            1.0 
-                        );
-                    }
-                });
-    
                 // Draw grid
                 const showGrid = true
                 if (showGrid) {

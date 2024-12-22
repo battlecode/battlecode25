@@ -104,10 +104,12 @@ export default class Bodies {
         // Update properties
         body.pos = { x: turn.x(), y: turn.y() }
         body.hp = turn.health()
-        //body.paint = turn.pain();
+        body.paint = turn.paint()
         body.moveCooldown = turn.moveCooldown()
         body.actionCooldown = turn.actionCooldown()
         body.bytecodesUsed = turn.bytecodesUsed()
+
+        body.addToPrevSquares()
     }
 
     getById(id: number): Body {
@@ -215,8 +217,7 @@ export class Body {
     public indicatorString: string = ''
     public dead: boolean = false
     public hp: number = 0
-    public actionRadius: number = 0
-    public visionRadius: number = 0
+    public paint: number = 0
     public moveCooldown: number = 0
     public actionCooldown: number = 0
     public bytecodesUsed: number = 0
@@ -248,14 +249,9 @@ export class Body {
     ): void {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
-        
+
         if (this.dead) ctx.globalAlpha = 0.5
-        renderUtils.renderCenteredImageOrLoadingIndicator(
-            ctx,
-            getImageIfLoaded(this.imgPath),
-            renderCoords,
-            this.size
-        )
+        renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
         ctx.globalAlpha = 1
 
         if (selected || hovered) this.drawPath(match, overlayCtx)
@@ -385,7 +381,7 @@ export class Body {
         const pos = this.pos
 
         if (lightly) ctx.globalAlpha = 0.5
-        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.actionRadius)
+        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.actionRadiusSquared())
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
@@ -394,7 +390,7 @@ export class Body {
         ctx.beginPath()
         ctx.strokeStyle = 'blue'
         ctx.lineWidth = 0.1
-        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.visionRadius)
+        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.visionRadiusSquared())
         this.drawEdges(match, ctx, lightly, squares2)
 
         ctx.globalAlpha = 1
@@ -453,8 +449,8 @@ export class Body {
             (this.dead ? 'JAILED: ' : '') + this.robotName,
             `ID: ${this.id}`,
             `HP: ${this.hp}`,
+            `Paint: ${this.paint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
-            //this.carryingFlagId !== null ? `Has Flag! (ID: ${this.carryingFlagId})` : '',
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
             `Bytecodes Used: ${this.bytecodesUsed}`
@@ -498,8 +494,6 @@ export class Body {
         this.hp = metadata.baseHealth()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
-        this.visionRadius = metadata.visionRadiusSquared()
-        this.actionRadius = metadata.actionRadiusSquared()
     }
 
     public getSpecialization(): { idx: number; name: string } {

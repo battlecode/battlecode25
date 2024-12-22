@@ -25,6 +25,7 @@ export default class Actions {
         }
 
         const robotId = turn.robotId()
+
         if (turn.actionsLength() > 0) {
             for (let i = 0; i < turn.actionsTypeLength(); i++) {
                 const actionType = turn.actionsType(i)!
@@ -99,16 +100,21 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
         }
     },
-    //old DieException
+    [schema.Action.DieExceptionAction]: class DieExceptionAction extends Action<schema.DieExceptionAction> {
+        apply(round: Round): void {
+            // TODO: revist this
+            console.log(`Robot ${this.robotId} has died due to an exception`)
+        }
+    },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
-            const target = round.bodies.getById(this.actionData.id());
+            const target = round.bodies.getById(this.actionData.id())
             if (!target) {
-                throw new Error(`Target ${this.actionData.id()} not found for damage action`);
+                throw new Error(`Target ${this.actionData.id()} not found for damage action`)
             }
-    
+
             // Apply damage to the target
-            target.hp -= this.actionData.damage();
+            target.hp -= this.actionData.damage()
         }
     },
     [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
@@ -264,8 +270,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
             // This assumes ids are never reused
-            assert(!round.bodies.hasId(this.robotId), 'Spawned robot already exists')
-
             round.bodies.spawnBody(this.robotId, this.actionData)
         }
     },
@@ -280,8 +284,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
         apply(round: Round): void {
             const body = round.bodies.getById(this.robotId)
-            // Check if exists because technically can add indicators when not spawned
-            assert(body, 'body should not be null')
             const string = this.actionData.value()!
             body.indicatorString = string
         }
@@ -292,7 +294,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const vectorLoc = round.map.indexToLocation(loc)
 
             const body = round.bodies.getById(this.robotId)
-            assert(body, 'body should not be null')
             body.indicatorDots.push({
                 location: vectorLoc,
                 color: renderUtils.colorToHexString(this.actionData.colorHex())
@@ -305,7 +306,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const ends = round.map.indexToLocation(this.actionData.endLoc())
 
             const body = round.bodies.getById(this.robotId)
-            assert(body, 'body should not be null')
             body.indicatorLines.push({
                 start: starts,
                 end: ends,
