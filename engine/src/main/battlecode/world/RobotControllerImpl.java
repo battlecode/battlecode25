@@ -590,6 +590,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
                     "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
         }
+
+        if (this.robot.getPaint() < GameConstants.MARK_PATTERN_PAINT_COST){
+            throw new GameActionException(CANT_DO_THAT, "This robot doesn't have enough paint to mark the tower pattern!");
+        }
     }
 
     @Override
@@ -672,6 +676,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
+        }
+
+        if (this.robot.getPaint() < GameConstants.MARK_PATTERN_PAINT_COST){
+            throw new GameActionException(CANT_DO_THAT, "Cannot mark resource pattern because this robot doesn't have enough paint!");
         }
     }
 
