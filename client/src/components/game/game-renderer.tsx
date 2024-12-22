@@ -123,6 +123,11 @@ const ZoomableGameRenderer: React.FC<{
         if (spaceRef.current) spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
     }
 
+    React.useEffect(() => {
+        window.addEventListener('resize', resetCamera)
+        return () => window.removeEventListener('resize', resetCamera)
+    }, [])
+
     const match = useMatch()
     React.useEffect(resetCamera, [match])
 
