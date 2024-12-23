@@ -3,8 +3,13 @@ const fetch = require('electron-fetch').default
 const isDev = require('electron-is-dev')
 const path = require('path')
 const fs = require('fs')
-const javaFind = require('java-find')
 const child_process = require('child_process')
+
+// Sort of annoying thing we have to do, but basically since local builds output the
+// module to the build folder, we can use the generated .js to load that way. However,
+// in packaged builds, we need copy the module with a generic name somewhere else (bc
+// issues with universal mac builds), so we have to load it directly
+const whereIsIt = isDev ? require('where-is-it/build') : require('where-is-it/where-is-it.node')
 
 let mainWindow
 
@@ -61,24 +66,6 @@ const getFiles = (dir, recursive) => {
     return files
 }
 
-const reformatJavaPath = (javaPath) => {
-    if (!javaPath) return ''
-
-    // Ensure that the found path is a jdk install
-    if (!javaPath.toLowerCase().includes('jdk')) return ''
-
-    const hasLeadingSlash = javaPath[0] == '/'
-
-    // Ensure that the java path ends with 'Home' since that is what JAVA_HOME expects
-    const items = javaPath.split(path.sep)
-    while (items.length > 0) {
-        if (items[items.length - 1] == 'Home') break
-        items.pop()
-    }
-
-    return (hasLeadingSlash ? '/' : '') + path.join(...items)
-}
-
 const processes = new Map()
 function killAllProcesses() {
     while (processes.size > 0) {
@@ -89,6 +76,10 @@ function killAllProcesses() {
 
 const WINDOWS = process.platform === 'win32'
 const GRADLE_WRAPPER = WINDOWS ? 'gradlew.bat' : 'gradlew'
+
+// TODO: since we are already importing rust for whereIsIt, we could honestly
+// wrap this whole API in rust and use it directly rather than having to maintain
+// this
 
 ipcMain.handle('electronAPI', async (event, operation, ...args) => {
     try {
@@ -104,19 +95,35 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
                 return app.getAppPath()
             case 'getJavas': {
                 const output = []
-                const foundPaths = {}
                 try {
-                    const javas = (await javaFind.getJavas()).filter(
-                        (j) => j.version.major == 1 && j.version.minor == 8
-                    )
-                    for (const j of javas) {
-                        const v = j.version
-                        const displayStr = `${v.major}.${v.minor}.${v.patch}_${v.update} (${j.arch})`
-                        const formattedPath = reformatJavaPath(j.path)
-                        if (!formattedPath || formattedPath in foundPaths) continue
-                        foundPaths[formattedPath] = true
-                        output.push(displayStr)
-                        output.push(formattedPath)
+                    const jvms = whereIsIt.nodeFindJava(null, null, '1.8')
+
+                    // Add 'auto' option
+                    output.push('Auto')
+                    if (jvms.length === 0) {
+                        output.push('')
+                    } else {
+                        output.push(jvms[0].path)
+                    }
+
+                    for (const jvm of jvms) {
+                        output.push(`${jvm.version} (${jvm.architecture})`)
+                        output.push(jvm.path)
+                    }
+                } catch {}
+                return output
+            }
+            case 'getPythons': {
+                const output = []
+                try {
+                    const pythons = whereIsIt.nodeFindPython(null, null, null, null, null, null, null)
+
+                    for (const py of pythons) {
+                        const path = py.executablePath
+                        const display = py.formattedName ?? path
+                        const version = py.version ?? 'Unknown'
+                        output.push(`${display} (${version})`)
+                        output.push(path)
                     }
                 } catch {}
                 return output

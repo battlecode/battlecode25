@@ -1,6 +1,6 @@
 {
     "name": "battlecode-client",
-    "version": "24.0.0",
+    "version": "25.0.0",
     "description": "Battlecode client",
     "main": "src-electron/electron-main.js",
     "scripts": {
@@ -14,9 +14,10 @@
         "tauri-watch": "tauri dev",
         "tauri-pack": "cross-env CI=true tauri build",
         "tauri-build": "npm run build && npm run tauri-pack",
-        "electron-watch": "concurrently --kill-others \"npm run watch\" \"wait-on http://localhost:3000 && electron .\"",
+        "electron-compile-modules": "cd node_modules/where-is-it && npm i && npm run build",
+        "electron-watch": "concurrently --kill-others \"npm run watch\" \"npm run electron-compile-modules && wait-on http://localhost:3000 && electron .\"",
         "electron-pack": "cross-env USE_HARD_LINKS=false CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production electron-builder build --publish never",
-        "electron-build": "npm run build && npm run electron-pack"
+        "electron-build": "npm run build && npm run electron-compile-modules && npm run electron-pack"
     },
     "build": {
         "asar": false,
@@ -28,16 +29,16 @@
         },
         "fileAssociations": [
             {
-                "ext": "bc24",
-                "name": "BC24",
-                "description": "Battlecode Match 2024",
+                "ext": "bc25",
+                "name": "BC25",
+                "description": "Battlecode Match 2025",
                 "role": "Viewer",
                 "icon": "icons/icon"
             },
             {
-                "ext": "map24",
-                "name": "MAP24",
-                "description": "Battlecode Map 2024",
+                "ext": "map25",
+                "name": "MAP25",
+                "description": "Battlecode Map 2025",
                 "role": "Viewer",
                 "icon": "icons/icon"
             }
@@ -101,20 +102,29 @@
             "node_modules/electron-fetch/**/*",
             "node_modules/encoding/**/*",
             "node_modules/iconv-lite/**/*",
-            "node_modules/safer-buffer/**/*"
+            "node_modules/safer-buffer/**/*",
         ],
-        "includeSubNodeModules": false
+        "includeSubNodeModules": false,
+        "extraResources": [
+            {
+                "from": "node_modules/where-is-it/build/where-is-it.${platform}-${arch}.node",
+                "to": "app/node_modules/where-is-it/where-is-it.node",
+                "filter": [
+                    "**/*"
+                ]
+            }
+        ]
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/battlecode/battlecode24.git"
+        "url": "git+https://github.com/battlecode/battlecode25.git"
     },
     "author": "Teh Devs",
     "license": "GPL-3.0",
     "bugs": {
-        "url": "https://github.com/battlecode/battlecode23/issues"
+        "url": "https://github.com/battlecode/battlecode25/issues"
     },
-    "homepage": "https://github.com/battlecode/battlecode23#readme",
+    "homepage": "https://github.com/battlecode/battlecode25#readme",
     "dependencies": {
         "@headlessui/react": "^1.7.14",
         "@types/d3": "^7.4.2",
@@ -125,7 +135,6 @@
         "electron-fetch": "^1.9.1",
         "electron-is-dev": "^2.0.0",
         "fs": "^0.0.1-security",
-        "java-find": "0.0.6",
         "pako": "^2.1.0",
         "path": "^0.12.7",
         "process": "^0.11.10",
@@ -135,7 +144,8 @@
         "react-icons": "^4.8.0",
         "react-router-dom": "^6.13.0",
         "react-window": "^1.8.10",
-        "react-zoomable-ui": "^0.11.0"
+        "react-zoomable-ui": "^0.11.0",
+        "where-is-it": "https://github.com/TheApplePieGod/where-is-it.git"
     },
     "devDependencies": {
         "@tauri-apps/cli": "^1.4.0",

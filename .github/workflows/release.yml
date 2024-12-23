@@ -53,13 +53,13 @@ jobs:
         with:
           node-version: 16
 
-      # Rust toolchain is preinstalled on runner images, but we need to add the arm64
-      # toolchain on macos to compile universal apps from the x86 runner
+      # Rust toolchain is preinstalled on runner images, but we need to add the x86
+      # toolchain on macos to compile universal apps from the M1 runner
       - name: Install macos dependencies
         if: startsWith(matrix.platform-name, 'macos')
         run: |
-          rustup target add aarch64-apple-darwin
-          npm install @tauri-apps/cli-darwin-x64
+          rustup target add x86_64-apple-darwin
+          npm install @tauri-apps/cli-darwin-arm64
 
       - name: Install linux dependencies
         if: startsWith(matrix.platform-name, 'ubuntu')
@@ -82,6 +82,16 @@ jobs:
 
       - name: Build client webpack
         run: npm run build
+        working-directory: ./client
+
+      - name: Compile electron modules
+        run: npm run electron-compile-modules
+        working-directory: ./client
+
+      # Specially compile x86 electron modules to be included in universal build
+      - name: Compile (extra) electron modules
+        if: startsWith(matrix.platform-name, 'macos')
+        run: RUST_TARGET=x86_64-apple-darwin npm run electron-compile-modules
         working-directory: ./client
 
       - name: Build client applications
