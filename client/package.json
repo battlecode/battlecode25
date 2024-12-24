@@ -1,5 +1,5 @@
 {
-    "name": "battlecode-client",
+    "name": "battlecode-client-2025",
     "version": "25.0.0",
     "description": "Battlecode client",
     "main": "src-electron/electron-main.js",
@@ -21,8 +21,8 @@
     },
     "build": {
         "asar": false,
-        "appId": "battlecode-client",
-        "productName": "BattlecodeClient",
+        "appId": "com.battlecode.client.2025",
+        "productName": "Battlecode Client",
         "compression": "store",
         "directories": {
             "output": "packaged-client"

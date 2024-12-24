@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Battlecode Client",
-    "version": "24.0.0"
+    "version": "25.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -27,7 +27,7 @@
         "../icons/icon.icns",
         "../icons/icon.ico"
       ],
-      "identifier": "com.battlecode.client.2024",
+      "identifier": "com.battlecode.client.2025",
       "longDescription": "",
       "resources": [],
       "shortDescription": "",
@@ -41,11 +41,12 @@
     },
     "windows": [
       {
-        "fullscreen": false,
-        "height": 760,
-        "resizable": true,
         "title": "Battlecode Client",
-        "width": 1200
+        "height": 760,
+        "width": 1200,
+        "fullscreen": false,
+        "maximized": true,
+        "resizable": true
       }
     ]
   }
