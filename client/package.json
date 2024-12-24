@@ -148,7 +148,7 @@
         "where-is-it": "https://github.com/TheApplePieGod/where-is-it.git"
     },
     "devDependencies": {
-        "@tauri-apps/cli": "^1.4.0",
+        "@tauri-apps/cli": "1.6.3",
         "@types/pako": "^2.0.0",
         "@types/react": "^18.2.5",
         "@types/react-dom": "^18.2.3",
