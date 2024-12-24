@@ -102,7 +102,7 @@
             "node_modules/electron-fetch/**/*",
             "node_modules/encoding/**/*",
             "node_modules/iconv-lite/**/*",
-            "node_modules/safer-buffer/**/*",
+            "node_modules/safer-buffer/**/*"
         ],
         "includeSubNodeModules": false,
         "extraResources": [
