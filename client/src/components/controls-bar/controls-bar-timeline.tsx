@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useAppContext } from '../../app-context';
 import gameRunner, { useCurrentUPS, useMatch } from '../../playback/GameRunner';
 import { GAME_MAX_TURNS } from '../../constants';
@@ -7,51 +7,65 @@ const TIMELINE_WIDTH = 350;
 
 interface TimelineMarker {
     round: number;
-    label?: string;
+    phase: number;
+    description: string;
 }
+
+const markers: TimelineMarker[] = [
+    { round: 0, phase: 1, description: "Game Start" },
+    { round: Math.floor(GAME_MAX_TURNS * 0.25), phase: 2, description: "Early Game" },
+    { round: Math.floor(GAME_MAX_TURNS * 0.5), phase: 3, description: "Mid Game" },
+    { round: Math.floor(GAME_MAX_TURNS * 0.75), phase: 4, description: "Late Game" },
+    { round: GAME_MAX_TURNS - 1, phase: 5, description: "End Game" }
+];
 
 interface Props {
     targetUPS: number;
 }
 
-const TimelineMarkers: React.FC<{ markers: TimelineMarker[]; maxRound: number }> = ({ markers, maxRound }) => {
+interface MarkerProps {
+    currentRound: number;
+    maxRound: number;
+}
+
+const TimelineMarkers: React.FC<MarkerProps> = ({ currentRound, maxRound }) => {
     return (
-        <div 
-            className="absolute left-0 right-0 bottom-[5px] h-[15px] border border-red-500"
-        >
-            {markers.map((marker, index) => {
+        <div className="absolute left-0 right-0 bottom-[2.5px] pointer-events-none">
+            {markers.map((marker) => {
                 const position = (marker.round / maxRound) * TIMELINE_WIDTH;
+                const isActive = currentRound >= marker.round;
+                
                 return (
                     <div
-                        key={index}
-                        className="group relative"
-                        onClick={() => {
-                            // Jump to the round when the marker is clicked
-                            gameRunner.jumpToRound(marker.round);
-                        }}
+                        key={marker.phase}
+                        className="absolute group"
+                        style={{ left: `${position}px` }}
                     >
-                        <div
-                            className="absolute w-4 h-4 bg-red-500 rounded-full -translate-x-1/2 hover:bg-red-400 transition-colors cursor-pointer z-10"
-                            style={{
-                                left: `${position}px`,
-                                bottom: '5px'
-                            }}
-                        />
-                        <div
-                            className="absolute block bg-gray-800 text-white text-xs rounded px-2 py-1 left-1/2 -translate-x-1/2 bottom-full mb-1 whitespace-nowrap z-20"
-                            style={{
-                                left: `${position}px`,
-                            }}
+                        {/* Clickable area */}
+                        <div 
+                            className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 cursor-pointer pointer-events-auto z-20"
+                            onClick={() => gameRunner.jumpToRound(marker.round)}
+                            style={{ top: '0px' }}
                         >
-                            {marker.label || `Round ${marker.round}`}
-                            <div 
-                                className="absolute w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"
-                                style={{
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    bottom: '-4px'
-                                }}
+                            {/* Visible marker */}
+                            <div
+                                className={`absolute top-1/2 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 
+                                    rounded-full transition-colors
+                                    ${isActive ? 'bg-gray-300' : 'bg-gray-400'}
+                                    group-hover:bg-blue-400`}
                             />
+                        </div>
+
+                        {/* Tooltip */}
+                        <div 
+                            className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30 pointer-events-none"
+                            style={{ bottom: '15px', left: '0', transform: 'translateX(-50%)' }}
+                        >
+                            <div className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm shadow-lg whitespace-nowrap">
+                                <div className="font-bold">Phase {marker.phase}</div>
+                                <div className="text-gray-300">{marker.description}</div>
+                                <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 border-8 border-transparent border-t-gray-800" />
+                            </div>
                         </div>
                     </div>
                 );
@@ -66,16 +80,6 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const match = useMatch();
     const down = useRef(false);
 
-    // Hard-coded timeline markers
-    const markers: TimelineMarker[] = [
-        { round: 10, label: 'Early Game' },
-        { round: 500, label: 'Mid Game' },
-        { round: 1000, label: 'Late Game' },
-        { round: 1500, label: 'End Game' },
-        { round: 2000, label: 'Final Rounds' }
-    ];
-    
-    // Ensure maxRound is always a number
     const maxRound = match ? (appContext.state.tournament ? GAME_MAX_TURNS : match.maxRound) : GAME_MAX_TURNS;
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -122,7 +126,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[9px] text-xs pointer-events-none">
                     Upload Game File
                 </p>
-                <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
+                <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded" />
             </div>
         );
     }
@@ -136,16 +140,16 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                 Round: <b>{round}</b>/{maxRound} &nbsp; {targetUPS} UPS ({targetUPS < 0 && '-'}
                 {currentUPS})
             </p>
-            <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
+            <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded" />
             <div
                 className="absolute bg-white/90 left-0 bottom-0 min-h-[5px] rounded min-w-[5px]"
                 style={{ right: roundPercentage() }}
             />
 
-            <TimelineMarkers markers={markers} maxRound={maxRound} />
+            <TimelineMarkers currentRound={round} maxRound={maxRound} />
 
             <div
-                className="absolute left-0 right-0 top-0 bottom-0 z-[1] cursor-pointer"
+                className="absolute left-0 right-0 top-0 bottom-0 cursor-pointer"
                 onMouseMove={timelineHover}
                 onMouseDown={timelineDown}
                 onMouseUp={timelineUp}
