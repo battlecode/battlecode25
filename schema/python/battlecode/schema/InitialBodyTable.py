@@ -4,13 +4,16 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.SpawnAction import SpawnAction
+from typing import Optional
 np = import_numpy()
 
 class InitialBodyTable(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = InitialBodyTable()
         x.Init(buf, n + offset)
@@ -21,11 +24,11 @@ class InitialBodyTable(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # InitialBodyTable
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # InitialBodyTable
-    def RobotIds(self, j):
+    def RobotIds(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             a = self._tab.Vector(o)
@@ -40,73 +43,72 @@ class InitialBodyTable(object):
         return 0
 
     # InitialBodyTable
-    def RobotIdsLength(self):
+    def RobotIdsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # InitialBodyTable
-    def RobotIdsIsNone(self):
+    def RobotIdsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
     # InitialBodyTable
-    def SpawnActions(self, j):
+    def SpawnActions(self, j: int) -> Optional[SpawnAction]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 6
-            from battlecode.schema.SpawnAction import SpawnAction
             obj = SpawnAction()
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
 
     # InitialBodyTable
-    def SpawnActionsLength(self):
+    def SpawnActionsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # InitialBodyTable
-    def SpawnActionsIsNone(self):
+    def SpawnActionsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
-def InitialBodyTableStart(builder):
+def InitialBodyTableStart(builder: flatbuffers.Builder):
     builder.StartObject(2)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     InitialBodyTableStart(builder)
 
-def InitialBodyTableAddRobotIds(builder, robotIds):
+def InitialBodyTableAddRobotIds(builder: flatbuffers.Builder, robotIds: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(robotIds), 0)
 
-def AddRobotIds(builder, robotIds):
+def AddRobotIds(builder: flatbuffers.Builder, robotIds: int):
     InitialBodyTableAddRobotIds(builder, robotIds)
 
-def InitialBodyTableStartRobotIdsVector(builder, numElems):
+def InitialBodyTableStartRobotIdsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartRobotIdsVector(builder, numElems):
+def StartRobotIdsVector(builder, numElems: int) -> int:
     return InitialBodyTableStartRobotIdsVector(builder, numElems)
 
-def InitialBodyTableAddSpawnActions(builder, spawnActions):
+def InitialBodyTableAddSpawnActions(builder: flatbuffers.Builder, spawnActions: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(spawnActions), 0)
 
-def AddSpawnActions(builder, spawnActions):
+def AddSpawnActions(builder: flatbuffers.Builder, spawnActions: int):
     InitialBodyTableAddSpawnActions(builder, spawnActions)
 
-def InitialBodyTableStartSpawnActionsVector(builder, numElems):
+def InitialBodyTableStartSpawnActionsVector(builder, numElems: int) -> int:
     return builder.StartVector(6, numElems, 2)
 
-def StartSpawnActionsVector(builder, numElems):
+def StartSpawnActionsVector(builder, numElems: int) -> int:
     return InitialBodyTableStartSpawnActionsVector(builder, numElems)
 
-def InitialBodyTableEnd(builder):
+def InitialBodyTableEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return InitialBodyTableEnd(builder)

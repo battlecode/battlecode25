@@ -4,6 +4,9 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.GameMap import GameMap
+from typing import Optional
 np = import_numpy()
 
 # Sent to start a match.
@@ -11,7 +14,7 @@ class MatchHeader(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = MatchHeader()
         x.Init(buf, n + offset)
@@ -22,15 +25,14 @@ class MatchHeader(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # MatchHeader
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # MatchHeader
-    def Map(self):
+    def Map(self) -> Optional[GameMap]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             x = self._tab.Indirect(o + self._tab.Pos)
-            from battlecode.schema.GameMap import GameMap
             obj = GameMap()
             obj.Init(self._tab.Bytes, x)
             return obj
@@ -43,26 +45,26 @@ class MatchHeader(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
-def MatchHeaderStart(builder):
+def MatchHeaderStart(builder: flatbuffers.Builder):
     builder.StartObject(2)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     MatchHeaderStart(builder)
 
-def MatchHeaderAddMap(builder, map):
+def MatchHeaderAddMap(builder: flatbuffers.Builder, map: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(map), 0)
 
-def AddMap(builder, map):
+def AddMap(builder: flatbuffers.Builder, map: int):
     MatchHeaderAddMap(builder, map)
 
-def MatchHeaderAddMaxRounds(builder, maxRounds):
+def MatchHeaderAddMaxRounds(builder: flatbuffers.Builder, maxRounds: int):
     builder.PrependInt32Slot(1, maxRounds, 0)
 
-def AddMaxRounds(builder, maxRounds):
+def AddMaxRounds(builder: flatbuffers.Builder, maxRounds: int):
     MatchHeaderAddMaxRounds(builder, maxRounds)
 
-def MatchHeaderEnd(builder):
+def MatchHeaderEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return MatchHeaderEnd(builder)

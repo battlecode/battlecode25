@@ -4,6 +4,7 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 # Indicate that this robot was spawned on this turn
@@ -11,11 +12,11 @@ class SpawnAction(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def SizeOf(cls):
+    def SizeOf(cls) -> int:
         return 6
 
     # SpawnAction
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # SpawnAction
