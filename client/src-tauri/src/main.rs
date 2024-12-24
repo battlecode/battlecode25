@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{collections::HashMap, fs, io::Write, path::Path, str::FromStr, sync::{Arc, Mutex}};
-use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
+use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Manager, Runtime};
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tauri::api::process::{Command, CommandEvent, CommandChild};
 use relative_path::RelativePath;
@@ -279,12 +279,23 @@ async fn tauri_api(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("window")
+    PluginBuilder::new("nativeAPI")
         .setup(|_app| {
             Ok(())
         })
         .on_event(|_app, event| {
             match event {
+                tauri::RunEvent::Exit => {
+                    let state: tauri::State<'_, AppState> = _app.state();
+                    let mut active: HashMap<String, CommandChild> = Default::default();
+                    std::mem::swap(
+                        &mut active,
+                        &mut *state.active_processes.lock().unwrap()
+                    );
+
+                    // Kill all child processes
+                    active.into_iter().for_each(|p| { let _ = p.1.kill(); });
+                },
                 _ => ()
             }
         })

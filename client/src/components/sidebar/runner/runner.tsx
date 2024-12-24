@@ -48,7 +48,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
         if (!install && autoVer) return autoVer
 
         const storedInstalls = getStoredInstalls()
-        return [...langVersions, ...storedInstalls].find((i) => i.path == install)
+        return [...langVersions, ...storedInstalls].find((i) => i.path == install && i.display !== 'Auto')
     }
 
     const [customVersions, setCustomVersions] = useState<LanguageVersion[]>(getStoredInstalls())
@@ -105,7 +105,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                         allVersions={[...langVersions, ...customVersions]}
                         onSelect={(j) => {
                             setLangVersion(j)
-                            localStorage.setItem(`defaultInstall${language}`, j ? j.path : '')
+                            localStorage.setItem(`defaultInstall${language}`, j && j.display !== 'Auto' ? j.path : '')
                         }}
                         onAddCustom={(c) => {
                             const newVersions = [...customVersions, c]

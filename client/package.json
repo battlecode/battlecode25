@@ -145,7 +145,7 @@
         "react-router-dom": "^6.13.0",
         "react-window": "^1.8.10",
         "react-zoomable-ui": "^0.11.0",
-        "where-is-it": "https://github.com/TheApplePieGod/where-is-it.git"
+        "where-is-it": "github:TheApplePieGod/where-is-it"
     },
     "devDependencies": {
         "@tauri-apps/cli": "1.6.3",

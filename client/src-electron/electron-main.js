@@ -46,9 +46,7 @@ app.on('ready', () => {
     })
 
     app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') {
-            app.quit()
-        }
+        app.quit()
     })
 })
 
@@ -119,7 +117,7 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
                     const pythons = whereIsIt.nodeFindPython(null, null, null, null, null, null, null)
 
                     for (const py of pythons) {
-                        const path = py.executablePath
+                        const path = py.executable
                         const display = py.formattedName ?? path
                         const version = py.version ?? 'Unknown'
                         output.push(`${display} (${version})`)

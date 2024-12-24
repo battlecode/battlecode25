@@ -3764,7 +3764,7 @@ dependencies = [
 [[package]]
 name = "where-is-it"
 version = "0.0.1"
-source = "git+https://github.com/TheApplePieGod/where-is-it.git#8c0e68f2f6386004f511f4941e9e477e4064483b"
+source = "git+https://github.com/TheApplePieGod/where-is-it.git#dd7fcbfc35fcd3e7f03e8299d7827b416ea68899"
 dependencies = [
  "anyhow",
  "dirs",
