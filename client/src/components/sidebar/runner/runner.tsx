@@ -136,19 +136,19 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                             reloadData()
                         }}
                     >
-                        Reload maps & players
+                        Reload maps and players
                     </SmallButton>
                     <SmallButton
-                        className="mt-2"
+                        className="mt-[-5px]"
                         onClick={() => {
                             resetSettings()
                             manuallySetupScaffold()
                         }}
                     >
-                        Re-configure Scaffold
+                        Change scaffold directory
                     </SmallButton>
 
-                    <div className="flex flex-row mx-auto mt-2 gap-2">
+                    <div className="flex flex-row mx-auto mt-0 gap-2">
                         {!killMatch ? (
                             <div className="w-fit">
                                 <Tooltip
@@ -168,7 +168,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                     </div>
 
                     {killMatch && (
-                        <span className="text-center opacity-60 text-xxs mt-2 whitespace-nowrap">
+                        <span className="text-center opacity-60 text-xxs mt-2 whitespace-nowrap max-w-full overflow-hidden text-ellipsis">
                             {consoleLines.get(consoleLines.length() - 1)?.content ?? 'Waiting...'}
                         </span>
                     )}
