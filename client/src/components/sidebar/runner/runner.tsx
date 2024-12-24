@@ -166,6 +166,12 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
 
                         <div className="w-fit">{MemoConsole}</div>
                     </div>
+
+                    {killMatch && (
+                        <span className="text-center opacity-60 text-xxs mt-2 whitespace-nowrap">
+                            {consoleLines.get(consoleLines.length() - 1)?.content ?? 'Waiting...'}
+                        </span>
+                    )}
                 </>
             )}
         </div>
