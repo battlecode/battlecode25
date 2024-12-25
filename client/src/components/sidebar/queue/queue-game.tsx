@@ -50,7 +50,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
     }
 
     return (
-        <div className="relative mr-auto rounded-md bg-lightCard border-gray-500 border mb-4 p-3 w-full shadow-md">
+        <div className="relative mr-auto rounded-md bg-lightCard border-gray-500 border mb-4 p-3 w-[96%] shadow-md">
             <div className="text-xs whitespace mb-2 overflow-ellipsis overflow-hidden">
                 <span className="font-bold text-team0">{props.game.teams[0].name}</span>
                 <span className="mx-1.5">vs</span>
