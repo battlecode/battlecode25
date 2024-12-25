@@ -92,6 +92,7 @@ const Draggable = ({ children, width, height, margin = 10 }: DraggableProps) => 
     const mouseDown = (e: React.MouseEvent) => {
         setDragging(true)
         setOffset({ x: e.screenX - pos.x, y: e.screenY - pos.y })
+        e.stopPropagation()
     }
 
     const mouseUp = () => {

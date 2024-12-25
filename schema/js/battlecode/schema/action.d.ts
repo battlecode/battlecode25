@@ -1,18 +1,33 @@
+import { AttackAction } from '../../battlecode/schema/attack-action';
+import { BuildAction } from '../../battlecode/schema/build-action';
+import { DamageAction } from '../../battlecode/schema/damage-action';
+import { DieExceptionAction } from '../../battlecode/schema/die-exception-action';
+import { IndicatorDotAction } from '../../battlecode/schema/indicator-dot-action';
+import { IndicatorLineAction } from '../../battlecode/schema/indicator-line-action';
+import { IndicatorStringAction } from '../../battlecode/schema/indicator-string-action';
+import { MessageAction } from '../../battlecode/schema/message-action';
+import { MopAction } from '../../battlecode/schema/mop-action';
+import { PaintAction } from '../../battlecode/schema/paint-action';
+import { SpawnAction } from '../../battlecode/schema/spawn-action';
+import { TransferAction } from '../../battlecode/schema/transfer-action';
+import { UnpaintAction } from '../../battlecode/schema/unpaint-action';
+import { UpgradeAction } from '../../battlecode/schema/upgrade-action';
 export declare enum Action {
-    ATTACK = 0,
-    HEAL = 1,
-    DIG = 2,
-    FILL = 3,
-    EXPLOSIVE_TRAP = 4,
-    WATER_TRAP = 5,
-    STUN_TRAP = 6,
-    PICKUP_FLAG = 7,
-    PLACE_FLAG = 8,
-    CAPTURE_FLAG = 9,
-    GLOBAL_UPGRADE = 10,
-    /**
-     * Dies due to an uncaught exception
-     * Target: none
-     */
-    DIE_EXCEPTION = 11
+    NONE = 0,
+    DamageAction = 1,
+    PaintAction = 2,
+    UnpaintAction = 3,
+    AttackAction = 4,
+    MopAction = 5,
+    BuildAction = 6,
+    TransferAction = 7,
+    MessageAction = 8,
+    SpawnAction = 9,
+    UpgradeAction = 10,
+    DieExceptionAction = 11,
+    IndicatorStringAction = 12,
+    IndicatorDotAction = 13,
+    IndicatorLineAction = 14
 }
+export declare function unionToAction(type: Action, accessor: (obj: AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null): AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null;
+export declare function unionListToAction(type: Action, accessor: (index: number, obj: AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction) => AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null, index: number): AttackAction | BuildAction | DamageAction | DieExceptionAction | IndicatorDotAction | IndicatorLineAction | IndicatorStringAction | MessageAction | MopAction | PaintAction | SpawnAction | TransferAction | UnpaintAction | UpgradeAction | null;

@@ -5,24 +5,24 @@ package battlecode.schema;
 @SuppressWarnings("unused")
 public final class Action {
   private Action() { }
-  public static final byte ATTACK = 0;
-  public static final byte HEAL = 1;
-  public static final byte DIG = 2;
-  public static final byte FILL = 3;
-  public static final byte EXPLOSIVE_TRAP = 4;
-  public static final byte WATER_TRAP = 5;
-  public static final byte STUN_TRAP = 6;
-  public static final byte PICKUP_FLAG = 7;
-  public static final byte PLACE_FLAG = 8;
-  public static final byte CAPTURE_FLAG = 9;
-  public static final byte GLOBAL_UPGRADE = 10;
-  /**
-   * Dies due to an uncaught exception
-   * Target: none
-   */
-  public static final byte DIE_EXCEPTION = 11;
+  public static final byte NONE = 0;
+  public static final byte DamageAction = 1;
+  public static final byte PaintAction = 2;
+  public static final byte UnpaintAction = 3;
+  public static final byte AttackAction = 4;
+  public static final byte MopAction = 5;
+  public static final byte BuildAction = 6;
+  public static final byte TransferAction = 7;
+  public static final byte MessageAction = 8;
+  public static final byte SpawnAction = 9;
+  public static final byte UpgradeAction = 10;
+  public static final byte DieExceptionAction = 11;
+  public static final byte TimelineMarkerAction = 12;
+  public static final byte IndicatorStringAction = 13;
+  public static final byte IndicatorDotAction = 14;
+  public static final byte IndicatorLineAction = 15;
 
-  public static final String[] names = { "ATTACK", "HEAL", "DIG", "FILL", "EXPLOSIVE_TRAP", "WATER_TRAP", "STUN_TRAP", "PICKUP_FLAG", "PLACE_FLAG", "CAPTURE_FLAG", "GLOBAL_UPGRADE", "DIE_EXCEPTION", };
+  public static final String[] names = { "NONE", "DamageAction", "PaintAction", "UnpaintAction", "AttackAction", "MopAction", "BuildAction", "TransferAction", "MessageAction", "SpawnAction", "UpgradeAction", "DieExceptionAction", "TimelineMarkerAction", "IndicatorStringAction", "IndicatorDotAction", "IndicatorLineAction", };
 
   public static String name(int e) { return names[e]; }
 }

@@ -1,20 +1,22 @@
 import React from 'react'
 import { CanvasHistogram } from './quick-histogram'
 import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
-import { useTurn } from '../../../playback/GameRunner'
-import Turn from '../../../playback/Turn'
+import { useRound } from '../../../playback/GameRunner'
+import Round from '../../../playback/Round'
 
-function getChartData(turn: Turn): number[][][] {
+function getChartData(round: Round): number[][][] {
     const emptyHist = Array(7).fill(0)
     const totals = [
         [[...emptyHist], [...emptyHist], [...emptyHist]],
         [[...emptyHist], [...emptyHist], [...emptyHist]]
     ]
-    for (const [id, body] of turn.bodies.bodies) {
+    for (const [id, body] of round.bodies.bodies) {
         const teamIdx = body.team.id - 1
+        /*
         totals[teamIdx][0][body.attackLevel] += 1
         totals[teamIdx][1][body.buildLevel] += 1
         totals[teamIdx][2][body.healLevel] += 1
+        */
     }
 
     return totals
@@ -25,8 +27,8 @@ interface SpecialtyHistogramProps {
 }
 
 export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => {
-    const turn = useTurn()
-    const data = props.active && turn ? getChartData(turn) : []
+    const round = useRound()
+    const data = props.active && round ? getChartData(round) : []
 
     const getData = (team: number, specialty: number) => {
         return data.length === 0 ? [] : data[team][specialty]

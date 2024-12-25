@@ -34,11 +34,11 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
 
     const timelineLeave = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (down.current) {
-            // if exiting from left or right, jump to min or max turn
+            // if exiting from left or right, jump to min or max round
             const rect = e.currentTarget.getBoundingClientRect()
             const x = e.clientX - rect.left
             if (x <= 0) {
-                gameRunner.jumpToTurn(0)
+                gameRunner.jumpToRound(0)
             } else if (x >= rect.width) {
                 gameRunner.jumpToEnd()
             }
@@ -46,13 +46,13 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         timelineUp(e)
     }
 
-    const maxTurn = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxTurn
+    const maxRound = appContext.state.tournament ? GAME_MAX_TURNS : match!.maxRound
 
     const timelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
-        const turn = Math.floor((x / TIMELINE_WIDTH) * maxTurn)
-        gameRunner.jumpToTurn(turn)
+        const round = Math.floor((x / TIMELINE_WIDTH) * maxRound)
+        gameRunner.jumpToRound(round)
     }
 
     if (!match)
@@ -65,18 +65,18 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
             </div>
         )
 
-    const turn = match!.currentTurn.turnNumber
-    const turnPercentage = () => (1 - turn / maxTurn) * 100 + '%'
+    const round = match!.currentRound.roundNumber
+    const roundPercentage = () => (1 - round / maxRound) * 100 + '%'
     return (
         <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
             <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[10px] text-xs select-none whitespace-nowrap">
-                Turn: <b>{turn}</b>/{maxTurn} &nbsp; {targetUPS} UPS ({targetUPS < 0 && '-'}
+                Round: <b>{round}</b>/{maxRound} &nbsp; {targetUPS} UPS ({targetUPS < 0 && '-'}
                 {currentUPS})
             </p>
             <div className="absolute bg-white/10 left-0 right-0 bottom-0 min-h-[5px] rounded"></div>
             <div
                 className="absolute bg-white/90 left-0 bottom-0 min-h-[5px] rounded min-w-[5px]"
-                style={{ right: turnPercentage() }}
+                style={{ right: roundPercentage() }}
             ></div>
             <div
                 className="absolute left-0 right-0 top-0 bottom-0 z-index-1 cursor-pointer"

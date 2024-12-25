@@ -5,16 +5,16 @@ import { useAppContext } from '../../app-context'
 import { useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
-import gameRunner, { useControls, useTurn } from '../../playback/GameRunner'
+import gameRunner, { useControls, useRound } from '../../playback/GameRunner'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
-    const turn = useTurn()
+    const round = useRound()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
     const { paused, targetUPS } = useControls()
 
-    const hasNextMatch = turn && turn?.match.game.matches.indexOf(turn.match!) + 1 < turn.match.game.matches.length
+    const hasNextMatch = round && round?.match.game.matches.indexOf(round.match!) + 1 < round.match.game.matches.length
 
     useEffect(() => {
         if (appState.disableHotkeys) return
@@ -30,8 +30,8 @@ export const ControlsBar: React.FC = () => {
 
         const applyArrows = () => {
             if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepTurn(1)
-                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepTurn(-1)
+                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepRound(1)
+                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepRound(-1)
             } else {
                 if (keyboard.keyCode === 'ArrowRight') gameRunner.multiplyUpdatesPerSecond(2)
                 if (keyboard.keyCode === 'ArrowLeft') gameRunner.multiplyUpdatesPerSecond(0.5)
@@ -39,7 +39,7 @@ export const ControlsBar: React.FC = () => {
         }
         applyArrows()
 
-        if (keyboard.keyCode === 'Comma') gameRunner.jumpToTurn(0)
+        if (keyboard.keyCode === 'Comma') gameRunner.jumpToRound(0)
         if (keyboard.keyCode === 'Period') gameRunner.jumpToEnd()
 
         const initalDelay = 250
@@ -55,10 +55,10 @@ export const ControlsBar: React.FC = () => {
         }
     }, [keyboard.keyCode])
 
-    if (!turn) return null
+    if (!round) return null
 
-    const atStart = turn.turnNumber == 0
-    const atEnd = turn.turnNumber == turn.match.maxTurn
+    const atStart = round.roundNumber == 0
+    const atEnd = round.roundNumber == round.match.maxRound
 
     return (
         <div
@@ -97,7 +97,7 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.GoPreviousIcon />}
                     tooltip="Step Backwards"
-                    onClick={() => gameRunner.stepTurn(-1)}
+                    onClick={() => gameRunner.stepRound(-1)}
                     disabled={atStart}
                 />
                 {paused ? (
@@ -119,8 +119,8 @@ export const ControlsBar: React.FC = () => {
                 )}
                 <ControlsBarButton
                     icon={<ControlIcons.GoNextIcon />}
-                    tooltip="Next Turn"
-                    onClick={() => gameRunner.stepTurn(1)}
+                    tooltip="Next Round"
+                    onClick={() => gameRunner.stepRound(1)}
                     disabled={atEnd}
                 />
                 <ControlsBarButton
@@ -132,7 +132,7 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
                     tooltip="Jump To Start"
-                    onClick={() => gameRunner.jumpToTurn(0)}
+                    onClick={() => gameRunner.jumpToRound(0)}
                     disabled={atStart}
                 />
                 <ControlsBarButton

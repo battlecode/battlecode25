@@ -12,7 +12,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import gameRunner, { useTurn } from '../../../playback/GameRunner'
+import gameRunner, { useRound } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
 import { RingBuffer } from '../../../util/ring-buffer'
 
@@ -30,7 +30,7 @@ interface Props {
 const UNDO_STACK_SIZE = 100
 
 export const MapEditorPage: React.FC<Props> = (props) => {
-    const turn = useTurn()
+    const round = useRound()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
     const [brushes, setBrushes] = React.useState<MapEditorBrush[]>([])
@@ -42,13 +42,17 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)
 
-    const mapEmpty = () => !turn || (turn.map.isEmpty() && turn.bodies.isEmpty())
+    const mapEmpty = () => !round || (round.map.isEmpty() && round.bodies.isEmpty())
 
+    // Total undo stack containing undos for strokes
     const undoStack = React.useRef<RingBuffer<UndoFunction>>(new RingBuffer(UNDO_STACK_SIZE))
-    const currentUndoStack = React.useRef<UndoFunction[]>([])
+
+    // Current undo stack for the current stroke
+    const strokeUndoStack = React.useRef<UndoFunction[]>([])
+
     const handleUndo = () => {
-        if (currentUndoStack.current.length > 0) {
-            const undo = currentUndoStack.current.pop()
+        if (strokeUndoStack.current.length > 0) {
+            const undo = strokeUndoStack.current.pop()
             if (undo) undo()
         } else {
             const undo = undoStack.current.pop()
@@ -59,28 +63,31 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     }
     const clearUndoStack = () => {
         undoStack.current = new RingBuffer(UNDO_STACK_SIZE)
-        currentUndoStack.current = []
+        strokeUndoStack.current = []
     }
 
     useEffect(() => {
-        if (!canvasMouseDown && currentUndoStack.current.length > 0) {
-            const currentStack = currentUndoStack.current
+        // Aggregate the current stroke stack into the total stack when the mouse is released
+        if (!canvasMouseDown && strokeUndoStack.current.length > 0) {
+            const currentStack = strokeUndoStack.current
             undoStack.current.push(() => {
-                currentStack.forEach((undo) => undo && undo())
+                currentStack.reverse().forEach((undo) => undo && undo())
             })
-            currentUndoStack.current = []
+            strokeUndoStack.current = []
         }
     }, [canvasMouseDown])
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if ((event.ctrlKey || event.metaKey) && event.key === 'z') handleUndo()
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                handleUndo()
+            }
         }
         window.addEventListener('keydown', handleKeyDown)
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [undoStack, turn])
+    }, [undoStack, round])
 
     const openBrush = brushes.find((b) => b.open)
 
@@ -91,7 +98,8 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
 
-        currentUndoStack.current.push(openBrush.apply(point.x, point.y, openBrush.fields))
+        const undoFunc = openBrush.apply(point.x, point.y, openBrush.fields, true)
+        strokeUndoStack.current.push(undoFunc)
         GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
@@ -117,7 +125,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         if (!e.target.files || e.target.files.length == 0) return
         const file = e.target.files[0]
         loadFileAsMap(file).then((game) => {
-            const map = game.currentMatch!.currentTurn!.map
+            const map = game.currentMatch!.currentRound!.map
             setMapParams({ width: map.width, height: map.height, symmetry: map.staticMap.symmetry, imported: game })
             clearUndoStack()
         })
@@ -151,11 +159,11 @@ export const MapEditorPage: React.FC<Props> = (props) => {
 
             gameRunner.setMatch(editGame.current.currentMatch)
 
-            const turn = editGame.current.currentMatch!.currentTurn
-            const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
+            const round = editGame.current.currentMatch!.currentRound
+            const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
             brushes[0].open = true
             setBrushes(brushes)
-            setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
+            setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
             gameRunner.setGame(undefined)
         }
@@ -165,7 +173,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const renderedBrushes = React.useMemo(() => {
         return brushes.map((brush) => (
             <MapEditorBrushRow
-                key={JSON.stringify(brush)}
+                key={brush.name}
                 brush={brush}
                 open={brush == openBrush}
                 onClick={() => {
@@ -220,7 +228,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                 <div className="flex flex-row mt-8">
                     <BrightButton
                         onClick={() => {
-                            if (!turn) return
+                            if (!round) return
                             setMapNameOpen(true)
                         }}
                     >
@@ -238,7 +246,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                         setMapNameOpen(false)
                         return
                     }
-                    const error = exportMap(turn!, name)
+                    const error = exportMap(round!, name)
                     setMapError(error)
                     if (!error) setMapNameOpen(false)
                 }}

@@ -1,100 +1,89 @@
 import { schema } from 'battlecode-schema'
 import assert from 'assert'
 import Game, { Team } from './Game'
-import Turn from './Turn'
-import TurnStat from './TurnStat'
+import Round from './Round'
+import RoundStat from './RoundStat'
 import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
 
-// Amount of turns before a snapshot of the game state is saved for the next recalculation
+// Amount of rounds before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
 
-// Amount of simulation steps before the turn counter is progressed
+// Amount of simulation steps before the round counter is progressed
 const MAX_SIMULATION_STEPS = 50000
 
 export default class Match {
-    public currentTurn: Turn
-    private readonly snapshots: Turn[]
-    public readonly stats: TurnStat[]
+    public currentRound: Round
+    private readonly snapshots: Round[]
+    public readonly stats: RoundStat[]
     private currentSimulationStep: number = 0
-    get constants(): schema.GameplayConstants {
-        return this.game.constants
-    }
+    private readonly deltas: schema.Round[]
+    public maxRound: number = 0
     constructor(
         public readonly game: Game,
-        private readonly deltas: schema.Round[],
-        public maxTurn: number,
         public winner: Team | null,
         public winType: schema.WinType | null,
         public readonly map: StaticMap,
-        firstBodies: Bodies,
-        firstStats: TurnStat
+        initialBodies: Bodies
     ) {
-        this.currentTurn = new Turn(this, 0, new CurrentMap(map), firstBodies, new Actions(), firstStats)
-        this.snapshots = [this.currentTurn.copy()]
-        this.stats = [this.snapshots[0].stat]
+        this.verifyMap(initialBodies)
+
+        this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
+        this.snapshots = [this.currentRound.copy()]
+        this.stats = []
+        this.deltas = []
+    }
+
+    get constants(): schema.GameplayConstants {
+        return this.game.constants
     }
 
     /**
      * Creates a blank match for use in the map editor.
      */
     public static createBlank(game: Game, bodies: Bodies, map: StaticMap): Match {
-        const firstStats = new TurnStat(game)
-        return new Match(game, [], 0, game.teams[0], schema.WinType.RESIGNATION, map, bodies, firstStats)
+        return new Match(game, game.teams[0], null, map, bodies)
     }
 
     /**
      * Creates a match from a map for loading into the map editor from an existing file.
      */
-    public static fromMap(schema_map: schema.GameMap, game: Game, map: StaticMap): Match {
-        const firstStats = new TurnStat(game)
-        const mapBodies = schema_map.bodies() ?? assert.fail('Initial bodies not found in header')
-        const bodies = new Bodies(game, mapBodies, firstStats, map)
-        return new Match(game, [], 0, game.teams[0], schema.WinType.RESIGNATION, map, bodies, firstStats)
+    public static fromMap(schemaMap: schema.GameMap, game: Game): Match {
+        const map = StaticMap.fromSchema(schemaMap)
+        const mapBodies = schemaMap.initialBodies()
+        const bodies = new Bodies(game, mapBodies ?? undefined)
+        return new Match(game, game.teams[0], null, map, bodies)
     }
 
-    public static fromSchema(
-        game: Game,
-        header: schema.MatchHeader,
-        turns: schema.Round[],
-        footer?: schema.MatchFooter
-    ) {
+    public static fromSchema(game: Game, header: schema.MatchHeader) {
         const mapData = header.map() ?? assert.fail('Map data not found in header')
         const map = StaticMap.fromSchema(mapData)
 
-        const firstStats = new TurnStat(game)
-        const firstBodies = new Bodies(
-            game,
-            mapData.bodies() ?? assert.fail('Initial bodies not found in header'),
-            firstStats
-        )
+        const initialBodies = new Bodies(game, mapData.initialBodies() ?? undefined)
 
-        // header.maxRounds() is always 2000
-
-        const deltas = turns
-        deltas.forEach((delta, i) =>
-            assert(delta.roundId() === i + 1, `Wrong turn ID: is ${delta.roundId()}, should be ${i}`)
-        )
-
-        const maxTurn = deltas.length
-
-        const match = new Match(game, deltas, maxTurn, null, null, map, firstBodies, firstStats)
-        if (footer) match.addMatchFooter(footer)
+        const match = new Match(game, null, null, map, initialBodies)
 
         return match
     }
 
     /*
-     * Add a new turn to the match. Used for live match replaying.
+     * Add a new round to the match.
      */
-    public addNewTurn(round: schema.Round): void {
+    public addNewRound(round: schema.Round): void {
+        // Update the 0th round with round 1 positions for interpolation.
+        // For all other rounds, the next positions are updated in the applyDelta method.
+        if (this.deltas.length === 0) {
+            this.currentRound.updateNextPositions(round)
+            // Since we changed the 0th round, we need to update the snapshot of it
+            this.snapshots[0] = this.currentRound.copy()
+        }
         this.deltas.push(round)
-        this.maxTurn++
+        this.maxRound++
     }
 
     /*
-     * Add the match footer to the match. Used for live match replaying.
+     * Add the match footer to the match.
      */
     public addMatchFooter(footer: schema.MatchFooter): void {
         this.winner = this.game.teams[footer.winner() - 1]
@@ -102,15 +91,15 @@ export default class Match {
     }
 
     /**
-     * Returns the normalized 0-1 value indicating the simulation progression for this turn.
+     * Returns the normalized 0-1 value indicating the simulation progression for this round.
      */
     public getInterpolationFactor(): number {
         return Math.max(0, Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)) / MAX_SIMULATION_STEPS
     }
 
     /**
-     * Change the simulation step to the current step + delta. If the step reaches the max simulation steps, the turn counter is increased accordingly
-     * Returns whether the turn was stepped
+     * Change the simulation step to the current step + delta. If the step reaches the max simulation steps, the round counter is increased accordingly
+     * Returns whether the round was stepped
      */
     public _stepSimulation(deltaUpdates: number): boolean {
         assert(this.game.playable, "Can't step simulation when not playing")
@@ -118,88 +107,100 @@ export default class Match {
         const delta = deltaUpdates * MAX_SIMULATION_STEPS
         this.currentSimulationStep += delta
 
-        if (this.currentTurn.turnNumber == this.maxTurn && delta > 0) {
+        if (this.currentRound.roundNumber == this.maxRound && delta > 0) {
             this.currentSimulationStep = Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)
             return false
         }
-        if (this.currentTurn.turnNumber == 0 && delta < 0) {
+        if (this.currentRound.roundNumber == 0 && delta < 0) {
             this.currentSimulationStep = Math.max(0, this.currentSimulationStep)
             return false
         }
 
-        let turnChanged = false
+        let roundChanged = false
         if (this.currentSimulationStep < 0) {
-            this._stepTurn(-1)
+            this._stepRound(-1)
             this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
-            turnChanged = true
+            roundChanged = true
         } else if (this.currentSimulationStep >= MAX_SIMULATION_STEPS) {
-            this._stepTurn(1)
+            this._stepRound(1)
             this.currentSimulationStep = 0
-            turnChanged = true
+            roundChanged = true
         } else {
             this.currentSimulationStep = (this.currentSimulationStep + MAX_SIMULATION_STEPS) % MAX_SIMULATION_STEPS
         }
 
-        return turnChanged
+        return roundChanged
     }
 
     /**
-     * Clear any excess simulation steps and round it to the nearest turn
+     * Clear any excess simulation steps and round it to the nearest round
      */
     public _roundSimulation(): void {
         this.currentSimulationStep = 0
     }
 
     /**
-     * Change the rounds current turn to the current turn + delta.
+     * Change the match's current round to the current round + delta.
      */
-    public _stepTurn(delta: number): void {
-        this._jumpToTurn(this.currentTurn.turnNumber + delta)
+    public _stepRound(delta: number): void {
+        this._jumpToRound(this.currentRound.roundNumber + delta)
     }
 
     /**
-     * Sets the current turn to the last turn.
+     * Sets the current round to the last round.
      */
     public _jumpToEnd(): void {
-        this._jumpToTurn(this.maxTurn)
+        this._jumpToRound(this.maxRound)
     }
 
     /**
-     * Sets the current turn to the turn at the given turn number.
+     * Sets the current round to the round at the given round number.
      */
-    public _jumpToTurn(turnNumber: number): void {
+    public _jumpToRound(roundNumber: number): void {
         if (!this.game.playable) return
 
-        turnNumber = Math.max(0, Math.min(turnNumber, this.deltas.length))
-        if (turnNumber == this.currentTurn.turnNumber) return
+        roundNumber = Math.max(0, Math.min(roundNumber, this.deltas.length))
+        if (roundNumber == this.currentRound.roundNumber) return
 
         // If we are stepping backwards, we must always recompute from the latest checkpoint
-        const reversed = turnNumber < this.currentTurn.turnNumber
+        const reversed = roundNumber < this.currentRound.roundNumber
 
-        // If the new turn is closer to a snapshot than from the current turn, compute from the snapshot
-        const snapshotIndex = Math.floor(turnNumber / SNAPSHOT_EVERY)
+        // If the new round is closer to a snapshot than from the current round, compute from the snapshot
+        const snapshotIndex = Math.floor(roundNumber / SNAPSHOT_EVERY)
         const closeSnapshot =
-            snapshotIndex > Math.floor(this.currentTurn.turnNumber / SNAPSHOT_EVERY) &&
+            snapshotIndex > Math.floor(this.currentRound.roundNumber / SNAPSHOT_EVERY) &&
             snapshotIndex < this.snapshots.length
 
         const computeFromSnapshot = reversed || closeSnapshot
-        let updatingTurn = this.currentTurn
-        if (computeFromSnapshot) updatingTurn = this.snapshots[snapshotIndex].copy()
+        let updatingRound = this.currentRound
+        if (computeFromSnapshot) updatingRound = this.snapshots[snapshotIndex].copy()
 
-        while (updatingTurn.turnNumber < turnNumber) {
-            const delta = this.deltas[updatingTurn.turnNumber]
+        while (updatingRound.roundNumber < roundNumber) {
+            const delta = this.deltas[updatingRound.roundNumber]
             const nextDelta =
-                updatingTurn.turnNumber < this.deltas.length - 1 ? this.deltas[updatingTurn.turnNumber + 1] : null
-            updatingTurn.applyDelta(delta, nextDelta)
+                updatingRound.roundNumber < this.deltas.length - 1 ? this.deltas[updatingRound.roundNumber + 1] : null
+            updatingRound.applyDelta(delta, nextDelta)
 
             if (
-                updatingTurn.turnNumber % SNAPSHOT_EVERY === 0 &&
-                this.snapshots.length < updatingTurn.turnNumber / SNAPSHOT_EVERY + 1
+                updatingRound.roundNumber % SNAPSHOT_EVERY === 0 &&
+                this.snapshots.length < updatingRound.roundNumber / SNAPSHOT_EVERY + 1
             ) {
-                this.snapshots.push(updatingTurn.copy())
+                this.snapshots.push(updatingRound.copy())
             }
         }
 
-        this.currentTurn = updatingTurn
+        this.currentRound = updatingRound
+    }
+
+    private verifyMap(initialBodies: Bodies): void {
+        for (let i = 0; i < this.map.width * this.map.height; i++) {
+            if (this.map.walls[i]) {
+                for (const body of initialBodies.bodies.values()) {
+                    if (body.pos.x == i % this.map.width && body.pos.y == Math.floor(i / this.map.width)) {
+                        assert.fail(`Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall`)
+                    }
+                }
+            }
+        }
     }
 }

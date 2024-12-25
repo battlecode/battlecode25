@@ -30,7 +30,7 @@ export const loadImage = (path: string): Promise<HTMLImageElement> => {
             onLoadCallbacks.get('')?.forEach((callback) => callback())
 
             // We want to rerender when an image loads so the user
-            // doesn't have to look at placeholders until they progress the turn
+            // doesn't have to look at placeholders until they progress the round
             GameRenderer.fullRender()
         }
         img.onerror = reject
