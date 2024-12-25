@@ -282,8 +282,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    //TODO: add map info stuff back
-    // MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
+    MapInfo senseMapInfo(MapLocation loc) throws GameActionException;
 
     /**
      * Return map info for all senseable locations.
@@ -293,7 +292,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos();
+    MapInfo[] senseNearbyMapInfos();
 
     /**
      * Return map info for all senseable locations within a radius squared.
@@ -308,7 +307,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(int radiusSquared) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within vision radius of a center
@@ -321,7 +320,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(MapLocation center) throws GameActionException;
 
     /**
      * Return map info for all senseable locations within a radius squared of a
@@ -338,7 +337,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    // MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
+    MapInfo[] senseNearbyMapInfos(MapLocation center, int radiusSquared) throws GameActionException;
 
     /**
      * Returns the location of all nearby ruins that are visible to the robot.
@@ -491,13 +490,49 @@ public strictfp interface RobotController {
     void buildRobot(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
+     * Checks if the location can be marked.
+     * 
+     * @param loc the location to mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canMark(MapLocation loc);
+
+    /**
+     * Checks if the location can be marked.
+     * 
+     * @param loc the location to mark
+     * @param secondary whether the secondary color should be used
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void mark(MapLocation loc, boolean secondary) throws GameActionException;
+
+    /**
+     * Checks if a mark at the location can be removed.
+     * 
+     * @param loc the location that has the mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canRemoveMark(MapLocation loc);
+
+    /**
+     * Removes the mark at the given location.
+     * 
+     * @param loc the location that has the mark
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void removeMark(MapLocation loc) throws GameActionException;
+
+    /**
      * Checks if the robot can build a tower by marking a 5x5 pattern centered at
      * the given location.
      * This requires there to be a ruin at the location.
      * 
-     * @param type the type of tower to build
-     * @param loc  the location to build at
-     * @return true if tower can be built at loc
+     * @param loc  the center of the 5x5 pattern
+     * @return true if a tower pattern can be marked at loc
      * 
      * @battlecode.doc.costlymethod
      */
@@ -507,12 +542,25 @@ public strictfp interface RobotController {
      * Builds a tower by marking a 5x5 pattern centered at the given location.
      * This requires there to be a ruin at the location.
      * 
-     * @param type the type of tower to build
-     * @param loc  the location to build at
+     * @param type the type of tower to mark the pattern for
+     * @param loc  the center of the 5x5 pattern
      * 
      * @battlecode.doc.costlymethod
      */
     void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
+
+    /**
+     * Builds a tower by marking a 5x5 pattern centered at the given location.
+     * This requires there to be a ruin at the location.
+     * 
+     * @param type          the type of tower to mark the pattern for
+     * @param loc           the center of the 5x5 pattern
+     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
+     * @param reflect       whether to reflect the pattern
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
 
     /**
      * Checks if a tower can be upgraded by verifying conditions on the location, team, 
@@ -554,6 +602,17 @@ public strictfp interface RobotController {
     void markResourcePattern(MapLocation loc) throws GameActionException;
 
     /**
+     * Marks a 5x5 special resource pattern centered at the given location.
+     * 
+     * @param loc           the center of the resource pattern
+     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
+     * @param reflect       whether to reflect the pattern
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
+
+    /**
      * Checks if the robot can build a tower at the given location.
      * This requires there to be a ruin at the location.
      * This also requires the 5x5 region to be painted correctly.
@@ -583,7 +642,7 @@ public strictfp interface RobotController {
      * given location. This requires the 5x5 region to be painted correctly.
      * 
      * @param loc the center of the resource pattern
-     * @return true if an SRP can be marked at loc
+     * @return true if the SRP can be completed at loc
      * 
      * @battlecode.doc.costlymethod
      */
@@ -778,8 +837,11 @@ public strictfp interface RobotController {
      * {@link GameConstants#TIMELINE_LABEL_MAX_LENGTH} characters are used.
      * 
      * @param label the label for the timeline marker
+     * @param red the red component of the marker's color
+     * @param green the green component of the marker's color
+     * @param blue the blue component of the marker's color
      * 
      * @battlecode.doc.costlymethod
      */
-    void setTimelineMarker(String label);
+    void setTimelineMarker(String label, int red, int green, int blue);
 }

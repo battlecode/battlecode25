@@ -34,6 +34,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private int bytecodesUsed;
 
     private int roundsAlive;
+    private int turnsWithoutPaint;
     private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
@@ -81,6 +82,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.roundsAlive = 0;
         this.hasSentSpawnAction = skipSpawnAction;
+        this.turnsWithoutPaint = 0;
         this.actionCooldownTurns = type.actionCooldown;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
 
@@ -320,9 +322,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void soldierAttack(MapLocation loc, boolean useSecondaryColor) {
-        //TODO: fix these assertions (CANT_DO_THAT doesn't exist in this file)
-        // if(this.type != UnitType.SOLDIER)
-        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a soldier");
+        if(this.type != UnitType.SOLDIER)
+            throw new RuntimeException("Unit must be a soldier");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
         
         // This attack costs some paint
@@ -350,8 +351,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
-        // if(this.type != UnitType.SPLASHER)
-        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a splasher");
+        if(this.type != UnitType.SPLASHER)
+            throw new RuntimeException("Unit must be a splasher");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
@@ -387,8 +388,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // This is the first kind of attack for moppers which only targets one location
     public void mopperAttack(MapLocation loc, boolean useSecondaryColor) {
-        // if(this.type != UnitType.MOPPER)
-        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
+        if(this.type != UnitType.MOPPER)
+            throw new RuntimeException("Unit must be a mopper");
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack should be free (but this is here just in case)
@@ -450,12 +451,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void mopSwing(Direction dir) { // NOTE: only works for moppers!
-        //todo schema
         // swing even if there's not 3 robots there, just remove from existing
-        // if(this.type != UnitType.MOPPER)
-        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a mopper");
-        // if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
-        //     throw new GameActionException(CANT_DO_THAT, "Direction must be a cardinal direction");
+        if(this.type != UnitType.MOPPER)
+            throw new RuntimeException("Unit must be a mopper");
+        if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
+            throw new RuntimeException("Direction must be a cardinal direction");
 
         // NORTH, SOUTH, EAST, WEST
         int[][] dx = {{-1, 0, 1}, {-1, 0, 1}, {1, 1, 1}, {-1, -1, -1}};
@@ -582,6 +582,22 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
         this.gameWorld.getMatchMaker().endTurn(this.ID, this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
         this.roundsAlive++;
+
+        Team owningTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(this.location));
+        if (owningTeam == Team.NEUTRAL) {
+            this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
+        } else if (owningTeam == this.getTeam().opponent()) {
+            this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+        }
+
+        if (this.paintAmount == 0){
+            this.turnsWithoutPaint += 1;
+            if (this.turnsWithoutPaint == GameConstants.MAX_TURNS_WITHOUT_PAINT)
+                this.gameWorld.destroyRobot(this.ID);
+        }
+        else{
+            this.turnsWithoutPaint = 0;
+        }
     }
 
     // *********************************

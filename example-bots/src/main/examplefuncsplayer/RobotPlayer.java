@@ -68,6 +68,9 @@ public strictfp class RobotPlayer {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode.
             try {
+                if (rc.getRoundNum() == 1000){
+                    rc.setTimelineMarker("HALFWAY", 120, 60, 240);
+                }
                 MapLocation nextLoc = rc.adjacentLocation(Direction.NORTH);
                 int robotType = rng.nextInt(3);
                 if (robotType == 0 && rc.canBuildRobot(UnitType.SOLDIER, nextLoc)){

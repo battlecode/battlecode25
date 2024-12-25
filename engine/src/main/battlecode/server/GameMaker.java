@@ -278,14 +278,6 @@ public strictfp class GameMaker {
             int robotTypeMetaDataOffset = makeRobotTypeMetadata(builder);
 
             GameplayConstants.startGameplayConstants(builder);
-            //TODO: what gameplay constants do we need?
-            // GameplayConstants.addSetupPhaseLength(builder, GameConstants.SETUP_ROUNDS);
-            // GameplayConstants.addFlagMinDistance(builder, GameConstants.MIN_FLAG_SPACING_SQUARED);
-            // GameplayConstants.addGlobalUpgradeRoundDelay(builder, GameConstants.GLOBAL_UPGRADE_ROUNDS);
-            // GameplayConstants.addPassiveResourceRate(builder, GameConstants.PASSIVE_CRUMBS_INCREASE);
-            // GameplayConstants.addRobotBaseHealth(builder, GameConstants.DEFAULT_HEALTH);
-            // GameplayConstants.addVisionRadius(builder, GameConstants.VISION_RADIUS_SQUARED);
-            // GameplayConstants.addActionRadius(builder, GameConstants.ATTACK_RADIUS_SQUARED);
             int constantsOffset = GameplayConstants.endGameplayConstants(builder);
 
             GameHeader.startGameHeader(builder);
@@ -346,6 +338,10 @@ public strictfp class GameMaker {
         private int currentRound;
         private int currentMapWidth = -1;
 
+        private ArrayList<Integer> timelineMarkerRounds; 
+        private ArrayList<String> timelineMarkerLabels;
+        private ArrayList<Integer> timelineMarkerColors;
+
         // Used to write logs.
         private final ByteArrayOutputStream logger;
 
@@ -355,6 +351,9 @@ public strictfp class GameMaker {
             this.diedIds = new TIntArrayList();
             this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
+            this.timelineMarkerRounds = new ArrayList<>();
+            this.timelineMarkerLabels = new ArrayList<>();
+            this.timelineMarkerColors = new ArrayList<>();
         }
 
         public void makeMatchHeader(LiveMap gameMap) {
@@ -414,9 +413,17 @@ public strictfp class GameMaker {
 
                 int profilerFilesOffset = MatchFooter.createProfilerFilesVector(builder, profilerFiles.toArray());
 
+                TIntArrayList timelineMarkerOffsets = new TIntArrayList();
+                for (int i = 0; i < this.timelineMarkerRounds.size(); i++){
+                    int timelineMarkerOffset = TimelineMarker.createTimelineMarker(builder, timelineMarkerRounds.get(i), 
+                    timelineMarkerColors.get(i), builder.createString(timelineMarkerLabels.get(i)));
+                    timelineMarkerOffsets.add(timelineMarkerOffset);
+                }
+                int timelineMarkersOffset = MatchFooter.createTimelineMarkersVector(builder, timelineMarkerOffsets.toArray());
+
                 return EventWrapper.createEventWrapper(builder, Event.MatchFooter,
                         MatchFooter.createMatchFooter(builder, TeamMapping.id(winTeam),
-                                FlatHelpers.getWinTypeFromDominationFactor(winType), totalRounds, profilerFilesOffset));
+                                FlatHelpers.getWinTypeFromDominationFactor(winType), totalRounds, timelineMarkersOffset, profilerFilesOffset));
             });
 
             matchFooters.add(events.size() - 1);
@@ -457,7 +464,6 @@ public strictfp class GameMaker {
         }
 
         public void startTurn(int robotID){
-            //TODO: intiialize anything needed here
             return;
         }
 
@@ -579,14 +585,14 @@ public strictfp class GameMaker {
             teamMoneyAmounts.add(moneyAmount);
         }
 
-        public void addTimelineMarker(String label){
+        public void addTimelineMarker(String label, int red, int green, int blue){
             if (!showIndicators){
                 return;
             }
-            applyToBuilders((builder) -> {
-                int action = TimelineMarkerAction.createTimelineMarkerAction(builder, builder.createString(label));
-                builder.addAction(action, Action.TimelineMarkerAction);
-            });
+            this.timelineMarkerRounds.add(this.currentRound);
+            this.timelineMarkerLabels.add(label);
+            int color = FlatHelpers.RGBtoInt(red, green, blue);
+            this.timelineMarkerColors.add(color);
         }
 
         /// Update the indicator string for this robot
