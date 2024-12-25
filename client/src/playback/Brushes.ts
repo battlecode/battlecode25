@@ -50,12 +50,28 @@ export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
-        const radius: number = fields.radius.value - 1
+        const add = (idx: number) => {
+            // Check if this is a valid wall location
+            const pos = this.map.indexToLocation(idx)
+            const ruin = this.map.ruins.find((r) => r.x === pos.x && r.y === pos.y)
+            if (ruin) return true
+            this.map.walls[idx] = 1
+        }
 
+        const remove = (idx: number) => {
+            this.map.walls[idx] = 0
+        }
+
+        const radius: number = fields.radius.value - 1
         const changes: { idx: number; prevValue: number }[] = []
         applyInRadius(this.map, x, y, radius, (idx) => {
-            changes.push({ idx, prevValue: this.map.walls[idx] })
-            this.map.walls[idx] = fields.shouldAdd.value ? 1 : 0
+            const prevValue = this.map.walls[idx]
+            if (fields.shouldAdd.value) {
+                if (!add(idx)) changes.push({ idx, prevValue })
+            } else {
+                remove(idx)
+                changes.push({ idx, prevValue })
+            }
         })
 
         return () => {
@@ -81,8 +97,10 @@ export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (x: number, y: number) => {
+            // Check if this is a valid ruin location
             const foundIdx = this.map.ruins.findIndex((l) => l.x === x && l.y === y)
-            if (foundIdx !== -1) return true
+            const wall = this.map.walls[this.map.locationToIndex(x, y)]
+            if (foundIdx !== -1 || wall == 1) return true
             this.map.ruins.push({ x, y })
         }
 
@@ -153,11 +171,10 @@ export class TowerBrush extends SymmetricMapEditorBrush<StaticMap> {
         },
         towerType: {
             type: MapEditorBrushFieldType.SINGLE_SELECT,
-            value: schema.RobotType.DEFENSE_TOWER,
+            value: schema.RobotType.PAINT_TOWER,
             options: [
-                { value: schema.RobotType.DEFENSE_TOWER, label: 'Defense Tower' },
-                { value: schema.RobotType.MONEY_TOWER, label: 'Money Tower' },
-                { value: schema.RobotType.PAINT_TOWER, label: 'Paint Tower' }
+                { value: schema.RobotType.PAINT_TOWER, label: 'Paint Tower' },
+                { value: schema.RobotType.MONEY_TOWER, label: 'Money Tower' }
             ]
         }
     }

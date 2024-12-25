@@ -164,14 +164,20 @@ export default class Bodies {
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
-        let found_dead_body: Body | undefined = undefined
+        let foundDead: Body | undefined = undefined
+
         for (const body of this.bodies.values()) {
-            if ((!team || body.team === team) && body.pos.x === x && body.pos.y === y) {
-                if (body.dead) found_dead_body = body
-                else return body
+            const teamMatches = !team || body.team === team
+            if (teamMatches && body.pos.x === x && body.pos.y === y) {
+                if (!body.dead) return body
+
+                // If dead, keep iterating in case there is an alive body
+                // that will take priority
+                foundDead = body
             }
         }
-        return found_dead_body
+
+        return foundDead
     }
 
     isEmpty(): boolean {

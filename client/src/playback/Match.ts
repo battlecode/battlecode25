@@ -27,8 +27,6 @@ export default class Match {
         public readonly map: StaticMap,
         initialBodies: Bodies
     ) {
-        this.verifyMap(initialBodies)
-
         this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
         this.snapshots = [this.currentRound.copy()]
         this.stats = []
@@ -190,17 +188,5 @@ export default class Match {
         }
 
         this.currentRound = updatingRound
-    }
-
-    private verifyMap(initialBodies: Bodies): void {
-        for (let i = 0; i < this.map.width * this.map.height; i++) {
-            if (this.map.walls[i]) {
-                for (const body of initialBodies.bodies.values()) {
-                    if (body.pos.x == i % this.map.width && body.pos.y == Math.floor(i / this.map.width)) {
-                        assert.fail(`Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall`)
-                    }
-                }
-            }
-        }
     }
 }

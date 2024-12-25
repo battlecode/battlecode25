@@ -89,6 +89,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
 
     if (!nativeAPI) return <>Run the client locally to use the runner</>
 
+    const lastLogLine = consoleLines.get(consoleLines.length() - 1)
     const runDisabled = !teamA || !teamB || maps.size === 0 || !langVersion
     return (
         <div className={'flex flex-col grow ' + (scaffoldLoading ? 'opacity-50 pointer-events-none' : '')}>
@@ -167,9 +168,9 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                         <div className="w-fit">{MemoConsole}</div>
                     </div>
 
-                    {killMatch && (
+                    {(killMatch || lastLogLine) && (
                         <span className="text-center opacity-60 text-xxs mt-2 whitespace-nowrap max-w-full overflow-hidden text-ellipsis">
-                            {consoleLines.get(consoleLines.length() - 1)?.content ?? 'Waiting...'}
+                            {lastLogLine?.content ?? 'Waiting...'}
                         </span>
                     )}
                 </>
