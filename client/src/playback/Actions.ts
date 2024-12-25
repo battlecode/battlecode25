@@ -270,7 +270,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
             // This assumes ids are never reused
-            round.bodies.spawnBody(this.robotId, this.actionData)
+            round.bodies.spawnBodyFromAction(this.robotId, this.actionData)
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {

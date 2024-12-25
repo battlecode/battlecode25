@@ -252,13 +252,23 @@ export class StaticMap {
         public readonly ruins: Vector[],
         public readonly initialPaint: Int8Array
     ) {
-        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
+        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) {
+            throw new Error(`Invalid symmetry ${symmetry}`)
+        }
 
-        if (walls.length != dimension.width * dimension.height) throw new Error('Invalid walls length')
-        if (initialPaint.length != dimension.width * dimension.height) throw new Error('Invalid paint length')
+        if (walls.length != dimension.width * dimension.height) {
+            throw new Error('Invalid walls length')
+        }
+        if (initialPaint.length != dimension.width * dimension.height) {
+            throw new Error('Invalid paint length')
+        }
 
-        if (walls.some((x) => x !== 0 && x !== 1)) throw new Error('Invalid walls value')
-        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) throw new Error('Invalid paint value')
+        if (walls.some((x) => x !== 0 && x !== 1)) {
+            throw new Error('Invalid walls value')
+        }
+        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) {
+            throw new Error('Invalid paint value')
+        }
     }
 
     static fromSchema(schemaMap: schema.GameMap) {

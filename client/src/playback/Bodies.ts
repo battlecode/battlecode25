@@ -74,24 +74,33 @@ export default class Bodies {
         }
     }
 
-    spawnBody(id: number, spawnAction: schema.SpawnAction): Body {
+    spawnBodyFromAction(id: number, spawnAction: schema.SpawnAction): Body {
         assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
 
         const robotType = spawnAction.robotType()
-        const bodyClass =
-            BODY_DEFINITIONS[robotType] ?? assert.fail(`Body type ${robotType} not found in BODY_DEFINITIONS`)
-
         const team = spawnAction.team()
         const x = spawnAction.x()
         const y = spawnAction.y()
 
-        const body = new bodyClass(this.game, { x, y }, this.game.getTeamByID(team), id)
+        return this.spawnBodyFromValues(id, robotType, this.game.getTeamByID(team), { x, y })
+    }
+
+    spawnBodyFromValues(id: number, type: schema.RobotType, team: Team, pos: Vector): Body {
+        assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
+
+        const bodyClass = BODY_DEFINITIONS[type] ?? assert.fail(`Body type ${type} not found in BODY_DEFINITIONS`)
+
+        const body = new bodyClass(this.game, pos, team, id)
         this.bodies.set(id, body)
 
         // Populate default hp, cooldowns, etc
         body.populateDefaultValues()
 
         return body
+    }
+
+    removeBody(id: number): void {
+        this.bodies.delete(id)
     }
 
     /**
@@ -200,7 +209,7 @@ export default class Bodies {
             const id = bodies.robotIds(i)!
             const spawnAction = bodies.spawnActions(i)!
 
-            this.spawnBody(id, spawnAction)
+            this.spawnBodyFromAction(id, spawnAction)
         }
     }
 }
@@ -254,11 +263,22 @@ export class Body {
         renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
         ctx.globalAlpha = 1
 
-        if (selected || hovered) this.drawPath(match, overlayCtx)
-        if (selected || hovered || config.showAllRobotRadii) this.drawRadii(match, overlayCtx, !selected)
-        if (selected || hovered || config.showAllIndicators)
-            this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
-        if (selected || hovered || config.showHealthBars) this.drawHealthBar(match, overlayCtx)
+        // Draw various statuses
+        const focused = selected || hovered
+        if (this.game.playable) {
+            if (focused) {
+                this.drawPath(match, overlayCtx)
+            }
+            if (focused || config.showAllRobotRadii) {
+                this.drawRadii(match, overlayCtx, !selected)
+            }
+            if (focused || config.showAllIndicators) {
+                this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
+            }
+            if (focused || config.showHealthBars) {
+                this.drawHealthBar(match, overlayCtx)
+            }
+        }
 
         /*
         if (this.carryingFlagId !== null) {
@@ -489,6 +509,8 @@ export class Body {
     }
 
     public populateDefaultValues(): void {
+        if (!this.game.playable) return
+
         const metadata = this.metadata
 
         this.hp = metadata.baseHealth()
