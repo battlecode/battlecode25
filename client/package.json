@@ -84,6 +84,7 @@
             "dist/index.html",
             "dist/icon.ico",
             "dist/static/**/*",
+            "dist/speedscope/**/*",
             "icons/**/*",
             "src-electron/**/*",
             "!node_modules/**/*",
@@ -145,6 +146,7 @@
         "react-router-dom": "^6.13.0",
         "react-window": "^1.8.10",
         "react-zoomable-ui": "^0.11.0",
+        "speedscope": "^1.21.0",
         "where-is-it": "github:TheApplePieGod/where-is-it"
     },
     "devDependencies": {

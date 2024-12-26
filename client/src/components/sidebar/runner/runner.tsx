@@ -10,6 +10,7 @@ import { FixedSizeList, ListOnScrollProps } from 'react-window'
 import { OpenExternal } from '../../../icons/open-external'
 import { BasicDialog } from '../../basic-dialog'
 import { RingBuffer } from '../../../util/ring-buffer'
+import { ProfilerDialog } from './profiler'
 
 type RunnerPageProps = {
     open: boolean
@@ -153,19 +154,21 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                         {!killMatch ? (
                             <div className="w-fit">
                                 <Tooltip
-                                    location="bottom"
+                                    location="right"
                                     text={runDisabled ? 'Please select both teams and a map' : 'Run the game'}
                                 >
                                     <Button onClick={runGame} disabled={runDisabled}>
-                                        Run Game
+                                        Run
                                     </Button>
                                 </Tooltip>
                             </div>
                         ) : (
-                            <Button onClick={killMatch}>Kill Game</Button>
+                            <Button onClick={killMatch}>Stop</Button>
                         )}
 
                         <div className="w-fit">{MemoConsole}</div>
+
+                        <ProfilerDialog />
                     </div>
 
                     {(killMatch || lastLogLine) && (
@@ -413,7 +416,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
     return (
         <>
             <Tooltip location="bottom" text={'View output from running the game'}>
-                <Button onClick={() => updatePopout(true)}>Show Console</Button>
+                <Button onClick={() => updatePopout(true)}>Console</Button>
             </Tooltip>
             <BasicDialog open={popout} onCancel={() => updatePopout(false)} title="Console" width="lg">
                 <div className="flex flex-col grow h-full w-full">

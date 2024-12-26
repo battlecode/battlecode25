@@ -68,14 +68,13 @@ export const useScaffold = (): Scaffold => {
         if (path) setScaffoldPath(path)
     }
 
-    const runMatch = async (
+    async function runMatch(
         langVersion: LanguageVersion,
         teamA: string,
         teamB: string,
         selectedMaps: Set<string>
-    ): Promise<void> => {
+    ): Promise<void> {
         if (matchPID.current || !scaffoldPath) return
-        const shouldProfile = false
         consoleLines.current.clear()
         try {
             const newPID = await dispatchMatch(
@@ -87,7 +86,7 @@ export const useScaffold = (): Scaffold => {
                 nativeAPI!,
                 scaffoldPath!,
                 appContext.state.config.validateMaps,
-                shouldProfile
+                appContext.state.config.profileGames
             )
             matchPID.current = newPID
         } catch (e: any) {

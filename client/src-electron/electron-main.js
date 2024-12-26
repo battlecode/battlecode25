@@ -69,6 +69,7 @@ function killAllProcesses() {
     while (processes.size > 0) {
         const pid = processes.keys().next().value
         processes.get(pid).kill()
+        processes.delete(pid)
     }
 }
 
