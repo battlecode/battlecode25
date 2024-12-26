@@ -15,15 +15,7 @@ export default class Actions {
 
     constructor() {}
 
-    applyTurn(round: Round, turn: schema.Turn): void {
-        for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].duration--
-            if (this.actions[i].duration == 0) {
-                this.actions.splice(i, 1)
-                i--
-            }
-        }
-
+    applyTurnDelta(round: Round, turn: schema.Turn): void {
         const robotId = turn.robotId()
 
         if (turn.actionsLength() > 0) {
@@ -40,6 +32,17 @@ export default class Actions {
 
                 this.actions.push(newAction)
                 newAction.apply(round)
+            }
+        }
+    }
+
+    prepareForNextRound(): void {
+        // Tick lifetimes of applied actions
+        for (let i = 0; i < this.actions.length; i++) {
+            this.actions[i].duration--
+            if (this.actions[i].duration == 0) {
+                this.actions.splice(i, 1)
+                i--
             }
         }
     }

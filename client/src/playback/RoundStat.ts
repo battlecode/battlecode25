@@ -41,7 +41,7 @@ export default class RoundStat {
     /**
      * Mutates this stat to reflect the given delta.
      */
-    applyDelta(round: Round, delta: schema.Round): void {
+    applyRoundDelta(round: Round, delta: schema.Round): void {
         assert(
             round.roundNumber === delta.roundId(),
             `Wrong round ID: is ${delta.roundId()}, should be ${round.roundNumber}`

@@ -5,7 +5,7 @@ import { useAppContext } from '../../app-context'
 import { useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
-import gameRunner, { useControls, useRound } from '../../playback/GameRunner'
+import gameRunner, { useControls, usePlaybackPerTurn, useRound } from '../../playback/GameRunner'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
@@ -13,6 +13,7 @@ export const ControlsBar: React.FC = () => {
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
     const { paused, targetUPS } = useControls()
+    const playbackPerTurn = usePlaybackPerTurn()
 
     const hasNextMatch = round && round?.match.game.matches.indexOf(round.match!) + 1 < round.match.game.matches.length
 
@@ -27,11 +28,14 @@ export const ControlsBar: React.FC = () => {
         if (keyboard.keyCode === 'Space') gameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
+        if (keyboard.keyCode === 'KeyV') gameRunner.setPlaybackPerTurn(!playbackPerTurn)
 
         const applyArrows = () => {
             if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepRound(1)
-                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepRound(-1)
+                if (keyboard.keyCode === 'ArrowRight')
+                    playbackPerTurn ? gameRunner.stepTurn(1) : gameRunner.stepRound(1)
+                if (keyboard.keyCode === 'ArrowLeft')
+                    playbackPerTurn ? gameRunner.stepTurn(-1) : gameRunner.stepRound(-1)
             } else {
                 if (keyboard.keyCode === 'ArrowRight') gameRunner.multiplyUpdatesPerSecond(2)
                 if (keyboard.keyCode === 'ArrowLeft') gameRunner.multiplyUpdatesPerSecond(0.5)
@@ -39,7 +43,7 @@ export const ControlsBar: React.FC = () => {
         }
         applyArrows()
 
-        if (keyboard.keyCode === 'Comma') gameRunner.jumpToRound(0)
+        if (keyboard.keyCode === 'Comma') gameRunner.jumpToStart()
         if (keyboard.keyCode === 'Period') gameRunner.jumpToEnd()
 
         const initalDelay = 250
@@ -79,7 +83,7 @@ export const ControlsBar: React.FC = () => {
             <div
                 className={
                     (minimized ? 'opacity-10 pointer-events-none' : 'opacity-90 pointer-events-auto') +
-                    ' flex bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
+                    ' flex items-center bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
                 <ControlsBarTimeline targetUPS={targetUPS} />
@@ -96,8 +100,8 @@ export const ControlsBar: React.FC = () => {
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.GoPreviousIcon />}
-                    tooltip="Step Backwards"
-                    onClick={() => gameRunner.stepRound(-1)}
+                    tooltip="Step Backward"
+                    onClick={() => (playbackPerTurn ? gameRunner.stepTurn(-1) : gameRunner.stepRound(-1))}
                     disabled={atStart}
                 />
                 {paused ? (
@@ -119,8 +123,8 @@ export const ControlsBar: React.FC = () => {
                 )}
                 <ControlsBarButton
                     icon={<ControlIcons.GoNextIcon />}
-                    tooltip="Next Round"
-                    onClick={() => gameRunner.stepRound(1)}
+                    tooltip="Step Forward"
+                    onClick={() => (playbackPerTurn ? gameRunner.stepTurn(1) : gameRunner.stepRound(1))}
                     disabled={atEnd}
                 />
                 <ControlsBarButton
@@ -132,7 +136,7 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
                     tooltip="Jump To Start"
-                    onClick={() => gameRunner.jumpToRound(0)}
+                    onClick={() => gameRunner.jumpToStart()}
                     disabled={atStart}
                 />
                 <ControlsBarButton

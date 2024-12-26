@@ -20,6 +20,7 @@ class gameRunnerClass {
     _gameListeners: (() => void)[] = []
     _matchListeners: (() => void)[] = []
     _roundListeners: (() => void)[] = []
+    _turnListeners: (() => void)[] = []
 
     eventLoop: NodeJS.Timeout | undefined = undefined
 
@@ -37,7 +38,7 @@ class gameRunnerClass {
             const msPerUpdate = 1000 / this.targetUPS
             const updatesPerInterval = SIMULATION_UPDATE_INTERVAL_MS / msPerUpdate
 
-            const roundChanged = this.match!._stepSimulation(updatesPerInterval)
+            const [roundChanged, turnChanged] = this.match!._stepSimulationByTime(updatesPerInterval)
 
             // Always rerender, so this assumes the simulation pauses when the simulation
             // is over
@@ -46,11 +47,12 @@ class gameRunnerClass {
             if (roundChanged) {
                 this._trigger(this._roundListeners)
             }
+            if (turnChanged) {
+                this._trigger(this._turnListeners)
+            }
 
             if (prevRound != this.match.currentRound.roundNumber) {
-                this.currentUPSBuffer.push(Date.now())
-                while (this.currentUPSBuffer.length > 0 && this.currentUPSBuffer[0] < Date.now() - 1000)
-                    this.currentUPSBuffer.shift()
+                this.addNowToUPSBuffer()
             }
 
             if (this.match.currentRound.isEnd() && this.targetUPS > 0) {
@@ -59,6 +61,12 @@ class gameRunnerClass {
                 this.setPaused(true)
             }
         }, SIMULATION_UPDATE_INTERVAL_MS)
+    }
+
+    private addNowToUPSBuffer(): void {
+        this.currentUPSBuffer.push(Date.now())
+        while (this.currentUPSBuffer.length > 0 && this.currentUPSBuffer[0] < Date.now() - 1000)
+            this.currentUPSBuffer.shift()
     }
 
     private stopEventLoop(): void {
@@ -98,12 +106,18 @@ class gameRunnerClass {
         if (match) {
             match.game.currentMatch = match
             this.setGame(match.game)
-            match._jumpToRound(0)
-            match._roundSimulation()
+            match._jumpToStart()
             GameRenderer.render()
         }
         this.setPaused(true)
         GameRenderer.onMatchChange()
+    }
+
+    setPlaybackPerTurn(value: boolean): void {
+        if (!this.match) return
+        this.match.playbackPerTurn = value
+        this._trigger(this._matchListeners)
+        GameRenderer.render()
     }
 
     multiplyUpdatesPerSecond(multiplier: number) {
@@ -126,16 +140,38 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._stepRound(delta)
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
 
-    jumpToRound(round: number) {
+    stepTurn(delta: number) {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._stepTurn(delta)
+        GameRenderer.render()
+        this._trigger(this._turnListeners)
+    }
+
+    jumpToRound(round: number) {
+        if (!this.match || this.match.currentRound.roundNumber == round) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToRound(round)
-        this.match._roundSimulation()
+        GameRenderer.render()
+        this._trigger(this._roundListeners)
+    }
+
+    jumpToTurn(turn: number) {
+        if (!this.match || this.match.currentRound.turnNumber == turn) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._jumpToTurn(turn)
+        GameRenderer.render()
+        this._trigger(this._turnListeners)
+    }
+
+    jumpToStart() {
+        if (!this.match) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._jumpToStart()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
@@ -144,7 +180,6 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToEnd()
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
@@ -212,6 +247,31 @@ export function useRound(): Round | undefined {
     return match?.currentRound
 }
 
+export function useTurnNumber(): { current: number; max: number } | undefined {
+    const round = useRound()
+    const [turnIdentifierNumber, setTurnIdentifierNumber] = React.useState(
+        round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined
+    )
+    React.useEffect(() => {
+        const listener = () =>
+            setTurnIdentifierNumber(round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined)
+        gameRunner._turnListeners.push(listener)
+        return () => {
+            gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
+        }
+    }, [round])
+    return React.useMemo(
+        () =>
+            round
+                ? {
+                      current: round.turnNumber,
+                      max: round.turnsLength || 0
+                  }
+                : undefined,
+        [round, turnIdentifierNumber, round?.turnNumber]
+    )
+}
+
 export function useControls(): {
     targetUPS: number
     paused: boolean
@@ -243,6 +303,18 @@ export function useCurrentUPS(): number {
         }
     }, [])
     return currentUPS
+}
+
+export function usePlaybackPerTurn(): boolean {
+    const [playbackPerTurn, setPlaybackPerTurn] = React.useState(gameRunner.match?.playbackPerTurn)
+    React.useEffect(() => {
+        const listener = () => setPlaybackPerTurn(gameRunner.match?.playbackPerTurn)
+        gameRunner._matchListeners.push(listener)
+        return () => {
+            gameRunner._matchListeners = gameRunner._matchListeners.filter((l) => l !== listener)
+        }
+    }, [])
+    return playbackPerTurn ?? false
 }
 
 export default gameRunner
