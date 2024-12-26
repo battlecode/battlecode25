@@ -14,6 +14,7 @@ export enum CanvasLayers {
 class GameRendererClass {
     private canvases: Record<CanvasLayers, HTMLCanvasElement>
     private mouseTile?: Vector = undefined
+    private mouseDownStartPos?: Vector = undefined
     private mouseDown: boolean = false
     private mouseDownRight: boolean = false
     private selectedBodyID?: number = undefined
@@ -46,6 +47,7 @@ class GameRendererClass {
     }
 
     clearSelected() {
+        this.mouseTile = undefined
         this.selectedTile = undefined
         this.selectedBodyID = undefined
         this.render()
@@ -111,6 +113,7 @@ class GameRendererClass {
 
     private canvasMouseDown(e: MouseEvent) {
         this.mouseDown = true
+        this.mouseDownStartPos = { x: e.x, y: e.y }
         if (e.button === 2) this.mouseDownRight = true
         this._trigger(this._canvasEventListeners)
     }
@@ -128,6 +131,12 @@ class GameRendererClass {
         }
     }
     private canvasMouseLeave(e: MouseEvent) {
+        // Only trigger if the mouse actually left the canvas, not just lost focus
+        const rect = this.canvases[0].getBoundingClientRect()
+        if (e.x <= rect.right && e.x >= rect.left && e.y <= rect.bottom && e.y >= rect.top) {
+            return
+        }
+
         this.mouseDown = false
         this.mouseDownRight = false
         this.mouseTile = undefined
@@ -140,6 +149,14 @@ class GameRendererClass {
         this._trigger(this._canvasEventListeners)
     }
     private canvasClick(e: MouseEvent) {
+        // Don't trigger the click if it moved too far away from the origin
+        const maxDist = 25
+        if (
+            this.mouseDownStartPos &&
+            (Math.abs(this.mouseDownStartPos.x - e.x) > maxDist || Math.abs(this.mouseDownStartPos.y - e.y) > maxDist)
+        )
+            return
+
         this.selectedTile = eventToPoint(e)
         const newSelectedBody = gameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,

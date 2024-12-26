@@ -6,6 +6,7 @@ import { useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
 import gameRunner, { useControls, usePlaybackPerTurn, useRound } from '../../playback/GameRunner'
+import { HiddenIcon, VisibleIcon } from '../../icons/visible'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
@@ -69,23 +70,38 @@ export const ControlsBar: React.FC = () => {
             className="flex absolute bottom-0 rounded-t-md z-10 pointer-events-none select-none"
             style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
         >
-            <Tooltip text={minimized ? 'Open Controls (c)' : 'Close Controls (c)'} wrapperClass="pointer-events-auto">
-                <button
-                    className={
-                        (minimized ? 'text-darkHighlight opacity-90' : 'ml-[1px] text-white') +
-                        ' z-20 absolute left-0 top-0 rounded-md text-[10px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
-                    }
-                    onClick={() => setMinimized(!minimized)}
-                >
-                    {minimized ? '+' : '-'}
-                </button>
-            </Tooltip>
             <div
                 className={
                     (minimized ? 'opacity-10 pointer-events-none' : 'opacity-90 pointer-events-auto') +
                     ' flex items-center bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
+                <div className="absolute z-10 top-[2px] flex items-center gap-1">
+                    <Tooltip
+                        text={minimized ? 'Show Controls (c)' : 'Hide Controls (c)'}
+                        wrapperClass="flex pointer-events-auto"
+                    >
+                        <button
+                            className={(minimized ? 'text-darkHighlight opacity-90' : 'text-white') + ' w-[14px]'}
+                            onClick={() => setMinimized(!minimized)}
+                        >
+                            {minimized ? <HiddenIcon /> : <VisibleIcon />}
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        text={playbackPerTurn ? 'Disable Playback Per Turn (v)' : 'Enable Playback Per Turn (v)'}
+                        wrapperClass="flex pointer-events-auto"
+                    >
+                        <button
+                            className={
+                                'text-white rounded-md text-[14px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
+                            }
+                            onClick={() => gameRunner.setPlaybackPerTurn(!playbackPerTurn)}
+                        >
+                            {playbackPerTurn ? '-' : '+'}
+                        </button>
+                    </Tooltip>
+                </div>
                 <ControlsBarTimeline targetUPS={targetUPS} />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}

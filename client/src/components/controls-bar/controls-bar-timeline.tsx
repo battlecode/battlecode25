@@ -2,7 +2,6 @@ import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
 import gameRunner, { useCurrentUPS, usePlaybackPerTurn, useRound, useTurnNumber } from '../../playback/GameRunner'
 import { GAME_MAX_TURNS } from '../../constants'
-import Tooltip from '../tooltip'
 import assert from 'assert'
 
 const TIMELINE_WIDTH = 350
@@ -38,19 +37,6 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     )
     return (
         <>
-            <Tooltip
-                text={playbackPerTurn ? 'Disable Playback Per Turn (v)' : 'Enable Playback Per Turn (v)'}
-                wrapperClass="mt-auto -mb-1 -ml-1"
-            >
-                <button
-                    className={
-                        'text-white rounded-md text-[10px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
-                    }
-                    onClick={() => gameRunner.setPlaybackPerTurn(!playbackPerTurn)}
-                >
-                    {playbackPerTurn ? '-' : '+'}
-                </button>
-            </Tooltip>
             <div className="flex flex-col">
                 {/* <div className="min-h-[30px] bg-bg rounded-md mr-2 relative" style={{ minWidth: TIMELINE_WIDTH }}>
                     <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[10px] text-xs select-none whitespace-nowrap">

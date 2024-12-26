@@ -8,6 +8,7 @@ import { ResetZoomIcon } from '../../icons/resetzoom'
 import { useAppContext } from '../../app-context'
 import Round from '../../playback/Round'
 import { DraggableTooltip, FloatingTooltip } from './tooltip'
+import Tooltip from '../tooltip'
 
 export const GameRendererPanel: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -119,13 +120,22 @@ const ZoomableGameRenderer: React.FC<{
     const [canResetCamera, setCanResetCamera] = React.useState(false)
     const hoveredTileRef = React.useRef<HTMLDivElement | null>(null)
 
-    const resetCamera = () => {
-        if (spaceRef.current) spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
+    const resetCamera = (e?: KeyboardEvent) => {
+        if (!spaceRef.current) return
+        if (e && e.code !== 'KeyR') return
+
+        spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
+        GameRenderer.clearSelected()
     }
 
     React.useEffect(() => {
-        window.addEventListener('resize', resetCamera)
-        return () => window.removeEventListener('resize', resetCamera)
+        const resize = () => resetCamera()
+        window.addEventListener('resize', resize)
+        window.addEventListener('keydown', resetCamera)
+        return () => {
+            window.removeEventListener('resize', resize)
+            window.removeEventListener('keydown', resetCamera)
+        }
     }, [])
 
     const match = useMatch()
@@ -153,16 +163,20 @@ const ZoomableGameRenderer: React.FC<{
                 </GameRendererCanvases>
             </Space>
             {canResetCamera && (
-                <button
-                    className="absolute top-0 z-10 right-0 m-2 p-2 opacity-50 fill-white"
-                    onClick={(e) => {
-                        resetCamera()
-                        // Dont clear the GameRenderer selection
-                        if (e) e.stopPropagation()
-                    }}
-                >
-                    <ResetZoomIcon />
-                </button>
+                <div style={{ top: hoveredTile ? '35px' : '0px' }} className="absolute z-10 right-0 m-2 p-2 fill-white">
+                    <Tooltip text={'Reset Camera (r)'} location="left">
+                        <button
+                            className="opacity-50"
+                            onClick={(e) => {
+                                resetCamera()
+                                // Dont clear the GameRenderer selection
+                                if (e) e.stopPropagation()
+                            }}
+                        >
+                            <ResetZoomIcon />
+                        </button>
+                    </Tooltip>
+                </div>
             )}
         </div>
     )
