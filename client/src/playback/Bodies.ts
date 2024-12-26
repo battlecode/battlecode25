@@ -41,7 +41,7 @@ export default class Bodies {
 
             // Remove if dead
             if (body.dead) {
-                this.bodies.delete(body.id) // safe
+                this.bodies.delete(body.id)
             }
         }
     }

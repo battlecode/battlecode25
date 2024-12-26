@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
-import gameRunner, { useCurrentUPS, useRound, useTurnNumber } from '../../playback/GameRunner'
+import gameRunner, { useCurrentUPS, usePlaybackPerTurn, useRound, useTurnNumber } from '../../playback/GameRunner'
 import { GAME_MAX_TURNS } from '../../constants'
 import Tooltip from '../tooltip'
 import assert from 'assert'
@@ -8,13 +8,12 @@ import assert from 'assert'
 const TIMELINE_WIDTH = 350
 interface Props {
     targetUPS: number
-    playbackPerTurn: boolean
-    setPlaybackPerTurn: (value: boolean) => void
 }
 
-export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS, playbackPerTurn, setPlaybackPerTurn }) => {
+export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
     const appContext = useAppContext()
     const currentUPS = useCurrentUPS()
+    const playbackPerTurn = usePlaybackPerTurn()
     const round = useRound()
     const turn = useTurnNumber()
 
@@ -47,7 +46,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS, playbackPerTur
                     className={
                         'text-white rounded-md text-[10px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
                     }
-                    onClick={() => setPlaybackPerTurn(!playbackPerTurn)}
+                    onClick={() => gameRunner.setPlaybackPerTurn(!playbackPerTurn)}
                 >
                     {playbackPerTurn ? '-' : '+'}
                 </button>

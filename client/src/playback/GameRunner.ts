@@ -107,14 +107,15 @@ class gameRunnerClass {
             match.game.currentMatch = match
             this.setGame(match.game)
             match._jumpToStart()
-            match._roundSimulation()
             GameRenderer.render()
         }
         this.setPaused(true)
         GameRenderer.onMatchChange()
     }
 
-    signalMatchInternalChange(): void {
+    setPlaybackPerTurn(value: boolean): void {
+        if (!this.match) return
+        this.match.playbackPerTurn = value
         this._trigger(this._matchListeners)
         GameRenderer.render()
     }
@@ -139,7 +140,6 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._stepRound(delta)
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
@@ -148,7 +148,6 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._stepTurn(delta)
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._turnListeners)
     }
@@ -157,16 +156,14 @@ class gameRunnerClass {
         if (!this.match || this.match.currentRound.roundNumber == round) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToRound(round)
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
 
     jumpToTurn(turn: number) {
-        if (!this.match || this.match.currentRound.nextTurnIndex == turn) return
+        if (!this.match || this.match.currentRound.turnNumber == turn) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToTurn(turn)
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._turnListeners)
     }
@@ -175,7 +172,6 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToStart()
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
@@ -184,7 +180,6 @@ class gameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._jumpToEnd()
-        this.match._roundSimulation()
         GameRenderer.render()
         this._trigger(this._roundListeners)
     }
@@ -255,11 +250,11 @@ export function useRound(): Round | undefined {
 export function useTurnNumber(): { current: number; max: number } | undefined {
     const round = useRound()
     const [turnIdentifierNumber, setTurnIdentifierNumber] = React.useState(
-        round ? round.roundNumber * round.match.maxRound + round.nextTurnIndex : undefined
+        round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined
     )
     React.useEffect(() => {
         const listener = () =>
-            setTurnIdentifierNumber(round ? round.roundNumber * round.match.maxRound + round.nextTurnIndex : undefined)
+            setTurnIdentifierNumber(round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined)
         gameRunner._turnListeners.push(listener)
         return () => {
             gameRunner._turnListeners = gameRunner._turnListeners.filter((l) => l !== listener)
@@ -269,11 +264,11 @@ export function useTurnNumber(): { current: number; max: number } | undefined {
         () =>
             round
                 ? {
-                      current: round.nextTurnIndex,
+                      current: round.turnNumber,
                       max: round.turnsLength || 0
                   }
                 : undefined,
-        [round, turnIdentifierNumber, round?.nextTurnIndex]
+        [round, turnIdentifierNumber, round?.turnNumber]
     )
 }
 
@@ -308,6 +303,18 @@ export function useCurrentUPS(): number {
         }
     }, [])
     return currentUPS
+}
+
+export function usePlaybackPerTurn(): boolean {
+    const [playbackPerTurn, setPlaybackPerTurn] = React.useState(gameRunner.match?.playbackPerTurn)
+    React.useEffect(() => {
+        const listener = () => setPlaybackPerTurn(gameRunner.match?.playbackPerTurn)
+        gameRunner._matchListeners.push(listener)
+        return () => {
+            gameRunner._matchListeners = gameRunner._matchListeners.filter((l) => l !== listener)
+        }
+    }, [])
+    return playbackPerTurn ?? false
 }
 
 export default gameRunner

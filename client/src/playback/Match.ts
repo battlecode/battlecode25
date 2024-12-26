@@ -15,13 +15,14 @@ const SNAPSHOT_EVERY = 50
 const MAX_SIMULATION_STEPS = 50000
 
 export default class Match {
-    public currentRound: Round
-    private readonly snapshots: Round[]
-    public readonly stats: RoundStat[]
-    private currentSimulationStep: number = 0
-    private _playbackPerTurn: boolean = false
-    private readonly deltas: schema.Round[]
     public maxRound: number = 1
+    public currentRound: Round
+    public readonly stats: RoundStat[]
+    private readonly deltas: schema.Round[]
+    private readonly snapshots: Round[]
+    private _currentSimulationStep: number = 0
+    private _playbackPerTurn: boolean = false
+
     constructor(
         public readonly game: Game,
         public winner: Team | null,
@@ -45,9 +46,8 @@ export default class Match {
 
     set playbackPerTurn(value: boolean) {
         this._playbackPerTurn = value
-        this.currentSimulationStep = 0
+        this._currentSimulationStep = 0
         this.currentRound.jumpToTurn(value ? 0 : this.currentRound.turnsLength)
-        gameRunner.signalMatchInternalChange()
     }
 
     /**
@@ -104,7 +104,7 @@ export default class Match {
      */
     public getInterpolationFactor(): number {
         if (this.playbackPerTurn) return 1
-        return Math.max(0, Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)) / MAX_SIMULATION_STEPS
+        return Math.max(0, Math.min(this._currentSimulationStep, MAX_SIMULATION_STEPS)) / MAX_SIMULATION_STEPS
     }
 
     /**
@@ -114,25 +114,26 @@ export default class Match {
     public _stepSimulationByTime(deltaTime: number): [boolean, boolean] {
         assert(this.game.playable, "Can't step simulation when not playing")
         const currentRoundNumber = this.currentRound.roundNumber
-        const currentTurnNumber = this.currentRound.nextTurnIndex
+        const currentTurnNumber = this.currentRound.turnNumber
 
-        this.currentSimulationStep += deltaTime * MAX_SIMULATION_STEPS
+        this._currentSimulationStep += deltaTime * MAX_SIMULATION_STEPS
         if (this.playbackPerTurn) {
-            if (this.currentSimulationStep >= MAX_SIMULATION_STEPS) {
+            if (this._currentSimulationStep >= MAX_SIMULATION_STEPS) {
                 this._stepTurn(1)
-                this.currentSimulationStep = 0
-            } else if (this.currentSimulationStep < 0) {
+                this._currentSimulationStep = 0
+            } else if (this._currentSimulationStep < 0) {
                 this._stepTurn(-1)
-                this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
+                this._currentSimulationStep = MAX_SIMULATION_STEPS - 1
             }
         } else {
-            // ensure all turns are applied if we're in round playback
+            // When we are simulating, perform all turns so that the robots
+            // will interpolate between their current state and the applied state
             this.currentRound.jumpToTurn(this.currentRound.turnsLength)
             this._updateSimulationRoundsByTime(deltaTime)
         }
 
         const roundStepped = currentRoundNumber != this.currentRound.roundNumber
-        const turnStepped = currentTurnNumber != this.currentRound.nextTurnIndex || roundStepped
+        const turnStepped = currentTurnNumber != this.currentRound.turnNumber || roundStepped
         return [roundStepped, turnStepped]
     }
 
@@ -140,7 +141,7 @@ export default class Match {
      * Change the match's current round's turn to the current turn + delta.
      */
     public _stepTurn(turns: number): void {
-        let targetTurn = this.currentRound.nextTurnIndex + turns
+        let targetTurn = this.currentRound.turnNumber + turns
         if (this.currentRound.roundNumber === this.maxRound && turns > 0) {
             targetTurn = Math.min(targetTurn, this.currentRound.turnsLength)
         } else if (this.currentRound.roundNumber == 1 && turns < 0) {
@@ -158,20 +159,28 @@ export default class Match {
 
     public _jumpToTurn(turn: number): void {
         if (!this.game.playable) return
+
+        this._roundSimulation()
+
         this.currentRound.jumpToTurn(turn)
     }
 
     private _updateSimulationRoundsByTime(deltaTime: number): void {
         if (this.currentRound.roundNumber == this.maxRound && deltaTime > 0) {
-            this.currentSimulationStep = Math.min(this.currentSimulationStep, MAX_SIMULATION_STEPS)
+            // If we are at the end, round the simulation to the max value
+            this._currentSimulationStep = Math.min(this._currentSimulationStep, MAX_SIMULATION_STEPS)
         } else if (this.currentRound.roundNumber == 1 && deltaTime < 0) {
-            this.currentSimulationStep = Math.max(0, this.currentSimulationStep)
-        } else if (this.currentSimulationStep < 0) {
+            // If we are at the start, round the simulation to zero
+            this._currentSimulationStep = Math.max(0, this._currentSimulationStep)
+        } else if (this._currentSimulationStep < 0) {
+            // If we are going in reverse, step the rounds back by one. Also,
+            // apply all turns for that round so that the transition is smooth
             this._stepRound(-1)
-            this.currentSimulationStep = MAX_SIMULATION_STEPS - 1
-        } else if (this.currentSimulationStep >= MAX_SIMULATION_STEPS) {
+            this.currentRound.jumpToTurn(this.currentRound.turnsLength)
+            this._currentSimulationStep = MAX_SIMULATION_STEPS - 1
+        } else if (this._currentSimulationStep >= MAX_SIMULATION_STEPS) {
+            // If we are going forward, simply step the turn
             this._stepRound(1)
-            this.currentSimulationStep = 0
         }
     }
 
@@ -179,7 +188,13 @@ export default class Match {
      * Clear any excess simulation steps and round it to the nearest round
      */
     public _roundSimulation(): void {
-        this.currentSimulationStep = 0
+        // If we are in round playback mode, we need to reset back to the start
+        // state because simulating has prematurely applied these turns
+        if (!this.playbackPerTurn) {
+            this.currentRound.jumpToTurn(0)
+        }
+
+        this._currentSimulationStep = 0
     }
 
     /**
@@ -209,9 +224,13 @@ export default class Match {
     public _jumpToRound(roundNumber: number): void {
         if (!this.game.playable) return
 
+        this._roundSimulation()
+
         roundNumber = Math.max(1, Math.min(roundNumber, this.maxRound))
         if (roundNumber == this.currentRound.roundNumber) return
 
+        // Select the closest snapshot round, or mutate the current round if we can
+        // to avoid copying
         const closestSnapshot = this.getClosestSnapshot(roundNumber)
         const updatingRound =
             this.currentRound.roundNumber <= roundNumber && this.currentRound.roundNumber >= closestSnapshot.roundNumber
@@ -219,21 +238,21 @@ export default class Match {
                 : closestSnapshot.copy()
 
         while (updatingRound.roundNumber < roundNumber) {
+            // Fully apply the previous round by applying each turn sequentially
             updatingRound.jumpToTurn(updatingRound.turnsLength)
+
+            // Update the round with the delta that will be applied next
             updatingRound.startApplyNewRound(
                 updatingRound.roundNumber < this.deltas.length ? this.deltas[updatingRound.roundNumber] : null
             )
 
+            // Snapshots should always be the round state just after starting (at turn 0)
             if (this.shouldSnapshot(updatingRound.roundNumber)) {
-                // Snapshots should always be the round state just after starting (at turn 0)
                 this.snapshots.push(updatingRound.copy())
             }
         }
 
         this.currentRound = updatingRound
-        // ensure all turns are applied if we're in round playback
-        // we have to do this here as well as in step simulation because rendering could occur before the sim is stepped
-        if (!this.playbackPerTurn) this.currentRound.jumpToTurn(this.currentRound.turnsLength)
     }
 
     private getClosestSnapshot(roundNumber: number): Round {
@@ -243,7 +262,7 @@ export default class Match {
                 ? this.snapshots[snapshotIndex]
                 : this.snapshots[this.snapshots.length - 1]
         assert(snapshot, 'No viable snapshots found (there should always be a round 1 snapshot)')
-        assert(snapshot.nextTurnIndex === 0, 'Snapshot should always be at turn 0')
+        assert(snapshot.turnNumber === 0, 'Snapshot should always be at turn 0')
         return snapshot
     }
 

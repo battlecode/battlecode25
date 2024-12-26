@@ -8,8 +8,9 @@ import RoundStat from './RoundStat'
 import assert from 'assert'
 
 export default class Round {
-    public nextTurnIndex: number = 0
+    public turnNumber: number = 0
     private initialRoundState: Round | null = null
+
     constructor(
         public readonly match: Match,
         public roundNumber: number = 0,
@@ -42,7 +43,7 @@ export default class Round {
      */
     public startApplyNewRound(delta: schema.Round | null): void {
         assert(
-            this.nextTurnIndex === this.turnsLength,
+            this.turnNumber === this.turnsLength,
             `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
         )
 
@@ -56,7 +57,7 @@ export default class Round {
         this.bodies.prepareForNextRound()
         this.actions.prepareForNextRound()
         this.initialRoundState = null
-        this.nextTurnIndex = 0
+        this.turnNumber = 0
         this.currentDelta = delta
     }
 
@@ -65,34 +66,37 @@ export default class Round {
      */
     public jumpToTurn(turnNumber: number): void {
         if (!this.currentDelta) return // Final round does not have a delta, so there is nothing to jump to
-        if (turnNumber < this.nextTurnIndex) {
-            assert(this.initialRoundState, 'Cannot reset to start of a round without initial bodies')
+
+        if (turnNumber < this.turnNumber) {
+            assert(this.initialRoundState, 'Cannot reset to start of a round without first stepping')
             this.bodies = this.initialRoundState.bodies.copy()
             this.actions = this.initialRoundState.actions.copy()
             this.map = this.initialRoundState.map.copy()
-            this.nextTurnIndex = 0
+            this.turnNumber = 0
         }
-        while (this.nextTurnIndex < turnNumber) {
+
+        while (this.turnNumber < turnNumber) {
             this.stepTurn()
         }
     }
 
     private stepTurn(): void {
-        assert(this.nextTurnIndex < this.turnsLength, 'Cannot step a round that is at the end')
+        assert(this.turnNumber < this.turnsLength, 'Cannot step a round that is at the end')
 
-        const turn = this.currentDelta!.turns(this.nextTurnIndex)
+        const turn = this.currentDelta!.turns(this.turnNumber)
         assert(turn, 'Turn not found to step to')
 
         if (!this.initialRoundState) {
             // Store the initial round state for resetting only after stepping, that way snapshots dont need to store it, halving memory usage
-            assert(this.nextTurnIndex === 0, 'Initial round state should only be set at turn 0')
+            assert(this.turnNumber === 0, 'Initial round state should only be set at turn 0')
             this.initialRoundState = this.copy()
         }
 
         this.map.applyTurnDelta(turn)
         this.actions.applyTurnDelta(this, turn)
         this.bodies.applyTurnDelta(this, turn)
-        this.nextTurnIndex += 1
+
+        this.turnNumber += 1
     }
 
     public copy(): Round {

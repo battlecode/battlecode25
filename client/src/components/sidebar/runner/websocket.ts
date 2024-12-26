@@ -13,6 +13,8 @@ export default class WebSocketListener {
     url: string = 'ws://localhost:6175'
     pollEvery: number = 500
     activeGame: Game | null = null
+    activeMatch: Match | null = null
+    lastSetRound: number = 1
     stream: boolean = false
     constructor(
         private shouldStream: boolean,
@@ -20,6 +22,7 @@ export default class WebSocketListener {
         readonly onMatchCreated: (match: Match) => void,
         readonly onGameComplete: (game: Game) => void
     ) {
+        this.reset()
         this.poll()
     }
 
@@ -29,6 +32,8 @@ export default class WebSocketListener {
 
     private reset() {
         this.activeGame = null
+        this.activeMatch = null
+        this.lastSetRound = 1
     }
 
     private poll() {
@@ -54,16 +59,13 @@ export default class WebSocketListener {
     private visualUpdate() {
         if (!this.activeGame) return
 
-        const match = this.activeGame.matches[this.activeGame.matches.length - 1]
-        if (match && match === gameRunner.match) {
-            // Auto progress the round if the user hasn't done it themselves
-            // We only want to do this if the currently selected match is the one being updated
-            if (match.currentRound.roundNumber >= match.maxRound - 1) {
-                // Jump to second to last round because the last one is the "end" state and doesnt have an animation to play
-                gameRunner.jumpToRound(match.maxRound - 1)
-            } else {
-                // Trigger match update so anywhere accessing round/max round gets updated
-                gameRunner.signalMatchInternalChange()
+        // Auto progress the round if the user hasn't done it themselves
+        // We only want to do this if the currently selected match is the one being updated
+        if (this.activeMatch && this.activeMatch === gameRunner.match) {
+            const newRound = this.activeMatch.maxRound - 1
+            if (this.lastSetRound == this.activeMatch.currentRound.roundNumber) {
+                gameRunner.jumpToRound(newRound)
+                this.lastSetRound = newRound
             }
         }
 
@@ -96,11 +98,17 @@ export default class WebSocketListener {
         this.activeGame.addEvent(event)
 
         switch (eventType) {
-            case schema.Event.MatchHeader: {
+            case schema.Event.Round: {
                 if (!this.stream) break
 
-                const match = this.activeGame.matches[this.activeGame.matches.length - 1]
-                this.onMatchCreated(match)
+                // We want to set the match only once the first round comes in,
+                // otherwise our current simulation setup will break if no rounds
+                // exist
+                const currentMatch = this.activeGame.matches[this.activeGame.matches.length - 1]
+                if (this.activeMatch === currentMatch) break
+
+                this.onMatchCreated(currentMatch)
+                this.activeMatch = currentMatch
 
                 break
             }
