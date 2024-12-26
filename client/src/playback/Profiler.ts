@@ -1,4 +1,21 @@
-// This file contains types which specify the speedscope file format.
+export type ParsedProfilerEvent = {
+    type: string
+    at: number
+    frame: number
+}
+
+export type ParsedProfilerProfile = {
+    name: string
+    events: Array<ParsedProfilerEvent>
+}
+
+export type ParsedProfilerFile = {
+    frames: Frame[]
+    profiles: Profile[]
+}
+
+// BELOW WAS PULLED FROM SPEEDSCOPE SOURCE
+// =======================================
 
 export type Profile = EventedProfile | SampledProfile
 

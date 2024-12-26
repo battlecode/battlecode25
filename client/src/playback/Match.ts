@@ -6,13 +6,7 @@ import RoundStat from './RoundStat'
 import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
-import { ProfilerEvent, ProfilerFile, ProfilerProfile } from '../components/sidebar/profiler/profiler'
-import {
-    CloseFrameEvent,
-    EventType,
-    OpenFrameEvent,
-    ProfileType
-} from '../components/sidebar/profiler/speedscopefilespec'
+import * as Profiler from './Profiler'
 
 // Amount of rounds before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
@@ -23,7 +17,7 @@ const MAX_SIMULATION_STEPS = 50000
 export default class Match {
     public maxRound: number = 1
     public currentRound: Round
-    public readonly profilerFiles: ProfilerFile[] = []
+    public readonly profilerFiles: Profiler.ParsedProfilerFile[]
     public readonly stats: RoundStat[]
     private readonly deltas: schema.Round[]
     private readonly snapshots: Round[]
@@ -41,6 +35,7 @@ export default class Match {
         this.snapshots = []
         this.stats = []
         this.deltas = []
+        this.profilerFiles = []
     }
 
     get constants(): schema.GameplayConstants {
@@ -104,27 +99,28 @@ export default class Match {
     public addMatchFooter(footer: schema.MatchFooter): void {
         this.winner = this.game.teams[footer.winner() - 1]
         this.winType = footer.winType()
-        // if (this.config.doProfiling) {
         this.addProfilerFiles(footer)
-        // }
     }
 
+    /*
+     * Parse profiler files from the match footer and store them
+     */
     public addProfilerFiles(footer: schema.MatchFooter): void {
         for (let i = 0, iMax = footer.profilerFilesLength(); i < iMax; i++) {
             const file = footer.profilerFiles(i) ?? assert.fail('Profiler file was null')
-            const profilerFile: ProfilerFile = { frames: [], profiles: [] }
+            const profilerFile: Profiler.ParsedProfilerFile = { frames: [], profiles: [] }
             for (let j = 0, jMax = file.framesLength(); j < jMax; j++) {
                 profilerFile.frames.push({ name: file.frames(j) })
             }
             for (let j = 0, jMax = file.profilesLength(); j < jMax; j++) {
                 const profile = file.profiles(j) ?? assert.fail('Profiler profile was null')
-                const events: (OpenFrameEvent | CloseFrameEvent)[] = []
+                const events: (Profiler.OpenFrameEvent | Profiler.CloseFrameEvent)[] = []
                 let startValue: number | undefined = undefined
                 let endValue: number | undefined = undefined
                 for (let k = 0, kMax = profile.eventsLength(); k < kMax; k++) {
                     const event = profile.events(k) ?? assert.fail('Profiler event was null')
                     events.push({
-                        type: event.isOpen() ? EventType.OPEN_FRAME : EventType.CLOSE_FRAME,
+                        type: event.isOpen() ? Profiler.EventType.OPEN_FRAME : Profiler.EventType.CLOSE_FRAME,
                         at: event.at(),
                         frame: event.frame()
                     })
@@ -132,7 +128,7 @@ export default class Match {
                     endValue = Math.max(endValue ?? event.at(), event.at())
                 }
                 profilerFile.profiles.push({
-                    type: ProfileType.EVENTED,
+                    type: Profiler.ProfileType.EVENTED,
                     name: profile.name() ?? assert.fail('Profiler name was null'),
                     events,
                     startValue: startValue! - 1,

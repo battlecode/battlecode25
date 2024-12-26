@@ -2,15 +2,13 @@ const webpack = require('webpack')
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = (env) => {
     const development = env.dev
 
     var config = {
         entry: {
-            app: './src/app.tsx',
-            profiler: './profiler.ts'
+            app: './src/app.tsx'
         },
         target: 'web',
         devtool: development ? 'source-map' : undefined,
@@ -75,11 +73,12 @@ module.exports = (env) => {
             new CopyPlugin({
                 patterns: [{ from: 'src/static', to: 'static' }]
             }),
-            new CopyWebpackPlugin({
+            new CopyPlugin({
+                // Copy speedscope files
                 patterns: [
                     {
-                        from: path.resolve(__dirname, 'node_modules/speedscope/dist/release'),
-                        to: path.resolve(__dirname, 'dist/speedscope'),
+                        from: 'node_modules/speedscope/dist/release',
+                        to: 'speedscope',
                         transform: (content, filePath) => {
                             // Make speedscope's localProfilePath hash parameter support relative paths
                             if (filePath.endsWith('.js')) {
@@ -89,6 +88,10 @@ module.exports = (env) => {
                         }
                     }
                 ]
+            }),
+            new CopyPlugin({
+                // Copy speedscope js files (again) to root so imports can get resolved
+                patterns: [{ from: 'node_modules/speedscope/dist/release/*.js', to: '[name][ext]' }]
             })
         ]
     }

@@ -1,11 +1,11 @@
-function applyCSS(css: string): void {
+function applyCSS(css) {
     const style = document.createElement('style')
     style.innerHTML = css
     document.head.appendChild(style)
 }
 
-function load(data: any): void {
-    ;(window as any).speedscope.loadFileFromBase64('data.json', btoa(JSON.stringify(data)))
+function load(data) {
+    window.speedscope.loadFileFromBase64('data.json', btoa(JSON.stringify(data)))
 }
 
 window.addEventListener('message', (event) => {
@@ -23,7 +23,7 @@ window.addEventListener('message', (event) => {
 
 // Make sure the "flamegraph" link on the homepage opens in a new tab instead of inside the iframe itself
 document.addEventListener('click', (event) => {
-    const target = event.target as HTMLElement
+    const target = event.target
     if (
         target.tagName === 'A' &&
         target.getAttribute('href') === 'http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html'

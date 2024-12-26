@@ -11,20 +11,20 @@ interface Props {
 const DEFAULT_CONFIG = {
     showAllIndicators: false,
     showAllRobotRadii: false,
-    showHealthBars: false,
+    showHealthBars: true,
     showMapXY: true,
-    showFlagCarryIndicator: true,
-    streamRunnerGames: false,
+    streamRunnerGames: true,
+    profileGames: false,
     validateMaps: false
 }
 
-const configDescription: { [key: string]: string } = {
+const configDescription: Record<keyof ClientConfig, string> = {
     showAllIndicators: 'Show all indicator dots and lines',
     showAllRobotRadii: 'Show all robot view and attack radii',
     showHealthBars: 'Show health bars below all robots',
     showMapXY: 'Show X,Y when hovering a tile',
-    showFlagCarryIndicator: 'Show an obvious indicator over flag carriers',
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
+    profileGames: 'Enable saving profiling data when running games',
     validateMaps: 'Validate maps before running a game'
 }
 
@@ -43,18 +43,19 @@ export const ConfigPage: React.FC<Props> = (props) => {
     return (
         <div className={'flex flex-col'}>
             <div className="mb-2">Edit Client Config:</div>
-            {Object.entries(DEFAULT_CONFIG).map(([key, value]) => {
-                if (typeof value === 'string') return <ConfigStringElement configKey={key} key={key} />
-                if (typeof value === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
-                if (typeof value === 'number') return <ConfigNumberElement configKey={key} key={key} />
+            {Object.entries(DEFAULT_CONFIG).map(([k, v]) => {
+                const key = k as keyof ClientConfig
+                if (typeof v === 'string') return <ConfigStringElement configKey={key} key={key} />
+                if (typeof v === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
+                if (typeof v === 'number') return <ConfigNumberElement configKey={key} key={key} />
             })}
         </div>
     )
 }
 
-const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) => {
+const ConfigBooleanElement: React.FC<{ configKey: keyof ClientConfig }> = ({ configKey }) => {
     const context = useAppContext()
-    const value = context.state.config[configKey as keyof ClientConfig]
+    const value = context.state.config[configKey]
     return (
         <div className={'flex flex-row items-center mb-2'}>
             <input

@@ -21,3 +21,8 @@ where-is-it = { git = "https://github.com/TheApplePieGod/where-is-it.git" }
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
+
+# Uncomment to enable devtools in release
+#[profile.release.package.wry]
+#debug = true
+#debug-assertions = true

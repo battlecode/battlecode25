@@ -30,13 +30,7 @@ type Scaffold = [
     manuallySetupScaffold: () => Promise<void>,
     reloadData: () => void,
     scaffoldLoading: boolean,
-    runMatch: (
-        langVersion: LanguageVersion,
-        teamA: string,
-        teamB: string,
-        selectedMaps: Set<string>,
-        shouldProfile: boolean
-    ) => Promise<void>,
+    runMatch: (langVersion: LanguageVersion, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
     killMatch: (() => Promise<void>) | undefined,
     console: RingBuffer<ConsoleLine>
 ]
@@ -78,8 +72,7 @@ export const useScaffold = (): Scaffold => {
         langVersion: LanguageVersion,
         teamA: string,
         teamB: string,
-        selectedMaps: Set<string>,
-        shouldProfile: boolean
+        selectedMaps: Set<string>
     ): Promise<void> {
         if (matchPID.current || !scaffoldPath) return
         consoleLines.current.clear()
@@ -93,7 +86,7 @@ export const useScaffold = (): Scaffold => {
                 nativeAPI!,
                 scaffoldPath!,
                 appContext.state.config.validateMaps,
-                shouldProfile
+                appContext.state.config.profileGames
             )
             matchPID.current = newPID
         } catch (e: any) {

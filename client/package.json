@@ -84,6 +84,7 @@
             "dist/index.html",
             "dist/icon.ico",
             "dist/static/**/*",
+            "dist/speedscope/**/*",
             "icons/**/*",
             "src-electron/**/*",
             "!node_modules/**/*",
