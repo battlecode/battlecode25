@@ -9,7 +9,7 @@
     "test": "true",
     "build-and-distribute": "npm run build && npm run copy-to-engine && cd ../client && npm run fix-schema",
     "copy-to-engine": "rm -R ../engine/src/main/battlecode/schema/ && mkdir ../engine/src/main/battlecode/schema && cp java/battlecode/schema/* ../engine/src/main/battlecode/schema/",
-    "build": "./flatc --ts --ts-no-import-ext -o ts battlecode.fbs && ./flatc --java -o java battlecode.fbs && tsc"
+    "build": "./flatc --ts --ts-no-import-ext -o ts battlecode.fbs && ./flatc --java -o java battlecode.fbs && ./flatc --python --python-typing --python-import-override ..schema -o python battlecode.fbs && tsc"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
   "homepage": "https://github.com/battlecode/battlecode-schema#readme",
   "dependencies": {
     "@types/flatbuffers": "^1.10.2",
-    "flatbuffers": "^23.5.26"
+    "flatbuffers": "24.3.25"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

@@ -209,13 +209,15 @@ export const Sidebar: React.FC = () => {
                             </div>
                         </>
                     )}
-                    <GamePage open={open && page == PageType.GAME} />
-                    <QueuePage open={open && page == PageType.QUEUE} />
-                    <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
-                    <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
-                    <HelpPage open={open && page == PageType.HELP} />
-                    <ConfigPage open={open && page == PageType.CONFIG} />
-                    <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    <div className="h-full overflow-y-scroll overflow-x-hidden">
+                        <GamePage open={open && page == PageType.GAME} />
+                        <QueuePage open={open && page == PageType.QUEUE} />
+                        <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
+                        <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
+                        <HelpPage open={open && page == PageType.HELP} />
+                        <ConfigPage open={open && page == PageType.CONFIG} />
+                        <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    </div>
                 </div>
             </Scrollbars>
         </div>

@@ -10,7 +10,12 @@ import Match from '../../../playback/Match'
 import { RingBuffer } from '../../../util/ring-buffer'
 import gameRunner from '../../../playback/GameRunner'
 
-export type JavaInstall = {
+export enum SupportedLanguage {
+    Java = 'Java',
+    Python = 'Python'
+}
+
+export type LanguageVersion = {
     display: string
     path: string
 }
@@ -19,18 +24,27 @@ type Scaffold = [
     setup: boolean,
     availableMaps: Set<string>,
     availablePlayers: Set<string>,
-    javaInstalls: JavaInstall[],
+    language: SupportedLanguage,
+    langVersions: LanguageVersion[],
+    changeLanguage: (lang: SupportedLanguage) => void,
     manuallySetupScaffold: () => Promise<void>,
     reloadData: () => void,
     scaffoldLoading: boolean,
-    runMatch: (javaPath: string, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
+    runMatch: (langVersion: LanguageVersion, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
     killMatch: (() => Promise<void>) | undefined,
     console: RingBuffer<ConsoleLine>
 ]
 
-export function useScaffold(): Scaffold {
+export const useScaffold = (): Scaffold => {
+    const getDefaultLanguage = () => {
+        const stored = localStorage.getItem('language')
+        if (stored) return stored as SupportedLanguage
+        return SupportedLanguage.Java
+    }
+
     const appContext = useAppContext()
-    const [javaInstalls, setJavaInstalls] = useState<JavaInstall[]>([])
+    const [language, setLanguage] = useState(getDefaultLanguage())
+    const [langVersions, setLangVersions] = useState<LanguageVersion[]>([])
     const [availableMaps, setAvailableMaps] = useState<Set<string>>(new Set())
     const [availablePlayers, setAvailablePlayers] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState<boolean>(true)
@@ -46,7 +60,7 @@ export function useScaffold(): Scaffold {
         forceUpdate()
     }
 
-    async function manuallySetupScaffold() {
+    const manuallySetupScaffold = async () => {
         if (!nativeAPI) return
         setLoading(true)
         const path = await nativeAPI.openScaffoldDirectory()
@@ -54,20 +68,25 @@ export function useScaffold(): Scaffold {
         if (path) setScaffoldPath(path)
     }
 
-    async function runMatch(javaPath: string, teamA: string, teamB: string, selectedMaps: Set<string>): Promise<void> {
+    async function runMatch(
+        langVersion: LanguageVersion,
+        teamA: string,
+        teamB: string,
+        selectedMaps: Set<string>
+    ): Promise<void> {
         if (matchPID.current || !scaffoldPath) return
-        const shouldProfile = false
         consoleLines.current.clear()
         try {
             const newPID = await dispatchMatch(
-                javaPath,
+                language,
+                langVersion,
                 teamA,
                 teamB,
                 selectedMaps,
                 nativeAPI!,
                 scaffoldPath!,
                 appContext.state.config.validateMaps,
-                shouldProfile
+                appContext.state.config.profileGames
             )
             matchPID.current = newPID
         } catch (e: any) {
@@ -76,20 +95,34 @@ export function useScaffold(): Scaffold {
         forceUpdate()
     }
 
-    async function killMatch(): Promise<void> {
+    const killMatch = async (): Promise<void> => {
         if (!matchPID.current) return
         await nativeAPI!.child_process.kill(matchPID.current)
         matchPID.current = undefined
         forceUpdate()
     }
 
-    function reloadData() {
+    const changeLanguage = (lang: SupportedLanguage) => {
+        localStorage.setItem('language', lang)
+        setLanguage(lang)
+    }
+
+    const reloadData = () => {
         if (!nativeAPI || !scaffoldPath) return
         setLoading(true)
 
+        let langPromise
+        switch (language) {
+            case SupportedLanguage.Java:
+                langPromise = nativeAPI.getJavas()
+                break
+            case SupportedLanguage.Python:
+                langPromise = nativeAPI.getPythons()
+                break
+        }
+
         const dataPromise = fetchData(scaffoldPath)
-        const javasPromise = nativeAPI.getJavas()
-        Promise.allSettled([dataPromise, javasPromise]).then((res) => {
+        Promise.allSettled([dataPromise, langPromise]).then((res) => {
             if (res[0].status == 'fulfilled') {
                 const [players, maps] = res[0].value
                 setAvailablePlayers(players)
@@ -97,14 +130,14 @@ export function useScaffold(): Scaffold {
             }
             if (res[1].status == 'fulfilled') {
                 const data = res[1].value
-                const installs: JavaInstall[] = []
+                const versions: LanguageVersion[] = []
                 for (let i = 0; i < data.length; i += 2) {
-                    installs.push({
+                    versions.push({
                         display: data[i],
                         path: data[i + 1]
                     })
                 }
-                setJavaInstalls(installs)
+                setLangVersions(versions)
             }
             setLoading(false)
         })
@@ -178,7 +211,9 @@ export function useScaffold(): Scaffold {
         !!scaffoldPath,
         availableMaps,
         availablePlayers,
-        javaInstalls,
+        language,
+        langVersions,
+        changeLanguage,
         manuallySetupScaffold,
         reloadData,
         loading,
@@ -268,7 +303,8 @@ async function findDefaultScaffoldPath(nativeAPI: NativeAPI): Promise<string | u
 }
 
 async function dispatchMatch(
-    javaPath: string,
+    language: SupportedLanguage,
+    langVersion: LanguageVersion,
     teamA: string,
     teamB: string,
     selectedMaps: Set<string>,
@@ -277,17 +313,24 @@ async function dispatchMatch(
     validate: boolean,
     profile: boolean
 ): Promise<string> {
-    const options = [
-        `run`,
-        `-x`,
-        `unpackClient`,
-        `-PwaitForClient=true`,
-        `-PteamA=${teamA}`,
-        `-PteamB=${teamB}`,
-        `-Pmaps=${[...selectedMaps].join(',')}`,
-        `-PvalidateMaps=${validate}`,
-        `-PenableProfiler=${profile}`
-    ]
+    switch (language) {
+        case SupportedLanguage.Java: {
+            const options = [
+                `run`,
+                `-x`,
+                `unpackClient`,
+                `-PwaitForClient=true`,
+                `-PteamA=${teamA}`,
+                `-PteamB=${teamB}`,
+                `-Pmaps=${[...selectedMaps].join(',')}`,
+                `-PvalidateMaps=${validate}`,
+                `-PenableProfiler=${profile}`
+            ]
 
-    return nativeAPI.child_process.spawn(scaffoldPath, javaPath, options)
+            return nativeAPI.child_process.spawn(scaffoldPath, langVersion.path, options)
+        }
+        case SupportedLanguage.Python: {
+            throw new Error('Not implemented')
+        }
+    }
 }

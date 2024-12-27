@@ -405,20 +405,23 @@ public strictfp class Server implements Runnable {
         DominationFactor dom = stats.getDominationFactor();
 
         switch (dom) {
-            case CAPTURE:
-                sb.append("The winning team captured all flags.");
+            case PAINT_ENOUGH_AREA:
+                sb.append("The winning team painted enough of the map.");
                 break;
-            case MORE_FLAG_CAPTURES:
-                sb.append("The winning team won on tiebreakers (captured more flags).");
+            case MORE_SQUARES_PAINTED:
+                sb.append("The winning team won on tiebreakers (painted more of the map).");
                 break;
-            case LEVEL_SUM:
-                sb.append("The winning team won on tiebreakers (higher sum of all unit levels).");
+            case MORE_TOWERS_ALIVE:
+                sb.append("The winning team won on tiebreakers (more towers alive).");
                 break;
-            case MORE_BREAD:
-                sb.append("The winning team won on tiebreakers (more crumbs)");
+            case MORE_MONEY:
+                sb.append("The winning team won on tiebreakers (more money)");
                 break;
-            case MORE_FLAGS_PICKED:
-                sb.append("The winning team won on tiebreakers (more flags picked up).");
+            case MORE_PAINT_IN_UNITS:
+                sb.append("The winning team won on tiebreakers (more paint stored in units).");
+                break;
+            case MORE_ROBOTS_ALIVE:
+                sb.append("The winning team won on tiebreakers (more robots alive).");
                 break;
             case WON_BY_DUBIOUS_REASONS:
                 sb.append("The winning team won arbitrarily (coin flip).");

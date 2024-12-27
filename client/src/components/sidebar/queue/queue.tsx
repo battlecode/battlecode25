@@ -26,7 +26,10 @@ export const QueuePage: React.FC<Props> = (props) => {
         reader.onload = () => {
             const game = Game.loadFullGameRaw(reader.result as ArrayBuffer)
 
-            // select the first match
+            // Clear selected file
+            e.target.value = ''
+
+            // Select the first match
             const selectedMatch = game.matches[0]
             game.currentMatch = selectedMatch
 

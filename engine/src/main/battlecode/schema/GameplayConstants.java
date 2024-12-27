@@ -27,45 +27,8 @@ public final class GameplayConstants extends Table {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public GameplayConstants __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int setupPhaseLength() { int o = __offset(4); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int flagMinDistance() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int globalUpgradeRoundDelay() { int o = __offset(8); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int passiveResourceRate() { int o = __offset(10); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int robotBaseHealth() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int jailedRounds() { int o = __offset(14); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int visionRadius() { int o = __offset(16); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int actionRadius() { int o = __offset(18); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
-  public static int createGameplayConstants(FlatBufferBuilder builder,
-      int setupPhaseLength,
-      int flagMinDistance,
-      int globalUpgradeRoundDelay,
-      int passiveResourceRate,
-      int robotBaseHealth,
-      int jailedRounds,
-      int visionRadius,
-      int actionRadius) {
-    builder.startTable(8);
-    GameplayConstants.addActionRadius(builder, actionRadius);
-    GameplayConstants.addVisionRadius(builder, visionRadius);
-    GameplayConstants.addJailedRounds(builder, jailedRounds);
-    GameplayConstants.addRobotBaseHealth(builder, robotBaseHealth);
-    GameplayConstants.addPassiveResourceRate(builder, passiveResourceRate);
-    GameplayConstants.addGlobalUpgradeRoundDelay(builder, globalUpgradeRoundDelay);
-    GameplayConstants.addFlagMinDistance(builder, flagMinDistance);
-    GameplayConstants.addSetupPhaseLength(builder, setupPhaseLength);
-    return GameplayConstants.endGameplayConstants(builder);
-  }
-
-  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(8); }
-  public static void addSetupPhaseLength(FlatBufferBuilder builder, int setupPhaseLength) { builder.addInt(0, setupPhaseLength, 0); }
-  public static void addFlagMinDistance(FlatBufferBuilder builder, int flagMinDistance) { builder.addInt(1, flagMinDistance, 0); }
-  public static void addGlobalUpgradeRoundDelay(FlatBufferBuilder builder, int globalUpgradeRoundDelay) { builder.addInt(2, globalUpgradeRoundDelay, 0); }
-  public static void addPassiveResourceRate(FlatBufferBuilder builder, int passiveResourceRate) { builder.addInt(3, passiveResourceRate, 0); }
-  public static void addRobotBaseHealth(FlatBufferBuilder builder, int robotBaseHealth) { builder.addInt(4, robotBaseHealth, 0); }
-  public static void addJailedRounds(FlatBufferBuilder builder, int jailedRounds) { builder.addInt(5, jailedRounds, 0); }
-  public static void addVisionRadius(FlatBufferBuilder builder, int visionRadius) { builder.addInt(6, visionRadius, 0); }
-  public static void addActionRadius(FlatBufferBuilder builder, int actionRadius) { builder.addInt(7, actionRadius, 0); }
+  public static void startGameplayConstants(FlatBufferBuilder builder) { builder.startTable(0); }
   public static int endGameplayConstants(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

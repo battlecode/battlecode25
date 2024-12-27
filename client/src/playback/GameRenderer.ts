@@ -14,6 +14,7 @@ export enum CanvasLayers {
 class GameRendererClass {
     private canvases: Record<CanvasLayers, HTMLCanvasElement>
     private mouseTile?: Vector = undefined
+    private mouseDownStartPos?: Vector = undefined
     private mouseDown: boolean = false
     private mouseDownRight: boolean = false
     private selectedBodyID?: number = undefined
@@ -43,15 +44,14 @@ class GameRendererClass {
         topCanvas.onmouseenter = (e) => this.canvasMouseEnter(e)
         topCanvas.onclick = (e) => this.canvasClick(e)
         topCanvas.oncontextmenu = (e) => e.preventDefault()
+    }
 
-        // Add logic to clear selected item when clicking outside the canvases
-        document.addEventListener('mousedown', (event) => {
-            if (Object.values(this.canvases).some((canvas) => canvas.contains(event.target as Node))) return
-            this.selectedTile = undefined
-            this.selectedBodyID = undefined
-            this.render()
-            this._canvasEventListeners.forEach((listener) => listener())
-        })
+    clearSelected() {
+        this.mouseTile = undefined
+        this.selectedTile = undefined
+        this.selectedBodyID = undefined
+        this.render()
+        this._canvasEventListeners.forEach((listener) => listener())
     }
 
     addCanvasesToDOM(elem: HTMLDivElement | null) {
@@ -75,27 +75,27 @@ class GameRendererClass {
         const match = gameRunner.match
         if (!match || !ctx || !overlayCtx) return
 
-        const currentTurn = match.currentTurn
+        const currentRound = match.currentRound
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height)
-        currentTurn.map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
-        currentTurn.bodies.draw(match, ctx, overlayCtx, GameConfig.config, this.selectedBodyID, this.mouseTile)
-        currentTurn.actions.draw(match, ctx)
+        currentRound.map.draw(match, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+        currentRound.bodies.draw(match, ctx, overlayCtx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+        currentRound.actions.draw(match, ctx)
     }
 
     fullRender() {
         const ctx = this.ctx(CanvasLayers.Background)
         const match = gameRunner.match
         if (!match || !ctx) return
-        match.currentTurn.map.staticMap.draw(ctx)
+        match.currentRound.map.staticMap.draw(ctx)
         this.render()
     }
 
     onMatchChange() {
         const match = gameRunner.match
         if (!match) return
-        const { width, height } = match.currentTurn.map
+        const { width, height } = match.currentRound.map
         this.updateCanvasDimensions({ x: width, y: height })
         this.selectedTile = undefined
         this.mouseTile = undefined
@@ -113,6 +113,7 @@ class GameRendererClass {
 
     private canvasMouseDown(e: MouseEvent) {
         this.mouseDown = true
+        this.mouseDownStartPos = { x: e.x, y: e.y }
         if (e.button === 2) this.mouseDownRight = true
         this._trigger(this._canvasEventListeners)
     }
@@ -130,6 +131,12 @@ class GameRendererClass {
         }
     }
     private canvasMouseLeave(e: MouseEvent) {
+        // Only trigger if the mouse actually left the canvas, not just lost focus
+        const rect = this.canvases[0].getBoundingClientRect()
+        if (e.x <= rect.right && e.x >= rect.left && e.y <= rect.bottom && e.y >= rect.top) {
+            return
+        }
+
         this.mouseDown = false
         this.mouseDownRight = false
         this.mouseTile = undefined
@@ -142,8 +149,16 @@ class GameRendererClass {
         this._trigger(this._canvasEventListeners)
     }
     private canvasClick(e: MouseEvent) {
+        // Don't trigger the click if it moved too far away from the origin
+        const maxDist = 25
+        if (
+            this.mouseDownStartPos &&
+            (Math.abs(this.mouseDownStartPos.x - e.x) > maxDist || Math.abs(this.mouseDownStartPos.y - e.y) > maxDist)
+        )
+            return
+
         this.selectedTile = eventToPoint(e)
-        const newSelectedBody = gameRunner.match?.currentTurn.bodies.getBodyAtLocation(
+        const newSelectedBody = gameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,
             this.selectedTile.y
         )?.id

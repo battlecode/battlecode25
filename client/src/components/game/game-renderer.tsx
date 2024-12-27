@@ -1,30 +1,31 @@
 import React, { useRef } from 'react'
 import { Vector } from '../../playback/Vector'
 import { CurrentMap } from '../../playback/Map'
-import { useMatch, useTurn } from '../../playback/GameRunner'
+import { useMatch, useRound } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
 import { Space, VirtualSpaceRect } from 'react-zoomable-ui'
 import { ResetZoomIcon } from '../../icons/resetzoom'
-import Turn from '../../playback/Turn'
-import { DraggableTooltip, FloatingTooltip } from './tooltip'
 import { useAppContext } from '../../app-context'
+import Round from '../../playback/Round'
+import { DraggableTooltip, FloatingTooltip } from './tooltip'
+import Tooltip from '../tooltip'
 
 export const GameRendererPanel: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
     const [hoveredTileRect, setHoveredTileRect] = React.useState<DOMRect | undefined>(undefined)
 
     const appContext = useAppContext()
-    const turn = useTurn()
+    const round = useRound()
 
     const { selectedBodyID, hoveredTile } = GameRenderer.useCanvasEvents()
-    const selectedBody = selectedBodyID !== undefined ? turn?.bodies.bodies.get(selectedBodyID) : undefined
-    const hoveredBody = hoveredTile ? turn?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
+    const selectedBody = selectedBodyID !== undefined ? round?.bodies.bodies.get(selectedBodyID) : undefined
+    const hoveredBody = hoveredTile ? round?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
 
     const floatingTooltipContent = (
         hoveredBody
             ? hoveredBody.onHoverInfo()
-            : hoveredTile && turn
-              ? turn.map.getTooltipInfo(hoveredTile, turn!.match)
+            : hoveredTile && round
+              ? round.map.getTooltipInfo(hoveredTile, round!.match)
               : []
     ).map((v, i) => <p key={i}>{v}</p>)
 
@@ -40,12 +41,12 @@ export const GameRendererPanel: React.FC = () => {
             style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
             ref={wrapperRef}
         >
-            {!turn ? (
+            {!round ? (
                 <p className="text-white text-center">Select a game from the queue</p>
             ) : (
                 <>
                     <ZoomableGameRenderer
-                        turn={turn}
+                        round={round}
                         hoveredTile={hoveredTile}
                         setHoveredTileRect={setHoveredTileRect}
                     />
@@ -78,17 +79,27 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
     React.useEffect(() => {
         GameRenderer.addCanvasesToDOM(divRef.current)
     }, [])
-    return <div ref={divRef}>{children}</div>
+    return (
+        <div
+            ref={divRef}
+            onClick={(e) => {
+                // Dont clear the GameRenderer selection
+                e.stopPropagation()
+            }}
+        >
+            {children}
+        </div>
+    )
 }
 
 const ZoomableGameRenderer: React.FC<{
-    turn: Turn
+    round: Round
     hoveredTile: Vector | undefined
     setHoveredTileRect: (rect: DOMRect | undefined) => void
-}> = React.memo(({ turn, hoveredTile, setHoveredTileRect }) => {
+}> = React.memo(({ round, hoveredTile, setHoveredTileRect }) => {
     const spaceRef = useRef<Space | null>(null)
 
-    const playable = turn.match.game.playable // playable unless we are in the map editor
+    const playable = round.match.game.playable // playable unless we are in the map editor
     React.useEffect(() => {
         if (spaceRef.current && spaceRef.current.viewPort) {
             if (!playable) {
@@ -109,15 +120,29 @@ const ZoomableGameRenderer: React.FC<{
     const [canResetCamera, setCanResetCamera] = React.useState(false)
     const hoveredTileRef = React.useRef<HTMLDivElement | null>(null)
 
-    const resetCamera = () => {
-        if (spaceRef.current) spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
+    const resetCamera = (e?: KeyboardEvent) => {
+        if (!spaceRef.current) return
+        if (e && e.code !== 'KeyR') return
+
+        spaceRef.current.viewPort?.camera.updateTopLeft(0, 0, 1)
+        GameRenderer.clearSelected()
     }
+
+    React.useEffect(() => {
+        const resize = () => resetCamera()
+        window.addEventListener('resize', resize)
+        window.addEventListener('keydown', resetCamera)
+        return () => {
+            window.removeEventListener('resize', resize)
+            window.removeEventListener('keydown', resetCamera)
+        }
+    }, [])
 
     const match = useMatch()
     React.useEffect(resetCamera, [match])
 
     return (
-        <>
+        <div onClick={() => GameRenderer.clearSelected()}>
             <Space
                 ref={spaceRef}
                 onUpdated={(vp) => {
@@ -128,7 +153,7 @@ const ZoomableGameRenderer: React.FC<{
                 <GameRendererCanvases>
                     <HighlightedSquare
                         hoveredTile={hoveredTile}
-                        map={turn.map}
+                        map={round.map}
                         gameAreaRect={gameAreaRect}
                         ref={(ref) => {
                             hoveredTileRef.current = ref
@@ -138,11 +163,22 @@ const ZoomableGameRenderer: React.FC<{
                 </GameRendererCanvases>
             </Space>
             {canResetCamera && (
-                <button className="absolute top-0 z-10 right-0 m-2 p-2 opacity-30" onClick={resetCamera}>
-                    <ResetZoomIcon />
-                </button>
+                <div style={{ top: hoveredTile ? '35px' : '0px' }} className="absolute z-10 right-0 m-2 p-2 fill-white">
+                    <Tooltip text={'Reset Camera (r)'} location="left">
+                        <button
+                            className="opacity-50"
+                            onClick={(e) => {
+                                resetCamera()
+                                // Dont clear the GameRenderer selection
+                                if (e) e.stopPropagation()
+                            }}
+                        >
+                            <ResetZoomIcon />
+                        </button>
+                    </Tooltip>
+                </div>
             )}
-        </>
+        </div>
     )
 })
 

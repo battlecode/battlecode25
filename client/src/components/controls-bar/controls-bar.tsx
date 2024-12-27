@@ -5,16 +5,18 @@ import { useAppContext } from '../../app-context'
 import { useKeyboard } from '../../util/keyboard'
 import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
-import gameRunner, { useControls, useTurn } from '../../playback/GameRunner'
+import gameRunner, { useControls, usePlaybackPerTurn, useRound } from '../../playback/GameRunner'
+import { HiddenIcon, VisibleIcon } from '../../icons/visible'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
-    const turn = useTurn()
+    const round = useRound()
     const [minimized, setMinimized] = React.useState(false)
     const keyboard = useKeyboard()
     const { paused, targetUPS } = useControls()
+    const playbackPerTurn = usePlaybackPerTurn()
 
-    const hasNextMatch = turn && turn?.match.game.matches.indexOf(turn.match!) + 1 < turn.match.game.matches.length
+    const hasNextMatch = round && round?.match.game.matches.indexOf(round.match!) + 1 < round.match.game.matches.length
 
     useEffect(() => {
         if (appState.disableHotkeys) return
@@ -27,11 +29,14 @@ export const ControlsBar: React.FC = () => {
         if (keyboard.keyCode === 'Space') gameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
+        if (keyboard.keyCode === 'KeyV') gameRunner.setPlaybackPerTurn(!playbackPerTurn)
 
         const applyArrows = () => {
             if (paused) {
-                if (keyboard.keyCode === 'ArrowRight') gameRunner.stepTurn(1)
-                if (keyboard.keyCode === 'ArrowLeft') gameRunner.stepTurn(-1)
+                if (keyboard.keyCode === 'ArrowRight')
+                    playbackPerTurn ? gameRunner.stepTurn(1) : gameRunner.stepRound(1)
+                if (keyboard.keyCode === 'ArrowLeft')
+                    playbackPerTurn ? gameRunner.stepTurn(-1) : gameRunner.stepRound(-1)
             } else {
                 if (keyboard.keyCode === 'ArrowRight') gameRunner.multiplyUpdatesPerSecond(2)
                 if (keyboard.keyCode === 'ArrowLeft') gameRunner.multiplyUpdatesPerSecond(0.5)
@@ -39,7 +44,7 @@ export const ControlsBar: React.FC = () => {
         }
         applyArrows()
 
-        if (keyboard.keyCode === 'Comma') gameRunner.jumpToTurn(0)
+        if (keyboard.keyCode === 'Comma') gameRunner.jumpToStart()
         if (keyboard.keyCode === 'Period') gameRunner.jumpToEnd()
 
         const initalDelay = 250
@@ -55,33 +60,48 @@ export const ControlsBar: React.FC = () => {
         }
     }, [keyboard.keyCode])
 
-    if (!turn) return null
+    if (!round) return null
 
-    const atStart = turn.turnNumber == 0
-    const atEnd = turn.turnNumber == turn.match.maxTurn
+    const atStart = round.roundNumber == 0
+    const atEnd = round.roundNumber == round.match.maxRound
 
     return (
         <div
             className="flex absolute bottom-0 rounded-t-md z-10 pointer-events-none select-none"
             style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
         >
-            <Tooltip text={minimized ? 'Open Controls (c)' : 'Close Controls (c)'} wrapperClass="pointer-events-auto">
-                <button
-                    className={
-                        (minimized ? 'text-darkHighlight opacity-90' : 'ml-[1px] text-white') +
-                        ' z-20 absolute left-0 top-0 rounded-md text-[10px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
-                    }
-                    onClick={() => setMinimized(!minimized)}
-                >
-                    {minimized ? '+' : '-'}
-                </button>
-            </Tooltip>
             <div
                 className={
                     (minimized ? 'opacity-10 pointer-events-none' : 'opacity-90 pointer-events-auto') +
-                    ' flex bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
+                    ' flex items-center bg-darkHighlight text-white p-1.5 rounded-t-md z-10 gap-1.5 relative'
                 }
             >
+                <div className="absolute z-10 top-[2px] flex items-center gap-1">
+                    <Tooltip
+                        text={minimized ? 'Show Controls (c)' : 'Hide Controls (c)'}
+                        wrapperClass="flex pointer-events-auto"
+                    >
+                        <button
+                            className={(minimized ? 'text-darkHighlight opacity-90' : 'text-white') + ' w-[14px]'}
+                            onClick={() => setMinimized(!minimized)}
+                        >
+                            {minimized ? <HiddenIcon /> : <VisibleIcon />}
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        text={playbackPerTurn ? 'Disable Playback Per Turn (v)' : 'Enable Playback Per Turn (v)'}
+                        wrapperClass="flex pointer-events-auto"
+                    >
+                        <button
+                            className={
+                                'text-white rounded-md text-[14px] aspect-[1] w-[15px] flex justify-center font-bold select-none'
+                            }
+                            onClick={() => gameRunner.setPlaybackPerTurn(!playbackPerTurn)}
+                        >
+                            {playbackPerTurn ? '-' : '+'}
+                        </button>
+                    </Tooltip>
+                </div>
                 <ControlsBarTimeline targetUPS={targetUPS} />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
@@ -96,8 +116,8 @@ export const ControlsBar: React.FC = () => {
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.GoPreviousIcon />}
-                    tooltip="Step Backwards"
-                    onClick={() => gameRunner.stepTurn(-1)}
+                    tooltip="Step Backward"
+                    onClick={() => (playbackPerTurn ? gameRunner.stepTurn(-1) : gameRunner.stepRound(-1))}
                     disabled={atStart}
                 />
                 {paused ? (
@@ -119,8 +139,8 @@ export const ControlsBar: React.FC = () => {
                 )}
                 <ControlsBarButton
                     icon={<ControlIcons.GoNextIcon />}
-                    tooltip="Next Turn"
-                    onClick={() => gameRunner.stepTurn(1)}
+                    tooltip="Step Forward"
+                    onClick={() => (playbackPerTurn ? gameRunner.stepTurn(1) : gameRunner.stepRound(1))}
                     disabled={atEnd}
                 />
                 <ControlsBarButton
@@ -132,7 +152,7 @@ export const ControlsBar: React.FC = () => {
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
                     tooltip="Jump To Start"
-                    onClick={() => gameRunner.jumpToTurn(0)}
+                    onClick={() => gameRunner.jumpToStart()}
                     disabled={atStart}
                 />
                 <ControlsBarButton

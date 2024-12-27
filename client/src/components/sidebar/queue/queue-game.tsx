@@ -28,25 +28,29 @@ export const QueuedGame: React.FC<Props> = (props) => {
 
     const getWinText = (winType: schema.WinType) => {
         switch (winType) {
-            case schema.WinType.CAPTURE:
-                return 'by capturing all flags '
-            case schema.WinType.MORE_FLAG_CAPTURES:
-                return 'with more captured flags '
-            case schema.WinType.LEVEL_SUM:
-                return 'with a higher level sum '
-            case schema.WinType.MORE_BREAD:
-                return 'with a higher crumb count '
-            case schema.WinType.COIN_FLIP:
-                return 'by coin flip '
             case schema.WinType.RESIGNATION:
                 return 'by resignation '
+            case schema.WinType.MAJORITY_PAINTED:
+                return 'by having paint majority '
+            case schema.WinType.AREA_PAINTED:
+                return 'by painting more territory '
+            case schema.WinType.MORE_TOWERS:
+                return 'with more towers alive '
+            case schema.WinType.MORE_MONEY:
+                return 'with more money '
+            case schema.WinType.MORE_STORED_PAINT:
+                return 'with more stored paint '
+            case schema.WinType.MORE_ROBOTS:
+                return 'with more robots alive '
+            case schema.WinType.COIN_FLIP:
+                return 'by coin flip '
             default:
                 return ''
         }
     }
 
     return (
-        <div className="relative mr-auto rounded-md bg-lightCard border-gray-500 border mb-4 p-3 w-full shadow-md">
+        <div className="relative mr-auto rounded-md bg-lightCard border-gray-500 border mb-4 p-3 w-[96%] shadow-md">
             <div className="text-xs whitespace mb-2 overflow-ellipsis overflow-hidden">
                 <span className="font-bold text-team0">{props.game.teams[0].name}</span>
                 <span className="mx-1.5">vs</span>
@@ -71,7 +75,7 @@ export const QueuedGame: React.FC<Props> = (props) => {
                                     <span className={`font-bold text-team${match.winner.id - 1}`}>
                                         {match.winner.name}
                                     </span>
-                                    <span>{` wins ${getWinText(match.winType)}after ${match.maxTurn} rounds`}</span>
+                                    <span>{` wins ${getWinText(match.winType)}after ${match.maxRound} rounds`}</span>
                                 </>
                             ) : (
                                 <span>Winner not known</span>

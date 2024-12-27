@@ -10,7 +10,7 @@ import { BiMedal } from 'react-icons/bi'
 import Tooltip from '../../tooltip'
 import Match from '../../../playback/Match'
 import { Team } from '../../../playback/Game'
-import { useGame, useTurn } from '../../../playback/GameRunner'
+import { useGame, useRound } from '../../../playback/GameRunner'
 
 const NO_GAME_TEAM_NAME = '?????'
 
@@ -21,7 +21,7 @@ interface Props {
 export const GamePage: React.FC<Props> = React.memo((props) => {
     const context = useAppContext()
     const game = useGame()
-    const turn = useTurn()
+    const round = useRound()
 
     const [showStats, setShowStats] = useSearchParamBool('showStats', true)
 
@@ -36,7 +36,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
             if (match == game.currentMatch) {
                 stopCounting = true
                 // Dont include this match if we aren't at the end yet
-                if (context.state.tournament && !match.currentTurn.isEnd()) return 0
+                if (context.state.tournament && !match.currentRound.isEnd()) return 0
             }
             return match.winner?.id === team.id ? 1 : 0
         }
@@ -45,7 +45,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
 
     const teamBox = (teamIdx: number) => {
         const winCount = game ? getWinCount(game.teams[teamIdx]) : 0
-        const isEndOfMatch = turn?.isEnd()
+        const isEndOfMatch = round?.isEnd()
 
         let showMatchWinner = !context.state.tournament || isEndOfMatch
         showMatchWinner = showMatchWinner && !!game && game.currentMatch?.winner === game.teams[teamIdx]
@@ -111,7 +111,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                             them so that they don't render any data (since we're likely hiding stats to prevent lag) */}
                         <SpecialtyHistogram active={showStats} />
                         <br />
-                        <ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />
+                        {/*<ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />*/}
                     </>
                 ) : (
                     <div>Select a game to see stats</div>

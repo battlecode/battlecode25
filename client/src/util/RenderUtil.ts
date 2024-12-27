@@ -4,15 +4,15 @@ import { CurrentMap, Dimension, StaticMap } from '../playback/Map'
 import { Vector } from '../playback/Vector'
 import { Body } from '../playback/Bodies'
 
+export const colorToHexString = (dColor: number) => {
+    return '#' + ("000000" + (((dColor & 0xFF) << 16) + (dColor & 0xFF00) + ((dColor >> 16) & 0xFF)).toString(16)).slice(-6);
+}
+
 export const getRenderCoords = (cellX: number, cellY: number, dims: Dimension, centered: boolean = false) => {
     const cx = dims.minCorner.x + cellX
     const cy = dims.minCorner.y + dims.height - cellY - 1 // Y is flipped
     const offset = centered ? 0.5 : 0
     return { x: cx + offset, y: cy + offset }
-}
-
-export const getInterpolatedCoordsFromBody = (body: Body, alpha: number) => {
-    return getInterpolatedCoords(body.pos, body.nextPos, alpha)
 }
 
 export const getInterpolatedCoords = (prev: Vector, cur: Vector, alpha: number) => {

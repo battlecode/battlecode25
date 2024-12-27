@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{path::Path, io::Write, fs, collections::HashMap, sync::{Arc, Mutex}};
-use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
+use std::{collections::HashMap, fs, io::Write, path::Path, str::FromStr, sync::{Arc, Mutex}};
+use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Manager, Runtime};
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tauri::api::process::{Command, CommandEvent, CommandChild};
 use relative_path::RelativePath;
@@ -71,10 +71,17 @@ async fn tauri_api(
         },
         "getJavas" => {
             let mut output = vec![];
-            let jvms = javalocate::run(&javalocate::Args {
+            let jvms = where_is_it::java::run(where_is_it::java::MatchOptions {
                 name: None,
                 arch: None,
                 version: Some(String::from("1.8"))
+            });
+
+            // Add 'auto' option
+            output.push(String::from("Auto"));
+            output.push(match jvms.len() {
+                0 => String::new(),
+                _ => jvms[0].path.clone()
             });
 
             for jvm in jvms {
@@ -84,6 +91,36 @@ async fn tauri_api(
                     jvm.architecture
                 ));
                 output.push(jvm.path);
+            }
+
+            Ok(output)
+        },
+        "getPythons" => {
+            let mut output = vec![];
+            let pythons = where_is_it::python::run(where_is_it::python::MatchOptions {
+                major: None,
+                minor: None,
+                patch: None,
+                pre: None,
+                dev: None,
+                name: None,
+                architecture: None
+            });
+
+            for py in pythons {
+                let path = py.executable;
+                output.push(format!(
+                    "{} ({})",
+                    match &py.formatted_name {
+                        Some(n) => n.clone(),
+                        None => path.clone()
+                    },
+                    match py.version {
+                        Some(v) => v.clone(),
+                        None => String::from("Unknown".to_string())
+                    },
+                ));
+                output.push(path);
             }
 
             Ok(output)
@@ -242,12 +279,23 @@ async fn tauri_api(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("window")
+    PluginBuilder::new("nativeAPI")
         .setup(|_app| {
             Ok(())
         })
         .on_event(|_app, event| {
             match event {
+                tauri::RunEvent::Exit => {
+                    let state: tauri::State<'_, AppState> = _app.state();
+                    let mut active: HashMap<String, CommandChild> = Default::default();
+                    std::mem::swap(
+                        &mut active,
+                        &mut *state.active_processes.lock().unwrap()
+                    );
+
+                    // Kill all child processes
+                    active.into_iter().for_each(|p| { let _ = p.1.kill(); });
+                },
                 _ => ()
             }
         })

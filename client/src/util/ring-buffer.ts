@@ -37,6 +37,15 @@ export class RingBuffer<T> {
         this._effectiveLength++
     }
 
+    public pop(): T | undefined {
+        if (this._effectiveLength === 0) return undefined
+        const index = this.computeActualIndex(this._effectiveLength - 1)
+        const value = this._array[index]
+        this._array[index] = undefined as any
+        this._effectiveLength--
+        return value
+    }
+
     public clear() {
         this._effectiveLength = 0
     }

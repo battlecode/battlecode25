@@ -1,6 +1,6 @@
 [package]
 name = "battlecode-client"
-version = "24.0.0"
+version = "25.0.0"
 edition = "2021"
 rust-version = "1.60"
 
@@ -11,13 +11,18 @@ tauri-build = { version = "1.4.0", features = [] }
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.4.0", features = ["dialog", "process-command-api"] }
+tauri = { version = "1.8.0", features = ["dialog", "process-command-api"] }
 ureq = { version = "2.9.1", features = ["json"] }
-javalocate = { git = "https://github.com/TheApplePieGod/javalocate.git" }
 relative-path = "1.9.0"
+where-is-it = { git = "https://github.com/TheApplePieGod/where-is-it.git" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
+
+# Uncomment to enable devtools in release
+#[profile.release.package.wry]
+#debug = true
+#debug-assertions = true
