@@ -590,7 +590,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
         }
 
-        if (this.paintAmount == 0){
+        if (this.paintAmount == 0 && UnitType.isRobotType(type)){
             this.turnsWithoutPaint += 1;
             if (this.turnsWithoutPaint == GameConstants.MAX_TURNS_WITHOUT_PAINT)
                 this.gameWorld.destroyRobot(this.ID);
