@@ -5,7 +5,6 @@ import Bodies from '../../../playback/Bodies'
 import Game from '../../../playback/Game'
 import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
-import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
 import { MapEditorBrush, UndoFunction } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
@@ -37,7 +36,8 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const [mapNameOpen, setMapNameOpen] = React.useState(false)
     const [clearConfirmOpen, setClearConfirmOpen] = React.useState(false)
     const [mapError, setMapError] = React.useState('')
-    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
+    const { canvasMouseDown } = GameRenderer.useCanvasClickEvents()
+    const { hoveredTile } = GameRenderer.useCanvasHoverEvents()
 
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)

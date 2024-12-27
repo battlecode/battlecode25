@@ -17,7 +17,8 @@ export const GameRendererPanel: React.FC = () => {
     const appContext = useAppContext()
     const round = useRound()
 
-    const { selectedBodyID, hoveredTile } = GameRenderer.useCanvasEvents()
+    const { selectedBodyID } = GameRenderer.useCanvasClickEvents()
+    const { hoveredTile } = GameRenderer.useCanvasHoverEvents()
     const selectedBody = selectedBodyID !== undefined ? round?.bodies.bodies.get(selectedBodyID) : undefined
     const hoveredBody = hoveredTile ? round?.bodies.getBodyAtLocation(hoveredTile.x, hoveredTile.y) : undefined
 

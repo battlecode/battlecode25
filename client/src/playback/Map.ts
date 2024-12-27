@@ -319,11 +319,11 @@ export class StaticMap {
     }
 
     indexToLocation(index: number): { x: number; y: number } {
-        const target_x = index % this.width
-        const target_y = (index - target_x) / this.width
-        assert(target_x >= 0 && target_x < this.width, `target_x ${target_x} out of bounds`)
-        assert(target_y >= 0 && target_y < this.height, `target_y ${target_y} out of bounds`)
-        return { x: target_x, y: target_y }
+        const x = index % this.width
+        const y = (index - x) / this.width
+        assert(x >= 0 && x < this.width, `x=${x} out of bounds for indexToLocation`)
+        assert(y >= 0 && y < this.height, `y=${y} out of bounds for indexToLocation`)
+        return { x, y }
     }
 
     locationToIndex(x: number, y: number): number {

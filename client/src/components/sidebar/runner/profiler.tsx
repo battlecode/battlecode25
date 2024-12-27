@@ -5,9 +5,11 @@ import { Button } from '../../button'
 import { BasicDialog } from '../../basic-dialog'
 import { ParsedProfilerFile } from '../../../playback/Profiler'
 import { Select } from '../../forms'
+import { GameRenderer } from '../../../playback/GameRenderer'
 
 export const ProfilerDialog: React.FC = () => {
     const match = useMatch()
+    const { selectedBodyID } = GameRenderer.useCanvasClickEvents()
 
     const [open, setOpen] = useState(false)
     const [teamIndex, setTeamIndex] = React.useState<number | undefined>()
@@ -24,6 +26,21 @@ export const ProfilerDialog: React.FC = () => {
     }
 
     const profiles = (match && match.profilerFiles[teamIndex ?? 0]?.profiles) || []
+
+    // Auto focus profiler on the currently selected robot
+    React.useEffect(() => {
+        if (!match) return
+        if (selectedBodyID === undefined) return
+        if (!match.currentRound.bodies.hasId(selectedBodyID)) return
+
+        const body = match.currentRound.bodies.getById(selectedBodyID)
+        const index = match.profilerFiles[body.team.id - 1].profiles.findIndex((p) => p.id === body.id)
+
+        if (index === -1) return
+
+        setTeamIndex(body.team.id - 1)
+        setRobotIndex(index)
+    }, [open])
 
     React.useEffect(() => {
         setTeamIndex(undefined)
