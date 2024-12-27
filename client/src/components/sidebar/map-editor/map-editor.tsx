@@ -11,7 +11,7 @@ import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import gameRunner, { useRound } from '../../../playback/GameRunner'
+import GameRunner, { useRound } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
 import { RingBuffer } from '../../../util/ring-buffer'
 
@@ -157,7 +157,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            gameRunner.setMatch(editGame.current.currentMatch)
+            GameRunner.setMatch(editGame.current.currentMatch)
 
             const round = editGame.current.currentMatch!.currentRound
             const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
@@ -165,7 +165,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             setBrushes(brushes)
             setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
-            gameRunner.setGame(undefined)
+            GameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 

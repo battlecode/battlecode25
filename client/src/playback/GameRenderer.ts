@@ -1,5 +1,5 @@
 import React from 'react'
-import gameRunner from './GameRunner'
+import GameRunner from './GameRunner'
 import { TILE_RESOLUTION } from '../constants'
 import { Vector } from './Vector'
 import assert from 'assert'
@@ -82,7 +82,7 @@ class GameRendererClass {
     render() {
         const ctx = this.ctx(CanvasLayers.Dynamic)
         const overlayCtx = this.ctx(CanvasLayers.Overlay)
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match || !ctx || !overlayCtx) return
 
         const currentRound = match.currentRound
@@ -96,14 +96,14 @@ class GameRendererClass {
 
     fullRender() {
         const ctx = this.ctx(CanvasLayers.Background)
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match || !ctx) return
         match.currentRound.map.staticMap.draw(ctx)
         this.render()
     }
 
     onMatchChange() {
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match) return
         const { width, height } = match.currentRound.map
         this.updateCanvasDimensions({ x: width, y: height })
@@ -173,7 +173,7 @@ class GameRendererClass {
             return
 
         this.selectedTile = eventToPoint(e)
-        const newSelectedBody = gameRunner.match?.currentRound.bodies.getBodyAtLocation(
+        const newSelectedBody = GameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,
             this.selectedTile.y
         )?.id
@@ -228,7 +228,7 @@ class GameRendererClass {
 const eventToPoint = (e: MouseEvent) => {
     const canvas = e.target as HTMLCanvasElement
     const rect = canvas.getBoundingClientRect()
-    const map = gameRunner.match?.map ?? assert.fail('map is null in onclick')
+    const map = GameRunner.match?.map ?? assert.fail('map is null in onclick')
     let x = Math.floor(((e.clientX - rect.left) / rect.width) * map.width)
     let y = Math.floor((1 - (e.clientY - rect.top) / rect.height) * map.height)
     x = Math.max(0, Math.min(x, map.width - 1))

@@ -12,7 +12,7 @@ import { BasicDialog } from '../../basic-dialog'
 import { RingBuffer } from '../../../util/ring-buffer'
 import { ProfilerDialog } from './profiler'
 import { GameRenderer } from '../../../playback/GameRenderer'
-import gameRunner from '../../../playback/GameRunner'
+import GameRunner from '../../../playback/GameRunner'
 
 type RunnerPageProps = {
     open: boolean
@@ -371,7 +371,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
 
     const focusRobot = (round: number, id: number) => {
         setPopout(false)
-        gameRunner.jumpToRound(round)
+        GameRunner.jumpToRound(round)
         GameRenderer.setSelectedRobot(id)
     }
 
