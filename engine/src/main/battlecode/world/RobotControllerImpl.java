@@ -348,7 +348,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canActCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's action cooldown has not expired.");
-        if (this.robot.getPaint() == 0){
+        if (this.robot.getPaint() == 0 && UnitType.isRobotType(this.robot.getType())){
             throw new GameActionException(IS_NOT_READY, "This robot can't act at 0 paint.");
         }
     }
@@ -372,7 +372,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canMoveCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's movement cooldown has not expired.");
-        if (this.robot.getPaint() == 0){
+        if (this.robot.getPaint() == 0 && UnitType.isRobotType(this.robot.getType())){
             throw new GameActionException(IS_NOT_READY, "This robot can't move at 0 paint.");
         }
     }
