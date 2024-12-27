@@ -76,7 +76,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
+        int mark = gw.getMarker(getTeam(), loc);
+        PaintType markType = PaintType.EMPTY;
+        if (mark == 1)
+            markType = PaintType.ALLY_PRIMARY;
+        else if (mark == 2)
+            markType = PaintType.ALLY_SECONDARY;
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), markType, gw.hasRuin(loc));
         return currentLocInfo;
     }
 
@@ -131,6 +137,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public int getMoney() {
         return this.gameWorld.getTeamInfo().getMoney(getTeam());
+    }
+
+    @Override
+    public UnitType getType(){
+        return this.robot.getType();
     }
 
     // ***********************************
