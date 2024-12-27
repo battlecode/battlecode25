@@ -11,6 +11,8 @@ import { OpenExternal } from '../../../icons/open-external'
 import { BasicDialog } from '../../basic-dialog'
 import { RingBuffer } from '../../../util/ring-buffer'
 import { ProfilerDialog } from './profiler'
+import { GameRenderer } from '../../../playback/GameRenderer'
+import gameRunner from '../../../playback/GameRunner'
 
 type RunnerPageProps = {
     open: boolean
@@ -367,11 +369,46 @@ export const Console: React.FC<Props> = ({ lines }) => {
         }
     }
 
-    const ConsoleRow = (props: { index: number; style: any }) => (
-        <span style={props.style} className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
-            {lines.get(props.index)!.content}
-        </span>
-    )
+    const focusRobot = (round: number, id: number) => {
+        setPopout(false)
+        gameRunner.jumpToRound(round)
+        GameRenderer.setSelectedRobot(id)
+    }
+
+    const ConsoleRow = (props: { index: number; style: any }) => {
+        const content = lines.get(props.index)!.content
+
+        // Check if the printout is from a bot. If so, add a special click element
+        // that selects the bot
+        const regexp = /\[([A-Z]): #([0-9]+)@([0-9]+)] (.*)/
+        const found = content.match(regexp)
+        if (found && found.length == 5) {
+            const team = found[1]
+            const id = Number(found[2])
+            const round = Number(found[3])
+            const ogText = found[4]
+
+            return (
+                <div className="flex items-center gap-1 sele" style={props.style}>
+                    <span
+                        className="text-blueDark decoration-blueDark text-xs whitespace-nowrap underline cursor-pointer"
+                        onClick={() => focusRobot(round, id)}
+                    >
+                        {`[Team ${team}, ID #${id}, Round ${round}]`}
+                    </span>
+                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
+                        {ogText}
+                    </span>
+                </div>
+            )
+        }
+
+        return (
+            <span style={props.style} className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
+                {content}
+            </span>
+        )
+    }
 
     const handleScroll = (e: ListOnScrollProps) => {
         if (!consoleRef.current) return

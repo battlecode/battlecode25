@@ -56,6 +56,14 @@ class GameRendererClass {
         this._canvasHoverListeners.forEach((listener) => listener())
     }
 
+    setSelectedRobot(id: number | undefined) {
+        if (id === this.selectedBodyID) return
+
+        this.selectedBodyID = id
+        this.render()
+        this._trigger(this._canvasClickListeners)
+    }
+
     addCanvasesToDOM(elem: HTMLDivElement | null) {
         if (!elem) return
         for (const canvas of Object.values(this.canvases)) {
@@ -169,10 +177,10 @@ class GameRendererClass {
             this.selectedTile.x,
             this.selectedTile.y
         )?.id
-        if (newSelectedBody !== this.selectedBodyID) {
-            this.selectedBodyID = newSelectedBody
-            this.render()
-        }
+
+        this.setSelectedRobot(newSelectedBody)
+
+        // Trigger anyways since clicking should always trigger
         this._trigger(this._canvasClickListeners)
     }
 
