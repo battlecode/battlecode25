@@ -74,6 +74,8 @@ export interface IProfile {
 export interface EventedProfile extends IProfile {
     type: ProfileType.EVENTED
 
+    id: number
+
     // Name of the profile. Typically a filename for the source of the profile.
     name: string
 
@@ -101,6 +103,8 @@ type SampledStack = number[]
 
 export interface SampledProfile extends IProfile {
     type: ProfileType.SAMPLED
+
+    id: number
 
     // Name of the profile. Typically a filename for the source of the profile.
     name: string

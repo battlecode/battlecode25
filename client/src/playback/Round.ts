@@ -47,13 +47,17 @@ export default class Round {
             `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
         )
 
-        // finish the previous round if it exists
         if (this.currentDelta) {
             this.bodies.processDiedIds(this.currentDelta)
-            this.stat.applyRoundDelta(this, this.currentDelta)
         }
 
         this.roundNumber += 1
+
+        // Finish the previous round if it exists
+        if (this.currentDelta) {
+            this.stat.applyRoundDelta(this, this.currentDelta)
+        }
+
         this.bodies.prepareForNextRound()
         this.actions.prepareForNextRound()
         this.initialRoundState = null

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
-import gameRunner, { useCurrentUPS, usePlaybackPerTurn, useRound, useTurnNumber } from '../../playback/GameRunner'
+import GameRunner, { useCurrentUPS, usePlaybackPerTurn, useRound, useTurnNumber } from '../../playback/GameRunner'
 import { GAME_MAX_TURNS } from '../../constants'
 import assert from 'assert'
 
@@ -61,7 +61,7 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                     value={round.roundNumber}
                     max={maxRound}
                     onClick={(progress) => {
-                        gameRunner.jumpToRound(round.match.progressToRoundNumber(progress))
+                        GameRunner.jumpToRound(round.match.progressToRoundNumber(progress))
                     }}
                 >
                     Round: <b>{round.roundNumber}</b>/{maxRound} {!playbackPerTurn && ups}
@@ -73,8 +73,8 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
                         max={turn.max}
                         onClick={(progress) => {
                             const turn = round.match.progressToTurnNumber(progress)
-                            if (turn === round.turnsLength) gameRunner.stepRound(1)
-                            else gameRunner.jumpToTurn(turn)
+                            if (turn === round.turnsLength) GameRunner.stepRound(1)
+                            else GameRunner.jumpToTurn(turn)
                         }}
                     >
                         Turn: <b>{turn.current}</b>/{turn.max} {ups}

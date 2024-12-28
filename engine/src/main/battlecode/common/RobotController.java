@@ -104,6 +104,15 @@ public strictfp interface RobotController {
      */
     int getMoney();
 
+    /**
+     * Returns what UnitType this robot is. 
+     * 
+     * @return the UnitType of this robot
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    UnitType getType();
+
     // ***********************************
     // ****** GENERAL VISION METHODS *****
     // ***********************************

@@ -1,5 +1,5 @@
 import React from 'react'
-import gameRunner from './GameRunner'
+import GameRunner from './GameRunner'
 import { TILE_RESOLUTION } from '../constants'
 import { Vector } from './Vector'
 import assert from 'assert'
@@ -20,7 +20,8 @@ class GameRendererClass {
     private selectedBodyID?: number = undefined
     private selectedTile?: Vector = undefined
 
-    private _canvasEventListeners: (() => void)[] = []
+    private _canvasHoverListeners: (() => void)[] = []
+    private _canvasClickListeners: (() => void)[] = []
 
     constructor() {
         this.canvases = {} as Record<CanvasLayers, HTMLCanvasElement>
@@ -51,7 +52,16 @@ class GameRendererClass {
         this.selectedTile = undefined
         this.selectedBodyID = undefined
         this.render()
-        this._canvasEventListeners.forEach((listener) => listener())
+        this._canvasClickListeners.forEach((listener) => listener())
+        this._canvasHoverListeners.forEach((listener) => listener())
+    }
+
+    setSelectedRobot(id: number | undefined) {
+        if (id === this.selectedBodyID) return
+
+        this.selectedBodyID = id
+        this.render()
+        this._trigger(this._canvasClickListeners)
     }
 
     addCanvasesToDOM(elem: HTMLDivElement | null) {
@@ -72,7 +82,7 @@ class GameRendererClass {
     render() {
         const ctx = this.ctx(CanvasLayers.Dynamic)
         const overlayCtx = this.ctx(CanvasLayers.Overlay)
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match || !ctx || !overlayCtx) return
 
         const currentRound = match.currentRound
@@ -86,14 +96,14 @@ class GameRendererClass {
 
     fullRender() {
         const ctx = this.ctx(CanvasLayers.Background)
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match || !ctx) return
         match.currentRound.map.staticMap.draw(ctx)
         this.render()
     }
 
     onMatchChange() {
-        const match = gameRunner.match
+        const match = GameRunner.match
         if (!match) return
         const { width, height } = match.currentRound.map
         this.updateCanvasDimensions({ x: width, y: height })
@@ -115,21 +125,24 @@ class GameRendererClass {
         this.mouseDown = true
         this.mouseDownStartPos = { x: e.x, y: e.y }
         if (e.button === 2) this.mouseDownRight = true
-        this._trigger(this._canvasEventListeners)
+        this._trigger(this._canvasClickListeners)
     }
+
     private canvasMouseUp(e: MouseEvent) {
         this.mouseDown = false
         if (e.button === 2) this.mouseDownRight = false
-        this._trigger(this._canvasEventListeners)
+        this._trigger(this._canvasClickListeners)
     }
+
     private canvasMouseMove(e: MouseEvent) {
         const newTile = eventToPoint(e)
         if (newTile.x !== this.mouseTile?.x || newTile.y !== this.mouseTile?.y) {
             this.mouseTile = newTile
             this.render()
-            this._trigger(this._canvasEventListeners)
+            this._trigger(this._canvasHoverListeners)
         }
     }
+
     private canvasMouseLeave(e: MouseEvent) {
         // Only trigger if the mouse actually left the canvas, not just lost focus
         const rect = this.canvases[0].getBoundingClientRect()
@@ -140,14 +153,16 @@ class GameRendererClass {
         this.mouseDown = false
         this.mouseDownRight = false
         this.mouseTile = undefined
-        this._trigger(this._canvasEventListeners)
+        this._trigger(this._canvasHoverListeners)
     }
+
     private canvasMouseEnter(e: MouseEvent) {
         this.mouseTile = eventToPoint(e)
         this.mouseDown = e.buttons > 0
         if (e.buttons === 2) this.mouseDownRight = true
-        this._trigger(this._canvasEventListeners)
+        this._trigger(this._canvasHoverListeners)
     }
+
     private canvasClick(e: MouseEvent) {
         // Don't trigger the click if it moved too far away from the origin
         const maxDist = 25
@@ -158,49 +173,62 @@ class GameRendererClass {
             return
 
         this.selectedTile = eventToPoint(e)
-        const newSelectedBody = gameRunner.match?.currentRound.bodies.getBodyAtLocation(
+        const newSelectedBody = GameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,
             this.selectedTile.y
         )?.id
-        if (newSelectedBody !== this.selectedBodyID) {
-            this.selectedBodyID = newSelectedBody
-            this.render()
-        }
-        this._trigger(this._canvasEventListeners)
+
+        this.setSelectedRobot(newSelectedBody)
+
+        // Trigger anyways since clicking should always trigger
+        this._trigger(this._canvasClickListeners)
     }
 
     private _trigger(listeners: (() => void)[]) {
         setTimeout(() => listeners.forEach((l) => l()))
     }
 
-    useCanvasEvents = () => {
+    useCanvasHoverEvents = () => {
+        const [hoveredTile, setHoveredTile] = React.useState<Vector | undefined>(this.mouseTile)
+        React.useEffect(() => {
+            const listener = () => {
+                setHoveredTile(this.mouseTile)
+            }
+            this._canvasHoverListeners.push(listener)
+            return () => {
+                this._canvasHoverListeners = this._canvasHoverListeners.filter((l) => l !== listener)
+            }
+        }, [])
+
+        return { hoveredTile }
+    }
+
+    useCanvasClickEvents = () => {
         const [canvasMouseDown, setCanvasMouseDown] = React.useState<boolean>(this.mouseDown)
         const [canvasRightClick, setCanvasRightClick] = React.useState<boolean>(this.mouseDownRight)
         const [selectedTile, setSelectedTile] = React.useState<Vector | undefined>(this.selectedTile)
         const [selectedBodyID, setSelectedBodyID] = React.useState<number | undefined>(this.selectedBodyID)
-        const [hoveredTile, setHoveredTile] = React.useState<Vector | undefined>(this.mouseTile)
         React.useEffect(() => {
             const listener = () => {
                 setCanvasMouseDown(this.mouseDown)
                 setCanvasRightClick(this.mouseDownRight)
                 setSelectedTile(this.selectedTile)
                 setSelectedBodyID(this.selectedBodyID)
-                setHoveredTile(this.mouseTile)
             }
-            this._canvasEventListeners.push(listener)
+            this._canvasClickListeners.push(listener)
             return () => {
-                this._canvasEventListeners = this._canvasEventListeners.filter((l) => l !== listener)
+                this._canvasClickListeners = this._canvasClickListeners.filter((l) => l !== listener)
             }
         }, [])
 
-        return { canvasMouseDown, canvasRightClick, selectedTile, selectedBodyID, hoveredTile }
+        return { canvasMouseDown, canvasRightClick, selectedTile, selectedBodyID }
     }
 }
 
 const eventToPoint = (e: MouseEvent) => {
     const canvas = e.target as HTMLCanvasElement
     const rect = canvas.getBoundingClientRect()
-    const map = gameRunner.match?.map ?? assert.fail('map is null in onclick')
+    const map = GameRunner.match?.map ?? assert.fail('map is null in onclick')
     let x = Math.floor(((e.clientX - rect.left) / rect.width) * map.width)
     let y = Math.floor((1 - (e.clientY - rect.top) / rect.height) * map.height)
     x = Math.max(0, Math.min(x, map.width - 1))

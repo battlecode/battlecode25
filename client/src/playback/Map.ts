@@ -179,21 +179,22 @@ export class CurrentMap {
         if (square.x >= this.width || square.y >= this.height) return []
 
         const schemaIdx = this.locationToIndex(square.x, square.y)
-        //const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
+
         const paint = this.paint[schemaIdx]
-        const walls = this.staticMap.walls[schemaIdx]
+        const wall = this.staticMap.walls[schemaIdx]
+        const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+
         const info: string[] = []
-        /*
-        if (flag) {
-            info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
-        }
-        */
         if (paint) {
             info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
         }
-        if (walls) {
+        if (wall) {
             info.push('Wall')
         }
+        if (ruin) {
+            info.push('Ruin')
+        }
+
         return info
     }
 
@@ -319,11 +320,11 @@ export class StaticMap {
     }
 
     indexToLocation(index: number): { x: number; y: number } {
-        const target_x = index % this.width
-        const target_y = (index - target_x) / this.width
-        assert(target_x >= 0 && target_x < this.width, `target_x ${target_x} out of bounds`)
-        assert(target_y >= 0 && target_y < this.height, `target_y ${target_y} out of bounds`)
-        return { x: target_x, y: target_y }
+        const x = index % this.width
+        const y = (index - x) / this.width
+        assert(x >= 0 && x < this.width, `x=${x} out of bounds for indexToLocation`)
+        assert(y >= 0 && y < this.height, `y=${y} out of bounds for indexToLocation`)
+        return { x, y }
     }
 
     locationToIndex(x: number, y: number): number {
@@ -385,7 +386,7 @@ export class StaticMap {
                 this.ruins.forEach(({ x, y }) => {
                     const coords = renderUtils.getRenderCoords(x, y, this.dimension)
 
-                    const imgPath = `ruins/silver_64x64.png`
+                    const imgPath = `ruins/silver.png`
                     const ruinImage = getImageIfLoaded(imgPath)
                     renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
                 })

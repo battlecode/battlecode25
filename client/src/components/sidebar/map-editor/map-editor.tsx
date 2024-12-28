@@ -5,14 +5,13 @@ import Bodies from '../../../playback/Bodies'
 import Game from '../../../playback/Game'
 import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
-import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
 import { MapEditorBrush, UndoFunction } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
-import gameRunner, { useRound } from '../../../playback/GameRunner'
+import GameRunner, { useRound } from '../../../playback/GameRunner'
 import { GameRenderer } from '../../../playback/GameRenderer'
 import { RingBuffer } from '../../../util/ring-buffer'
 
@@ -37,7 +36,8 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const [mapNameOpen, setMapNameOpen] = React.useState(false)
     const [clearConfirmOpen, setClearConfirmOpen] = React.useState(false)
     const [mapError, setMapError] = React.useState('')
-    const { canvasMouseDown, hoveredTile } = GameRenderer.useCanvasEvents()
+    const { canvasMouseDown } = GameRenderer.useCanvasClickEvents()
+    const { hoveredTile } = GameRenderer.useCanvasHoverEvents()
 
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)
@@ -157,7 +157,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            gameRunner.setMatch(editGame.current.currentMatch)
+            GameRunner.setMatch(editGame.current.currentMatch)
 
             const round = editGame.current.currentMatch!.currentRound
             const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
@@ -165,7 +165,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             setBrushes(brushes)
             setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
-            gameRunner.setGame(undefined)
+            GameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 

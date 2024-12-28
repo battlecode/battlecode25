@@ -76,7 +76,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private MapInfo getMapInfo(MapLocation loc) throws GameActionException {
         GameWorld gw = this.gameWorld;
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), gw.getMarker(getTeam(), loc), gw.hasRuin(loc));
+        int mark = gw.getMarker(getTeam(), loc);
+        PaintType markType = PaintType.EMPTY;
+        if (mark == 1)
+            markType = PaintType.ALLY_PRIMARY;
+        else if (mark == 2)
+            markType = PaintType.ALLY_SECONDARY;
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), markType, gw.hasRuin(loc));
         return currentLocInfo;
     }
 
@@ -131,6 +137,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public int getMoney() {
         return this.gameWorld.getTeamInfo().getMoney(getTeam());
+    }
+
+    @Override
+    public UnitType getType(){
+        return this.robot.getType();
     }
 
     // ***********************************
@@ -348,7 +359,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canActCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's action cooldown has not expired.");
-        if (this.robot.getPaint() == 0){
+        if (this.robot.getPaint() == 0 && UnitType.isRobotType(this.robot.getType())){
             throw new GameActionException(IS_NOT_READY, "This robot can't act at 0 paint.");
         }
     }
@@ -372,7 +383,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.robot.canMoveCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's movement cooldown has not expired.");
-        if (this.robot.getPaint() == 0){
+        if (this.robot.getPaint() == 0 && UnitType.isRobotType(this.robot.getType())){
             throw new GameActionException(IS_NOT_READY, "This robot can't move at 0 paint.");
         }
     }

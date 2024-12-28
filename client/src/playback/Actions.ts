@@ -112,9 +112,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
             const target = round.bodies.getById(this.actionData.id())
-            if (!target) {
-                throw new Error(`Target ${this.actionData.id()} not found for damage action`)
-            }
 
             // Apply damage to the target
             target.hp -= this.actionData.damage()
@@ -278,10 +275,9 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
-            /*
-            const team = round.bodies.getById(this.robotId).team
-            round.stat.getTeamStat(team).globalUpgrades.push(this.target)
-            */
+            const towerId = this.actionData.id()
+            const body = round.bodies.getById(towerId)
+            body.level += 1
         }
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {

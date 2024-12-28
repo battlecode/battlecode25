@@ -2,7 +2,7 @@ import { schema, flatbuffers } from 'battlecode-schema'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import assert from 'assert'
-import gameRunner from '../../../playback/GameRunner'
+import GameRunner from '../../../playback/GameRunner'
 
 export type FakeGameWrapper = {
     events: (index: number, unusedEventSlot: any) => schema.EventWrapper | null
@@ -61,10 +61,10 @@ export default class WebSocketListener {
 
         // Auto progress the round if the user hasn't done it themselves
         // We only want to do this if the currently selected match is the one being updated
-        if (this.activeMatch && this.activeMatch === gameRunner.match) {
+        if (this.activeMatch && this.activeMatch === GameRunner.match) {
             const newRound = this.activeMatch.maxRound - 1
             if (this.lastSetRound == this.activeMatch.currentRound.roundNumber) {
-                gameRunner.jumpToRound(newRound)
+                GameRunner.jumpToRound(newRound)
                 this.lastSetRound = newRound
             }
         }

@@ -127,9 +127,13 @@ export default class Match {
                     startValue = Math.min(startValue ?? event.at(), event.at())
                     endValue = Math.max(endValue ?? event.at(), event.at())
                 }
+
+                const profileName = profile.name() ?? assert.fail('Profiler name was null')
+                const profileId = Number(profileName.substring(1))
                 profilerFile.profiles.push({
                     type: Profiler.ProfileType.EVENTED,
-                    name: profile.name() ?? assert.fail('Profiler name was null'),
+                    id: profileId,
+                    name: profileName,
                     events,
                     startValue: startValue! - 1,
                     endValue: endValue! + 1,
@@ -137,6 +141,9 @@ export default class Match {
                 })
             }
             this.profilerFiles.push(profilerFile)
+
+            // Sort by robot id
+            profilerFile.profiles.sort((a, b) => a.id - b.id)
         }
     }
 
