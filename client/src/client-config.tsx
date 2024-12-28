@@ -11,6 +11,7 @@ interface Props {
 const DEFAULT_CONFIG = {
     showAllIndicators: false,
     showAllRobotRadii: false,
+    showTimelineMarkers: true,
     showHealthBars: true,
     showMapXY: true,
     streamRunnerGames: true,
@@ -21,6 +22,7 @@ const DEFAULT_CONFIG = {
 const configDescription: Record<keyof ClientConfig, string> = {
     showAllIndicators: 'Show all indicator dots and lines',
     showAllRobotRadii: 'Show all robot view and attack radii',
+    showTimelineMarkers: 'Show user-generated markers on the timeline',
     showHealthBars: 'Show health bars below all robots',
     showMapXY: 'Show X,Y when hovering a tile',
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
