@@ -1,6 +1,7 @@
 package examplefuncsplayer;
 
 import battlecode.common.*;
+import javafx.scene.paint.Paint;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import org.omg.CORBA.SystemException;
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -54,7 +57,7 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        System.out.println("I'm alive");
+        //System.out.println("I'm alive");
 
         // You can also use indicators to save debug notes in replays.
         rc.setIndicatorString("Hello world!");
@@ -68,48 +71,18 @@ public strictfp class RobotPlayer {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode.
             try {
-                // Make sure you spawn your robot in before you attempt to take any actions!
-                // Robots not spawned in do not have vision of any tiles and cannot perform any actions.
-                if (!rc.isSpawned()){
-                    MapLocation[] spawnLocs = rc.getAllySpawnLocations();
-                    // Pick a random spawn location to attempt spawning in.
-                    MapLocation randomLoc = spawnLocs[rng.nextInt(spawnLocs.length)];
-                    if (rc.canSpawn(randomLoc)) rc.spawn(randomLoc);
+                // The same run() function is called for every robot on your team, even if they are
+                // different types. Here, we separate the control depending on the UnitType, so we can
+                // use different strategies on different robots. If you wish, you are free to rewrite
+                // this into a different control structure!
+                switch (rc.getType()){
+                    case SOLDIER: runSoldier(rc); break; 
+                    case MOPPER: runMopper(rc); break;
+                    case SPLASHER: break; // Consider upgrading examplefuncsplayer to use splashers!
+                    default: runTower(rc); break;
+                    }
                 }
-                else{
-                    if (rc.canPickupFlag(rc.getLocation())){
-                        rc.pickupFlag(rc.getLocation());
-                        rc.setIndicatorString("Holding a flag!");
-                    }
-                    // If we are holding an enemy flag, singularly focus on moving towards
-                    // an ally spawn zone to capture it! We use the check roundNum >= SETUP_ROUNDS
-                    // to make sure setup phase has ended.
-                    if (rc.hasFlag() && rc.getRoundNum() >= GameConstants.SETUP_ROUNDS){
-                        MapLocation[] spawnLocs = rc.getAllySpawnLocations();
-                        MapLocation firstLoc = spawnLocs[0];
-                        Direction dir = rc.getLocation().directionTo(firstLoc);
-                        if (rc.canMove(dir)) rc.move(dir);
-                    }
-                    // Move and attack randomly if no objective.
-                    Direction dir = directions[rng.nextInt(directions.length)];
-                    MapLocation nextLoc = rc.getLocation().add(dir);
-                    if (rc.canMove(dir)){
-                        rc.move(dir);
-                    }
-                    else if (rc.canAttack(nextLoc)){
-                        rc.attack(nextLoc);
-                        System.out.println("Take that! Damaged an enemy that was in our way!");
-                    }
-
-                    // Rarely attempt placing traps behind the robot.
-                    MapLocation prevLoc = rc.getLocation().subtract(dir);
-                    if (rc.canBuild(TrapType.EXPLOSIVE, prevLoc) && rng.nextInt() % 37 == 1)
-                        rc.build(TrapType.EXPLOSIVE, prevLoc);
-                    // We can also move our code into different methods or classes to better organize it!
-                    updateEnemyRobots(rc);
-                }
-
-            } catch (GameActionException e) {
+             catch (GameActionException e) {
                 // Oh no! It looks like we did something illegal in the Battlecode world. You should
                 // handle GameActionExceptions judiciously, in case unexpected events occur in the game
                 // world. Remember, uncaught exceptions cause your robot to explode!
@@ -132,21 +105,126 @@ public strictfp class RobotPlayer {
 
         // Your code should never reach here (unless it's intentional)! Self-destruction imminent...
     }
+
+    /**
+     * Run a single turn for towers.
+     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
+     */
+    public static void runTower(RobotController rc) throws GameActionException{
+        // Pick a direction to build in.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation nextLoc = rc.getLocation().add(dir);
+        // Pick a random robot type to build.
+        int robotType = rng.nextInt(3);
+        if (robotType == 0 && rc.canBuildRobot(UnitType.SOLDIER, nextLoc)){
+            rc.buildRobot(UnitType.SOLDIER, nextLoc);
+            System.out.println("BUILT A SOLDIER");
+        }
+        else if (robotType == 1 && rc.canBuildRobot(UnitType.MOPPER, nextLoc)){
+            rc.buildRobot(UnitType.MOPPER, nextLoc);
+            System.out.println("BUILT A MOPPER");
+        }
+        else if (robotType == 2 && rc.canBuildRobot(UnitType.SPLASHER, nextLoc)){
+            // rc.buildRobot(UnitType.SPLASHER, nextLoc);
+            // System.out.println("BUILT A SPLASHER");
+            rc.setIndicatorString("SPLASHER NOT IMPLEMENTED YET");
+        }
+    }
+
+
+    /**
+     * Run a single turn for a Soldier.
+     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
+     */
+    public static void runSoldier(RobotController rc) throws GameActionException{
+        // Sense information about all visible nearby tiles.
+        MapInfo[] nearbyTiles = rc.senseNearbyMapInfos();
+        // Search for a nearby ruin to complete.
+        MapInfo curRuin = null;
+        for (MapInfo tile : nearbyTiles){
+            if (tile.hasRuin()){
+                curRuin = tile;
+            }
+        }
+        if (curRuin != null){
+            MapLocation targetLoc = curRuin.getMapLocation();
+            Direction dir = rc.getLocation().directionTo(targetLoc);
+            if (rc.canMove(dir))
+                rc.move(dir);
+            // Mark the pattern we need to draw to build a tower here.
+            if (curRuin.getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(targetLoc)){
+                rc.markTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
+                System.out.println("Trying to build a tower at " + targetLoc);
+            }
+            // Fill in any spots in the pattern with the appropriate paint.
+            for (MapInfo patternTile : rc.senseNearbyMapInfos(targetLoc, 8)){
+                if (patternTile.getMark() != patternTile.getPaint() && patternTile.getMark() != PaintType.EMPTY){
+                    boolean useSecondaryColor = patternTile.getMark() == PaintType.ALLY_SECONDARY;
+                    if (rc.canAttack(patternTile.getMapLocation()))
+                        rc.attack(patternTile.getMapLocation(), useSecondaryColor);
+                }
+            }
+            // Complete the ruin if we can.
+            if (rc.canCompleteTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
+                rc.completeTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
+                System.out.println("Built a tower at " + targetLoc + "!");
+            }
+        }
+
+        // Move and attack randomly if no objective.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation nextLoc = rc.getLocation().add(dir);
+        if (rc.canMove(dir)){
+            rc.move(dir);
+        }
+        // Try to paint beneath us as we walk to avoid paint penalties.
+         if (rc.canAttack(rc.getLocation())){
+            rc.attack(rc.getLocation());
+        }
+    }
+
+
+    /**
+     * Run a single turn for a Mopper.
+     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
+     */
+    public static void runMopper(RobotController rc) throws GameActionException{
+        // Move and attack randomly.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation nextLoc = rc.getLocation().add(dir);
+        if (rc.canMove(dir)){
+            rc.move(dir);
+        }
+        if (rc.canMopSwing(dir)){
+            rc.mopSwing(dir);
+            System.out.println("Mop Swing! Booyah!");
+        }
+        else if (rc.canAttack(nextLoc)){
+            rc.attack(nextLoc);
+        }
+        // We can also move our code into different methods or classes to better organize it!
+        updateEnemyRobots(rc);
+    }
+
     public static void updateEnemyRobots(RobotController rc) throws GameActionException{
         // Sensing methods can be passed in a radius of -1 to automatically 
         // use the largest possible value.
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
         if (enemyRobots.length != 0){
             rc.setIndicatorString("There are nearby enemy robots! Scary!");
-            // Save an array of locations with enemy robots in them for future use.
+            // Save an array of locations with enemy robots in them for possible future use.
             MapLocation[] enemyLocations = new MapLocation[enemyRobots.length];
             for (int i = 0; i < enemyRobots.length; i++){
                 enemyLocations[i] = enemyRobots[i].getLocation();
             }
-            // Let the rest of our team know how many enemy robots we see!
-            if (rc.canWriteSharedArray(0, enemyRobots.length)){
-                rc.writeSharedArray(0, enemyRobots.length);
-                int numEnemies = rc.readSharedArray(0);
+            RobotInfo[] allyRobots = rc.senseNearbyRobots(-1, rc.getTeam());
+            // Occasionally try to tell nearby allies how many enemy robots we see.
+            if (rc.getRoundNum() % 20 == 0){
+                for (RobotInfo ally : allyRobots){
+                    if (rc.canSendMessage(ally.location, enemyRobots.length)){
+                        rc.sendMessage(ally.location, enemyRobots.length);
+                    }
+                }
             }
         }
     }

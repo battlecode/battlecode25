@@ -4,7 +4,7 @@ import { Vector } from './Vector'
 import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
-import { RuinsBrush, WallsBrush, PaintBrush, TowerBrush } from './Brushes'
+import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
 import { DIVIDER_COLOR, GRASS_COLOR, WALLS_COLOR, PAINT_COLOR, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
@@ -94,9 +94,9 @@ export class CurrentMap {
     }
 
     /**
-     * Mutates this currentMap to reflect the given delta.
+     * Mutates this currentMap to reflect the given turn.
      */
-    applyDelta(delta: schema.Round): void {}
+    applyTurnDelta(turn: schema.Turn): void {}
 
     draw(
         match: Match,
@@ -179,21 +179,22 @@ export class CurrentMap {
         if (square.x >= this.width || square.y >= this.height) return []
 
         const schemaIdx = this.locationToIndex(square.x, square.y)
-        //const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
+
         const paint = this.paint[schemaIdx]
-        const walls = this.staticMap.walls[schemaIdx]
+        const wall = this.staticMap.walls[schemaIdx]
+        const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+
         const info: string[] = []
-        /*
-        if (flag) {
-            info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
-        }
-        */
         if (paint) {
             info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
         }
-        if (walls) {
+        if (wall) {
             info.push('Wall')
         }
+        if (ruin) {
+            info.push('Ruin')
+        }
+
         return info
     }
 
@@ -250,15 +251,25 @@ export class StaticMap {
         public readonly dimension: Dimension,
         public readonly walls: Int8Array,
         public readonly ruins: Vector[],
-        public readonly initialPaint: Int32Array
+        public readonly initialPaint: Int8Array
     ) {
-        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
+        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) {
+            throw new Error(`Invalid symmetry ${symmetry}`)
+        }
 
-        if (walls.length != dimension.width * dimension.height) throw new Error('Invalid walls length')
-        if (initialPaint.length != dimension.width * dimension.height) throw new Error('Invalid paint length')
+        if (walls.length != dimension.width * dimension.height) {
+            throw new Error('Invalid walls length')
+        }
+        if (initialPaint.length != dimension.width * dimension.height) {
+            throw new Error('Invalid paint length')
+        }
 
-        if (walls.some((x) => x !== 0 && x !== 1)) throw new Error('Invalid walls value')
-        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) throw new Error('Invalid paint value')
+        if (walls.some((x) => x !== 0 && x !== 1)) {
+            throw new Error('Invalid walls value')
+        }
+        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) {
+            throw new Error('Invalid paint value')
+        }
     }
 
     static fromSchema(schemaMap: schema.GameMap) {
@@ -297,7 +308,7 @@ export class StaticMap {
 
         const walls = new Int8Array(width * height)
         const ruins: Vector[] = []
-        const initialPaint = new Int32Array(width * height)
+        const initialPaint = new Int8Array(width * height)
         return new StaticMap(name, randomSeed, symmetry, dimension, walls, ruins, initialPaint)
     }
 
@@ -309,11 +320,11 @@ export class StaticMap {
     }
 
     indexToLocation(index: number): { x: number; y: number } {
-        const target_x = index % this.width
-        const target_y = (index - target_x) / this.width
-        assert(target_x >= 0 && target_x < this.width, `target_x ${target_x} out of bounds`)
-        assert(target_y >= 0 && target_y < this.height, `target_y ${target_y} out of bounds`)
-        return { x: target_x, y: target_y }
+        const x = index % this.width
+        const y = (index - x) / this.width
+        assert(x >= 0 && x < this.width, `x=${x} out of bounds for indexToLocation`)
+        assert(y >= 0 && y < this.height, `y=${y} out of bounds for indexToLocation`)
+        return { x, y }
     }
 
     locationToIndex(x: number, y: number): number {
@@ -371,14 +382,14 @@ export class StaticMap {
                 }
                 */
 
-                // if (this.ruins[schemaIdx]) {
-                //     renderUtils.renderCenteredImageOrLoadingIndicator(
-                //         ctx,
-                //         getImageIfLoaded(this.imgPath),
-                //         ruin,
-                //         this.size
-                //     )
-                // }
+                // Render ruins
+                this.ruins.forEach(({ x, y }) => {
+                    const coords = renderUtils.getRenderCoords(x, y, this.dimension)
+
+                    const imgPath = `ruins/silver.png`
+                    const ruinImage = getImageIfLoaded(imgPath)
+                    renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
+                })
 
                 // Draw grid
                 const showGrid = true

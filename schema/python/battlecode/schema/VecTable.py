@@ -4,13 +4,14 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 class VecTable(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = VecTable()
         x.Init(buf, n + offset)
@@ -21,11 +22,11 @@ class VecTable(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # VecTable
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # VecTable
-    def Xs(self, j):
+    def Xs(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             a = self._tab.Vector(o)
@@ -40,19 +41,19 @@ class VecTable(object):
         return 0
 
     # VecTable
-    def XsLength(self):
+    def XsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # VecTable
-    def XsIsNone(self):
+    def XsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
     # VecTable
-    def Ys(self, j):
+    def Ys(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             a = self._tab.Vector(o)
@@ -67,49 +68,49 @@ class VecTable(object):
         return 0
 
     # VecTable
-    def YsLength(self):
+    def YsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # VecTable
-    def YsIsNone(self):
+    def YsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
-def VecTableStart(builder):
+def VecTableStart(builder: flatbuffers.Builder):
     builder.StartObject(2)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     VecTableStart(builder)
 
-def VecTableAddXs(builder, xs):
+def VecTableAddXs(builder: flatbuffers.Builder, xs: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(xs), 0)
 
-def AddXs(builder, xs):
+def AddXs(builder: flatbuffers.Builder, xs: int):
     VecTableAddXs(builder, xs)
 
-def VecTableStartXsVector(builder, numElems):
+def VecTableStartXsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartXsVector(builder, numElems):
+def StartXsVector(builder, numElems: int) -> int:
     return VecTableStartXsVector(builder, numElems)
 
-def VecTableAddYs(builder, ys):
+def VecTableAddYs(builder: flatbuffers.Builder, ys: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(ys), 0)
 
-def AddYs(builder, ys):
+def AddYs(builder: flatbuffers.Builder, ys: int):
     VecTableAddYs(builder, ys)
 
-def VecTableStartYsVector(builder, numElems):
+def VecTableStartYsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartYsVector(builder, numElems):
+def StartYsVector(builder, numElems: int) -> int:
     return VecTableStartYsVector(builder, numElems)
 
-def VecTableEnd(builder):
+def VecTableEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return VecTableEnd(builder)

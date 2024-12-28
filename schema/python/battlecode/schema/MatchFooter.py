@@ -4,6 +4,10 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.ProfilerFile import ProfilerFile
+from ..schema.TimelineMarker import TimelineMarker
+from typing import Optional
 np = import_numpy()
 
 # Sent to end a match.
@@ -11,7 +15,7 @@ class MatchFooter(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = MatchFooter()
         x.Init(buf, n + offset)
@@ -22,7 +26,7 @@ class MatchFooter(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # MatchFooter
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # The ID of the winning team.
@@ -49,70 +53,106 @@ class MatchFooter(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
-    # Profiler data for team A and B if profiling is enabled.
+    # Markers for this match.
     # MatchFooter
-    def ProfilerFiles(self, j):
+    def TimelineMarkers(self, j: int) -> Optional[TimelineMarker]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
             x = self._tab.Indirect(x)
-            from battlecode.schema.ProfilerFile import ProfilerFile
-            obj = ProfilerFile()
+            obj = TimelineMarker()
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
 
     # MatchFooter
-    def ProfilerFilesLength(self):
+    def TimelineMarkersLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # MatchFooter
-    def ProfilerFilesIsNone(self):
+    def TimelineMarkersIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         return o == 0
 
-def MatchFooterStart(builder):
-    builder.StartObject(4)
+    # Profiler data for team A and B if profiling is enabled.
+    # MatchFooter
+    def ProfilerFiles(self, j: int) -> Optional[ProfilerFile]:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            obj = ProfilerFile()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
 
-def Start(builder):
+    # MatchFooter
+    def ProfilerFilesLength(self) -> int:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # MatchFooter
+    def ProfilerFilesIsNone(self) -> bool:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        return o == 0
+
+def MatchFooterStart(builder: flatbuffers.Builder):
+    builder.StartObject(5)
+
+def Start(builder: flatbuffers.Builder):
     MatchFooterStart(builder)
 
-def MatchFooterAddWinner(builder, winner):
+def MatchFooterAddWinner(builder: flatbuffers.Builder, winner: int):
     builder.PrependInt8Slot(0, winner, 0)
 
-def AddWinner(builder, winner):
+def AddWinner(builder: flatbuffers.Builder, winner: int):
     MatchFooterAddWinner(builder, winner)
 
-def MatchFooterAddWinType(builder, winType):
+def MatchFooterAddWinType(builder: flatbuffers.Builder, winType: int):
     builder.PrependInt8Slot(1, winType, 0)
 
-def AddWinType(builder, winType):
+def AddWinType(builder: flatbuffers.Builder, winType: int):
     MatchFooterAddWinType(builder, winType)
 
-def MatchFooterAddTotalRounds(builder, totalRounds):
+def MatchFooterAddTotalRounds(builder: flatbuffers.Builder, totalRounds: int):
     builder.PrependInt32Slot(2, totalRounds, 0)
 
-def AddTotalRounds(builder, totalRounds):
+def AddTotalRounds(builder: flatbuffers.Builder, totalRounds: int):
     MatchFooterAddTotalRounds(builder, totalRounds)
 
-def MatchFooterAddProfilerFiles(builder, profilerFiles):
-    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(profilerFiles), 0)
+def MatchFooterAddTimelineMarkers(builder: flatbuffers.Builder, timelineMarkers: int):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(timelineMarkers), 0)
 
-def AddProfilerFiles(builder, profilerFiles):
-    MatchFooterAddProfilerFiles(builder, profilerFiles)
+def AddTimelineMarkers(builder: flatbuffers.Builder, timelineMarkers: int):
+    MatchFooterAddTimelineMarkers(builder, timelineMarkers)
 
-def MatchFooterStartProfilerFilesVector(builder, numElems):
+def MatchFooterStartTimelineMarkersVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartProfilerFilesVector(builder, numElems):
+def StartTimelineMarkersVector(builder, numElems: int) -> int:
+    return MatchFooterStartTimelineMarkersVector(builder, numElems)
+
+def MatchFooterAddProfilerFiles(builder: flatbuffers.Builder, profilerFiles: int):
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(profilerFiles), 0)
+
+def AddProfilerFiles(builder: flatbuffers.Builder, profilerFiles: int):
+    MatchFooterAddProfilerFiles(builder, profilerFiles)
+
+def MatchFooterStartProfilerFilesVector(builder, numElems: int) -> int:
+    return builder.StartVector(4, numElems, 4)
+
+def StartProfilerFilesVector(builder, numElems: int) -> int:
     return MatchFooterStartProfilerFilesVector(builder, numElems)
 
-def MatchFooterEnd(builder):
+def MatchFooterEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return MatchFooterEnd(builder)

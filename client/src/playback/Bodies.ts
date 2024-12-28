@@ -37,23 +37,12 @@ export default class Bodies {
             body.indicatorDots = []
             body.indicatorLines = []
             body.indicatorString = ''
+            body.lastPos = body.pos
 
             // Remove if dead
             if (body.dead) {
-                this.bodies.delete(body.id) // safe
+                this.bodies.delete(body.id)
             }
-        }
-    }
-
-    updateNextPositions(nextDelta: schema.Round) {
-        for (let i = 0; i < nextDelta.turnsLength(); i++) {
-            const turn = nextDelta.turns(i)!
-            const body = this.bodies.get(turn.robotId())
-
-            // Body can be null here since they may have not been spawned for the next turn
-            if (!body) return
-
-            body.moveTo({ x: turn.x(), y: turn.y() })
         }
     }
 
@@ -74,18 +63,23 @@ export default class Bodies {
         }
     }
 
-    spawnBody(id: number, spawnAction: schema.SpawnAction): Body {
+    spawnBodyFromAction(id: number, spawnAction: schema.SpawnAction): Body {
         assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
 
         const robotType = spawnAction.robotType()
-        const bodyClass =
-            BODY_DEFINITIONS[robotType] ?? assert.fail(`Body type ${robotType} not found in BODY_DEFINITIONS`)
-
         const team = spawnAction.team()
         const x = spawnAction.x()
         const y = spawnAction.y()
 
-        const body = new bodyClass(this.game, { x, y }, this.game.getTeamByID(team), id)
+        return this.spawnBodyFromValues(id, robotType, this.game.getTeamByID(team), { x, y })
+    }
+
+    spawnBodyFromValues(id: number, type: schema.RobotType, team: Team, pos: Vector): Body {
+        assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
+
+        const bodyClass = BODY_DEFINITIONS[type] ?? assert.fail(`Body type ${type} not found in BODY_DEFINITIONS`)
+
+        const body = new bodyClass(this.game, pos, team, id)
         this.bodies.set(id, body)
 
         // Populate default hp, cooldowns, etc
@@ -94,20 +88,26 @@ export default class Bodies {
         return body
     }
 
+    removeBody(id: number): void {
+        this.bodies.delete(id)
+    }
+
     /**
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
-    applyTurn(round: Round, turn: schema.Turn): void {
+    applyTurnDelta(round: Round, turn: schema.Turn): void {
         const body = this.getById(turn.robotId())
 
         // Update properties
         body.pos = { x: turn.x(), y: turn.y() }
         body.hp = turn.health()
-        //body.paint = turn.pain();
+        body.paint = turn.paint()
         body.moveCooldown = turn.moveCooldown()
         body.actionCooldown = turn.actionCooldown()
         body.bytecodesUsed = turn.bytecodesUsed()
+
+        body.addToPrevSquares()
     }
 
     getById(id: number): Body {
@@ -153,14 +153,20 @@ export default class Bodies {
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
-        let found_dead_body: Body | undefined = undefined
+        let foundDead: Body | undefined = undefined
+
         for (const body of this.bodies.values()) {
-            if ((!team || body.team === team) && body.pos.x === x && body.pos.y === y) {
-                if (body.dead) found_dead_body = body
-                else return body
+            const teamMatches = !team || body.team === team
+            if (teamMatches && body.pos.x === x && body.pos.y === y) {
+                if (!body.dead) return body
+
+                // If dead, keep iterating in case there is an alive body
+                // that will take priority
+                foundDead = body
             }
         }
-        return found_dead_body
+
+        return foundDead
     }
 
     isEmpty(): boolean {
@@ -198,7 +204,7 @@ export default class Bodies {
             const id = bodies.robotIds(i)!
             const spawnAction = bodies.spawnActions(i)!
 
-            this.spawnBody(id, spawnAction)
+            this.spawnBodyFromAction(id, spawnAction)
         }
     }
 }
@@ -208,15 +214,15 @@ export class Body {
     public robotType: schema.RobotType = schema.RobotType.NONE
     protected imgPath: string = ''
     protected size: number = 1
-    public nextPos: Vector
+    public lastPos: Vector
     private prevSquares: Vector[]
     public indicatorDots: { location: Vector; color: string }[] = []
     public indicatorLines: { start: Vector; end: Vector; color: string }[] = []
     public indicatorString: string = ''
     public dead: boolean = false
     public hp: number = 0
-    public actionRadius: number = 0
-    public visionRadius: number = 0
+    public paint: number = 0
+    public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
     public bytecodesUsed: number = 0
@@ -226,11 +232,8 @@ export class Body {
         public pos: Vector,
         public readonly team: Team,
         public readonly id: number
-        // paintLevel
-        // upgradeLevel
-        // moneyLevel (for money towers)
     ) {
-        this.nextPos = this.pos
+        this.lastPos = this.pos
         this.prevSquares = [this.pos]
     }
 
@@ -248,21 +251,27 @@ export class Body {
     ): void {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
-        
+
         if (this.dead) ctx.globalAlpha = 0.5
-        renderUtils.renderCenteredImageOrLoadingIndicator(
-            ctx,
-            getImageIfLoaded(this.imgPath),
-            renderCoords,
-            this.size
-        )
+        renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
         ctx.globalAlpha = 1
 
-        if (selected || hovered) this.drawPath(match, overlayCtx)
-        if (selected || hovered || config.showAllRobotRadii) this.drawRadii(match, overlayCtx, !selected)
-        if (selected || hovered || config.showAllIndicators)
-            this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
-        if (selected || hovered || config.showHealthBars) this.drawHealthBar(match, overlayCtx)
+        // Draw various statuses
+        const focused = selected || hovered
+        if (this.game.playable) {
+            if (focused) {
+                this.drawPath(match, overlayCtx)
+            }
+            if (focused || config.showAllRobotRadii) {
+                this.drawRadii(match, overlayCtx, !selected)
+            }
+            if (focused || config.showAllIndicators) {
+                this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
+            }
+            if (focused || config.showHealthBars) {
+                this.drawHealthBar(match, overlayCtx)
+            }
+        }
 
         /*
         if (this.carryingFlagId !== null) {
@@ -385,7 +394,7 @@ export class Body {
         const pos = this.pos
 
         if (lightly) ctx.globalAlpha = 0.5
-        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.actionRadius)
+        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.actionRadiusSquared())
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
@@ -394,7 +403,7 @@ export class Body {
         ctx.beginPath()
         ctx.strokeStyle = 'blue'
         ctx.lineWidth = 0.1
-        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.visionRadius)
+        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.visionRadiusSquared())
         this.drawEdges(match, ctx, lightly, squares2)
 
         ctx.globalAlpha = 1
@@ -445,16 +454,16 @@ export class Body {
     }
 
     public getInterpolatedCoords(match: Match): Vector {
-        return renderUtils.getInterpolatedCoords(this.pos, this.nextPos, match.getInterpolationFactor())
+        return renderUtils.getInterpolatedCoords(this.lastPos, this.pos, match.getInterpolationFactor())
     }
 
     public onHoverInfo(): string[] {
         const defaultInfo = [
-            (this.dead ? 'JAILED: ' : '') + this.robotName,
+            this.robotName,
             `ID: ${this.id}`,
             `HP: ${this.hp}`,
+            `Paint: ${this.paint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
-            //this.carryingFlagId !== null ? `Has Flag! (ID: ${this.carryingFlagId})` : '',
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
             `Bytecodes Used: ${this.bytecodesUsed}`
@@ -474,17 +483,6 @@ export class Body {
         return newBody
     }
 
-    public moveTo(pos: Vector): void {
-        this.pos = this.nextPos
-        this.nextPos = pos
-    }
-
-    public resetPos(pos: Vector): void {
-        this.pos = pos
-        this.nextPos = pos
-        this.prevSquares = [pos]
-    }
-
     public addToPrevSquares(): void {
         this.prevSquares.push(this.pos)
         if (this.prevSquares.length > TOOLTIP_PATH_LENGTH) {
@@ -493,13 +491,13 @@ export class Body {
     }
 
     public populateDefaultValues(): void {
+        if (!this.game.playable) return
+
         const metadata = this.metadata
 
         this.hp = metadata.baseHealth()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
-        this.visionRadius = metadata.visionRadiusSquared()
-        this.actionRadius = metadata.actionRadiusSquared()
     }
 
     public getSpecialization(): { idx: number; name: string } {
@@ -542,10 +540,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} DefenseTower`
+            this.robotName = `${team.colorName} Defense Tower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(
@@ -570,10 +568,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} MoneyTower`
+            this.robotName = `${team.colorName} Money Tower`
             this.robotType = schema.RobotType.MONEY_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(
@@ -598,10 +596,10 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} PaintTower`
+            this.robotName = `${team.colorName} Paint Tower`
             this.robotType = schema.RobotType.PAINT_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(

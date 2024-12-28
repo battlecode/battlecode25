@@ -3,13 +3,24 @@ import Game, { Team } from './Game'
 import assert from 'assert'
 import Round from './Round'
 
+const EMPTY_ROBOT_COUNTS: Record<schema.RobotType, number> = {
+    [schema.RobotType.NONE]: 0,
+    [schema.RobotType.MONEY_TOWER]: 0,
+    [schema.RobotType.PAINT_TOWER]: 0,
+    [schema.RobotType.DEFENSE_TOWER]: 0,
+    [schema.RobotType.SOLDIER]: 0,
+    [schema.RobotType.MOPPER]: 0,
+    [schema.RobotType.SPLASHER]: 0
+}
+
 export class TeamRoundStat {
-    robots: number = 0
+    robotCounts: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
 
     copy(): TeamRoundStat {
         const newStat: TeamRoundStat = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
 
         // Copy any internal objects here
+        newStat.robotCounts = { ...this.robotCounts }
 
         return newStat
     }
@@ -41,10 +52,12 @@ export default class RoundStat {
     /**
      * Mutates this stat to reflect the given delta.
      */
-    applyDelta(round: Round, delta: schema.Round): void {
+    applyRoundDelta(round: Round, delta: schema.Round): void {
+        // We want to apply the stat to round i + 1 so when we are visualizing
+        // round i, we see the state at the end of round i - 1
         assert(
-            round.roundNumber === delta.roundId(),
-            `Wrong round ID: is ${delta.roundId()}, should be ${round.roundNumber}`
+            round.roundNumber === delta.roundId() + 1,
+            `Wrong round ID: is ${delta.roundId()}, should be ${round.roundNumber + 1}`
         )
 
         // Do not recompute if this stat is already completed
@@ -52,12 +65,13 @@ export default class RoundStat {
 
         // Compute team stats for this round
         const time = Date.now()
-        for (var i = 0; i < delta.teamIdsLength(); i++) {
+        for (let i = 0; i < delta.teamIdsLength(); i++) {
             const team = this.game.teams[(delta.teamIds(i) ?? assert.fail('teamID not found in round')) - 1]
             assert(team != undefined, `team ${i} not found in game.teams in round`)
             const teamStat = this.teams.get(team) ?? assert.fail(`team ${i} not found in team stats in round`)
 
-            teamStat.robots = 0
+            // Clear robot counts, will be recomputed later
+            teamStat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
 
             /*
             // Compute average datapoint every 10 rounds
@@ -80,7 +94,9 @@ export default class RoundStat {
             const teamStat = round.stat.getTeamStat(body.team)
 
             // Count number of alive robots
-            if (!body.dead) teamStat.robots++
+            if (body.dead) continue
+
+            teamStat.robotCounts[body.robotType]++
         }
 
         const timems = Date.now() - time

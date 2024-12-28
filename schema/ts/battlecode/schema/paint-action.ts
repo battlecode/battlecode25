@@ -20,12 +20,18 @@ loc():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-static sizeOf():number {
-  return 2;
+isSecondary():number {
+  return this.bb!.readInt8(this.bb_pos + 2);
 }
 
-static createPaintAction(builder:flatbuffers.Builder, loc: number):flatbuffers.Offset {
-  builder.prep(2, 2);
+static sizeOf():number {
+  return 4;
+}
+
+static createPaintAction(builder:flatbuffers.Builder, loc: number, isSecondary: number):flatbuffers.Offset {
+  builder.prep(2, 4);
+  builder.pad(1);
+  builder.writeInt8(isSecondary);
   builder.writeInt16(loc);
   return builder.offset();
 }

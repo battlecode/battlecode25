@@ -18,6 +18,11 @@ public class RobotInfo {
     public final Team team;
 
     /**
+     * The type of the robot.
+     */
+    public final UnitType type;
+
+    /**
      * The health of the robot.
      */
     public final int health;
@@ -32,36 +37,13 @@ public class RobotInfo {
      */
     public final int paintAmount;
 
-    /**
-     * Whether or not the robot is holding a flag.
-     */
-    public final boolean hasFlag;
-
-    /**
-     * The robot's current level in the attack skill.
-     */
-    public final int attackLevel;
-
-    /**
-     * The robot's current level in the heal skill.
-     */
-    public final int healLevel;
-
-    /**
-     * The robot's current level in the build skill.
-     */
-    public final int buildLevel;
-
-    public RobotInfo(int ID, Team team, int health, MapLocation location, boolean hasFlag, int attackLevel, int healLevel, int buildLevel, int paintAmount) {
+    public RobotInfo(int ID, Team team, UnitType type, int health, MapLocation location, int paintAmount) {
         super();
         this.ID = ID;
         this.team = team;
+        this.type = type;
         this.health = health;
         this.location = location;
-        this.hasFlag = hasFlag;
-        this.attackLevel = attackLevel;
-        this.healLevel = healLevel;
-        this.buildLevel = buildLevel;
         this.paintAmount = paintAmount;
     }
 
@@ -102,39 +84,12 @@ public class RobotInfo {
     }
 
     /**
-     * Returns whether or not this robot has a flag. 
+     * Returns this robot's type.
      * 
-     * @return whether or not this robot has a flag
+     * @return the type of this robot.
      */
-    public boolean hasFlag() {
-        return this.hasFlag;
-    }
-
-    /**
-     * Returns the attack level of this robot. 
-     * 
-     * @return the attack level of the robot
-     */
-    public int getAttackLevel(){
-        return this.attackLevel;
-    }
-
-    /**
-     * Returns the heal level of this robot. 
-     * 
-     * @return the heal level of the robot
-     */
-    public int getHealLevel(){
-        return this.healLevel;
-    }
-
-    /**
-     * Returns the build level of this robot. 
-     * 
-     * @return the build level of the robot
-     */
-    public int getBuildLevel(){
-        return this.buildLevel;
+    public UnitType getType(){
+        return this.type;
     }
 
     /**

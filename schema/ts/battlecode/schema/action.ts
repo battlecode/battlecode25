@@ -5,6 +5,7 @@
 import { AttackAction } from '../../battlecode/schema/attack-action';
 import { BuildAction } from '../../battlecode/schema/build-action';
 import { DamageAction } from '../../battlecode/schema/damage-action';
+import { DieExceptionAction } from '../../battlecode/schema/die-exception-action';
 import { IndicatorDotAction } from '../../battlecode/schema/indicator-dot-action';
 import { IndicatorLineAction } from '../../battlecode/schema/indicator-line-action';
 import { IndicatorStringAction } from '../../battlecode/schema/indicator-string-action';
@@ -29,15 +30,16 @@ export enum Action {
   MessageAction = 8,
   SpawnAction = 9,
   UpgradeAction = 10,
-  IndicatorStringAction = 11,
-  IndicatorDotAction = 12,
-  IndicatorLineAction = 13
+  DieExceptionAction = 11,
+  IndicatorStringAction = 12,
+  IndicatorDotAction = 13,
+  IndicatorLineAction = 14
 }
 
 export function unionToAction(
   type: Action,
-  accessor: (obj:AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction) => AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null
-): AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null {
+  accessor: (obj:AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction) => AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null
+): AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null {
   switch(Action[type]) {
     case 'NONE': return null; 
     case 'DamageAction': return accessor(new DamageAction())! as DamageAction;
@@ -50,6 +52,7 @@ export function unionToAction(
     case 'MessageAction': return accessor(new MessageAction())! as MessageAction;
     case 'SpawnAction': return accessor(new SpawnAction())! as SpawnAction;
     case 'UpgradeAction': return accessor(new UpgradeAction())! as UpgradeAction;
+    case 'DieExceptionAction': return accessor(new DieExceptionAction())! as DieExceptionAction;
     case 'IndicatorStringAction': return accessor(new IndicatorStringAction())! as IndicatorStringAction;
     case 'IndicatorDotAction': return accessor(new IndicatorDotAction())! as IndicatorDotAction;
     case 'IndicatorLineAction': return accessor(new IndicatorLineAction())! as IndicatorLineAction;
@@ -59,9 +62,9 @@ export function unionToAction(
 
 export function unionListToAction(
   type: Action, 
-  accessor: (index: number, obj:AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction) => AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null, 
+  accessor: (index: number, obj:AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction) => AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null, 
   index: number
-): AttackAction|BuildAction|DamageAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null {
+): AttackAction|BuildAction|DamageAction|DieExceptionAction|IndicatorDotAction|IndicatorLineAction|IndicatorStringAction|MessageAction|MopAction|PaintAction|SpawnAction|TransferAction|UnpaintAction|UpgradeAction|null {
   switch(Action[type]) {
     case 'NONE': return null; 
     case 'DamageAction': return accessor(index, new DamageAction())! as DamageAction;
@@ -74,6 +77,7 @@ export function unionListToAction(
     case 'MessageAction': return accessor(index, new MessageAction())! as MessageAction;
     case 'SpawnAction': return accessor(index, new SpawnAction())! as SpawnAction;
     case 'UpgradeAction': return accessor(index, new UpgradeAction())! as UpgradeAction;
+    case 'DieExceptionAction': return accessor(index, new DieExceptionAction())! as DieExceptionAction;
     case 'IndicatorStringAction': return accessor(index, new IndicatorStringAction())! as IndicatorStringAction;
     case 'IndicatorDotAction': return accessor(index, new IndicatorDotAction())! as IndicatorDotAction;
     case 'IndicatorLineAction': return accessor(index, new IndicatorLineAction())! as IndicatorLineAction;

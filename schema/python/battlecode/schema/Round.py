@@ -4,6 +4,9 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.Turn import Turn
+from typing import Optional
 np = import_numpy()
 
 # A single time-step in a Game, which contains a list of robot turns
@@ -11,7 +14,7 @@ class Round(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Round()
         x.Init(buf, n + offset)
@@ -22,12 +25,12 @@ class Round(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # Round
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # The IDs of teams in the Game.
     # Round
-    def TeamIds(self, j):
+    def TeamIds(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             a = self._tab.Vector(o)
@@ -42,20 +45,20 @@ class Round(object):
         return 0
 
     # Round
-    def TeamIdsLength(self):
+    def TeamIdsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
-    def TeamIdsIsNone(self):
+    def TeamIdsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
     # The total amount of resource this round per team
     # Round
-    def TeamResourceAmounts(self, j):
+    def TeamResourceAmounts(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             a = self._tab.Vector(o)
@@ -70,46 +73,45 @@ class Round(object):
         return 0
 
     # Round
-    def TeamResourceAmountsLength(self):
+    def TeamResourceAmountsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
-    def TeamResourceAmountsIsNone(self):
+    def TeamResourceAmountsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
     # Ordered turn data for each robot during the round
     # Round
-    def Turns(self, j):
+    def Turns(self, j: int) -> Optional[Turn]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
             x = self._tab.Indirect(x)
-            from battlecode.schema.Turn import Turn
             obj = Turn()
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
 
     # Round
-    def TurnsLength(self):
+    def TurnsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
-    def TurnsIsNone(self):
+    def TurnsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         return o == 0
 
     # The IDs of bodies that died.
     # Round
-    def DiedIds(self, j):
+    def DiedIds(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             a = self._tab.Vector(o)
@@ -124,14 +126,14 @@ class Round(object):
         return 0
 
     # Round
-    def DiedIdsLength(self):
+    def DiedIdsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
-    def DiedIdsIsNone(self):
+    def DiedIdsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         return o == 0
 
@@ -145,68 +147,68 @@ class Round(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
-def RoundStart(builder):
+def RoundStart(builder: flatbuffers.Builder):
     builder.StartObject(5)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     RoundStart(builder)
 
-def RoundAddTeamIds(builder, teamIds):
+def RoundAddTeamIds(builder: flatbuffers.Builder, teamIds: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(teamIds), 0)
 
-def AddTeamIds(builder, teamIds):
+def AddTeamIds(builder: flatbuffers.Builder, teamIds: int):
     RoundAddTeamIds(builder, teamIds)
 
-def RoundStartTeamIdsVector(builder, numElems):
+def RoundStartTeamIdsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartTeamIdsVector(builder, numElems):
+def StartTeamIdsVector(builder, numElems: int) -> int:
     return RoundStartTeamIdsVector(builder, numElems)
 
-def RoundAddTeamResourceAmounts(builder, teamResourceAmounts):
+def RoundAddTeamResourceAmounts(builder: flatbuffers.Builder, teamResourceAmounts: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(teamResourceAmounts), 0)
 
-def AddTeamResourceAmounts(builder, teamResourceAmounts):
+def AddTeamResourceAmounts(builder: flatbuffers.Builder, teamResourceAmounts: int):
     RoundAddTeamResourceAmounts(builder, teamResourceAmounts)
 
-def RoundStartTeamResourceAmountsVector(builder, numElems):
+def RoundStartTeamResourceAmountsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartTeamResourceAmountsVector(builder, numElems):
+def StartTeamResourceAmountsVector(builder, numElems: int) -> int:
     return RoundStartTeamResourceAmountsVector(builder, numElems)
 
-def RoundAddTurns(builder, turns):
+def RoundAddTurns(builder: flatbuffers.Builder, turns: int):
     builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(turns), 0)
 
-def AddTurns(builder, turns):
+def AddTurns(builder: flatbuffers.Builder, turns: int):
     RoundAddTurns(builder, turns)
 
-def RoundStartTurnsVector(builder, numElems):
+def RoundStartTurnsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartTurnsVector(builder, numElems):
+def StartTurnsVector(builder, numElems: int) -> int:
     return RoundStartTurnsVector(builder, numElems)
 
-def RoundAddDiedIds(builder, diedIds):
+def RoundAddDiedIds(builder: flatbuffers.Builder, diedIds: int):
     builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(diedIds), 0)
 
-def AddDiedIds(builder, diedIds):
+def AddDiedIds(builder: flatbuffers.Builder, diedIds: int):
     RoundAddDiedIds(builder, diedIds)
 
-def RoundStartDiedIdsVector(builder, numElems):
+def RoundStartDiedIdsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartDiedIdsVector(builder, numElems):
+def StartDiedIdsVector(builder, numElems: int) -> int:
     return RoundStartDiedIdsVector(builder, numElems)
 
-def RoundAddRoundId(builder, roundId):
+def RoundAddRoundId(builder: flatbuffers.Builder, roundId: int):
     builder.PrependInt32Slot(4, roundId, 0)
 
-def AddRoundId(builder, roundId):
+def AddRoundId(builder: flatbuffers.Builder, roundId: int):
     RoundAddRoundId(builder, roundId)
 
-def RoundEnd(builder):
+def RoundEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return RoundEnd(builder)

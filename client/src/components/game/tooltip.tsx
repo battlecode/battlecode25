@@ -48,7 +48,7 @@ export const FloatingTooltip: React.FC<{
 
     return (
         <div
-            className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap"
+            className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap pointer-events-none"
             style={{
                 ...tooltipStyle,
                 visibility: showFloatingTooltip ? 'visible' : 'hidden'

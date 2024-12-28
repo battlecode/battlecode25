@@ -4,6 +4,9 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.ProfilerProfile import ProfilerProfile
+from typing import Optional
 np = import_numpy()
 
 # A profiler file is a collection of profiles.
@@ -12,7 +15,7 @@ class ProfilerFile(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = ProfilerFile()
         x.Init(buf, n + offset)
@@ -23,12 +26,12 @@ class ProfilerFile(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # ProfilerFile
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # The method names that are referred to in the events.
     # ProfilerFile
-    def Frames(self, j):
+    def Frames(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             a = self._tab.Vector(o)
@@ -36,75 +39,74 @@ class ProfilerFile(object):
         return ""
 
     # ProfilerFile
-    def FramesLength(self):
+    def FramesLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # ProfilerFile
-    def FramesIsNone(self):
+    def FramesIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
     # The recorded profiles, one per robot.
     # ProfilerFile
-    def Profiles(self, j):
+    def Profiles(self, j: int) -> Optional[ProfilerProfile]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
             x = self._tab.Indirect(x)
-            from battlecode.schema.ProfilerProfile import ProfilerProfile
             obj = ProfilerProfile()
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
 
     # ProfilerFile
-    def ProfilesLength(self):
+    def ProfilesLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # ProfilerFile
-    def ProfilesIsNone(self):
+    def ProfilesIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
-def ProfilerFileStart(builder):
+def ProfilerFileStart(builder: flatbuffers.Builder):
     builder.StartObject(2)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     ProfilerFileStart(builder)
 
-def ProfilerFileAddFrames(builder, frames):
+def ProfilerFileAddFrames(builder: flatbuffers.Builder, frames: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(frames), 0)
 
-def AddFrames(builder, frames):
+def AddFrames(builder: flatbuffers.Builder, frames: int):
     ProfilerFileAddFrames(builder, frames)
 
-def ProfilerFileStartFramesVector(builder, numElems):
+def ProfilerFileStartFramesVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartFramesVector(builder, numElems):
+def StartFramesVector(builder, numElems: int) -> int:
     return ProfilerFileStartFramesVector(builder, numElems)
 
-def ProfilerFileAddProfiles(builder, profiles):
+def ProfilerFileAddProfiles(builder: flatbuffers.Builder, profiles: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(profiles), 0)
 
-def AddProfiles(builder, profiles):
+def AddProfiles(builder: flatbuffers.Builder, profiles: int):
     ProfilerFileAddProfiles(builder, profiles)
 
-def ProfilerFileStartProfilesVector(builder, numElems):
+def ProfilerFileStartProfilesVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartProfilesVector(builder, numElems):
+def StartProfilesVector(builder, numElems: int) -> int:
     return ProfilerFileStartProfilesVector(builder, numElems)
 
-def ProfilerFileEnd(builder):
+def ProfilerFileEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return ProfilerFileEnd(builder)

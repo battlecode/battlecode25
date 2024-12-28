@@ -55,7 +55,7 @@ public class MapTestSmall {
                 if (usedSquares.contains(nextLoc)) {
                     continue;
                 }
-                mapBuilder.setSymmetricIsland(nextLoc.x, nextLoc.y, i);
+                // mapBuilder.setSymmetricIsland(nextLoc.x, nextLoc.y, i);
                 usedSquares.add(nextLoc);
                 nextLoc.add(Direction.cardinalDirections()[random.nextInt(Direction.cardinalDirections().length)]);
             }
@@ -70,18 +70,18 @@ public class MapTestSmall {
                     if (i+3 >= mapBuilder.width || j+3 >= mapBuilder.height || usedSquares.contains(new MapLocation(i+3, j+3))) {
                         continue;
                     }
-                    mapBuilder.setSymmetricResource(i, j, 1);
-                    mapBuilder.setSymmetricResource(i + 3, j + 3, 2);
+                    // mapBuilder.setSymmetricResource(i, j, 1);
+                    // mapBuilder.setSymmetricResource(i + 3, j + 3, 2);
                     usedSquares.add(loc);
                     usedSquares.add(new MapLocation(i+3, j+3));
                 } else if ((i*7 + j*21 + random.nextInt(51)) % 47 == 0) {
-                    mapBuilder.setSymmetricCloud(i, j, true);
+                    // mapBuilder.setSymmetricCloud(i, j, true);
                     MapLocation nextLoc = new MapLocation(i, j);
                     for (int k = 0; k < 5; k++) {
                         if (usedSquares.contains(nextLoc)) {
                             continue;
                         }
-                        mapBuilder.setSymmetricIsland(nextLoc.x, nextLoc.y, i);
+                        // mapBuilder.setSymmetricIsland(nextLoc.x, nextLoc.y, i);
                         usedSquares.add(nextLoc);
                         nextLoc.add(Direction.cardinalDirections()[random.nextInt(Direction.cardinalDirections().length)]);
                     }

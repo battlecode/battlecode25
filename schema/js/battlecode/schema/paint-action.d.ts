@@ -7,6 +7,7 @@ export declare class PaintAction {
     bb_pos: number;
     __init(i: number, bb: flatbuffers.ByteBuffer): PaintAction;
     loc(): number;
+    isSecondary(): number;
     static sizeOf(): number;
-    static createPaintAction(builder: flatbuffers.Builder, loc: number): flatbuffers.Offset;
+    static createPaintAction(builder: flatbuffers.Builder, loc: number, isSecondary: number): flatbuffers.Offset;
 }

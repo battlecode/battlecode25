@@ -9,7 +9,7 @@
     "test": "true",
     "build-and-distribute": "npm run build && npm run copy-to-engine && cd ../client && npm run fix-schema",
     "copy-to-engine": "rm -R ../engine/src/main/battlecode/schema/ && mkdir ../engine/src/main/battlecode/schema && cp java/battlecode/schema/* ../engine/src/main/battlecode/schema/",
-    "build": "./flatc --ts --ts-no-import-ext -o ts battlecode.fbs && ./flatc --java -o java battlecode.fbs && ./flatc --python -o python battlecode.fbs && tsc"
+    "build": "./flatc --ts --ts-no-import-ext -o ts battlecode.fbs && ./flatc --java -o java battlecode.fbs && ./flatc --python --python-typing --python-import-override ..schema -o python battlecode.fbs && tsc"
   },
   "repository": {
     "type": "git",

@@ -4,13 +4,15 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from typing import Optional
 np = import_numpy()
 
 class TeamData(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = TeamData()
         x.Init(buf, n + offset)
@@ -21,18 +23,18 @@ class TeamData(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # TeamData
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # TeamData
-    def Name(self):
+    def Name(self) -> Optional[str]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
     # TeamData
-    def PackageName(self):
+    def PackageName(self) -> Optional[str]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
@@ -45,32 +47,32 @@ class TeamData(object):
             return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
         return 0
 
-def TeamDataStart(builder):
+def TeamDataStart(builder: flatbuffers.Builder):
     builder.StartObject(3)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     TeamDataStart(builder)
 
-def TeamDataAddName(builder, name):
+def TeamDataAddName(builder: flatbuffers.Builder, name: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
 
-def AddName(builder, name):
+def AddName(builder: flatbuffers.Builder, name: int):
     TeamDataAddName(builder, name)
 
-def TeamDataAddPackageName(builder, packageName):
+def TeamDataAddPackageName(builder: flatbuffers.Builder, packageName: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(packageName), 0)
 
-def AddPackageName(builder, packageName):
+def AddPackageName(builder: flatbuffers.Builder, packageName: int):
     TeamDataAddPackageName(builder, packageName)
 
-def TeamDataAddTeamId(builder, teamId):
+def TeamDataAddTeamId(builder: flatbuffers.Builder, teamId: int):
     builder.PrependInt8Slot(2, teamId, 0)
 
-def AddTeamId(builder, teamId):
+def AddTeamId(builder: flatbuffers.Builder, teamId: int):
     TeamDataAddTeamId(builder, teamId)
 
-def TeamDataEnd(builder):
+def TeamDataEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return TeamDataEnd(builder)
