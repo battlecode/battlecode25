@@ -385,7 +385,7 @@ export class StaticMap {
                 this.ruins.forEach(({ x, y }) => {
                     const coords = renderUtils.getRenderCoords(x, y, this.dimension)
 
-                    const imgPath = `ruins/silver_64x64.png`
+                    const imgPath = `ruins/silver.png`
                     const ruinImage = getImageIfLoaded(imgPath)
                     renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
                 })

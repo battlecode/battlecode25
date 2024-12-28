@@ -545,7 +545,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} DefenseTower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(
@@ -573,7 +573,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} MoneyTower`
             this.robotType = schema.RobotType.MONEY_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(
@@ -601,7 +601,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.robotName = `${team.colorName} PaintTower`
             this.robotType = schema.RobotType.PAINT_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
-            this.size = 2
+            this.size = 1.5
         }
 
         public draw(
