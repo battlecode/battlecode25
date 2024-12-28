@@ -25,37 +25,46 @@ static getSizePrefixedRootAsTimelineMarker(bb:flatbuffers.ByteBuffer, obj?:Timel
   return (obj || new TimelineMarker()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-round():number {
+team():number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : 0;
+}
+
+round():number {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
 colorHex():number {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
+  const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
 label():string|null
 label(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
 label(optionalEncoding?:any):string|Uint8Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
+  const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
 }
 
 static startTimelineMarker(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(4);
+}
+
+static addTeam(builder:flatbuffers.Builder, team:number) {
+  builder.addFieldInt8(0, team, 0);
 }
 
 static addRound(builder:flatbuffers.Builder, round:number) {
-  builder.addFieldInt32(0, round, 0);
+  builder.addFieldInt32(1, round, 0);
 }
 
 static addColorHex(builder:flatbuffers.Builder, colorHex:number) {
-  builder.addFieldInt32(1, colorHex, 0);
+  builder.addFieldInt32(2, colorHex, 0);
 }
 
 static addLabel(builder:flatbuffers.Builder, labelOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, labelOffset, 0);
+  builder.addFieldOffset(3, labelOffset, 0);
 }
 
 static endTimelineMarker(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -63,8 +72,9 @@ static endTimelineMarker(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createTimelineMarker(builder:flatbuffers.Builder, round:number, colorHex:number, labelOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createTimelineMarker(builder:flatbuffers.Builder, team:number, round:number, colorHex:number, labelOffset:flatbuffers.Offset):flatbuffers.Offset {
   TimelineMarker.startTimelineMarker(builder);
+  TimelineMarker.addTeam(builder, team);
   TimelineMarker.addRound(builder, round);
   TimelineMarker.addColorHex(builder, colorHex);
   TimelineMarker.addLabel(builder, labelOffset);

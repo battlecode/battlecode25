@@ -4,36 +4,40 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+import { DieType } from '../../battlecode/schema/die-type';
+
+
 /**
- * Generic action representing damage to a robot
+ * Indicates that a robot died and should be removed
  */
-export class DamageAction {
+export class DieAction {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
-  __init(i:number, bb:flatbuffers.ByteBuffer):DamageAction {
+  __init(i:number, bb:flatbuffers.ByteBuffer):DieAction {
   this.bb_pos = i;
   this.bb = bb;
   return this;
 }
 
 /**
- * Id of the damage target
+ * Id of the robot that died
  */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-damage():number {
-  return this.bb!.readUint16(this.bb_pos + 2);
+dieType():DieType {
+  return this.bb!.readInt8(this.bb_pos + 2);
 }
 
 static sizeOf():number {
   return 4;
 }
 
-static createDamageAction(builder:flatbuffers.Builder, id: number, damage: number):flatbuffers.Offset {
+static createDieAction(builder:flatbuffers.Builder, id: number, dieType: DieType):flatbuffers.Offset {
   builder.prep(2, 4);
-  builder.writeInt16(damage);
+  builder.pad(1);
+  builder.writeInt8(dieType);
   builder.writeInt16(id);
   return builder.offset();
 }

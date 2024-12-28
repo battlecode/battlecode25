@@ -15,6 +15,9 @@ var UpgradeAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
+    /**
+     * Id of the upgraded tower
+     */
     UpgradeAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };

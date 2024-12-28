@@ -13,8 +13,8 @@ class Action(object):
     TransferAction = 7
     MessageAction = 8
     SpawnAction = 9
-    UpgradeAction = 10
-    DieExceptionAction = 11
+    DieAction = 10
+    UpgradeAction = 11
     IndicatorStringAction = 12
     IndicatorDotAction = 13
     IndicatorLineAction = 14

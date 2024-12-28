@@ -7,23 +7,27 @@ from flatbuffers.compat import import_numpy
 from typing import Any
 np = import_numpy()
 
-# Visually indicate an attack
-class AttackAction(object):
+# Indicates that a robot died and should be removed
+class DieAction(object):
     __slots__ = ['_tab']
 
     @classmethod
     def SizeOf(cls) -> int:
-        return 2
+        return 4
 
-    # AttackAction
+    # DieAction
     def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
-    # Id of the attack target
-    # AttackAction
+    # Id of the robot that died
+    # DieAction
     def Id(self): return self._tab.Get(flatbuffers.number_types.Uint16Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(0))
+    # DieAction
+    def DieType(self): return self._tab.Get(flatbuffers.number_types.Int8Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(2))
 
-def CreateAttackAction(builder, id):
-    builder.Prep(2, 2)
+def CreateDieAction(builder, id, dieType):
+    builder.Prep(2, 4)
+    builder.Pad(1)
+    builder.PrependInt8(dieType)
     builder.PrependUint16(id)
     return builder.Offset()

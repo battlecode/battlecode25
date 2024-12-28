@@ -28,46 +28,59 @@ class TimelineMarker(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # TimelineMarker
-    def Round(self):
+    def Team(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
         return 0
 
     # TimelineMarker
-    def ColorHex(self):
+    def Round(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
     # TimelineMarker
-    def Label(self) -> Optional[str]:
+    def ColorHex(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
+    # TimelineMarker
+    def Label(self) -> Optional[str]:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
 def TimelineMarkerStart(builder: flatbuffers.Builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder: flatbuffers.Builder):
     TimelineMarkerStart(builder)
 
+def TimelineMarkerAddTeam(builder: flatbuffers.Builder, team: int):
+    builder.PrependInt8Slot(0, team, 0)
+
+def AddTeam(builder: flatbuffers.Builder, team: int):
+    TimelineMarkerAddTeam(builder, team)
+
 def TimelineMarkerAddRound(builder: flatbuffers.Builder, round: int):
-    builder.PrependInt32Slot(0, round, 0)
+    builder.PrependInt32Slot(1, round, 0)
 
 def AddRound(builder: flatbuffers.Builder, round: int):
     TimelineMarkerAddRound(builder, round)
 
 def TimelineMarkerAddColorHex(builder: flatbuffers.Builder, colorHex: int):
-    builder.PrependInt32Slot(1, colorHex, 0)
+    builder.PrependInt32Slot(2, colorHex, 0)
 
 def AddColorHex(builder: flatbuffers.Builder, colorHex: int):
     TimelineMarkerAddColorHex(builder, colorHex)
 
 def TimelineMarkerAddLabel(builder: flatbuffers.Builder, label: int):
-    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(label), 0)
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(label), 0)
 
 def AddLabel(builder: flatbuffers.Builder, label: int):
     TimelineMarkerAddLabel(builder, label)

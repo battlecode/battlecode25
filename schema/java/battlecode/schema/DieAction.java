@@ -20,22 +20,23 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Generic action representing damage to a robot
+ * Indicates that a robot died and should be removed
  */
 @SuppressWarnings("unused")
-public final class DamageAction extends Struct {
+public final class DieAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public DamageAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public DieAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   /**
-   * Id of the damage target
+   * Id of the robot that died
    */
   public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
-  public int damage() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
+  public byte dieType() { return bb.get(bb_pos + 2); }
 
-  public static int createDamageAction(FlatBufferBuilder builder, int id, int damage) {
+  public static int createDieAction(FlatBufferBuilder builder, int id, byte dieType) {
     builder.prep(2, 4);
-    builder.putShort((short) damage);
+    builder.pad(1);
+    builder.putByte(dieType);
     builder.putShort((short) id);
     return builder.offset();
   }
@@ -43,8 +44,8 @@ public final class DamageAction extends Struct {
   public static final class Vector extends BaseVector {
     public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
 
-    public DamageAction get(int j) { return get(new DamageAction(), j); }
-    public DamageAction get(DamageAction obj, int j) {  return obj.__assign(__element(j), bb); }
+    public DieAction get(int j) { return get(new DieAction(), j); }
+    public DieAction get(DieAction obj, int j) {  return obj.__assign(__element(j), bb); }
   }
 }
 
