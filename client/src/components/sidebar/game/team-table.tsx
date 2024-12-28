@@ -47,49 +47,30 @@ interface ResourceTableProps {
 }
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, teamIdx }) => {
-    /*
-    let flags = 3
-    let carried = 0
-    let crumbs = 0
+    let moneyAmount = 0
+    let paintPercent = 0
+
     if (map && teamStat) {
-        flags = 0
-        for (const flag of map.flagData.values()) {
-            if (flag.team === teamIdx) {
-                flags++
-                if (flag.carrierId) carried++
-            }
-        }
-        crumbs = teamStat.resourceAmount
+        paintPercent = teamStat.paintPercent
+        moneyAmount = teamStat.moneyAmount
     }
+
     return (
         <div className="flex items-center mt-2 mb-1 text-xs font-bold justify-around">
-            <div className="flex items-center w-[145px] ml-5">
-                Crumbs: {crumbs}
+            <div className="flex items-center w-[200px] ml-5">
+                Paint Coverage: <b>{paintPercent}%</b>
                 <div className="w-[30px] h-[30px]">
                     <img style={{ transform: 'scale(1.5)' }} src={imageSource('resources/crumb_1.png')} />
                 </div>
             </div>
-            <div className="flex items-center w">
-                Flags:
-                {[1, 2, 3].map((i) => (
-                    <div className="w-[40px]" key={i}>
-                        <div className="w-[30px] h-[30px] mx-auto">
-                            <img
-                                className={flags >= i ? '' : 'opacity-25'}
-                                src={
-                                    carried < i
-                                        ? imageSource('resources/bread.png')
-                                        : imageSource('resources/bread_outline.png')
-                                }
-                            />
-                        </div>
-                    </div>
-                ))}
+            <div className="flex items-center w-[145px]">
+                Money: <b>{moneyAmount}</b>
+                <div className="w-[30px] h-[30px]">
+                    <img style={{ transform: 'scale(1.5)' }} src={imageSource('resources/crumb_1.png')} />
+                </div>
             </div>
         </div>
     )
-    */
-    return <div>TODO: Resource table</div>
 }
 
 interface UnitsTableProps {

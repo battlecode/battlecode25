@@ -15,6 +15,8 @@ const EMPTY_ROBOT_COUNTS: Record<schema.RobotType, number> = {
 
 export class TeamRoundStat {
     robotCounts: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
+    moneyAmount: number = 0
+    paintPercent: number = 0
 
     copy(): TeamRoundStat {
         const newStat: TeamRoundStat = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
@@ -72,6 +74,8 @@ export default class RoundStat {
 
             // Clear robot counts, will be recomputed later
             teamStat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
+
+            teamStat.moneyAmount = delta.teamResourceAmounts(i) ?? assert.fail('missing resource amount')
 
             /*
             // Compute average datapoint every 10 rounds
