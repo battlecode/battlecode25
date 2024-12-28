@@ -98,27 +98,25 @@ interface UnitsTableProps {
 }
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
-    /*
     const columns: Array<[string, React.ReactElement]> = [
-        ['Base', <UnitsIcon teamIdx={teamIdx} robotType="base" key="0" />],
-        ['Attack', <UnitsIcon teamIdx={teamIdx} robotType="attack" key="1" />],
-        ['Build', <UnitsIcon teamIdx={teamIdx} robotType="build" key="2" />],
-        ['Heal', <UnitsIcon teamIdx={teamIdx} robotType="heal" key="3" />],
-        ['Jailed', <UnitsIcon teamIdx={teamIdx} robotType="jailed" key="4" />]
+        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="0" />],
+        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="1" />],
+        ['Defense Tower', <UnitsIcon teamIdx={teamIdx} robotType="defense_tower" key="2" />],
+        ['Soldier', <UnitsIcon teamIdx={teamIdx} robotType="soldier" key="3" />],
+        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="4" />],
+        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="5" />]
     ]
 
-    let data: [string, number[]][] = [
-        ['Count', [0, 0, 0, 0, 0]],
-        ['Avg. Level', [0, 0, 0, 0, 0]]
-    ]
+    let data: [string, number[]][] = [['Count', [0, 0, 0, 0, 0, 0]]]
     if (teamStat) {
-        const totalCountAlive = Math.max(
-            teamStat?.robots[0] + teamStat?.robots[1] + teamStat?.robots[2] + teamStat?.robots[3],
-            1
-        )
-        const totalCountDead = Math.max(teamStat?.robots[4], 1)
         data = [
-            ['Count', teamStat?.robots],
+            [
+                'Count',
+                Object.values(schema.RobotType)
+                    .filter((k) => typeof k === 'number' && k !== schema.RobotType.NONE)
+                    .map((k) => teamStat.robotCounts[k as schema.RobotType])
+            ]
+            /*
             [
                 'Avg. Level',
                 teamStat.specializationTotalLevels
@@ -126,6 +124,7 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
                     .map((c) => Math.round((c / totalCountAlive) * 100) / 100)
                     .concat([Math.round((teamStat.specializationTotalLevels[4] / totalCountDead) * 100) / 100])
             ]
+            */
         ]
     }
 
@@ -153,7 +152,4 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
             </table>
         </>
     )
-    */
-
-    return <div>TODO: Units table</div>
 }

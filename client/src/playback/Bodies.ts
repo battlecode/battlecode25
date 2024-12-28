@@ -222,6 +222,7 @@ export class Body {
     public dead: boolean = false
     public hp: number = 0
     public paint: number = 0
+    public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
     public bytecodesUsed: number = 0
@@ -231,9 +232,6 @@ export class Body {
         public pos: Vector,
         public readonly team: Team,
         public readonly id: number
-        // paintLevel
-        // upgradeLevel
-        // moneyLevel (for money towers)
     ) {
         this.lastPos = this.pos
         this.prevSquares = [this.pos]
@@ -461,7 +459,7 @@ export class Body {
 
     public onHoverInfo(): string[] {
         const defaultInfo = [
-            (this.dead ? 'JAILED: ' : '') + this.robotName,
+            this.robotName,
             `ID: ${this.id}`,
             `HP: ${this.hp}`,
             `Paint: ${this.paint}`,
@@ -542,7 +540,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} DefenseTower`
+            this.robotName = `${team.colorName} Defense Tower`
             this.robotType = schema.RobotType.DEFENSE_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
             this.size = 1.5
@@ -570,7 +568,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} MoneyTower`
+            this.robotName = `${team.colorName} Money Tower`
             this.robotType = schema.RobotType.MONEY_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
             this.size = 1.5
@@ -598,7 +596,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         constructor(game: Game, pos: Vector, team: Team, id: number) {
             super(game, pos, team, id)
-            this.robotName = `${team.colorName} PaintTower`
+            this.robotName = `${team.colorName} Paint Tower`
             this.robotType = schema.RobotType.PAINT_TOWER
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
             this.size = 1.5

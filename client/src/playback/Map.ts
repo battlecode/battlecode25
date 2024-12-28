@@ -179,21 +179,22 @@ export class CurrentMap {
         if (square.x >= this.width || square.y >= this.height) return []
 
         const schemaIdx = this.locationToIndex(square.x, square.y)
-        //const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
+
         const paint = this.paint[schemaIdx]
-        const walls = this.staticMap.walls[schemaIdx]
+        const wall = this.staticMap.walls[schemaIdx]
+        const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+
         const info: string[] = []
-        /*
-        if (flag) {
-            info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
-        }
-        */
         if (paint) {
             info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
         }
-        if (walls) {
+        if (wall) {
             info.push('Wall')
         }
+        if (ruin) {
+            info.push('Ruin')
+        }
+
         return info
     }
 

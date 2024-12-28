@@ -25,8 +25,8 @@ function getChartData(round: Round, property: string): LineChartDataPoint[] {
     return values[0].slice(0, round.roundNumber).map((value, index) => {
         return {
             round: index + 1,
-            white: value as number,
-            brown: values[1][index] as number
+            white: 0, //value as number,
+            brown: 0 //values[1][index] as number
         }
     })
 }
