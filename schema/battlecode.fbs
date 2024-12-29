@@ -163,7 +163,6 @@ union Action {
 
 // A list of initial bodies to be placed on the map.
 table InitialBodyTable {
-    robotIds: [int];
     spawnActions: [SpawnAction];
 }
 

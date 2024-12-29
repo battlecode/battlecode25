@@ -54,7 +54,9 @@ export default class Bodies {
         }
     }
 
-    spawnBodyFromAction(id: number, spawnAction: schema.SpawnAction): Body {
+    spawnBodyFromAction(spawnAction: schema.SpawnAction): Body {
+        // This assumes ids are never reused
+        const id = spawnAction.id()
         assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
 
         const robotType = spawnAction.robotType()
@@ -176,33 +178,20 @@ export default class Bodies {
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
-        const robotIds = new Int32Array(this.bodies.size)
+        schema.InitialBodyTable.startSpawnActionsVector(builder, this.bodies.size)
 
-        Array.from(this.bodies.values()).forEach((body, i) => {
-            robotIds[i] = body.id
-        })
-
-        const robotIdsVector = schema.InitialBodyTable.createRobotIdsVector(builder, robotIds)
-
-        // Fill out spawn actions
-        schema.InitialBodyTable.startSpawnActionsVector(builder, robotIds.length)
-        for (let i = 0; i < robotIds.length; i++) {
-            const body = this.bodies.get(robotIds[i])!
-            schema.SpawnAction.createSpawnAction(builder, body.pos.x, body.pos.y, body.team.id, body.robotType)
+        for (const body of this.bodies.values()) {
+            schema.SpawnAction.createSpawnAction(builder, body.id, body.pos.x, body.pos.y, body.team.id, body.robotType)
         }
         const spawnActionsVector = builder.endVector()
 
-        return schema.InitialBodyTable.createInitialBodyTable(builder, robotIdsVector, spawnActionsVector)
+        return schema.InitialBodyTable.createInitialBodyTable(builder, spawnActionsVector)
     }
 
     private insertInitialBodies(bodies: schema.InitialBodyTable): void {
-        assert(bodies.robotIdsLength() == bodies.spawnActionsLength(), 'Initial body arrays are not the same length')
-
-        for (let i = 0; i < bodies.robotIdsLength(); i++) {
-            const id = bodies.robotIds(i)!
+        for (let i = 0; i < bodies.spawnActionsLength(); i++) {
             const spawnAction = bodies.spawnActions(i)!
-
-            this.spawnBodyFromAction(id, spawnAction)
+            this.spawnBodyFromAction(spawnAction)
         }
     }
 }

@@ -27,32 +27,21 @@ public final class InitialBodyTable extends Table {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public InitialBodyTable __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int robotIds(int j) { int o = __offset(4); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int robotIdsLength() { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector robotIdsVector() { return robotIdsVector(new IntVector()); }
-  public IntVector robotIdsVector(IntVector obj) { int o = __offset(4); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer robotIdsAsByteBuffer() { return __vector_as_bytebuffer(4, 4); }
-  public ByteBuffer robotIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 4); }
   public battlecode.schema.SpawnAction spawnActions(int j) { return spawnActions(new battlecode.schema.SpawnAction(), j); }
-  public battlecode.schema.SpawnAction spawnActions(battlecode.schema.SpawnAction obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o) + j * 8, bb) : null; }
-  public int spawnActionsLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
+  public battlecode.schema.SpawnAction spawnActions(battlecode.schema.SpawnAction obj, int j) { int o = __offset(4); return o != 0 ? obj.__assign(__vector(o) + j * 8, bb) : null; }
+  public int spawnActionsLength() { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; }
   public battlecode.schema.SpawnAction.Vector spawnActionsVector() { return spawnActionsVector(new battlecode.schema.SpawnAction.Vector()); }
-  public battlecode.schema.SpawnAction.Vector spawnActionsVector(battlecode.schema.SpawnAction.Vector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), 8, bb) : null; }
+  public battlecode.schema.SpawnAction.Vector spawnActionsVector(battlecode.schema.SpawnAction.Vector obj) { int o = __offset(4); return o != 0 ? obj.__assign(__vector(o), 8, bb) : null; }
 
   public static int createInitialBodyTable(FlatBufferBuilder builder,
-      int robotIdsOffset,
       int spawnActionsOffset) {
-    builder.startTable(2);
+    builder.startTable(1);
     InitialBodyTable.addSpawnActions(builder, spawnActionsOffset);
-    InitialBodyTable.addRobotIds(builder, robotIdsOffset);
     return InitialBodyTable.endInitialBodyTable(builder);
   }
 
-  public static void startInitialBodyTable(FlatBufferBuilder builder) { builder.startTable(2); }
-  public static void addRobotIds(FlatBufferBuilder builder, int robotIdsOffset) { builder.addOffset(0, robotIdsOffset, 0); }
-  public static int createRobotIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startRobotIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addSpawnActions(FlatBufferBuilder builder, int spawnActionsOffset) { builder.addOffset(1, spawnActionsOffset, 0); }
+  public static void startInitialBodyTable(FlatBufferBuilder builder) { builder.startTable(1); }
+  public static void addSpawnActions(FlatBufferBuilder builder, int spawnActionsOffset) { builder.addOffset(0, spawnActionsOffset, 0); }
   public static void startSpawnActionsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(8, numElems, 2); }
   public static int endInitialBodyTable(FlatBufferBuilder builder) {
     int o = builder.endTable();

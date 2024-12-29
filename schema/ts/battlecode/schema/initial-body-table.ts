@@ -25,58 +25,22 @@ static getSizePrefixedRootAsInitialBodyTable(bb:flatbuffers.ByteBuffer, obj?:Ini
   return (obj || new InitialBodyTable()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-robotIds(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-robotIdsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-robotIdsArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
 spawnActions(index: number, obj?:SpawnAction):SpawnAction|null {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
+  const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new SpawnAction()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
 }
 
 spawnActionsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
+  const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
 static startInitialBodyTable(builder:flatbuffers.Builder) {
-  builder.startObject(2);
-}
-
-static addRobotIds(builder:flatbuffers.Builder, robotIdsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, robotIdsOffset, 0);
-}
-
-static createRobotIdsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createRobotIdsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createRobotIdsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startRobotIdsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startObject(1);
 }
 
 static addSpawnActions(builder:flatbuffers.Builder, spawnActionsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, spawnActionsOffset, 0);
+  builder.addFieldOffset(0, spawnActionsOffset, 0);
 }
 
 static startSpawnActionsVector(builder:flatbuffers.Builder, numElems:number) {
@@ -88,9 +52,8 @@ static endInitialBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createInitialBodyTable(builder:flatbuffers.Builder, robotIdsOffset:flatbuffers.Offset, spawnActionsOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createInitialBodyTable(builder:flatbuffers.Builder, spawnActionsOffset:flatbuffers.Offset):flatbuffers.Offset {
   InitialBodyTable.startInitialBodyTable(builder);
-  InitialBodyTable.addRobotIds(builder, robotIdsOffset);
   InitialBodyTable.addSpawnActions(builder, spawnActionsOffset);
   return InitialBodyTable.endInitialBodyTable(builder);
 }
