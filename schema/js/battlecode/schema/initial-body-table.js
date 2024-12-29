@@ -36,7 +36,7 @@ var InitialBodyTable = /** @class */ (function () {
     };
     InitialBodyTable.prototype.spawnActions = function (index, obj) {
         var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? (obj || new spawn_action_1.SpawnAction()).__init(this.bb.__vector(this.bb_pos + offset) + index * 6, this.bb) : null;
+        return offset ? (obj || new spawn_action_1.SpawnAction()).__init(this.bb.__vector(this.bb_pos + offset) + index * 8, this.bb) : null;
     };
     InitialBodyTable.prototype.spawnActionsLength = function () {
         var offset = this.bb.__offset(this.bb_pos, 6);
@@ -62,7 +62,7 @@ var InitialBodyTable = /** @class */ (function () {
         builder.addFieldOffset(1, spawnActionsOffset, 0);
     };
     InitialBodyTable.startSpawnActionsVector = function (builder, numElems) {
-        builder.startVector(6, numElems, 2);
+        builder.startVector(8, numElems, 2);
     };
     InitialBodyTable.endInitialBodyTable = function (builder) {
         var offset = builder.endObject();

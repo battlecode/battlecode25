@@ -7,10 +7,14 @@ export declare class SpawnAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;
     __init(i: number, bb: flatbuffers.ByteBuffer): SpawnAction;
+    /**
+     * Id of the bot that spawned
+     */
+    id(): number;
     x(): number;
     y(): number;
     team(): number;
     robotType(): RobotType;
     static sizeOf(): number;
-    static createSpawnAction(builder: flatbuffers.Builder, x: number, y: number, team: number, robotType: RobotType): flatbuffers.Offset;
+    static createSpawnAction(builder: flatbuffers.Builder, id: number, x: number, y: number, team: number, robotType: RobotType): flatbuffers.Offset;
 }

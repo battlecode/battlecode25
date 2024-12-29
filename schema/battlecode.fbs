@@ -105,6 +105,8 @@ struct MessageAction {
 
 /// Indicate that this robot was spawned on this turn
 struct SpawnAction {
+    /// Id of the bot that spawned
+    id: ushort;
     x: ushort;
     y: ushort;
     team: byte;

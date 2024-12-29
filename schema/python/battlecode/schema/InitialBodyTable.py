@@ -59,7 +59,7 @@ class InitialBodyTable(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             x = self._tab.Vector(o)
-            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 6
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 8
             obj = SpawnAction()
             obj.Init(self._tab.Bytes, x)
             return obj
@@ -102,7 +102,7 @@ def AddSpawnActions(builder: flatbuffers.Builder, spawnActions: int):
     InitialBodyTableAddSpawnActions(builder, spawnActions)
 
 def InitialBodyTableStartSpawnActionsVector(builder, numElems: int) -> int:
-    return builder.StartVector(6, numElems, 2)
+    return builder.StartVector(8, numElems, 2)
 
 def StartSpawnActionsVector(builder, numElems: int) -> int:
     return InitialBodyTableStartSpawnActionsVector(builder, numElems)

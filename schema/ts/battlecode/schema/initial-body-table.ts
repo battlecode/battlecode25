@@ -42,7 +42,7 @@ robotIdsArray():Int32Array|null {
 
 spawnActions(index: number, obj?:SpawnAction):SpawnAction|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? (obj || new SpawnAction()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 6, this.bb!) : null;
+  return offset ? (obj || new SpawnAction()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
 }
 
 spawnActionsLength():number {
@@ -80,7 +80,7 @@ static addSpawnActions(builder:flatbuffers.Builder, spawnActionsOffset:flatbuffe
 }
 
 static startSpawnActionsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(6, numElems, 2);
+  builder.startVector(8, numElems, 2);
 }
 
 static endInitialBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {

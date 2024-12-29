@@ -34,10 +34,10 @@ public final class InitialBodyTable extends Table {
   public ByteBuffer robotIdsAsByteBuffer() { return __vector_as_bytebuffer(4, 4); }
   public ByteBuffer robotIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 4); }
   public battlecode.schema.SpawnAction spawnActions(int j) { return spawnActions(new battlecode.schema.SpawnAction(), j); }
-  public battlecode.schema.SpawnAction spawnActions(battlecode.schema.SpawnAction obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o) + j * 6, bb) : null; }
+  public battlecode.schema.SpawnAction spawnActions(battlecode.schema.SpawnAction obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o) + j * 8, bb) : null; }
   public int spawnActionsLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
   public battlecode.schema.SpawnAction.Vector spawnActionsVector() { return spawnActionsVector(new battlecode.schema.SpawnAction.Vector()); }
-  public battlecode.schema.SpawnAction.Vector spawnActionsVector(battlecode.schema.SpawnAction.Vector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), 6, bb) : null; }
+  public battlecode.schema.SpawnAction.Vector spawnActionsVector(battlecode.schema.SpawnAction.Vector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), 8, bb) : null; }
 
   public static int createInitialBodyTable(FlatBufferBuilder builder,
       int robotIdsOffset,
@@ -53,7 +53,7 @@ public final class InitialBodyTable extends Table {
   public static int createRobotIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startRobotIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addSpawnActions(FlatBufferBuilder builder, int spawnActionsOffset) { builder.addOffset(1, spawnActionsOffset, 0); }
-  public static void startSpawnActionsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(6, numElems, 2); }
+  public static void startSpawnActionsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(8, numElems, 2); }
   public static int endInitialBodyTable(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;
