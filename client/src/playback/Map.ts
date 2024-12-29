@@ -185,8 +185,12 @@ export class CurrentMap {
         const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
 
         const info: string[] = []
-        if (paint) {
-            info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
+        for (let i = 0; i < match.game.teams.length; i++) {
+            if (paint === i * 2 + 1) {
+                info.push(`${TEAM_COLOR_NAMES[i]} Paint (Primary)`)
+            } else if (paint === i * 2 + 2) {
+                info.push(`${TEAM_COLOR_NAMES[i]} Paint (Secondary)`)
+            }
         }
         if (wall) {
             info.push('Wall')

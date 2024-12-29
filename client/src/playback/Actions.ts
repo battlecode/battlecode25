@@ -182,7 +182,8 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.actionData.loc()] = round.bodies.getById(this.robotId).team.id
+            const paintVal = (round.bodies.getById(this.robotId).team.id - 1) * 2 + 1 + this.actionData.isSecondary()
+            round.map.paint[this.actionData.loc()] = paintVal
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
@@ -208,7 +209,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             ctx.globalAlpha = 1
         }
     },
-    //!! change
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
