@@ -67,17 +67,17 @@ teamResourceAmountsArray():Int32Array|null {
 /**
  * The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
  */
-teamCoverageAmouns(index: number):number|null {
+teamCoverageAmounts(index: number):number|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
 }
 
-teamCoverageAmounsLength():number {
+teamCoverageAmountsLength():number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-teamCoverageAmounsArray():Int32Array|null {
+teamCoverageAmountsArray():Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
@@ -169,16 +169,16 @@ static startTeamResourceAmountsVector(builder:flatbuffers.Builder, numElems:numb
   builder.startVector(4, numElems, 4);
 }
 
-static addTeamCoverageAmouns(builder:flatbuffers.Builder, teamCoverageAmounsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, teamCoverageAmounsOffset, 0);
+static addTeamCoverageAmounts(builder:flatbuffers.Builder, teamCoverageAmountsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(2, teamCoverageAmountsOffset, 0);
 }
 
-static createTeamCoverageAmounsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
+static createTeamCoverageAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
 /**
  * @deprecated This Uint8Array overload will be removed in the future.
  */
-static createTeamCoverageAmounsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createTeamCoverageAmounsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
+static createTeamCoverageAmountsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createTeamCoverageAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
   builder.startVector(4, data.length, 4);
   for (let i = data.length - 1; i >= 0; i--) {
     builder.addInt32(data[i]!);
@@ -186,7 +186,7 @@ static createTeamCoverageAmounsVector(builder:flatbuffers.Builder, data:number[]
   return builder.endVector();
 }
 
-static startTeamCoverageAmounsVector(builder:flatbuffers.Builder, numElems:number) {
+static startTeamCoverageAmountsVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
@@ -236,11 +236,11 @@ static endRound(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createRound(builder:flatbuffers.Builder, teamIdsOffset:flatbuffers.Offset, teamResourceAmountsOffset:flatbuffers.Offset, teamCoverageAmounsOffset:flatbuffers.Offset, turnsOffset:flatbuffers.Offset, diedIdsOffset:flatbuffers.Offset, roundId:number):flatbuffers.Offset {
+static createRound(builder:flatbuffers.Builder, teamIdsOffset:flatbuffers.Offset, teamResourceAmountsOffset:flatbuffers.Offset, teamCoverageAmountsOffset:flatbuffers.Offset, turnsOffset:flatbuffers.Offset, diedIdsOffset:flatbuffers.Offset, roundId:number):flatbuffers.Offset {
   Round.startRound(builder);
   Round.addTeamIds(builder, teamIdsOffset);
   Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
-  Round.addTeamCoverageAmouns(builder, teamCoverageAmounsOffset);
+  Round.addTeamCoverageAmounts(builder, teamCoverageAmountsOffset);
   Round.addTurns(builder, turnsOffset);
   Round.addDiedIds(builder, diedIdsOffset);
   Round.addRoundId(builder, roundId);

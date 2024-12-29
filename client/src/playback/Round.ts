@@ -48,8 +48,11 @@ export default class Round {
         )
 
         if (this.currentDelta) {
-            this.bodies.processDiedIds(this.currentDelta)
+            this.bodies.processDiedIDs(this.currentDelta)
         }
+
+        this.bodies.prepareForNextRound()
+        this.actions.prepareForNextRound()
 
         this.roundNumber += 1
 
@@ -58,8 +61,6 @@ export default class Round {
             this.stat.applyRoundDelta(this, this.currentDelta)
         }
 
-        this.bodies.prepareForNextRound()
-        this.actions.prepareForNextRound()
         this.initialRoundState = null
         this.turnNumber = 0
         this.currentDelta = delta

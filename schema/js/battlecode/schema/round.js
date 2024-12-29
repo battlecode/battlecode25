@@ -58,15 +58,15 @@ var Round = /** @class */ (function () {
     /**
      * The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
      */
-    Round.prototype.teamCoverageAmouns = function (index) {
+    Round.prototype.teamCoverageAmounts = function (index) {
         var offset = this.bb.__offset(this.bb_pos, 8);
         return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
     };
-    Round.prototype.teamCoverageAmounsLength = function () {
+    Round.prototype.teamCoverageAmountsLength = function () {
         var offset = this.bb.__offset(this.bb_pos, 8);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
-    Round.prototype.teamCoverageAmounsArray = function () {
+    Round.prototype.teamCoverageAmountsArray = function () {
         var offset = this.bb.__offset(this.bb_pos, 8);
         return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
     };
@@ -134,17 +134,17 @@ var Round = /** @class */ (function () {
     Round.startTeamResourceAmountsVector = function (builder, numElems) {
         builder.startVector(4, numElems, 4);
     };
-    Round.addTeamCoverageAmouns = function (builder, teamCoverageAmounsOffset) {
-        builder.addFieldOffset(2, teamCoverageAmounsOffset, 0);
+    Round.addTeamCoverageAmounts = function (builder, teamCoverageAmountsOffset) {
+        builder.addFieldOffset(2, teamCoverageAmountsOffset, 0);
     };
-    Round.createTeamCoverageAmounsVector = function (builder, data) {
+    Round.createTeamCoverageAmountsVector = function (builder, data) {
         builder.startVector(4, data.length, 4);
         for (var i = data.length - 1; i >= 0; i--) {
             builder.addInt32(data[i]);
         }
         return builder.endVector();
     };
-    Round.startTeamCoverageAmounsVector = function (builder, numElems) {
+    Round.startTeamCoverageAmountsVector = function (builder, numElems) {
         builder.startVector(4, numElems, 4);
     };
     Round.addTurns = function (builder, turnsOffset) {
@@ -180,11 +180,11 @@ var Round = /** @class */ (function () {
         var offset = builder.endObject();
         return offset;
     };
-    Round.createRound = function (builder, teamIdsOffset, teamResourceAmountsOffset, teamCoverageAmounsOffset, turnsOffset, diedIdsOffset, roundId) {
+    Round.createRound = function (builder, teamIdsOffset, teamResourceAmountsOffset, teamCoverageAmountsOffset, turnsOffset, diedIdsOffset, roundId) {
         Round.startRound(builder);
         Round.addTeamIds(builder, teamIdsOffset);
         Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
-        Round.addTeamCoverageAmouns(builder, teamCoverageAmounsOffset);
+        Round.addTeamCoverageAmounts(builder, teamCoverageAmountsOffset);
         Round.addTurns(builder, turnsOffset);
         Round.addDiedIds(builder, diedIdsOffset);
         Round.addRoundId(builder, roundId);

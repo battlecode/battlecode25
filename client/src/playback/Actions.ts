@@ -103,12 +103,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
         }
     },
-    [schema.Action.DieExceptionAction]: class DieExceptionAction extends Action<schema.DieExceptionAction> {
-        apply(round: Round): void {
-            // TODO: revist this
-            console.log(`Robot ${this.robotId} has died due to an exception`)
-        }
-    },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
             const target = round.bodies.getById(this.actionData.id())
@@ -271,6 +265,16 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         apply(round: Round): void {
             // This assumes ids are never reused
             round.bodies.spawnBodyFromAction(this.robotId, this.actionData)
+        }
+    },
+    [schema.Action.DieAction]: class DieAction extends Action<schema.DieAction> {
+        apply(round: Round): void {
+            if (this.actionData.dieType() === schema.DieType.EXCEPTION) {
+                // TODO: revisit this
+                console.log(`Robot ${this.robotId} has died due to an exception`)
+            }
+
+            round.bodies.markBodyAsDead(this.actionData.id())
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {

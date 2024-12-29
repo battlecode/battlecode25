@@ -41,25 +41,16 @@ export default class Bodies {
 
             // Remove if dead
             if (body.dead) {
-                this.bodies.delete(body.id)
+                this.bodies.delete(body.id) // safe
             }
         }
     }
 
-    processDiedIds(delta: schema.Round) {
+    processDiedIDs(delta: schema.Round) {
+        // Process unattributed died bodies
         for (let i = 0; i < delta.diedIdsLength(); i++) {
             const diedId = delta.diedIds(i)!
-            const diedBody = this.bodies.get(diedId)
-            if (!diedBody) {
-                console.warn(
-                    `diedIds: Body with id ${diedId} not found in bodies. This will happen because of a resignation, otherwise it is a bug.`
-                )
-                continue
-            }
-
-            diedBody.dead = true
-            // Manually set hp since we don't receive a final delta
-            diedBody.hp = 0
+            this.bodies.delete(diedId)
         }
     }
 
@@ -86,6 +77,13 @@ export default class Bodies {
         body.populateDefaultValues()
 
         return body
+    }
+
+    markBodyAsDead(id: number): void {
+        const body = this.getById(id)
+        body.dead = true
+        // Manually set hp since we don't receive a final delta
+        body.hp = 0
     }
 
     removeBody(id: number): void {

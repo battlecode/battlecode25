@@ -298,7 +298,7 @@ table Round {
     /// The total amount of resource this round per team
     teamResourceAmounts: [int];
     /// The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
-    teamCoverageAmouns: [int];
+    teamCoverageAmounts: [int];
 
     /// Ordered turn data for each robot during the round
     turns: [Turn];

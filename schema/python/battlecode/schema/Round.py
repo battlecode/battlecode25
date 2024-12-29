@@ -86,7 +86,7 @@ class Round(object):
 
     # The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
     # Round
-    def TeamCoverageAmouns(self, j: int):
+    def TeamCoverageAmounts(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             a = self._tab.Vector(o)
@@ -94,21 +94,21 @@ class Round(object):
         return 0
 
     # Round
-    def TeamCoverageAmounsAsNumpy(self):
+    def TeamCoverageAmountsAsNumpy(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
         return 0
 
     # Round
-    def TeamCoverageAmounsLength(self) -> int:
+    def TeamCoverageAmountsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
-    def TeamCoverageAmounsIsNone(self) -> bool:
+    def TeamCoverageAmountsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         return o == 0
 
@@ -205,17 +205,17 @@ def RoundStartTeamResourceAmountsVector(builder, numElems: int) -> int:
 def StartTeamResourceAmountsVector(builder, numElems: int) -> int:
     return RoundStartTeamResourceAmountsVector(builder, numElems)
 
-def RoundAddTeamCoverageAmouns(builder: flatbuffers.Builder, teamCoverageAmouns: int):
-    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(teamCoverageAmouns), 0)
+def RoundAddTeamCoverageAmounts(builder: flatbuffers.Builder, teamCoverageAmounts: int):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(teamCoverageAmounts), 0)
 
-def AddTeamCoverageAmouns(builder: flatbuffers.Builder, teamCoverageAmouns: int):
-    RoundAddTeamCoverageAmouns(builder, teamCoverageAmouns)
+def AddTeamCoverageAmounts(builder: flatbuffers.Builder, teamCoverageAmounts: int):
+    RoundAddTeamCoverageAmounts(builder, teamCoverageAmounts)
 
-def RoundStartTeamCoverageAmounsVector(builder, numElems: int) -> int:
+def RoundStartTeamCoverageAmountsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartTeamCoverageAmounsVector(builder, numElems: int) -> int:
-    return RoundStartTeamCoverageAmounsVector(builder, numElems)
+def StartTeamCoverageAmountsVector(builder, numElems: int) -> int:
+    return RoundStartTeamCoverageAmountsVector(builder, numElems)
 
 def RoundAddTurns(builder: flatbuffers.Builder, turns: int):
     builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(turns), 0)
