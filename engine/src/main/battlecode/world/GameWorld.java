@@ -784,7 +784,7 @@ public strictfp class GameWorld {
         int[] totalTowersAlive = new int[2];
 
         for (UnitType type: UnitType.values()){
-            if (UnitType.isTowerType(type)){
+            if (type.isTowerType()){
                 totalTowersAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalTowersAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
@@ -808,7 +808,7 @@ public strictfp class GameWorld {
         int[] totalRobotsAlive = new int[2];
 
         for (UnitType type: UnitType.values()){
-            if (UnitType.isRobotType(type)){
+            if (type.isRobotType()){
                 totalRobotsAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalRobotsAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
@@ -911,7 +911,7 @@ public strictfp class GameWorld {
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
-        if (UnitType.isTowerType(type)){
+        if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
         }
         robot.addPaint(type.paintCost); //TODO: initial paint amounts
@@ -940,7 +940,7 @@ public strictfp class GameWorld {
         
         if (loc != null)
         {
-            if (UnitType.isTowerType(robot.getType())) {
+            if (robot.getType().isTowerType()) {
                 this.towersByLoc[locationToIndex(loc)] = Team.NEUTRAL;
                 this.towerLocations.remove(loc);
                 this.teamInfo.addTowers(-1, robot.getTeam());

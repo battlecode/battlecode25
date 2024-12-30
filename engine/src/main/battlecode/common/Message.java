@@ -1,6 +1,4 @@
-package battlecode.world;
-
-import battlecode.common.GameConstants;
+package battlecode.common;
 
 public class Message {
     private int senderID;
