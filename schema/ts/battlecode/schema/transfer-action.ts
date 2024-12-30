@@ -5,7 +5,7 @@
 import * as flatbuffers from 'flatbuffers';
 
 /**
- * Visually indicate trasnferring paint from one robot to another
+ * Visually indicate transferring paint from one robot to another
  */
 export class TransferAction {
   bb: flatbuffers.ByteBuffer|null = null;
@@ -16,6 +16,9 @@ export class TransferAction {
   return this;
 }
 
+/**
+ * Id of the transfer target
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

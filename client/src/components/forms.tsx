@@ -5,17 +5,21 @@ interface SelectProps {
     value?: string | number
     onChange: (value: string) => void
     className?: string
+    style?: React.CSSProperties
+    disabled?: boolean
 }
 
 export const Select: React.FC<PropsWithChildren<SelectProps>> = (props) => {
     return (
-        <div className="relative">
+        <div className="relative" style={{ opacity: props.disabled ? 0.6 : 1 }}>
             <select
+                style={props.style}
                 className={
                     props.className +
                     ' appearance-none border border-black py-1 px-1 rounded-md w-full h-full overflow-hidden'
                 }
                 value={props.value}
+                disabled={props.disabled}
                 onChange={(e) => props.onChange(e.target.value)}
             >
                 {props.children}

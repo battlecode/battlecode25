@@ -4,6 +4,9 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from flatbuffers.table import Table
+from typing import Optional
 np = import_numpy()
 
 # Necessary due to flatbuffers requiring unions to be wrapped in tables.
@@ -11,7 +14,7 @@ class EventWrapper(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = EventWrapper()
         x.Init(buf, n + offset)
@@ -22,7 +25,7 @@ class EventWrapper(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # EventWrapper
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # EventWrapper
@@ -33,35 +36,34 @@ class EventWrapper(object):
         return 0
 
     # EventWrapper
-    def E(self):
+    def E(self) -> Optional[flatbuffers.table.Table]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
-            from flatbuffers.table import Table
             obj = Table(bytearray(), 0)
             self._tab.Union(obj, o)
             return obj
         return None
 
-def EventWrapperStart(builder):
+def EventWrapperStart(builder: flatbuffers.Builder):
     builder.StartObject(2)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     EventWrapperStart(builder)
 
-def EventWrapperAddEType(builder, eType):
+def EventWrapperAddEType(builder: flatbuffers.Builder, eType: int):
     builder.PrependUint8Slot(0, eType, 0)
 
-def AddEType(builder, eType):
+def AddEType(builder: flatbuffers.Builder, eType: int):
     EventWrapperAddEType(builder, eType)
 
-def EventWrapperAddE(builder, e):
+def EventWrapperAddE(builder: flatbuffers.Builder, e: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(e), 0)
 
-def AddE(builder, e):
+def AddE(builder: flatbuffers.Builder, e: int):
     EventWrapperAddE(builder, e)
 
-def EventWrapperEnd(builder):
+def EventWrapperEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return EventWrapperEnd(builder)

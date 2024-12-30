@@ -4,6 +4,9 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from ..schema.EventWrapper import EventWrapper
+from typing import Optional
 np = import_numpy()
 
 # If events are not otherwise delimited, this wrapper structure
@@ -16,7 +19,7 @@ class GameWrapper(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = GameWrapper()
         x.Init(buf, n + offset)
@@ -27,38 +30,37 @@ class GameWrapper(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # GameWrapper
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # The series of events comprising the game.
     # GameWrapper
-    def Events(self, j):
+    def Events(self, j: int) -> Optional[EventWrapper]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
             x = self._tab.Indirect(x)
-            from battlecode.schema.EventWrapper import EventWrapper
             obj = EventWrapper()
             obj.Init(self._tab.Bytes, x)
             return obj
         return None
 
     # GameWrapper
-    def EventsLength(self):
+    def EventsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # GameWrapper
-    def EventsIsNone(self):
+    def EventsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         return o == 0
 
     # The indices of the headers of the matches, in order.
     # GameWrapper
-    def MatchHeaders(self, j):
+    def MatchHeaders(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             a = self._tab.Vector(o)
@@ -73,20 +75,20 @@ class GameWrapper(object):
         return 0
 
     # GameWrapper
-    def MatchHeadersLength(self):
+    def MatchHeadersLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # GameWrapper
-    def MatchHeadersIsNone(self):
+    def MatchHeadersIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
     # The indices of the footers of the matches, in order.
     # GameWrapper
-    def MatchFooters(self, j):
+    def MatchFooters(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             a = self._tab.Vector(o)
@@ -101,61 +103,61 @@ class GameWrapper(object):
         return 0
 
     # GameWrapper
-    def MatchFootersLength(self):
+    def MatchFootersLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # GameWrapper
-    def MatchFootersIsNone(self):
+    def MatchFootersIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         return o == 0
 
-def GameWrapperStart(builder):
+def GameWrapperStart(builder: flatbuffers.Builder):
     builder.StartObject(3)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     GameWrapperStart(builder)
 
-def GameWrapperAddEvents(builder, events):
+def GameWrapperAddEvents(builder: flatbuffers.Builder, events: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(events), 0)
 
-def AddEvents(builder, events):
+def AddEvents(builder: flatbuffers.Builder, events: int):
     GameWrapperAddEvents(builder, events)
 
-def GameWrapperStartEventsVector(builder, numElems):
+def GameWrapperStartEventsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartEventsVector(builder, numElems):
+def StartEventsVector(builder, numElems: int) -> int:
     return GameWrapperStartEventsVector(builder, numElems)
 
-def GameWrapperAddMatchHeaders(builder, matchHeaders):
+def GameWrapperAddMatchHeaders(builder: flatbuffers.Builder, matchHeaders: int):
     builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(matchHeaders), 0)
 
-def AddMatchHeaders(builder, matchHeaders):
+def AddMatchHeaders(builder: flatbuffers.Builder, matchHeaders: int):
     GameWrapperAddMatchHeaders(builder, matchHeaders)
 
-def GameWrapperStartMatchHeadersVector(builder, numElems):
+def GameWrapperStartMatchHeadersVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartMatchHeadersVector(builder, numElems):
+def StartMatchHeadersVector(builder, numElems: int) -> int:
     return GameWrapperStartMatchHeadersVector(builder, numElems)
 
-def GameWrapperAddMatchFooters(builder, matchFooters):
+def GameWrapperAddMatchFooters(builder: flatbuffers.Builder, matchFooters: int):
     builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(matchFooters), 0)
 
-def AddMatchFooters(builder, matchFooters):
+def AddMatchFooters(builder: flatbuffers.Builder, matchFooters: int):
     GameWrapperAddMatchFooters(builder, matchFooters)
 
-def GameWrapperStartMatchFootersVector(builder, numElems):
+def GameWrapperStartMatchFootersVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartMatchFootersVector(builder, numElems):
+def StartMatchFootersVector(builder, numElems: int) -> int:
     return GameWrapperStartMatchFootersVector(builder, numElems)
 
-def GameWrapperEnd(builder):
+def GameWrapperEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return GameWrapperEnd(builder)

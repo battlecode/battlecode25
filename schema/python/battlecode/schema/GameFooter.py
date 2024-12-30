@@ -4,6 +4,7 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 # The final event sent in the game.
@@ -11,7 +12,7 @@ class GameFooter(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = GameFooter()
         x.Init(buf, n + offset)
@@ -22,7 +23,7 @@ class GameFooter(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # GameFooter
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # The ID of the winning team of the game.
@@ -33,20 +34,20 @@ class GameFooter(object):
             return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
         return 0
 
-def GameFooterStart(builder):
+def GameFooterStart(builder: flatbuffers.Builder):
     builder.StartObject(1)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     GameFooterStart(builder)
 
-def GameFooterAddWinner(builder, winner):
+def GameFooterAddWinner(builder: flatbuffers.Builder, winner: int):
     builder.PrependInt8Slot(0, winner, 0)
 
-def AddWinner(builder, winner):
+def AddWinner(builder: flatbuffers.Builder, winner: int):
     GameFooterAddWinner(builder, winner)
 
-def GameFooterEnd(builder):
+def GameFooterEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return GameFooterEnd(builder)

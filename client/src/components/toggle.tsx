@@ -15,7 +15,7 @@ interface Props {
 
 export const Toggle: React.FC<Props> = (props: Props) => {
     const [value, setValue] = React.useState(Object.values(props.options)[0].value)
-    const { canvasRightClick } = GameRenderer.useCanvasEvents()
+    const { canvasRightClick } = GameRenderer.useCanvasClickEvents()
 
     const onClick = (val: any) => {
         props.onChange(val)

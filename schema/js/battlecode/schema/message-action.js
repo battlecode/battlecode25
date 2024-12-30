@@ -15,6 +15,9 @@ var MessageAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
+    /**
+     * Id of the message target
+     */
     MessageAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };

@@ -4,13 +4,14 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 class Turn(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Turn()
         x.Init(buf, n + offset)
@@ -21,7 +22,7 @@ class Turn(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # Turn
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # Turn
@@ -81,7 +82,7 @@ class Turn(object):
         return 0
 
     # Turn
-    def ActionsType(self, j):
+    def ActionsType(self, j: int):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         if o != 0:
             a = self._tab.Vector(o)
@@ -96,14 +97,14 @@ class Turn(object):
         return 0
 
     # Turn
-    def ActionsTypeLength(self):
+    def ActionsTypeLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Turn
-    def ActionsTypeIsNone(self):
+    def ActionsTypeIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         return o == 0
 
@@ -121,97 +122,97 @@ class Turn(object):
         return None
 
     # Turn
-    def ActionsLength(self):
+    def ActionsLength(self) -> int:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Turn
-    def ActionsIsNone(self):
+    def ActionsIsNone(self) -> bool:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
         return o == 0
 
-def TurnStart(builder):
+def TurnStart(builder: flatbuffers.Builder):
     builder.StartObject(10)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     TurnStart(builder)
 
-def TurnAddRobotId(builder, robotId):
+def TurnAddRobotId(builder: flatbuffers.Builder, robotId: int):
     builder.PrependInt32Slot(0, robotId, 0)
 
-def AddRobotId(builder, robotId):
+def AddRobotId(builder: flatbuffers.Builder, robotId: int):
     TurnAddRobotId(builder, robotId)
 
-def TurnAddHealth(builder, health):
+def TurnAddHealth(builder: flatbuffers.Builder, health: int):
     builder.PrependInt32Slot(1, health, 0)
 
-def AddHealth(builder, health):
+def AddHealth(builder: flatbuffers.Builder, health: int):
     TurnAddHealth(builder, health)
 
-def TurnAddPaint(builder, paint):
+def TurnAddPaint(builder: flatbuffers.Builder, paint: int):
     builder.PrependInt32Slot(2, paint, 0)
 
-def AddPaint(builder, paint):
+def AddPaint(builder: flatbuffers.Builder, paint: int):
     TurnAddPaint(builder, paint)
 
-def TurnAddMoveCooldown(builder, moveCooldown):
+def TurnAddMoveCooldown(builder: flatbuffers.Builder, moveCooldown: int):
     builder.PrependInt32Slot(3, moveCooldown, 0)
 
-def AddMoveCooldown(builder, moveCooldown):
+def AddMoveCooldown(builder: flatbuffers.Builder, moveCooldown: int):
     TurnAddMoveCooldown(builder, moveCooldown)
 
-def TurnAddActionCooldown(builder, actionCooldown):
+def TurnAddActionCooldown(builder: flatbuffers.Builder, actionCooldown: int):
     builder.PrependInt32Slot(4, actionCooldown, 0)
 
-def AddActionCooldown(builder, actionCooldown):
+def AddActionCooldown(builder: flatbuffers.Builder, actionCooldown: int):
     TurnAddActionCooldown(builder, actionCooldown)
 
-def TurnAddBytecodesUsed(builder, bytecodesUsed):
+def TurnAddBytecodesUsed(builder: flatbuffers.Builder, bytecodesUsed: int):
     builder.PrependInt32Slot(5, bytecodesUsed, 0)
 
-def AddBytecodesUsed(builder, bytecodesUsed):
+def AddBytecodesUsed(builder: flatbuffers.Builder, bytecodesUsed: int):
     TurnAddBytecodesUsed(builder, bytecodesUsed)
 
-def TurnAddX(builder, x):
+def TurnAddX(builder: flatbuffers.Builder, x: int):
     builder.PrependUint8Slot(6, x, 0)
 
-def AddX(builder, x):
+def AddX(builder: flatbuffers.Builder, x: int):
     TurnAddX(builder, x)
 
-def TurnAddY(builder, y):
+def TurnAddY(builder: flatbuffers.Builder, y: int):
     builder.PrependUint8Slot(7, y, 0)
 
-def AddY(builder, y):
+def AddY(builder: flatbuffers.Builder, y: int):
     TurnAddY(builder, y)
 
-def TurnAddActionsType(builder, actionsType):
+def TurnAddActionsType(builder: flatbuffers.Builder, actionsType: int):
     builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(actionsType), 0)
 
-def AddActionsType(builder, actionsType):
+def AddActionsType(builder: flatbuffers.Builder, actionsType: int):
     TurnAddActionsType(builder, actionsType)
 
-def TurnStartActionsTypeVector(builder, numElems):
+def TurnStartActionsTypeVector(builder, numElems: int) -> int:
     return builder.StartVector(1, numElems, 1)
 
-def StartActionsTypeVector(builder, numElems):
+def StartActionsTypeVector(builder, numElems: int) -> int:
     return TurnStartActionsTypeVector(builder, numElems)
 
-def TurnAddActions(builder, actions):
+def TurnAddActions(builder: flatbuffers.Builder, actions: int):
     builder.PrependUOffsetTRelativeSlot(9, flatbuffers.number_types.UOffsetTFlags.py_type(actions), 0)
 
-def AddActions(builder, actions):
+def AddActions(builder: flatbuffers.Builder, actions: int):
     TurnAddActions(builder, actions)
 
-def TurnStartActionsVector(builder, numElems):
+def TurnStartActionsVector(builder, numElems: int) -> int:
     return builder.StartVector(4, numElems, 4)
 
-def StartActionsVector(builder, numElems):
+def StartActionsVector(builder, numElems: int) -> int:
     return TurnStartActionsVector(builder, numElems)
 
-def TurnEnd(builder):
+def TurnEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return TurnEnd(builder)

@@ -4,6 +4,7 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 # These tables are set-up so that they match closely with speedscope's file format documented at
@@ -15,7 +16,7 @@ class ProfilerEvent(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = ProfilerEvent()
         x.Init(buf, n + offset)
@@ -26,7 +27,7 @@ class ProfilerEvent(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # ProfilerEvent
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # Whether this is an open event (true) or a close event (false).
@@ -53,32 +54,32 @@ class ProfilerEvent(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
-def ProfilerEventStart(builder):
+def ProfilerEventStart(builder: flatbuffers.Builder):
     builder.StartObject(3)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     ProfilerEventStart(builder)
 
-def ProfilerEventAddIsOpen(builder, isOpen):
+def ProfilerEventAddIsOpen(builder: flatbuffers.Builder, isOpen: bool):
     builder.PrependBoolSlot(0, isOpen, 0)
 
-def AddIsOpen(builder, isOpen):
+def AddIsOpen(builder: flatbuffers.Builder, isOpen: bool):
     ProfilerEventAddIsOpen(builder, isOpen)
 
-def ProfilerEventAddAt(builder, at):
+def ProfilerEventAddAt(builder: flatbuffers.Builder, at: int):
     builder.PrependInt32Slot(1, at, 0)
 
-def AddAt(builder, at):
+def AddAt(builder: flatbuffers.Builder, at: int):
     ProfilerEventAddAt(builder, at)
 
-def ProfilerEventAddFrame(builder, frame):
+def ProfilerEventAddFrame(builder: flatbuffers.Builder, frame: int):
     builder.PrependInt32Slot(2, frame, 0)
 
-def AddFrame(builder, frame):
+def AddFrame(builder: flatbuffers.Builder, frame: int):
     ProfilerEventAddFrame(builder, frame)
 
-def ProfilerEventEnd(builder):
+def ProfilerEventEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return ProfilerEventEnd(builder)

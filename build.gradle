@@ -157,13 +157,11 @@ task release_sources(type: Jar, dependsOn: classes) {
   from project(":engine").sourceSets.main.allSource
 }
 
-def clientDirPrefix = 'client/artifacts/client-'
-
 publishing {
   publications {
     server(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode24'
+      artifactId project.findProperty('artifact_id') ?: 'NONSENSE'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact release_main
@@ -171,56 +169,12 @@ publishing {
       artifact release_sources
     }
 
-    // Tauri
-
-    clientWinTauri(MavenPublication) {
+    client(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode24-client-win-tauri'
+      artifactId project.findProperty('artifact_id') ?: 'NONSENSE'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
-      artifact (clientDirPrefix + 'windows/tauri-output.zip')
-    }
-
-    clientMacTauri(MavenPublication) {
-      groupId 'org.battlecode'
-      artifactId 'battlecode24-client-mac-tauri'
-      version project.findProperty('release_version') ?: 'NONSENSE'
-
-      artifact (clientDirPrefix + 'macos/tauri-output.zip')
-    }
-
-    clientLinuxTauri(MavenPublication) {
-      groupId 'org.battlecode'
-      artifactId 'battlecode24-client-linux-tauri'
-      version project.findProperty('release_version') ?: 'NONSENSE'
-
-      artifact (clientDirPrefix + 'linux/tauri-output.zip')
-    }
-
-    // Electron
-
-    clientWinElectron(MavenPublication) {
-      groupId 'org.battlecode'
-      artifactId 'battlecode24-client-win-electron'
-      version project.findProperty('release_version') ?: 'NONSENSE'
-
-      artifact (clientDirPrefix + 'windows/electron-output.zip')
-    }
-
-    clientMacElectron(MavenPublication) {
-      groupId 'org.battlecode'
-      artifactId 'battlecode24-client-mac-electron'
-      version project.findProperty('release_version') ?: 'NONSENSE'
-
-      artifact (clientDirPrefix + 'macos/electron-output.zip')
-    }
-
-    clientLinuxElectron(MavenPublication) {
-      groupId 'org.battlecode'
-      artifactId 'battlecode24-client-linux-electron'
-      version project.findProperty('release_version') ?: 'NONSENSE'
-
-      artifact (clientDirPrefix + 'linux/electron-output.zip')
+      artifact project.findProperty('artifact_path') ?: 'NONSENSE'
     }
   }
 }

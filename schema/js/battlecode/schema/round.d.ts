@@ -22,12 +22,18 @@ export declare class Round {
     teamResourceAmountsLength(): number;
     teamResourceAmountsArray(): Int32Array | null;
     /**
+     * The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+     */
+    teamCoverageAmounts(index: number): number | null;
+    teamCoverageAmountsLength(): number;
+    teamCoverageAmountsArray(): Int32Array | null;
+    /**
      * Ordered turn data for each robot during the round
      */
     turns(index: number, obj?: Turn): Turn | null;
     turnsLength(): number;
     /**
-     * The IDs of bodies that died.
+     * The IDs of bodies that died at the end of the round, with no attributable cause.
      */
     diedIds(index: number): number | null;
     diedIdsLength(): number;
@@ -53,6 +59,13 @@ export declare class Round {
      */
     static createTeamResourceAmountsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
     static startTeamResourceAmountsVector(builder: flatbuffers.Builder, numElems: number): void;
+    static addTeamCoverageAmounts(builder: flatbuffers.Builder, teamCoverageAmountsOffset: flatbuffers.Offset): void;
+    static createTeamCoverageAmountsVector(builder: flatbuffers.Builder, data: number[] | Int32Array): flatbuffers.Offset;
+    /**
+     * @deprecated This Uint8Array overload will be removed in the future.
+     */
+    static createTeamCoverageAmountsVector(builder: flatbuffers.Builder, data: number[] | Uint8Array): flatbuffers.Offset;
+    static startTeamCoverageAmountsVector(builder: flatbuffers.Builder, numElems: number): void;
     static addTurns(builder: flatbuffers.Builder, turnsOffset: flatbuffers.Offset): void;
     static createTurnsVector(builder: flatbuffers.Builder, data: flatbuffers.Offset[]): flatbuffers.Offset;
     static startTurnsVector(builder: flatbuffers.Builder, numElems: number): void;
@@ -65,5 +78,5 @@ export declare class Round {
     static startDiedIdsVector(builder: flatbuffers.Builder, numElems: number): void;
     static addRoundId(builder: flatbuffers.Builder, roundId: number): void;
     static endRound(builder: flatbuffers.Builder): flatbuffers.Offset;
-    static createRound(builder: flatbuffers.Builder, teamIdsOffset: flatbuffers.Offset, teamResourceAmountsOffset: flatbuffers.Offset, turnsOffset: flatbuffers.Offset, diedIdsOffset: flatbuffers.Offset, roundId: number): flatbuffers.Offset;
+    static createRound(builder: flatbuffers.Builder, teamIdsOffset: flatbuffers.Offset, teamResourceAmountsOffset: flatbuffers.Offset, teamCoverageAmountsOffset: flatbuffers.Offset, turnsOffset: flatbuffers.Offset, diedIdsOffset: flatbuffers.Offset, roundId: number): flatbuffers.Offset;
 }

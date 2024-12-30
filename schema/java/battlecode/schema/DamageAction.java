@@ -27,6 +27,9 @@ public final class DamageAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public DamageAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  /**
+   * Id of the damage target
+   */
   public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
   public int damage() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
 

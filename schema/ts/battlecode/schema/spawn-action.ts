@@ -19,32 +19,40 @@ export class SpawnAction {
   return this;
 }
 
-x():number {
+/**
+ * Id of the bot that spawned
+ */
+id():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-y():number {
+x():number {
   return this.bb!.readUint16(this.bb_pos + 2);
 }
 
+y():number {
+  return this.bb!.readUint16(this.bb_pos + 4);
+}
+
 team():number {
-  return this.bb!.readInt8(this.bb_pos + 4);
+  return this.bb!.readInt8(this.bb_pos + 6);
 }
 
 robotType():RobotType {
-  return this.bb!.readInt8(this.bb_pos + 5);
+  return this.bb!.readInt8(this.bb_pos + 7);
 }
 
 static sizeOf():number {
-  return 6;
+  return 8;
 }
 
-static createSpawnAction(builder:flatbuffers.Builder, x: number, y: number, team: number, robotType: RobotType):flatbuffers.Offset {
-  builder.prep(2, 6);
+static createSpawnAction(builder:flatbuffers.Builder, id: number, x: number, y: number, team: number, robotType: RobotType):flatbuffers.Offset {
+  builder.prep(2, 8);
   builder.writeInt8(robotType);
   builder.writeInt8(team);
   builder.writeInt16(y);
   builder.writeInt16(x);
+  builder.writeInt16(id);
   return builder.offset();
 }
 

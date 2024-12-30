@@ -15,27 +15,34 @@ var SpawnAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
-    SpawnAction.prototype.x = function () {
+    /**
+     * Id of the bot that spawned
+     */
+    SpawnAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };
-    SpawnAction.prototype.y = function () {
+    SpawnAction.prototype.x = function () {
         return this.bb.readUint16(this.bb_pos + 2);
     };
+    SpawnAction.prototype.y = function () {
+        return this.bb.readUint16(this.bb_pos + 4);
+    };
     SpawnAction.prototype.team = function () {
-        return this.bb.readInt8(this.bb_pos + 4);
+        return this.bb.readInt8(this.bb_pos + 6);
     };
     SpawnAction.prototype.robotType = function () {
-        return this.bb.readInt8(this.bb_pos + 5);
+        return this.bb.readInt8(this.bb_pos + 7);
     };
     SpawnAction.sizeOf = function () {
-        return 6;
+        return 8;
     };
-    SpawnAction.createSpawnAction = function (builder, x, y, team, robotType) {
-        builder.prep(2, 6);
+    SpawnAction.createSpawnAction = function (builder, id, x, y, team, robotType) {
+        builder.prep(2, 8);
         builder.writeInt8(robotType);
         builder.writeInt8(team);
         builder.writeInt16(y);
         builder.writeInt16(x);
+        builder.writeInt16(id);
         return builder.offset();
     };
     return SpawnAction;
