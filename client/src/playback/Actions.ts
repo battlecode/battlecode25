@@ -36,7 +36,7 @@ export default class Actions {
         }
     }
 
-    prepareForNextRound(): void {
+    tickLifetimes(): void {
         // Tick lifetimes of applied actions
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--

@@ -31,26 +31,20 @@ export default class Bodies {
         }
     }
 
-    prepareForNextRound() {
-        for (const body of this.bodies.values()) {
-            // Clear existing indicators
-            body.indicatorDots = []
-            body.indicatorLines = []
-            body.indicatorString = ''
-            body.lastPos = body.pos
+    processDied(delta: schema.Round | null) {
+        // Process unattributed died bodies
+        if (delta) {
+            for (let i = 0; i < delta.diedIdsLength(); i++) {
+                const diedId = delta.diedIds(i)!
+                this.bodies.delete(diedId)
+            }
+        }
 
-            // Remove if dead
+        // Remove if marked dead
+        for (const body of this.bodies.values()) {
             if (body.dead) {
                 this.bodies.delete(body.id) // safe
             }
-        }
-    }
-
-    processDiedIDs(delta: schema.Round) {
-        // Process unattributed died bodies
-        for (let i = 0; i < delta.diedIdsLength(); i++) {
-            const diedId = delta.diedIds(i)!
-            this.bodies.delete(diedId)
         }
     }
 
@@ -93,6 +87,18 @@ export default class Bodies {
     }
 
     /**
+     * Clears all indicator objects from the given robot. If the id does not exist
+     * (i.e. it has not yet been spawned), does nothing
+     */
+    clearIndicators(id: number) {
+        if (!this.bodies.has(id)) return
+        const body = this.getById(id)
+        body.indicatorDots = []
+        body.indicatorLines = []
+        body.indicatorString = ''
+    }
+
+    /**
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
@@ -100,6 +106,7 @@ export default class Bodies {
         const body = this.getById(turn.robotId())
 
         // Update properties
+        body.lastPos = body.pos
         body.pos = { x: turn.x(), y: turn.y() }
         body.hp = turn.health()
         body.paint = turn.paint()
