@@ -420,6 +420,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!this.gameWorld.isPassable(loc))
             throw new GameActionException(CANT_MOVE_THERE,
                     "Cannot move to an impassable location; " + loc + " is impassable.");
+        if (this.getType().isTowerType())
+            throw new GameActionException(CANT_DO_THAT, "Towers cannot move!");
     }
 
     @Override
