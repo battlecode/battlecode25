@@ -110,9 +110,6 @@ public class GameConstants {
     /** The paint cost of marking a resource or tower pattern */
     public static final int MARK_PATTERN_PAINT_COST = 25;
 
-    /** The end of the setup rounds in the game */
-    public static final int SETUP_ROUNDS = 200;
-
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;
 
