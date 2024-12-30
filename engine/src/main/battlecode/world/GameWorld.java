@@ -531,9 +531,6 @@ public strictfp class GameWorld {
     }
 
     public boolean isPassable(MapLocation loc) {
-        if (currentRound <= GameConstants.SETUP_ROUNDS){
-            return !this.walls[locationToIndex(loc)];
-        }
         return !this.walls[locationToIndex(loc)];
     }
 
@@ -915,6 +912,7 @@ public strictfp class GameWorld {
         if (UnitType.isTowerType(type)){
             this.teamInfo.addTowers(1, team);
         }
+        robot.addPaint(type.paintCost); //TODO: initial paint amounts
         return ID;
     }
 
