@@ -875,8 +875,10 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B));
+        int teamACoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.A) * 10.0 / this.areaWithoutWalls);
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A), teamACoverage);
+        int teamBCoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.B) * 10.0 / this.areaWithoutWalls);
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B), teamBCoverage);
         this.teamInfo.processEndOfRound();
 
         this.getMatchMaker().endRound();
@@ -926,9 +928,13 @@ public strictfp class GameWorld {
     // *********************************
 
     /**
-     * Permanently destroy a robot; left for internal purposes.
+     * Permanently destroy a robot
      */
     public void destroyRobot(int id) {
+        destroyRobot(id, false);
+    }
+
+    public void destroyRobot(int id, boolean fromException){
         InternalRobot robot = objectInfo.getRobotByID(id);
         MapLocation loc = robot.getLocation();
         
@@ -946,6 +952,7 @@ public strictfp class GameWorld {
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
         matchMaker.addDied(id);
+        matchMaker.addDieAction(id, fromException);
     }
 
     // *********************************

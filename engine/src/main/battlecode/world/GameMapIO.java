@@ -324,9 +324,8 @@ public final strictfp class GameMapIO {
             int patternArrayInt = battlecode.schema.GameMap.createPaintPatternsVector(builder, ArrayUtils.toPrimitive(patternArrayList.toArray(new Integer[patternArrayList.size()])));
             int ruinLocations = FlatHelpers.createVecTable(builder, ruinXsList, ruinYsList);
 
-            int robotIdOffsets = InitialBodyTable.createRobotIdsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
-            int spawnActionVectorOffset = createSpawnActionsVector2(builder, bodyLocsXs, bodyLocsYs, bodyTeamIDs, bodyTypes);
-            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, robotIdOffsets, spawnActionVectorOffset);
+            int spawnActionVectorOffset = createSpawnActionsVector(builder, bodyIDs, bodyLocsXs, bodyLocsYs, bodyTeamIDs, bodyTypes);
+            int initialBodyOffset = InitialBodyTable.createInitialBodyTable(builder, spawnActionVectorOffset);
 
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
@@ -349,9 +348,9 @@ public final strictfp class GameMapIO {
         // ****************************
 
         private static void initInitialBodiesFromSchemaBodyTable(InitialBodyTable bodyTable, ArrayList<RobotInfo> initialBodies, boolean teamsReversed) {
-            for (int i = 0; i < bodyTable.robotIdsLength(); i++){
-                int curId = bodyTable.robotIds(i);
+            for (int i = 0; i < bodyTable.spawnActionsLength(); i++){
                 battlecode.schema.SpawnAction curSpawnAction = bodyTable.spawnActions(i);
+                int curId = curSpawnAction.id();
                 UnitType bodyType = FlatHelpers.getUnitTypeFromRobotType(curSpawnAction.robotType());
                 int bodyX = curSpawnAction.x();
                 int bodyY = curSpawnAction.y();
@@ -364,13 +363,22 @@ public final strictfp class GameMapIO {
             }
         }
 
-        private static int createSpawnActionsVector2(FlatBufferBuilder builder, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
-            ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
-            for (int i = 0; i < xs.size(); i++){
-                bb.putShort((short)(int)xs.get(i));
-                bb.putShort((short)(int)ys.get(i));
-                bb.put(teams.get(i));
-                bb.put(types.get(i));
+        // private static int createSpawnActionsVector(FlatBufferBuilder builder, ArrayList<Integer> ids, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
+        //     ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
+        //     for (int i = 0; i < xs.size(); i++){
+        //         bb.putInt(ids.get(i));
+        //         bb.putShort((short)(int)xs.get(i));
+        //         bb.putShort((short)(int)ys.get(i));
+        //         bb.put(teams.get(i));
+        //         bb.put(types.get(i));
+        //     }
+        //     return builder.endVector();
+        // }
+
+        private static int createSpawnActionsVector(FlatBufferBuilder builder, ArrayList<Integer> ids, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
+            InitialBodyTable.startSpawnActionsVector(builder, ids.size());
+            for (int i = 0; i < ids.size(); i++){
+                SpawnAction.createSpawnAction(builder, ids.get(i), xs.get(i), ys.get(i), teams.get(i), types.get(i));
             }
             return builder.endVector();
         }

@@ -570,7 +570,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
         if (!this.hasSentSpawnAction){
-            this.gameWorld.getMatchMaker().addSpawnAction(this.location, this.team, this.type);
+            this.gameWorld.getMatchMaker().addSpawnAction(this.ID, this.location, this.team, this.type);
             this.hasSentSpawnAction = true;
         }
     }
@@ -621,8 +621,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        this.gameWorld.getMatchMaker().addDieExceptionAction();
-        this.gameWorld.destroyRobot(getID());
+        this.gameWorld.destroyRobot(getID(), true);
     }
 
     // *****************************************
