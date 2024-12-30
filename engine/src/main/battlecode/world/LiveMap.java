@@ -19,7 +19,7 @@ import javax.management.RuntimeErrorException;
  * It is named LiveMap to distinguish it from a battlecode.schema.GameMap,
  * which represents a serialized LiveMap.
  */
-public strictfp class LiveMap {
+public class LiveMap {
     
     /**
      * The width and height of the map.

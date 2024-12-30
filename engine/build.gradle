@@ -1,6 +1,8 @@
 apply plugin: 'java'
 
-sourceCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+}
 
 sourceSets {
   main {
@@ -38,8 +40,8 @@ dependencies {
     [group: 'commons-cli', name: 'commons-cli', version: '1.5.0'],
     [group: 'commons-io', name: 'commons-io', version: '2.11.0'],
 
-    [group: 'org.ow2.asm', name: 'asm', version: '5.0.4'],
-    [group: 'org.ow2.asm', name: 'asm-tree', version: '5.0.4'],
+    [group: 'org.ow2.asm', name: 'asm', version: '9.7.1'],
+    [group: 'org.ow2.asm', name: 'asm-tree', version: '9.7.1'],
 
     // Flatbuffers
     [group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '23.5.26'],
@@ -53,9 +55,6 @@ dependencies {
     // Java Spatial Index, RTree indexing
     [group: 'net.sf.jsi', name: 'jsi', version: '1.1.0-SNAPSHOT'],
     [group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'],
-
-    // Javadoc manipulation libraries
-    files("$System.env.JAVA_HOME" + '/lib/tools.jar')
   )
 
   testImplementation(
@@ -73,9 +72,9 @@ jar {
 
 javadoc {
   includes = ["**/common/**"]
-  options.windowTitle = "Battlecode 2022"
+  options.windowTitle = "Battlecode 2025"
   options.classpath = sourceSets.main.compileClasspath as List
-  options.doclet = "com.sun.tools.doclets.standard.Standard"
+  options.doclet = "jdk.javadoc.doclet.StandardDoclet"
   options.taglets = ["battlecode.doc.CostlyMethodTaglet"]
   options.tagletPath = ( sourceSets.main.output.classesDirs as List )+ sourceSets.main.compileClasspath
 }
