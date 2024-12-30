@@ -5,6 +5,7 @@ import java.nio.file.*
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 if(JavaVersion.current() < JavaVersion.VERSION_21) {
