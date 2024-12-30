@@ -425,6 +425,16 @@ public class InstrumentingMethodVisitor extends MethodNode implements Opcodes {
             return;
         }
 
+        if (n.owner.equals("java/util/stream/Stream") && n.name.equals("toList") && n.getOpcode() != INVOKESTATIC) {
+            bytecodeCtr++;
+            endOfBasicBlock(n);
+            n.owner = "battlecode/instrumenter/inject/StreamMethods";
+            n.desc = "(Ljava/lang/Object;)Ljava/util/List;";
+            n.itf = false;
+            n.setOpcode(INVOKESTATIC);
+            return;
+        }
+
         if (n.name.equals("toString") && n.desc.equals("()Ljava/lang/String;") && n.getOpcode() != INVOKESTATIC) {
             bytecodeCtr++;
             endOfBasicBlock(n);

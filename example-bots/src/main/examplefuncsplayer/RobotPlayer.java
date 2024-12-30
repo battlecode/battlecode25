@@ -13,7 +13,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Stream;
-import jdk.internal.access.SharedSecrets;
 
 
 /**
@@ -82,7 +81,8 @@ public class RobotPlayer {
                 // this into a different control structure!
 
                 // Check that various Java features haven't broken
-                boolean canAttack = UnitType.isTowerType(UnitType.SOLDIER);
+                UnitType enumValue = UnitType.SOLDIER;
+                boolean canAttack = enumValue.isTowerType();
                 Map<UnitType, Integer> enumMap = new EnumMap<>(UnitType.class);
                 enumMap.put(UnitType.SOLDIER, 42);
                 Map<Integer, Integer> hashMap = new HashMap<>();
