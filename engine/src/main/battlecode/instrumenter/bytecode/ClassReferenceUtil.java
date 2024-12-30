@@ -112,9 +112,10 @@ public class ClassReferenceUtil {
         if (className.startsWith("java/util/invoke") || // Don't override JVM internals
                 className.startsWith("java/util/jar") ||
                 className.startsWith("java/util/zip") ||
-                className.startsWith("jdk/internal") ||
                 className.equals("java/util/Iterator") ||
-                className.equals("java/util/concurrent/TimeUnit"))
+                className.equals("java/util/concurrent/TimeUnit") ||
+                // Only instrument part of the jdk internals
+                (className.startsWith("jdk/internal") && !className.contains("util")))
             return false;
 
         if (className.startsWith("java/util/") ||

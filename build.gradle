@@ -63,6 +63,8 @@ task headless(type: JavaExec, dependsOn: [':engine:build', ':example-bots:build'
   args = ['-c=-']
   jvmArgs = [
     '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.math=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.util=ALL-UNNAMED',
     '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED',
     '--add-opens=java.base/sun.security.action=ALL-UNNAMED',
     '-Dbc.server.wait-for-client=' + (project.findProperty('waitForClient') ?: 'false'),
