@@ -271,7 +271,7 @@ export class StaticMap {
         if (walls.some((x) => x !== 0 && x !== 1)) {
             throw new Error('Invalid walls value')
         }
-        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) {
+        if (initialPaint.some((x) => x < 0 || x > 4)) {
             throw new Error('Invalid paint value')
         }
     }
