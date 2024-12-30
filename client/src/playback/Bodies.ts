@@ -42,6 +42,9 @@ export default class Bodies {
 
         // Remove if marked dead
         for (const body of this.bodies.values()) {
+            // We need to update position here so that interp works correctly
+            body.lastPos = body.pos
+
             if (body.dead) {
                 this.bodies.delete(body.id) // safe
             }
@@ -106,7 +109,6 @@ export default class Bodies {
         const body = this.getById(turn.robotId())
 
         // Update properties
-        body.lastPos = body.pos
         body.pos = { x: turn.x(), y: turn.y() }
         body.hp = turn.health()
         body.paint = turn.paint()
