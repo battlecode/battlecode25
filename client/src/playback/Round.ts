@@ -47,9 +47,8 @@ export default class Round {
             `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
         )
 
-        if (this.currentDelta) {
-            this.bodies.processDiedIds(this.currentDelta)
-        }
+        this.bodies.processDied(this.currentDelta)
+        this.actions.tickLifetimes()
 
         this.roundNumber += 1
 
@@ -58,8 +57,6 @@ export default class Round {
             this.stat.applyRoundDelta(this, this.currentDelta)
         }
 
-        this.bodies.prepareForNextRound()
-        this.actions.prepareForNextRound()
         this.initialRoundState = null
         this.turnNumber = 0
         this.currentDelta = delta
@@ -95,6 +92,8 @@ export default class Round {
             assert(this.turnNumber === 0, 'Initial round state should only be set at turn 0')
             this.initialRoundState = this.copy()
         }
+
+        this.bodies.clearIndicators(turn.robotId())
 
         this.map.applyTurnDelta(turn)
         this.actions.applyTurnDelta(this, turn)

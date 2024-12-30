@@ -31,39 +31,26 @@ export default class Bodies {
         }
     }
 
-    prepareForNextRound() {
+    processDied(delta: schema.Round | null) {
+        // Process unattributed died bodies
+        if (delta) {
+            for (let i = 0; i < delta.diedIdsLength(); i++) {
+                const diedId = delta.diedIds(i)!
+                this.bodies.delete(diedId)
+            }
+        }
+
+        // Remove if marked dead
         for (const body of this.bodies.values()) {
-            // Clear existing indicators
-            body.indicatorDots = []
-            body.indicatorLines = []
-            body.indicatorString = ''
-            body.lastPos = body.pos
-
-            // Remove if dead
             if (body.dead) {
-                this.bodies.delete(body.id)
+                this.bodies.delete(body.id) // safe
             }
         }
     }
 
-    processDiedIds(delta: schema.Round) {
-        for (let i = 0; i < delta.diedIdsLength(); i++) {
-            const diedId = delta.diedIds(i)!
-            const diedBody = this.bodies.get(diedId)
-            if (!diedBody) {
-                console.warn(
-                    `diedIds: Body with id ${diedId} not found in bodies. This will happen because of a resignation, otherwise it is a bug.`
-                )
-                continue
-            }
-
-            diedBody.dead = true
-            // Manually set hp since we don't receive a final delta
-            diedBody.hp = 0
-        }
-    }
-
-    spawnBodyFromAction(id: number, spawnAction: schema.SpawnAction): Body {
+    spawnBodyFromAction(spawnAction: schema.SpawnAction): Body {
+        // This assumes ids are never reused
+        const id = spawnAction.id()
         assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
 
         const robotType = spawnAction.robotType()
@@ -88,8 +75,27 @@ export default class Bodies {
         return body
     }
 
+    markBodyAsDead(id: number): void {
+        const body = this.getById(id)
+        body.dead = true
+        // Manually set hp since we don't receive a final delta
+        body.hp = 0
+    }
+
     removeBody(id: number): void {
         this.bodies.delete(id)
+    }
+
+    /**
+     * Clears all indicator objects from the given robot. If the id does not exist
+     * (i.e. it has not yet been spawned), does nothing
+     */
+    clearIndicators(id: number) {
+        if (!this.bodies.has(id)) return
+        const body = this.getById(id)
+        body.indicatorDots = []
+        body.indicatorLines = []
+        body.indicatorString = ''
     }
 
     /**
@@ -100,6 +106,7 @@ export default class Bodies {
         const body = this.getById(turn.robotId())
 
         // Update properties
+        body.lastPos = body.pos
         body.pos = { x: turn.x(), y: turn.y() }
         body.hp = turn.health()
         body.paint = turn.paint()
@@ -178,33 +185,20 @@ export default class Bodies {
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
-        const robotIds = new Int32Array(this.bodies.size)
+        schema.InitialBodyTable.startSpawnActionsVector(builder, this.bodies.size)
 
-        Array.from(this.bodies.values()).forEach((body, i) => {
-            robotIds[i] = body.id
-        })
-
-        const robotIdsVector = schema.InitialBodyTable.createRobotIdsVector(builder, robotIds)
-
-        // Fill out spawn actions
-        schema.InitialBodyTable.startSpawnActionsVector(builder, robotIds.length)
-        for (let i = 0; i < robotIds.length; i++) {
-            const body = this.bodies.get(robotIds[i])!
-            schema.SpawnAction.createSpawnAction(builder, body.pos.x, body.pos.y, body.team.id, body.robotType)
+        for (const body of this.bodies.values()) {
+            schema.SpawnAction.createSpawnAction(builder, body.id, body.pos.x, body.pos.y, body.team.id, body.robotType)
         }
         const spawnActionsVector = builder.endVector()
 
-        return schema.InitialBodyTable.createInitialBodyTable(builder, robotIdsVector, spawnActionsVector)
+        return schema.InitialBodyTable.createInitialBodyTable(builder, spawnActionsVector)
     }
 
     private insertInitialBodies(bodies: schema.InitialBodyTable): void {
-        assert(bodies.robotIdsLength() == bodies.spawnActionsLength(), 'Initial body arrays are not the same length')
-
-        for (let i = 0; i < bodies.robotIdsLength(); i++) {
-            const id = bodies.robotIds(i)!
+        for (let i = 0; i < bodies.spawnActionsLength(); i++) {
             const spawnAction = bodies.spawnActions(i)!
-
-            this.spawnBodyFromAction(id, spawnAction)
+            this.spawnBodyFromAction(spawnAction)
         }
     }
 }

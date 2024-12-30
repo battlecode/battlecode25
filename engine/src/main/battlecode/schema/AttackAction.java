@@ -27,6 +27,9 @@ public final class AttackAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public AttackAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  /**
+   * Id of the attack target
+   */
   public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
 
   public static int createAttackAction(FlatBufferBuilder builder, int id) {

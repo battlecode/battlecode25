@@ -531,9 +531,6 @@ public strictfp class GameWorld {
     }
 
     public boolean isPassable(MapLocation loc) {
-        if (currentRound <= GameConstants.SETUP_ROUNDS){
-            return !this.walls[locationToIndex(loc)];
-        }
         return !this.walls[locationToIndex(loc)];
     }
 
@@ -787,7 +784,7 @@ public strictfp class GameWorld {
         int[] totalTowersAlive = new int[2];
 
         for (UnitType type: UnitType.values()){
-            if (UnitType.isTowerType(type)){
+            if (type.isTowerType()){
                 totalTowersAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalTowersAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
@@ -811,7 +808,7 @@ public strictfp class GameWorld {
         int[] totalRobotsAlive = new int[2];
 
         for (UnitType type: UnitType.values()){
-            if (UnitType.isRobotType(type)){
+            if (type.isRobotType()){
                 totalRobotsAlive[Team.A.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.A, type);
                 totalRobotsAlive[Team.B.ordinal()] += this.getObjectInfo().getRobotTypeCount(Team.B, type);
             }
@@ -878,8 +875,10 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B));
+        int teamACoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.A) * 10.0 / this.areaWithoutWalls);
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A), teamACoverage);
+        int teamBCoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.B) * 10.0 / this.areaWithoutWalls);
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B), teamBCoverage);
         this.teamInfo.processEndOfRound();
 
         this.getMatchMaker().endRound();
@@ -912,9 +911,10 @@ public strictfp class GameWorld {
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
-        if (UnitType.isTowerType(type)){
+        if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
         }
+        robot.addPaint(type.paintCost); //TODO: initial paint amounts
         return ID;
     }
 
@@ -928,15 +928,19 @@ public strictfp class GameWorld {
     // *********************************
 
     /**
-     * Permanently destroy a robot; left for internal purposes.
+     * Permanently destroy a robot
      */
     public void destroyRobot(int id) {
+        destroyRobot(id, false);
+    }
+
+    public void destroyRobot(int id, boolean fromException){
         InternalRobot robot = objectInfo.getRobotByID(id);
         MapLocation loc = robot.getLocation();
         
         if (loc != null)
         {
-            if (UnitType.isTowerType(robot.getType())) {
+            if (robot.getType().isTowerType()) {
                 this.towersByLoc[locationToIndex(loc)] = Team.NEUTRAL;
                 this.towerLocations.remove(loc);
                 this.teamInfo.addTowers(-1, robot.getTeam());
@@ -948,6 +952,7 @@ public strictfp class GameWorld {
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
         matchMaker.addDied(id);
+        matchMaker.addDieAction(id, fromException);
     }
 
     // *********************************

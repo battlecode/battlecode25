@@ -31,6 +31,11 @@ enum WinType: byte {
     COIN_FLIP
 }
 
+enum DieType: byte {
+    UNKNOWN,
+    EXCEPTION
+}
+
 table RobotTypeMetadata {
     type: RobotType;
     actionCooldown: int;
@@ -52,6 +57,7 @@ table GameplayConstants {
 
 /// Generic action representing damage to a robot
 struct DamageAction {
+    /// Id of the damage target
     id: ushort;
     damage: ushort; 
 }
@@ -69,6 +75,7 @@ struct UnpaintAction {
 
 /// Visually indicate an attack
 struct AttackAction {
+    /// Id of the attack target
     id: ushort;
 }
 
@@ -79,36 +86,44 @@ struct MopAction {
 
 /// Visually indicate a tower being built
 struct BuildAction {
+    /// Id of the tower bot
     id: ushort;
 }
 
-/// Visually indicate trasnferring paint from one robot to another
+/// Visually indicate transferring paint from one robot to another
 struct TransferAction {
+    /// Id of the transfer target
     id: ushort;
 }
 
 /// Visually indicate messaging from one robot to another
 struct MessageAction {
+    /// Id of the message target
     id: ushort;
     data: int;
 }
 
 /// Indicate that this robot was spawned on this turn
 struct SpawnAction {
+    /// Id of the bot that spawned
+    id: ushort;
     x: ushort;
     y: ushort;
     team: byte;
     robotType: RobotType;
 }
 
-/// Visually indicate that a tower was upgraded
-struct UpgradeAction {
+/// Indicates that a robot died and should be removed
+struct DieAction {
+    /// Id of the robot that died
     id: ushort;
+    dieType: DieType;
 }
 
-/// Indicates that the robot died due to an uncaught exception
-struct DieExceptionAction {
-    value: byte; //size 0 structs not allowed
+/// Visually indicate that a tower was upgraded
+struct UpgradeAction {
+    /// Id of the upgraded tower
+    id: ushort;
 }
 
 /// Update the indicator string for this robot
@@ -139,8 +154,8 @@ union Action {
     TransferAction, 
     MessageAction,
     SpawnAction,
+    DieAction,
     UpgradeAction,
-    DieExceptionAction, 
     IndicatorStringAction,
     IndicatorDotAction,
     IndicatorLineAction
@@ -148,7 +163,6 @@ union Action {
 
 // A list of initial bodies to be placed on the map.
 table InitialBodyTable {
-    robotIds: [int];
     spawnActions: [SpawnAction];
 }
 
@@ -166,6 +180,7 @@ table GameMap {
 
 /// Markers for events during the game indicated by the user
 table TimelineMarker{
+    team: byte;
     round: int;
     colorHex: int;
     label: string;
@@ -283,11 +298,13 @@ table Round {
     teamIds: [int];
     /// The total amount of resource this round per team
     teamResourceAmounts: [int];
+    /// The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+    teamCoverageAmounts: [int];
 
     /// Ordered turn data for each robot during the round
     turns: [Turn];
 
-    /// The IDs of bodies that died.
+    /// The IDs of bodies that died at the end of the round, with no attributable cause.
     diedIds: [int];
 
     /// The first sent Round in a match should have index 1. (The starting state,

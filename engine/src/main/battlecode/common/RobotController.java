@@ -760,6 +760,16 @@ public strictfp interface RobotController {
      */
     void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
 
+    // /**
+    //  * Reads all messages sent to this unit within the past 5 rounds if roundNum = -1, or a 
+    //  * specific round 
+    //  * 
+    //  * @param roundNum the round number to read messages from, or -1 to read all messages in the queue
+    //  * @return All 
+    //  */
+    // Message[] readMessages(int roundNum);
+    //TODO: implement
+
     // ***********************************
     // ****** OTHER ACTION METHODS *******
     // ***********************************

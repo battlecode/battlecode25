@@ -27,17 +27,21 @@ public final class SpawnAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public SpawnAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int x() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
-  public int y() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
-  public byte team() { return bb.get(bb_pos + 4); }
-  public byte robotType() { return bb.get(bb_pos + 5); }
-
-  public static int createSpawnAction(FlatBufferBuilder builder, int x, int y, byte team, byte robotType) {
-    builder.prep(2, 6);
+  /**
+   * Id of the bot that spawned
+   */
+  public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int x() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
+  public int y() { return bb.getShort(bb_pos + 4) & 0xFFFF; }
+  public byte team() { return bb.get(bb_pos + 6); }
+  public byte robotType() { return bb.get(bb_pos + 7); }
+  public static int createSpawnAction(FlatBufferBuilder builder, int id, int x, int y, byte team, byte robotType) {
+    builder.prep(2, 8);
     builder.putByte(robotType);
     builder.putByte(team);
     builder.putShort((short) y);
     builder.putShort((short) x);
+    builder.putShort((short) id);
     return builder.offset();
   }
 

@@ -16,6 +16,9 @@ export class UpgradeAction {
   return this;
 }
 
+/**
+ * Id of the upgraded tower
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

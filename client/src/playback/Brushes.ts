@@ -138,15 +138,15 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
         super(map)
     }
 
-    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
+    public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>, robotOne: boolean) {
         const radius: number = fields.radius.value - 1
 
         const changes: { idx: number; prevPaint: number }[] = []
         applyInRadius(this.map, x, y, radius, (idx) => {
             const add = fields.shouldAdd.value
             changes.push({ idx, prevPaint: this.map.paint[idx] })
-            this.map.paint[idx] = add ? 1 : 0
-            this.map.staticMap.initialPaint[idx] = add ? 1 : 0
+            this.map.paint[idx] = add ? (robotOne ? 1 : 3) : 0
+            this.map.staticMap.initialPaint[idx] = this.map.paint[idx]
         })
 
         return () => {

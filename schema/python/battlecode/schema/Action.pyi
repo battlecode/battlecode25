@@ -19,8 +19,8 @@ class Action(object):
   TransferAction: int
   MessageAction: int
   SpawnAction: int
+  DieAction: int
   UpgradeAction: int
-  DieExceptionAction: int
   IndicatorStringAction: int
   IndicatorDotAction: int
   IndicatorLineAction: int

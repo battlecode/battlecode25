@@ -36,7 +36,7 @@ export default class Actions {
         }
     }
 
-    prepareForNextRound(): void {
+    tickLifetimes(): void {
         // Tick lifetimes of applied actions
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--
@@ -101,12 +101,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
         apply(round: Round): void {
             throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
-        }
-    },
-    [schema.Action.DieExceptionAction]: class DieExceptionAction extends Action<schema.DieExceptionAction> {
-        apply(round: Round): void {
-            // TODO: revist this
-            console.log(`Robot ${this.robotId} has died due to an exception`)
         }
     },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
@@ -269,8 +263,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            // This assumes ids are never reused
-            round.bodies.spawnBodyFromAction(this.robotId, this.actionData)
+            round.bodies.spawnBodyFromAction(this.actionData)
+        }
+    },
+    [schema.Action.DieAction]: class DieAction extends Action<schema.DieAction> {
+        apply(round: Round): void {
+            if (this.actionData.dieType() === schema.DieType.EXCEPTION) {
+                // TODO: revisit this
+                console.log(`Robot ${this.robotId} has died due to an exception`)
+            }
+
+            round.bodies.markBodyAsDead(this.actionData.id())
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {

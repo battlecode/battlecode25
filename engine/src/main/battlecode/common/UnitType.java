@@ -54,20 +54,20 @@ public enum UnitType {
     // how much money the unit generates per turn
     public final int moneyPerTurn;
 
-    public static boolean isRobotType(UnitType type){
-        return type == SOLDIER || type == SPLASHER || type == MOPPER;
+    public boolean isRobotType(){
+        return this == SOLDIER || this == SPLASHER || this == MOPPER;
     }
 
-    public static boolean isTowerType(UnitType type){
-        return !isRobotType(type);
+    public boolean isTowerType(){
+        return !this.isRobotType();
     }
 
-    public static boolean canUpgradeType(UnitType type){
-        return (type.level == 1 || type.level == 2) && isTowerType(type);
+    public boolean canUpgradeType(){
+        return (this.level == 1 || this.level == 2) && this.isTowerType();
     }
 
-    public static UnitType getNextLevel(UnitType type){
-        switch (type){
+    public UnitType getNextLevel(){
+        switch (this){
             case LEVEL_ONE_DEFENSE_TOWER: return LEVEL_TWO_DEFENSE_TOWER;
             case LEVEL_TWO_DEFENSE_TOWER: return LEVEL_THREE_DEFENSE_TOWER;
             case LEVEL_ONE_MONEY_TOWER: return LEVEL_TWO_MONEY_TOWER;

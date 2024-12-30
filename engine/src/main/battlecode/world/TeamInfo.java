@@ -14,15 +14,10 @@ public class TeamInfo {
 
     private GameWorld gameWorld;
     private int[] moneyCounts;
-    private int[][] sharedArrays;
-    private int[] totalFlagsCaptured;
-    private int[] totalFlagsPickedUp;
     private int[] totalPaintedSquares;
     private int[] totalNumberOfTowers;
 
     private int[] oldMoneyCounts;
-    private boolean[][] globalUpgrades;
-    private int[] globalUpgradePoints;
 
     /**
      * Create a new representation of TeamInfo
@@ -32,10 +27,7 @@ public class TeamInfo {
     public TeamInfo(GameWorld gameWorld) {
         this.gameWorld = gameWorld;
         this.moneyCounts = new int[2];
-        this.totalFlagsCaptured = new int[2];
         this.oldMoneyCounts = new int[2];
-        this.globalUpgradePoints = new int[2];
-        this.totalFlagsPickedUp = new int[2];
         this.totalPaintedSquares = new int[2];
         this.totalNumberOfTowers = new int[2];
     }
@@ -53,17 +45,6 @@ public class TeamInfo {
 
     public int getMoney(Team team) {
         return this.moneyCounts[team.ordinal()];
-    }
-
-    /**
-     * Get the total number of flags captured by the team over the game
-     * 
-     * @param team the team to query
-     * @return the total flags captured
-     */
-
-    public int getFlagsCaptured(Team team) {
-        return this.totalFlagsCaptured[team.ordinal()];
     }
 
     /**
@@ -107,49 +88,10 @@ public class TeamInfo {
      public void addTowers(int num, Team team) {
         this.totalNumberOfTowers[team.ordinal()] += num;
     }    
-    
-    /**
-     * Reads the shared array value.
-     *
-     * @param team  the team to query
-     * @param index the index in the array
-     * @return the value at that index in the team's shared array
-     */
-    public int readSharedArray(Team team, int index) {
-        return this.sharedArrays[team.ordinal()][index];
-    }
-
-    /**
-     * return copy of global upgrades array
-     * 
-     * @param team the team to query
-     * @return the boolean array of upgrades
-     */
-    public boolean[] getGlobalUpgrades(Team team) {
-        return this.globalUpgrades[team.ordinal()].clone();
-    }
-
-    /**
-     * return number of global upgrade points
-     * 
-     * @param team the team to query
-     **/
-    public int getGlobalUpgradePoints(Team team) {
-        return this.globalUpgradePoints[team.ordinal()];
-    }
 
     // *********************************
     // ***** UPDATE METHODS ************
     // *********************************
-
-    /**
-     * Increase the number of global upgrade points
-     * 
-     * @param team to query
-     */
-    public void incrementGlobalUpgradePoints(Team team) {
-        this.globalUpgradePoints[team.ordinal()]++;
-    }
 
     /**
      * Add to the amount of money. If amount is negative, subtract from money
@@ -175,17 +117,6 @@ public class TeamInfo {
         this.gameWorld.gameStats.setDominationFactor(DominationFactor.PAINT_ENOUGH_AREA);
     }
 
-    /**
-     * Sets an index in the team's shared array to a given value.
-     *
-     * @param team  the team to query
-     * @param index the index in the shared array
-     * @param value the new value
-     */
-    public void writeSharedArray(Team team, int index, int value) {
-        this.sharedArrays[team.ordinal()][index] = value;
-    }
-
     public int getRoundMoneyChange(Team team) {
         return this.moneyCounts[team.ordinal()] - this.oldMoneyCounts[team.ordinal()];
     }
@@ -195,8 +126,5 @@ public class TeamInfo {
         this.oldMoneyCounts[1] = this.moneyCounts[1];
     }
 
-    public int[] getSharedArray(Team team) {
-        return this.sharedArrays[team.ordinal()];
-    }
 
 }

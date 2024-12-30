@@ -76,6 +76,7 @@ export default class RoundStat {
             teamStat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
 
             teamStat.moneyAmount = delta.teamResourceAmounts(i) ?? assert.fail('missing resource amount')
+            teamStat.paintPercent = delta.teamCoverageAmounts(i) ?? assert.fail('missing coverage amount')
 
             /*
             // Compute average datapoint every 10 rounds
