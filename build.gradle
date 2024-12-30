@@ -7,9 +7,9 @@ java {
     sourceCompatibility = JavaVersion.VERSION_21
 }
 
-//if(JavaVersion.current() != JavaVersion.VERSION_21) {
-//    throw new GradleException("The engine must be run using the Java 21 JDK")
-//}
+if(JavaVersion.current() < JavaVersion.VERSION_21) {
+    throw new GradleException("The engine must be run using >= Java 21 JDK")
+}
 
 // Avoid weird configuration-time dependency bugs
 // Fun fact: this line of code single-handedly fixed an error I spent two hours debugging.
@@ -119,10 +119,10 @@ task release_main(type: Jar, dependsOn: [':engine:build']) {
     Files.write(f_version.toPath(), [project.property("release_version")]);
   }
 
-  archiveBaseName = "battlecode";
+  archiveBaseName.set("battlecode")
   if (project.hasProperty("release_version"))
-    archiveVersion = project.property("release_version");
-  destinationDirectory = project.projectDir;
+    archiveVersion.set(project.property("release_version"))
+  destinationDirectory.set(project.projectDir)
 
   FileCollection src = files(f_version);
   src += zipTree(serverJar);
