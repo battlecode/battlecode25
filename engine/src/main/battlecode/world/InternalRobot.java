@@ -35,7 +35,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     private int roundsAlive;
     private int turnsWithoutPaint;
-    private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
 
@@ -61,7 +60,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc, boolean skipSpawnAction) {
+    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc) {
         this.gameWorld = gw;
 
         this.ID = id;
@@ -81,7 +80,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
-        this.hasSentSpawnAction = skipSpawnAction;
         this.turnsWithoutPaint = 0;
         this.actionCooldownTurns = type.actionCooldown;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
@@ -569,10 +567,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
-        if (!this.hasSentSpawnAction){
-            this.gameWorld.getMatchMaker().addSpawnAction(this.ID, this.location, this.team, this.type);
-            this.hasSentSpawnAction = true;
-        }
     }
 
     public void processEndOfTurn() {

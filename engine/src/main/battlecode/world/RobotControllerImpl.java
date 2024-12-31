@@ -500,6 +500,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.spawnRobot(type, loc, this.robot.getTeam());
         this.robot.addPaint(-type.paintCost);
         this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), -type.moneyCost);
+        InternalRobot robotSpawned = this.gameWorld.getRobot(loc);
+        this.gameWorld.getMatchMaker().addSpawnAction(robotSpawned.getID(), loc, getTeam(), type);
     }
 
     private void assertCanMark(MapLocation loc) throws GameActionException {
