@@ -48,7 +48,6 @@ export default class Round {
         )
 
         this.bodies.processDied(this.currentDelta)
-        this.actions.tickLifetimes()
 
         this.roundNumber += 1
 
@@ -91,6 +90,12 @@ export default class Round {
             // Store the initial round state for resetting only after stepping, that way snapshots dont need to store it, halving memory usage
             assert(this.turnNumber === 0, 'Initial round state should only be set at turn 0')
             this.initialRoundState = this.copy()
+        }
+
+        // Tick actions once we pass the first turn so that round n shows the state
+        // of actions at the end of round n-1, until we start progressing
+        if (this.turnNumber === 0) {
+            this.actions.tickLifetimes()
         }
 
         this.bodies.clearIndicators(turn.robotId())

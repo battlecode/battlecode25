@@ -72,8 +72,10 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     }
 
     useEffect(() => {
-        if (availablePlayers.size > 0) setTeamA([...availablePlayers][0])
-        if (availablePlayers.size > 1) setTeamB([...availablePlayers][1])
+        const teamA = availablePlayers.size > 0 ? [...availablePlayers][0] : undefined
+        const teamB = availablePlayers.size > 1 ? [...availablePlayers][1] : teamA
+        setTeamA(teamA)
+        setTeamB(teamB)
     }, [availablePlayers])
 
     useEffect(() => {
