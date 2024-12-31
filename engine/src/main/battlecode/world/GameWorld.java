@@ -901,9 +901,9 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        int teamACoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.A) * 10.0 / this.areaWithoutWalls);
+        int teamACoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.A) * 1000.0 / this.areaWithoutWalls);
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A), teamACoverage);
-        int teamBCoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.B) * 10.0 / this.areaWithoutWalls);
+        int teamBCoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.B) * 1000.0 / this.areaWithoutWalls);
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B), teamBCoverage);
         this.teamInfo.processEndOfRound();
 
