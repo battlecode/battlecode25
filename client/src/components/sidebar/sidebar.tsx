@@ -198,7 +198,7 @@ export const Sidebar: React.FC = () => {
                                     <div
                                         key={sidebarButton.page}
                                         className={
-                                            'w-[32%] text-center text-sm py-2 my-1 cursor-pointer hover:bg-lightHighlight border-b-2 ' +
+                                            'w-[32%] text-center text-sm py-1 my-1 cursor-pointer hover:bg-lightHighlight border-b-2 ' +
                                             (page == sidebarButton.page ? 'border-gray-800' : 'border-gray-200')
                                         }
                                         onClick={() => setPage(sidebarButton.page)}
