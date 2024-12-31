@@ -25,7 +25,7 @@ struct ChildProcessExitPayload {
 
 #[derive(Default, serde::Deserialize)]
 struct ServerApiResponse {
-    release_version_public: String
+    release_version_client: String
 }
 
 struct AppState {
@@ -143,10 +143,10 @@ async fn tauri_api(
         },
         "getServerVersion" => {
             let mut version = String::new();
-            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}/?format=json", &args[0]);
+            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}java/?format=json", &args[0]);
             if let Ok(res) = ureq::get(&uri).call() {
                 let res: ServerApiResponse = res.into_json().unwrap_or(Default::default());
-                version = res.release_version_public;
+                version = res.release_version_client;
             }
 
             Ok(vec![version])

@@ -1,5 +1,5 @@
-export const GAME_VERSION = '3.0.6'
-export const SPEC_VERSION = '3.0.6'
+export const CLIENT_VERSION = '1.0.0'
+export const SPEC_VERSION = '1'
 export const BATTLECODE_YEAR: number = 2025
 export const MAP_SIZE_RANGE = {
     min: 20,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION, SIDEBAR_BACKGROUND } from '../../constants'
+import { BATTLECODE_YEAR, CLIENT_VERSION, SIDEBAR_BACKGROUND } from '../../constants'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { GamePage } from './game/game'
 import { QueuePage } from './queue/queue'
@@ -175,7 +175,7 @@ export const Sidebar: React.FC = () => {
                         {open && (
                             <>
                                 <p className="px-2 whitespace-nowrap font-extrabold text-xl">{`BATTLECODE ${BATTLECODE_YEAR}`}</p>
-                                <p className="text-xs">{`v${GAME_VERSION}`}</p>
+                                <p className="text-xs">{`v${CLIENT_VERSION}`}</p>
                             </>
                         )}
                         <div className="flex">
