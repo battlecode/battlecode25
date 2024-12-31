@@ -190,51 +190,56 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         <>
             <input type="file" hidden ref={inputRef} onChange={fileUploaded} />
 
-            <div className="flex flex-col flex-grow">
-                {renderedBrushes}
-                <SmallButton
-                    onClick={() => setClearConfirmOpen(true)}
-                    className={'mt-10 ' + (cleared ? 'invisible' : '')}
-                >
-                    Clear to unlock
-                </SmallButton>
-                <div className={'flex flex-col ' + (cleared ? '' : 'opacity-30 pointer-events-none')}>
-                    <div className="flex flex-row items-center justify-center">
-                        <span className="mr-2 text-sm">Width: </span>
-                        <NumInput
-                            value={mapParams.width}
-                            changeValue={changeWidth}
-                            min={MAP_SIZE_RANGE.min}
-                            max={MAP_SIZE_RANGE.max}
-                        />
-                        <span className="ml-3 mr-2 text-sm">Height: </span>
-                        <NumInput
-                            value={mapParams.height}
-                            changeValue={changeHeight}
-                            min={MAP_SIZE_RANGE.min}
-                            max={MAP_SIZE_RANGE.max}
-                        />
-                    </div>
-                    <div className="flex flex-row mt-3 items-center justify-center">
-                        <span className="mr-5 text-sm">Symmetry: </span>
-                        <Select onChange={changeSymmetry} value={mapParams.symmetry}>
-                            <option value="0">Rotational</option>
-                            <option value="1">Horizontal</option>
-                            <option value="2">Vertical</option>
-                        </Select>
-                    </div>
-                </div>
-
-                <div className="flex flex-row mt-8">
-                    <Button
-                        onClick={() => {
-                            if (!round) return
-                            setMapNameOpen(true)
-                        }}
+            <div className="h-full flex flex-col flex-grow justify-between">
+                <div>{renderedBrushes}</div>
+                <div className="pb-8">
+                    <SmallButton
+                        onClick={() => setClearConfirmOpen(true)}
+                        className={'mt-2 ' + (cleared ? 'invisible' : '')}
                     >
-                        Export
-                    </Button>
-                    <Button onClick={() => inputRef.current?.click()}>Import</Button>
+                        Clear to unlock
+                    </SmallButton>
+                    <div className={'flex flex-col ' + (cleared ? '' : 'opacity-30 pointer-events-none')}>
+                        <div className="flex flex-row items-center justify-center">
+                            <span className="mr-2 text-sm">Width: </span>
+                            <NumInput
+                                value={mapParams.width}
+                                changeValue={changeWidth}
+                                min={MAP_SIZE_RANGE.min}
+                                max={MAP_SIZE_RANGE.max}
+                            />
+                            <span className="ml-3 mr-2 text-sm">Height: </span>
+                            <NumInput
+                                value={mapParams.height}
+                                changeValue={changeHeight}
+                                min={MAP_SIZE_RANGE.min}
+                                max={MAP_SIZE_RANGE.max}
+                            />
+                        </div>
+                        <div className="flex flex-row mt-3 items-center justify-center">
+                            <span className="mr-5 text-sm">Symmetry: </span>
+                            <Select onChange={changeSymmetry} value={mapParams.symmetry}>
+                                <option value="0">Rotational</option>
+                                <option value="1">Horizontal</option>
+                                <option value="2">Vertical</option>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row justify-center mt-4 gap-4">
+                        <Button
+                            className="mx-0"
+                            onClick={() => {
+                                if (!round) return
+                                setMapNameOpen(true)
+                            }}
+                        >
+                            Export
+                        </Button>
+                        <Button className="mx-0" onClick={() => inputRef.current?.click()}>
+                            Import
+                        </Button>
+                    </div>
                 </div>
             </div>
 

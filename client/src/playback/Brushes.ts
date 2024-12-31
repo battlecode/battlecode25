@@ -54,7 +54,8 @@ export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
             // Check if this is a valid wall location
             const pos = this.map.indexToLocation(idx)
             const ruin = this.map.ruins.find((r) => r.x === pos.x && r.y === pos.y)
-            if (ruin) return true
+            const paint = this.map.initialPaint[idx]
+            if (ruin || paint) return true
             this.map.walls[idx] = 1
         }
 
@@ -67,7 +68,8 @@ export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
         applyInRadius(this.map, x, y, radius, (idx) => {
             const prevValue = this.map.walls[idx]
             if (fields.shouldAdd.value) {
-                if (!add(idx)) changes.push({ idx, prevValue })
+                if (add(idx)) return
+                changes.push({ idx, prevValue })
             } else {
                 remove(idx)
                 changes.push({ idx, prevValue })
@@ -98,9 +100,11 @@ export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (x: number, y: number) => {
             // Check if this is a valid ruin location
+            const idx = this.map.locationToIndex(x, y)
             const foundIdx = this.map.ruins.findIndex((l) => l.x === x && l.y === y)
-            const wall = this.map.walls[this.map.locationToIndex(x, y)]
-            if (foundIdx !== -1 || wall == 1) return true
+            const wall = this.map.walls[idx]
+            const paint = this.map.initialPaint[idx]
+            if (foundIdx !== -1 || wall || paint) return true
             this.map.ruins.push({ x, y })
         }
 
@@ -127,10 +131,23 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
             type: MapEditorBrushFieldType.ADD_REMOVE,
             value: true
         },
+        team: {
+            type: MapEditorBrushFieldType.TEAM,
+            value: 0
+        },
         radius: {
             type: MapEditorBrushFieldType.POSITIVE_INTEGER,
             value: 1,
             label: 'Radius'
+        },
+        paintType: {
+            type: MapEditorBrushFieldType.SINGLE_SELECT,
+            value: 0,
+            label: 'Paint Type',
+            options: [
+                { value: 0, label: 'Primary' },
+                { value: 1, label: 'Secondary' }
+            ]
         }
     }
 
@@ -139,14 +156,35 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
     }
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>, robotOne: boolean) {
-        const radius: number = fields.radius.value - 1
+        const add = (idx: number, value: number) => {
+            // Check if this is a valid paint location
+            const pos = this.map.indexToLocation(idx)
+            const ruin = this.map.staticMap.ruins.find((r) => r.x === pos.x && r.y === pos.y)
+            const wall = this.map.staticMap.walls[idx]
+            if (ruin || wall) return true
+            this.map.paint[idx] = value
+            this.map.staticMap.initialPaint[idx] = this.map.paint[idx]
+        }
 
+        const remove = (idx: number) => {
+            this.map.paint[idx] = 0
+            this.map.staticMap.initialPaint[idx] = 0
+        }
+
+        const radius: number = fields.radius.value - 1
         const changes: { idx: number; prevPaint: number }[] = []
         applyInRadius(this.map, x, y, radius, (idx) => {
-            const add = fields.shouldAdd.value
-            changes.push({ idx, prevPaint: this.map.paint[idx] })
-            this.map.paint[idx] = add ? (robotOne ? 1 : 3) : 0
-            this.map.staticMap.initialPaint[idx] = this.map.paint[idx]
+            const prevPaint = this.map.paint[idx]
+            if (fields.shouldAdd.value) {
+                let teamIdx = robotOne ? 0 : 1
+                if (fields.team.value === 1) teamIdx = 1 - teamIdx
+                const newVal = teamIdx * 2 + 1 + fields.paintType.value
+                if (add(idx, newVal)) return
+                changes.push({ idx, prevPaint })
+            } else {
+                remove(idx)
+                changes.push({ idx, prevPaint })
+            }
         })
 
         return () => {
@@ -172,6 +210,7 @@ export class TowerBrush extends SymmetricMapEditorBrush<StaticMap> {
         towerType: {
             type: MapEditorBrushFieldType.SINGLE_SELECT,
             value: schema.RobotType.PAINT_TOWER,
+            label: 'Tower Type',
             options: [
                 { value: schema.RobotType.PAINT_TOWER, label: 'Paint Tower' },
                 { value: schema.RobotType.MONEY_TOWER, label: 'Money Tower' }
