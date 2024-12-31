@@ -226,14 +226,14 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                 </div>
 
                 <div className="flex flex-row mt-8">
-                    <BrightButton
+                    <Button
                         onClick={() => {
                             if (!round) return
                             setMapNameOpen(true)
                         }}
                     >
                         Export
-                    </BrightButton>
+                    </Button>
                     <Button onClick={() => inputRef.current?.click()}>Import</Button>
                 </div>
             </div>

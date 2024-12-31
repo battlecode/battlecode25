@@ -1,5 +1,3 @@
-import { schema } from 'battlecode-schema'
-
 export const GAME_VERSION = '3.0.6'
 export const SPEC_VERSION = '3.0.6'
 export const BATTLECODE_YEAR: number = 2025
@@ -28,16 +26,17 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = ['DefaultSmall', 'DefaultMediu
 /*
  * Color constants (defined in tailwind.config.js as well)
  */
-export const TEAM_WHITE = '#bfbaa8'
-export const TEAM_BROWN = '#9c8362' //'#b99c76'
-export const TEAM_COLORS = [TEAM_WHITE, TEAM_BROWN]
+export const TEAM_0 = '#cdcdcc'
+export const TEAM_1 = '#fee493'
+export const TEAM_COLORS = [TEAM_0, TEAM_1]
 export const TEAM_COLOR_NAMES = ['Silver', 'Gold']
 
-export const PAINT_COLOR = '#1d4f6c' // brighter version '#29B0D9'
-export const WALLS_COLOR = '#3B6B4C'
+export const PAINT_COLORS = ['#00000000', '#666666', '#4c4c4c', '#998957', '#7f7148']
+export const WALLS_COLOR = '#547f31'
 export const DIVIDER_COLOR = '#7b4724'
-export const GRASS_COLOR = '#153e30' // brighter version '#3CCA6E'
-export const GAMEAREA_BACKGROUND = PAINT_COLOR
+export const TILE_COLOR = '#4c301e'
+export const GAMEAREA_BACKGROUND = '#332319'
+export const SIDEBAR_BACKGROUND = '#3f3131'
 
 export const ATTACK_COLOR = '#db6b5c'
 export const BUILD_COLOR = '#c573c9'

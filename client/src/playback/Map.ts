@@ -5,7 +5,7 @@ import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
 import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
-import { DIVIDER_COLOR, GRASS_COLOR, WALLS_COLOR, PAINT_COLOR, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
+import { DIVIDER_COLOR, TILE_COLOR, WALLS_COLOR, PAINT_COLORS, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
@@ -112,7 +112,8 @@ export class CurrentMap {
                 const coords = renderUtils.getRenderCoords(i, j, dimension)
 
                 // Render rounded (clipped) paint
-                if (this.paint[schemaIdx]) {
+                const paint = this.paint[schemaIdx]
+                if (paint) {
                     renderUtils.renderRounded(
                         ctx,
                         i,
@@ -120,7 +121,7 @@ export class CurrentMap {
                         this,
                         this.paint,
                         () => {
-                            ctx.fillStyle = PAINT_COLOR
+                            ctx.fillStyle = PAINT_COLORS[paint]
                             ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                         },
                         { x: true, y: false }
@@ -355,13 +356,24 @@ export class StaticMap {
 
     draw(ctx: CanvasRenderingContext2D) {
         // Fill background
-        ctx.fillStyle = GRASS_COLOR
+        ctx.fillStyle = TILE_COLOR
         ctx.fillRect(
             this.dimension.minCorner.x,
             this.dimension.minCorner.y,
             this.dimension.width,
             this.dimension.height
         )
+
+        const dirtImg = getImageIfLoaded('dirty.png')
+        if (dirtImg) {
+            ctx.drawImage(
+                dirtImg,
+                this.dimension.minCorner.x,
+                this.dimension.minCorner.y,
+                this.dimension.width,
+                this.dimension.height
+            )
+        }
 
         for (let i = 0; i < this.dimension.width; i++) {
             for (let j = 0; j < this.dimension.height; j++) {
@@ -375,16 +387,6 @@ export class StaticMap {
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     })
                 }
-
-                /*
-                // Render spawn zones
-                if (spawnZoneDrawAreas[schemaIdx]) {
-                    const color = TEAM_COLORS[spawnZoneDrawAreas[schemaIdx] - 1]
-                    renderUtils.renderRounded(ctx, i, j, this, spawnZoneDrawAreas, () => {
-                        renderUtils.drawDiagonalLines(ctx, coords, 1.0, color)
-                    })
-                }
-                */
 
                 // Render ruins
                 this.ruins.forEach(({ x, y }) => {

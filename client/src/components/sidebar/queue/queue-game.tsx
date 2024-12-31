@@ -50,19 +50,29 @@ export const QueuedGame: React.FC<Props> = (props) => {
     }
 
     return (
-        <div className="relative mr-auto rounded-md bg-lightCard border-gray-500 border mb-4 p-3 w-[96%] shadow-md">
+        <div
+            className={`relative mr-auto rounded-md bg-lightCard border mb-4 p-3 w-[96%] shadow-md ${
+                props.game.matches.includes(activeMatch!) ? 'border-red' : 'border-gray-500'
+            }`}
+        >
             <div className="text-xs whitespace mb-2 overflow-ellipsis overflow-hidden">
-                <span className="font-bold text-team0">{props.game.teams[0].name}</span>
+                <span className="font-bold text-team0" style={{ textShadow: '-0.5px 0.5px 1px black' }}>
+                    {props.game.teams[0].name}
+                </span>
                 <span className="mx-1.5">vs</span>
-                <span className="font-bold text-team1">{props.game.teams[1].name}</span>
+                <span className="font-bold text-team1" style={{ textShadow: '-0.5px 0.5px 1px black' }}>
+                    {props.game.teams[1].name}
+                </span>
             </div>
             {props.game.matches.map((match, i) => (
                 <p
                     key={i}
                     className={
-                        'leading-4 rounded-sm border-gray-500 border my-1.5 py-1 px-2 ' +
+                        'leading-4 rounded-sm border my-1.5 py-1 px-2 ' +
                         'bg-light hover:bg-lightHighlight cursor-pointer ' +
-                        (activeMatch === match ? 'bg-lightHighlight hover:bg-medHighlight' : '')
+                        (activeMatch === match
+                            ? 'bg-lightHighlight hover:bg-medHighlight border-red'
+                            : 'border-gray-500')
                     }
                     onClick={() => GameRunner.setMatch(match)}
                 >
@@ -72,7 +82,10 @@ export const QueuedGame: React.FC<Props> = (props) => {
                             <span className="mx-1">-</span>
                             {match.winner !== null && match.winType !== null ? (
                                 <>
-                                    <span className={`font-bold text-team${match.winner.id - 1}`}>
+                                    <span
+                                        style={{ textShadow: '-0.5px 0.5px 1px black' }}
+                                        className={`font-bold text-team${match.winner.id - 1}`}
+                                    >
                                         {match.winner.name}
                                     </span>
                                     <span>{` wins ${getWinText(match.winType)}after ${match.maxRound} rounds`}</span>

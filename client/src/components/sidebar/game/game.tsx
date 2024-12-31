@@ -53,7 +53,11 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
         showGameWinner = showGameWinner && !!game && game.winner === game.teams[teamIdx]
 
         return (
-            <div className={'relative w-full py-2 px-3 text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')}>
+            <div
+                className={
+                    'relative w-full py-2 px-3 text-black text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')
+                }
+            >
                 <div>{game?.teams[teamIdx].name ?? NO_GAME_TEAM_NAME}</div>
                 <div className="absolute top-2 left-3">
                     <div className="relative flex items-center w-[24px] h-[24px]">
@@ -87,7 +91,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
         <div className="flex flex-col overflow-x-hidden">
             <div className="w-full pb-3 px-4 text-center">
                 {game && game.currentMatch && (
-                    <div className="border-black border rounded-md font-bold">{game.currentMatch.map.name}</div>
+                    <div className="border-white border rounded-md font-bold">{game.currentMatch.map.name}</div>
                 )}
             </div>
             {teamBox(0)}

@@ -42,14 +42,13 @@ module.exports = {
                 dark: colors.gray['800'],
                 darkHighlight: colors.gray['900'],
                 black: colors.black,
-                light: '#faf9fe',
-                lightHighlight: '#dddddd',
-                lightestHighlight: '#f0f0f0',
-                medHighlight: '#d0d0d0',
-                lightCard: '#f7f7f7',
+                light: '#aaaaaa22',
+                lightHighlight: '#ffffff33',
+                medHighlight: '#d0d0d066',
+                lightCard: '#f7f7f722',
 
-                team0: '#bfbaa8',
-                team1: '#7f6b51'
+                team0: '#cdcdcc',
+                team1: '#fee493'
             }
         }
     },

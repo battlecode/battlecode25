@@ -1,5 +1,5 @@
 import React from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, GAME_VERSION, SIDEBAR_BACKGROUND } from '../../constants'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { GamePage } from './game/game'
 import { QueuePage } from './queue/queue'
@@ -158,7 +158,8 @@ export const Sidebar: React.FC = () => {
 
     return (
         <div
-            className={`${minWidth} ${maxWidth} bg-light text-black h-screen transition-[min-width,max-width] overflow-hidden`}
+            className={`${minWidth} ${maxWidth} h-screen transition-[min-width,max-width] overflow-hidden`}
+            style={{ backgroundColor: SIDEBAR_BACKGROUND, color: '#fcdede' }}
         >
             <Scrollbars
                 universal={true}
@@ -199,7 +200,9 @@ export const Sidebar: React.FC = () => {
                                         key={sidebarButton.page}
                                         className={
                                             'w-[32%] text-center text-sm py-1 my-1 cursor-pointer hover:bg-lightHighlight border-b-2 ' +
-                                            (page == sidebarButton.page ? 'border-gray-800' : 'border-gray-200')
+                                            (page == sidebarButton.page
+                                                ? 'border-gray-200 opacity-100'
+                                                : 'border-gray-400 opacity-60')
                                         }
                                         onClick={() => setPage(sidebarButton.page)}
                                     >
