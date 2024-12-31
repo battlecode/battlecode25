@@ -45,7 +45,7 @@ export default class Match {
     set playbackPerTurn(value: boolean) {
         this._playbackPerTurn = value
         this._currentSimulationStep = 0
-        this.currentRound.jumpToTurn(value ? 0 : this.currentRound.turnsLength)
+        this.currentRound.jumpToTurn(0)
     }
 
     /**

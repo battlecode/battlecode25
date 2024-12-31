@@ -34,7 +34,6 @@ type SchemaPacket = {
 
 export class CurrentMap {
     public readonly staticMap: StaticMap
-    //public readonly flagData: Map<number, FlagData>
     public readonly paint: Int8Array
 
     get width(): number {
@@ -54,25 +53,10 @@ export class CurrentMap {
 
             this.staticMap = from
             this.paint = new Int8Array(from.initialPaint)
-
-            /*
-            for (let i = 0; i < from.spawnLocations.length; i++) {
-                // Assign initial flag data, ids are initial map locations
-                const team = i % 2
-                const location = from.spawnLocations[i]
-                const flagId = this.locationToIndex(location.x, location.y)
-                this.flagData.set(flagId, { id: flagId, team, location, carrierId: null })
-            }
-            */
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
-            /*
-            for (let [key, value] of from.flagData) {
-                this.flagData.set(key, { ...value })
-            }
-            */
             this.paint = new Int8Array(from.paint)
         }
     }
