@@ -931,10 +931,10 @@ public strictfp class GameWorld {
      * Permanently destroy a robot
      */
     public void destroyRobot(int id) {
-        destroyRobot(id, false);
+        destroyRobot(id, false, false);
     }
 
-    public void destroyRobot(int id, boolean fromException){
+    public void destroyRobot(int id, boolean fromException, boolean fromDamage){
         InternalRobot robot = objectInfo.getRobotByID(id);
         MapLocation loc = robot.getLocation();
         
@@ -951,8 +951,10 @@ public strictfp class GameWorld {
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-        matchMaker.addDied(id);
-        matchMaker.addDieAction(id, fromException);
+        if (fromDamage || fromException)
+            matchMaker.addDieAction(id, fromException);
+        else
+            matchMaker.addDied(id);
     }
 
     // *********************************

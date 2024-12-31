@@ -307,7 +307,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health += healthAmount;
         this.health = Math.min(this.health, this.type.health);
         if (this.health <= 0) {
-            this.gameWorld.destroyRobot(this.ID);
+            this.gameWorld.destroyRobot(this.ID, false, true);
         }
     }
 
@@ -617,7 +617,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        this.gameWorld.destroyRobot(getID(), true);
+        this.gameWorld.destroyRobot(getID(), true, false);
     }
 
     // *****************************************
