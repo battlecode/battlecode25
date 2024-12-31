@@ -40,8 +40,9 @@ module.exports = {
                 blueDark: '#00679e',
 
                 dark: colors.gray['800'],
-                darkHighlight: colors.gray['900'],
+                darkHighlight: '#2d2323',
                 black: colors.black,
+                white: '#fcdede',
                 light: '#aaaaaa22',
                 lightHighlight: '#ffffff33',
                 medHighlight: '#d0d0d066',

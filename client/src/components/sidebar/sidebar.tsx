@@ -158,8 +158,8 @@ export const Sidebar: React.FC = () => {
 
     return (
         <div
-            className={`${minWidth} ${maxWidth} h-screen transition-[min-width,max-width] overflow-hidden`}
-            style={{ backgroundColor: SIDEBAR_BACKGROUND, color: '#fcdede' }}
+            className={`${minWidth} ${maxWidth} h-screen transition-[min-width,max-width] overflow-hidden text-white`}
+            style={{ backgroundColor: SIDEBAR_BACKGROUND }}
         >
             <Scrollbars
                 universal={true}
