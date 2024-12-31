@@ -393,7 +393,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             return (
                 <div className="flex items-center gap-1 sele" style={props.style}>
                     <span
-                        className="text-blueDark decoration-blueDark text-xs whitespace-nowrap underline cursor-pointer"
+                        className="text-blueLight decoration-blueLight text-xs whitespace-nowrap underline cursor-pointer"
                         onClick={() => focusRobot(round, id)}
                     >
                         {`[Team ${team}, ID #${id}, Round ${round}]`}
@@ -460,7 +460,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             <BasicDialog open={popout} onCancel={() => updatePopout(false)} title="Console" width="lg">
                 <div className="flex flex-col grow h-full w-full">
                     <div
-                        className="flex-grow border border-black py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
+                        className="flex-grow border border-white py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
                         style={{ height: '80vh', maxHeight: '80vh' }}
                     >
                         {popout && lineList}
