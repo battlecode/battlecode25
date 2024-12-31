@@ -29,7 +29,7 @@ interface TeamTableProps {
 
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
     const round = useRound()
-    const teamStat = round?.stat.getTeamStat(round?.match.game.teams[props.teamIdx])
+    const teamStat = round?.stat?.getTeamStat(round?.match.game.teams[props.teamIdx])
     const map = round?.map
 
     return (

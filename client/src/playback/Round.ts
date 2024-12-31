@@ -18,7 +18,12 @@ export default class Round {
         public bodies: Bodies,
         public actions: Actions,
         private currentDelta: schema.Round | null = null
-    ) {}
+    ) {
+        // Populate initial stat for round 0 (initial state)
+        if (roundNumber === 0) {
+            this.stat.applyRoundDelta(this, null)
+        }
+    }
 
     get teams(): Team[] {
         return this.match.game.teams
@@ -27,6 +32,7 @@ export default class Round {
     get stat(): RoundStat {
         const stat = this.match.stats[this.roundNumber]
         if (stat) return stat
+
         const newStat = new RoundStat(this.match.game)
         this.match.stats[this.roundNumber] = newStat
         return newStat
@@ -51,10 +57,7 @@ export default class Round {
 
         this.roundNumber += 1
 
-        // Finish the previous round if it exists
-        if (this.currentDelta) {
-            this.stat.applyRoundDelta(this, this.currentDelta)
-        }
+        this.stat.applyRoundDelta(this, this.currentDelta)
 
         this.initialRoundState = null
         this.turnNumber = 0
