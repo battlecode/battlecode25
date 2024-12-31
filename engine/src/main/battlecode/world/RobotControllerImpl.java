@@ -755,6 +755,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
         InternalRobot tower = this.gameWorld.getRobot(loc);
+        this.gameWorld.getMatchMaker().addSpawnAction(tower.getID(), loc, tower.getTeam(), type);
         this.gameWorld.getMatchMaker().addBuildAction(tower.getID());
     }
 
