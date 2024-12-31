@@ -110,6 +110,9 @@ public class GameConstants {
     /** The paint cost of marking a resource or tower pattern */
     public static final int MARK_PATTERN_PAINT_COST = 25;
 
+    /** The extra resources per turn that resource patterns give */
+    public static final int EXTRA_RESOURCES_FROM_PATTERN = 3;
+
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;
 

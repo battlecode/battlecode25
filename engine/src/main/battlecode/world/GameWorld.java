@@ -214,6 +214,16 @@ public strictfp class GameWorld {
         return bit;
     }
 
+    public boolean[][] patternToBooleanArray(int pattern){
+        boolean[][] boolArray = new boolean[5][5];
+        for (int i = 0; i < 5; i++){
+            for (int j = 0; j < 5; j++){
+                boolArray[i][j] = getPatternBit(pattern, i-2, j-2) == 1;
+            }
+        }
+        return boolArray;
+    }
+
     public boolean checkResourcePattern(Team team, MapLocation center) {
         return checkPattern(this.patternArray[RESOURCE_INDEX], team, center);
     }
@@ -500,6 +510,14 @@ public strictfp class GameWorld {
         return this.towersByLoc[locationToIndex(loc)];
     }
 
+    public int extraResourcesFromPatterns(Team team){
+        int numPatterns = 0;
+        for (MapLocation loc : this.resourcePatternCenters)
+            if (this.resourcePatternCentersByLoc[locationToIndex(loc)] == team)
+                numPatterns++;
+        return numPatterns * GameConstants.EXTRA_RESOURCES_FROM_PATTERN;
+    }
+
     /**
      * Returns the resource pattern corresponding to the map,
      * stored as the bits of an int between 0 and 2^({@value GameConstants#PATTERN_SIZE}^2) - 1.
@@ -575,10 +593,18 @@ public strictfp class GameWorld {
     }
 
     private int towerTypeToPatternIndex(UnitType towerType){
-        int index = DEFENSE_INDEX;
-        if (towerType == UnitType.LEVEL_ONE_MONEY_TOWER) index = MONEY_INDEX;
-        if (towerType == UnitType.LEVEL_ONE_PAINT_TOWER) index = PAINT_INDEX;
-        return index;
+        switch (towerType){
+            case LEVEL_ONE_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_TWO_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_THREE_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_ONE_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_TWO_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_THREE_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_ONE_PAINT_TOWER: return PAINT_INDEX;
+            case LEVEL_TWO_PAINT_TOWER: return PAINT_INDEX;
+            case LEVEL_THREE_PAINT_TOWER: return PAINT_INDEX;
+            default: return -1;
+        }
     }
 
     /**

@@ -105,6 +105,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getGameMap().getHeight();
     }
 
+    @Override
+    public boolean[][] getResourcePattern(){
+        return this.gameWorld.patternToBooleanArray(this.gameWorld.getResourcePattern());
+    }
+
+    @Override
+    public boolean[][] getTowerPattern(UnitType type) throws GameActionException{
+        assertIsTowerType(type);
+        return this.gameWorld.patternToBooleanArray(this.gameWorld.getTowerPattern(type));
+    }
+
     // *********************************
     // ****** UNIT QUERY METHODS *******
     // *********************************
@@ -949,6 +960,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
         this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
+    }
+
+    @Override 
+    public Message[] readMessages(int roundNum) {
+        ArrayList<Message> messages = new ArrayList<>();
+        for (Message m : this.robot.getMessages()){
+            if (roundNum == -1 || m.getRound() == roundNum)
+                messages.add(m);
+        }
+        return messages.toArray(new Message[messages.size()]);
     }
 
     // ***********************************

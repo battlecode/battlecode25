@@ -516,6 +516,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return sentMessagesCount;
     }
 
+    public Message[] getMessages(){
+        return incomingMessages.toArray(new Message[incomingMessages.size()]);
+    }
+
     public Message getFrontMessage() {
         if (incomingMessages.isEmpty())
             return null;
@@ -556,8 +560,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
-        addPaint(this.type.paintPerTurn);
-        this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
+        if (this.type.paintPerTurn != 0 )
+            addPaint(this.type.paintPerTurn + this.gameWorld.extraResourcesFromPatterns(this.team));
+        if (this.type.moneyPerTurn != 0)
+            this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
     }
 
     public void processBeginningOfTurn() {
