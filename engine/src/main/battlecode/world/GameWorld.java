@@ -127,7 +127,7 @@ public strictfp class GameWorld {
         for (int i = 0; i < initialBodies.length; i++) {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
-            spawnRobot(robot.ID, robot.type, newLocation, robot.team, true);
+            spawnRobot(robot.ID, robot.type, newLocation, robot.team);
             this.towerLocations.add(newLocation);
             towersByLoc[locationToIndex(newLocation)] = robot.team;
         }
@@ -214,6 +214,16 @@ public strictfp class GameWorld {
         return bit;
     }
 
+    public boolean[][] patternToBooleanArray(int pattern){
+        boolean[][] boolArray = new boolean[5][5];
+        for (int i = 0; i < 5; i++){
+            for (int j = 0; j < 5; j++){
+                boolArray[i][j] = getPatternBit(pattern, i-2, j-2) == 1;
+            }
+        }
+        return boolArray;
+    }
+
     public boolean checkResourcePattern(Team team, MapLocation center) {
         return checkPattern(this.patternArray[RESOURCE_INDEX], team, center);
     }
@@ -296,7 +306,7 @@ public strictfp class GameWorld {
     public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
-        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center, false);
+        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center);
         addRobot(center, unit);
     }
 
@@ -500,6 +510,14 @@ public strictfp class GameWorld {
         return this.towersByLoc[locationToIndex(loc)];
     }
 
+    public int extraResourcesFromPatterns(Team team){
+        int numPatterns = 0;
+        for (MapLocation loc : this.resourcePatternCenters)
+            if (this.resourcePatternCentersByLoc[locationToIndex(loc)] == team)
+                numPatterns++;
+        return numPatterns * GameConstants.EXTRA_RESOURCES_FROM_PATTERN;
+    }
+
     /**
      * Returns the resource pattern corresponding to the map,
      * stored as the bits of an int between 0 and 2^({@value GameConstants#PATTERN_SIZE}^2) - 1.
@@ -575,10 +593,18 @@ public strictfp class GameWorld {
     }
 
     private int towerTypeToPatternIndex(UnitType towerType){
-        int index = DEFENSE_INDEX;
-        if (towerType == UnitType.LEVEL_ONE_MONEY_TOWER) index = MONEY_INDEX;
-        if (towerType == UnitType.LEVEL_ONE_PAINT_TOWER) index = PAINT_INDEX;
-        return index;
+        switch (towerType){
+            case LEVEL_ONE_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_TWO_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_THREE_DEFENSE_TOWER: return DEFENSE_INDEX;
+            case LEVEL_ONE_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_TWO_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_THREE_MONEY_TOWER: return MONEY_INDEX;
+            case LEVEL_ONE_PAINT_TOWER: return PAINT_INDEX;
+            case LEVEL_TWO_PAINT_TOWER: return PAINT_INDEX;
+            case LEVEL_THREE_PAINT_TOWER: return PAINT_INDEX;
+            default: return -1;
+        }
     }
 
     /**
@@ -906,8 +932,8 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team, boolean skipAction){
-        InternalRobot robot = new InternalRobot(this, ID, team, type, location, skipAction);
+    public int spawnRobot(int ID, UnitType type, MapLocation location, Team team){
+        InternalRobot robot = new InternalRobot(this, ID, team, type, location);
         addRobot(location, robot);
         objectInfo.createRobot(robot);
         controlProvider.robotSpawned(robot);
@@ -920,7 +946,7 @@ public strictfp class GameWorld {
 
     public int spawnRobot(UnitType type, MapLocation location, Team team) {
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, location, team, false);
+        return spawnRobot(ID, type, location, team);
     }
 
     // *********************************
@@ -931,10 +957,10 @@ public strictfp class GameWorld {
      * Permanently destroy a robot
      */
     public void destroyRobot(int id) {
-        destroyRobot(id, false);
+        destroyRobot(id, false, false);
     }
 
-    public void destroyRobot(int id, boolean fromException){
+    public void destroyRobot(int id, boolean fromException, boolean fromDamage){
         InternalRobot robot = objectInfo.getRobotByID(id);
         MapLocation loc = robot.getLocation();
         
@@ -951,8 +977,10 @@ public strictfp class GameWorld {
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-        matchMaker.addDied(id);
-        matchMaker.addDieAction(id, fromException);
+        if (fromDamage || fromException)
+            matchMaker.addDieAction(id, fromException);
+        else
+            matchMaker.addDied(id);
     }
 
     // *********************************

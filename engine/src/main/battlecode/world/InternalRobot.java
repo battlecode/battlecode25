@@ -35,7 +35,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     private int roundsAlive;
     private int turnsWithoutPaint;
-    private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
 
@@ -61,7 +60,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc, boolean skipSpawnAction) {
+    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc) {
         this.gameWorld = gw;
 
         this.ID = id;
@@ -81,7 +80,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
-        this.hasSentSpawnAction = skipSpawnAction;
         this.turnsWithoutPaint = 0;
         this.actionCooldownTurns = type.actionCooldown;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
@@ -309,7 +307,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health += healthAmount;
         this.health = Math.min(this.health, this.type.health);
         if (this.health <= 0) {
-            this.gameWorld.destroyRobot(this.ID);
+            this.gameWorld.destroyRobot(this.ID, false, true);
         }
     }
 
@@ -518,6 +516,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return sentMessagesCount;
     }
 
+    public Message[] getMessages(){
+        return incomingMessages.toArray(new Message[incomingMessages.size()]);
+    }
+
     public Message getFrontMessage() {
         if (incomingMessages.isEmpty())
             return null;
@@ -558,8 +560,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
-        addPaint(this.type.paintPerTurn);
-        this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
+        if (this.type.paintPerTurn != 0 )
+            addPaint(this.type.paintPerTurn + this.gameWorld.extraResourcesFromPatterns(this.team));
+        if (this.type.moneyPerTurn != 0)
+            this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
     }
 
     public void processBeginningOfTurn() {
@@ -569,10 +573,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
-        if (!this.hasSentSpawnAction){
-            this.gameWorld.getMatchMaker().addSpawnAction(this.ID, this.location, this.team, this.type);
-            this.hasSentSpawnAction = true;
-        }
     }
 
     public void processEndOfTurn() {
@@ -623,7 +623,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        this.gameWorld.destroyRobot(getID(), true);
+        this.gameWorld.destroyRobot(getID(), true, false);
     }
 
     // *****************************************

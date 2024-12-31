@@ -46,6 +46,25 @@ public strictfp interface RobotController {
      */
     int getMapHeight();
 
+    /**
+     * Returns the 5x5 resource pattern.
+     * @return a boolean array of arrays, where entry [i][j] is true 
+     * if the i'th row and j'th column of the pattern should use the secondary color
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean[][] getResourcePattern();
+
+    /**
+     * Returns the 5x5 pattern needed to be drawn to build a tower of the specified type.
+     * @param type the type of tower to build. Must be a tower type.
+     * @return a boolean array of arrays, where entry [i][j] is true 
+     * if the i'th row and j'th column of the pattern should use the secondary color
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean[][] getTowerPattern(UnitType type) throws GameActionException;
+
     // *********************************
     // ****** UNIT QUERY METHODS *******
     // *********************************
@@ -760,15 +779,16 @@ public strictfp interface RobotController {
      */
     void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
 
-    // /**
-    //  * Reads all messages sent to this unit within the past 5 rounds if roundNum = -1, or a 
-    //  * specific round 
-    //  * 
-    //  * @param roundNum the round number to read messages from, or -1 to read all messages in the queue
-    //  * @return All 
-    //  */
-    // Message[] readMessages(int roundNum);
-    //TODO: implement
+    /**
+     * Reads all messages sent to this unit within the past 5 rounds if roundNum = -1, or only
+     * messages sent from the specified round otherwise
+     * 
+     * @param roundNum the round number to read messages from, or -1 to read all messages in the queue
+     * @return All messages of the specified round, or all messages from the past 5 round.
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    Message[] readMessages(int roundNum);
 
     // ***********************************
     // ****** OTHER ACTION METHODS *******
