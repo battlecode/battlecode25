@@ -64,7 +64,14 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                         {showMatchWinner && (
                             <div className="absolute">
                                 <Tooltip text={'Current match winner'} location={'right'}>
-                                    <BiMedal opacity={0.5} fontSize={'24px'} width={'20px'} color={'yellow'} />
+                                    <BiMedal
+                                        opacity={0.5}
+                                        fontSize={'24px'}
+                                        width={'20px'}
+                                        color={'#ffd43b'}
+                                        strokeWidth={'1px'}
+                                        stroke="#7f6a1d"
+                                    />
                                 </Tooltip>
                             </div>
                         )}
@@ -79,7 +86,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 <div className="absolute top-3 right-3">
                     {showGameWinner && (
                         <Tooltip text={'Overall game winner'} location={'left'}>
-                            <Crown />
+                            <Crown className="opacity-50" />
                         </Tooltip>
                     )}
                 </div>
