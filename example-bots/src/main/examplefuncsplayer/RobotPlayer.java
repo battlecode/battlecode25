@@ -21,8 +21,6 @@ import java.util.stream.Stream;
  * is created!
  */
 public class RobotPlayer {
-    private record ImportantGameObservations(int numNearbyAllyRobots, int numNearbyEnemyRobots) {}
-
     /**
      * We will use this variable to count the number of turns this robot has been alive.
      * You can use static variables like this to save any information you want. Keep in mind that even though
@@ -61,7 +59,7 @@ public class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        //System.out.println("I'm alive");
+        System.out.println("I'm alive");
 
         // You can also use indicators to save debug notes in replays.
         rc.setIndicatorString("Hello world!");
@@ -79,43 +77,6 @@ public class RobotPlayer {
                 // different types. Here, we separate the control depending on the UnitType, so we can
                 // use different strategies on different robots. If you wish, you are free to rewrite
                 // this into a different control structure!
-
-                // Check that various Java features haven't broken
-                UnitType enumValue = UnitType.SOLDIER;
-                boolean canAttack = enumValue.isTowerType();
-                Map<UnitType, Integer> enumMap = new EnumMap<>(UnitType.class);
-                enumMap.put(UnitType.SOLDIER, 42);
-                Map<Integer, Integer> hashMap = new HashMap<>();
-                hashMap.put(123, 456);
-                PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
-                priorityQueue.add(4);
-                priorityQueue.add(7);
-                priorityQueue.add(2);
-                int[] intArr = new int[]{3, 3, 5, 8, 5, 3, 4, 6, 8, 5, 7, 4, 3, 7, 6, 4, 3};
-                Arrays.sort(intArr);
-                Integer[] objArr = new Integer[]{3, 3, 5, 8, 5, 3, 4, 6, 8, 5, 7, 4, 3, 7, 6, 4, 3};
-                Arrays.sort(objArr);
-                Integer[] data = new Integer[]{1, 2, 3, 4, 5};
-                List<Integer> dataList = Arrays.asList(data);
-                Stream<Integer> dataStream = dataList.stream();
-                Stream<Integer> evenDataStream = dataStream.filter(x -> x % 2 == 0);
-                //Object[] evenData = evenDataStream.toArray();
-                // This seems to fail, because jdk.internal.misc.SharedSecrets hardcodes class names as strings
-                // See https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/jdk/internal/access/SharedSecrets.java#L101
-                // TODO: these strings probably need to be sanitized on a case-by-case basis
-                List<Integer> listData = evenDataStream.toList();
-                System.out.println("DATA " + listData);
-                // Let's use some features from Java 9+
-                // var was introduced with Java 10, and record types with Java 16
-                var numNearbyAllies = rc.senseNearbyRobots(-1, rc.getTeam()).length;
-                var numNearbyEnemies = rc.senseNearbyRobots(-1, rc.getTeam().opponent()).length;
-                var observations = new ImportantGameObservations(numNearbyAllies, numNearbyEnemies);
-                if (observations.numNearbyAllyRobots() > observations.numNearbyEnemyRobots()) {
-                    System.out.println("I have a good feeling about this!");
-                } else {
-                    System.out.println("I have a baaaaad feeling about this!");
-                }
-
                 switch (rc.getType()){
                     case SOLDIER: runSoldier(rc); break; 
                     case MOPPER: runMopper(rc); break;

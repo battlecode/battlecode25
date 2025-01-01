@@ -941,7 +941,10 @@ public class GameWorld {
         if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
         }
-        robot.addPaint(type.paintCost); //TODO: initial paint amounts
+        if (type == UnitType.LEVEL_ONE_PAINT_TOWER)
+            robot.addPaint(GameConstants.INITIAL_PAINT_TOWER_PAINT);
+        else if (type.isRobotType())
+            robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0)); 
         return ID;
     }
 
