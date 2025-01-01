@@ -15,7 +15,7 @@ import org.apache.commons.lang3.NotImplementedException;
  * - tiebreak by creation time (priority to later creation)
  * - tiebreak by robot ID (priority to lower ID)
  */
-public strictfp class InternalRobot implements Comparable<InternalRobot> {
+public class InternalRobot implements Comparable<InternalRobot> {
 
     private final RobotControllerImpl controller;
     protected final GameWorld gameWorld;
@@ -563,7 +563,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if (this.type.paintPerTurn != 0 )
             addPaint(this.type.paintPerTurn + this.gameWorld.extraResourcesFromPatterns(this.team));
         if (this.type.moneyPerTurn != 0)
-            this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
+            this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn+this.gameWorld.extraResourcesFromPatterns(this.team));
     }
 
     public void processBeginningOfTurn() {

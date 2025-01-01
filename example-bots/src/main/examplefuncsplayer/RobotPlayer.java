@@ -1,7 +1,6 @@
 package examplefuncsplayer;
 
 import battlecode.common.*;
-import javafx.scene.paint.Paint;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,15 +9,18 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.omg.CORBA.SystemException;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Stream;
+
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
  * The run() method inside this class is like your main function: this is what we'll call once your robot
  * is created!
  */
-public strictfp class RobotPlayer {
-
+public class RobotPlayer {
     /**
      * We will use this variable to count the number of turns this robot has been alive.
      * You can use static variables like this to save any information you want. Keep in mind that even though
@@ -57,7 +59,7 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        //System.out.println("I'm alive");
+        System.out.println("I'm alive");
 
         // You can also use indicators to save debug notes in replays.
         rc.setIndicatorString("Hello world!");
