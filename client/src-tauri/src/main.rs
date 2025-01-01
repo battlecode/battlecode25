@@ -71,11 +71,14 @@ async fn tauri_api(
         },
         "getJavas" => {
             let mut output = vec![];
-            let jvms = where_is_it::java::run(where_is_it::java::MatchOptions {
-                name: None,
-                arch: None,
-                version: Some(String::from("1.8"))
-            });
+            let mut jvms = vec![];
+            for supported in ["21", "23"] { 
+                jvms.append(&mut where_is_it::java::run(where_is_it::java::MatchOptions {
+                    name: None,
+                    arch: None,
+                    version: Some(String::from(supported))
+                }));
+            }
 
             // Add 'auto' option
             output.push(String::from("Auto"));
@@ -98,8 +101,8 @@ async fn tauri_api(
         "getPythons" => {
             let mut output = vec![];
             let pythons = where_is_it::python::run(where_is_it::python::MatchOptions {
-                major: None,
-                minor: None,
+                major: Some(3),
+                minor: Some(12),
                 patch: None,
                 pre: None,
                 dev: None,
