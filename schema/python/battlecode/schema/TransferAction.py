@@ -13,7 +13,7 @@ class TransferAction(object):
 
     @classmethod
     def SizeOf(cls) -> int:
-        return 2
+        return 8
 
     # TransferAction
     def Init(self, buf: bytes, pos: int):
@@ -22,8 +22,12 @@ class TransferAction(object):
     # Id of the transfer target
     # TransferAction
     def Id(self): return self._tab.Get(flatbuffers.number_types.Uint16Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(0))
+    # TransferAction
+    def Amount(self): return self._tab.Get(flatbuffers.number_types.Int32Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(4))
 
-def CreateTransferAction(builder, id):
-    builder.Prep(2, 2)
+def CreateTransferAction(builder, id, amount):
+    builder.Prep(4, 8)
+    builder.PrependInt32(amount)
+    builder.Pad(2)
     builder.PrependUint16(id)
     return builder.Offset()
