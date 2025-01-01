@@ -6,8 +6,10 @@ export function getAxes(
     margin: { top: number; right: number; bottom: number; left: number },
     size: { x: number; y: number }
 ) {
-    const xScale = (value: number) => (value * (width - margin.left - margin.right)) / size.x + margin.left
-    const yScale = (value: number) => height - margin.bottom - (value / size.y) * (height - margin.top - margin.bottom)
+    // +/- 1 is to avoid overlapping axis lines
+    const xScale = (value: number) => (value * (width - margin.left - margin.right)) / size.x + margin.left + 1
+    const yScale = (value: number) =>
+        height - margin.bottom - (value / size.y) * (height - margin.top - margin.bottom) - 1
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
     return { xScale, yScale, innerWidth, innerHeight }
@@ -56,7 +58,9 @@ export function drawXAxis(
             context.lineTo(xPos, height - margin.bottom + 6)
             context.stroke()
             context.fillStyle = options.textColor ?? 'black'
-            context.fillText(Math.round(range.min + i * labelGap).toString(), xPos - 3, height)
+            const label = Math.round(range.min + i * labelGap).toString()
+            const textWidth = context.measureText(label).width
+            context.fillText(label, xPos - textWidth / 2, height)
         }
     }
 }
@@ -82,7 +86,9 @@ export function drawYAxis(
             context.lineTo(margin.left - 6, yPos)
             context.stroke()
             context.fillStyle = options.textColor ?? 'black'
-            context.fillText(point.toString(), 0, yPos + 5)
+            const label = point.toString()
+            const textWidth = context.measureText(label).width
+            context.fillText(label, margin.left - textWidth - 10, yPos + 5)
         }
     } else if (options.count) {
         const gap = (range.max - range.min) / (options.count - (options.centered ? 0 : 1))
@@ -94,7 +100,9 @@ export function drawYAxis(
             context.lineTo(margin.left - 6, yPos)
             context.stroke()
             context.fillStyle = options.textColor ?? 'black'
-            context.fillText(Math.round(range.min + i * labelGap).toString(), 0, yPos + 5)
+            const label = Math.round(range.min + i * labelGap).toString()
+            const textWidth = context.measureText(label).width
+            context.fillText(label, margin.left - textWidth - 10, yPos + 5)
         }
     }
 }

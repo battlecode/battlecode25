@@ -37,17 +37,9 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     const data = props.active && round ? getChartData(round, props.property) : []
 
     return (
-        <div className="mt-2 px-2 w-full">
-            <h2 className="mx-auto text-center">{props.propertyDisplayName}</h2>
-            {/*
-            <D3LineChart
-                data={data}
-                width={300 + 40} // Add 40 so that tooltip is visible outside of SVG container
-                height={200}
-                margin={{ top: 20, right: 20 + 20, bottom: 30, left: 40 + 20 }}
-            />
-        */}
-            <QuickLineChart data={data} width={300} height={200} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} />
+        <div className="mt-2 w-full">
+            <h2 className="mx-auto text-center mb-2">{props.propertyDisplayName}</h2>
+            <QuickLineChart data={data} width={350} height={200} margin={{ top: 2, right: 20, bottom: 17, left: 30 }} />
         </div>
     )
 }
