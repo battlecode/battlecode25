@@ -87,8 +87,8 @@ jobs:
 
       - name: Upload javadocs
         run: |
-          unzip -d ${{ runner.temp }}/javadoc $HOME/.m2/repository/org/battlecode/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION/*-javadoc.jar
-          gsutil -m rsync -a $OBJECT_ACL -r ${{ runner.temp }}/javadoc gs://$GCS_BUCKET/javadoc/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION
+          unzip -d ${{ runner.temp }}/javadoc $HOME/.m2/repository/org/battlecode/${RELEASE_ARTIFACT_ID}-java/${RELEASE_VERSION}/*-javadoc.jar
+          gsutil -m rsync -a $OBJECT_ACL -r ${{ runner.temp }}/javadoc gs://$GCS_BUCKET/javadoc/${RELEASE_ARTIFACT_ID}/${RELEASE_VERSION}
 
       - name: Upload specs
-        run: gsutil -m rsync -a $OBJECT_ACL -r ./specs gs://$GCS_BUCKET/specs/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION
+        run: gsutil -m rsync -a $OBJECT_ACL -r ./specs gs://$GCS_BUCKET/specs/${RELEASE_ARTIFACT_ID}/$RELEASE_VERSION
