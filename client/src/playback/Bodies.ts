@@ -268,34 +268,6 @@ export class Body {
                 this.drawHealthBar(match, overlayCtx)
             }
         }
-
-        /*
-        if (this.carryingFlagId !== null) {
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                overlayCtx,
-                getImageIfLoaded('resources/bread_outline_thick_64x64.png'),
-                { x: renderCoords.x, y: renderCoords.y },
-                0.6
-            )
-
-            if (config.showFlagCarryIndicator) {
-                for (const direction of [
-                    { x: 0.5, y: 0 },
-                    { x: 0, y: 0.5 },
-                    { x: -0.5, y: 0 },
-                    { x: 0, y: -0.5 }
-                ]) {
-                    renderUtils.renderCarets(
-                        overlayCtx,
-                        { x: renderCoords.x + 0.5, y: renderCoords.y + 0.5 },
-                        direction,
-                        2,
-                        this.team.id == 1 ? '#ff0000aa' : '#00ffffaa'
-                    )
-                }
-            }
-        }
-        */
     }
 
     private drawPath(match: Match, ctx: CanvasRenderingContext2D) {
@@ -551,11 +523,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -579,11 +546,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -607,11 +569,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -634,11 +591,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -661,11 +613,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -688,11 +635,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     }
 }
