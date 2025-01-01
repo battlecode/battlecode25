@@ -101,9 +101,10 @@ public strictfp class GameWorld {
         this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
-
+        byte[] initialPaint = gm.getPaintArray();
         for (int i = 0; i < numSquares; i++) {
             this.resourcePatternCentersByLoc[i] = Team.NEUTRAL;
+            setPaint(indexToLocation(i), initialPaint[i]);
         }
 
         this.allRuinsByLoc = gm.getRuinArray();
