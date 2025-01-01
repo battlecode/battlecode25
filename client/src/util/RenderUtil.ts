@@ -15,10 +15,6 @@ export const getRenderCoords = (cellX: number, cellY: number, dims: Dimension, c
     return { x: cx + offset, y: cy + offset }
 }
 
-export const getInterpolatedCoordsFromBody = (body: Body, alpha: number) => {
-    return getInterpolatedCoords(body.pos, body.nextPos, alpha)
-}
-
 export const getInterpolatedCoords = (prev: Vector, cur: Vector, alpha: number) => {
     return {
         x: prev.x * (1 - alpha) + cur.x * alpha,

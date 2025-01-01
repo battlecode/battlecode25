@@ -15,7 +15,7 @@ import org.apache.commons.lang3.NotImplementedException;
  * - tiebreak by creation time (priority to later creation)
  * - tiebreak by robot ID (priority to lower ID)
  */
-public strictfp class InternalRobot implements Comparable<InternalRobot> {
+public class InternalRobot implements Comparable<InternalRobot> {
 
     private final RobotControllerImpl controller;
     protected final GameWorld gameWorld;

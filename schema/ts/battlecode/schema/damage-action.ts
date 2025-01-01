@@ -16,6 +16,9 @@ export class DamageAction {
   return this;
 }
 
+/**
+ * Id of the damage target
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

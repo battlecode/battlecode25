@@ -161,15 +161,15 @@ public class LoaderTest {
         final Class<?> overridesClass = l1.loadClass("instrumentertest.OverridesHashCode");
         final Method getHashCodeOverrides = overridesClass.getMethod("getHashCode");
 
-        final Object overrides = overridesClass.newInstance();
+        final Object overrides = overridesClass.getDeclaredConstructor().newInstance();
 
         assertEquals(57, getHashCodeOverrides.invoke(overrides));
         assertEquals(57, getHashCodeOverrides.invoke(overrides));
 
         final Class<?> notOverridesClass1 = l1.loadClass("instrumentertest.DoesntOverrideHashCode");
         final Method getHashCodeNotOverrides1 = notOverridesClass1.getMethod("getHashCode");
-        final Object notOverrides1a = notOverridesClass1.newInstance();
-        final Object notOverrides1b = notOverridesClass1.newInstance();
+        final Object notOverrides1a = notOverridesClass1.getDeclaredConstructor().newInstance();
+        final Object notOverrides1b = notOverridesClass1.getDeclaredConstructor().newInstance();
 
         assertEquals(getHashCodeNotOverrides1.invoke(notOverrides1a),
                 getHashCodeNotOverrides1.invoke(notOverrides1a));
@@ -178,8 +178,8 @@ public class LoaderTest {
 
         final Class<?> notOverridesClass2 = l2.loadClass("instrumentertest.DoesntOverrideHashCode");
         final Method getHashCodeNotOverrides2 = notOverridesClass2.getMethod("getHashCode");
-        final Object notOverrides2a = notOverridesClass2.newInstance();
-        final Object notOverrides2b = notOverridesClass2.newInstance();
+        final Object notOverrides2a = notOverridesClass2.getDeclaredConstructor().newInstance();
+        final Object notOverrides2b = notOverridesClass2.getDeclaredConstructor().newInstance();
 
         assertEquals(getHashCodeNotOverrides2.invoke(notOverrides2a),
                 getHashCodeNotOverrides2.invoke(notOverrides2a));
@@ -203,15 +203,15 @@ public class LoaderTest {
         final Class<?> overridesClass = l1.loadClass("instrumentertest.OverridesToString");
         final Method getToStringOverrides = overridesClass.getMethod("getToString");
 
-        final Object overrides = overridesClass.newInstance();
+        final Object overrides = overridesClass.getDeclaredConstructor().newInstance();
 
         assertEquals("foo", getToStringOverrides.invoke(overrides));
         assertEquals("foo", getToStringOverrides.invoke(overrides));
 
         final Class<?> notOverridesClass1 = l1.loadClass("instrumentertest.DoesntOverrideToString");
         final Method getToStringNotOverrides1 = notOverridesClass1.getMethod("getToString");
-        final Object notOverrides1a = notOverridesClass1.newInstance();
-        final Object notOverrides1b = notOverridesClass1.newInstance();
+        final Object notOverrides1a = notOverridesClass1.getDeclaredConstructor().newInstance();
+        final Object notOverrides1b = notOverridesClass1.getDeclaredConstructor().newInstance();
 
         assertEquals(getToStringNotOverrides1.invoke(notOverrides1a),
                 getToStringNotOverrides1.invoke(notOverrides1a));
@@ -220,8 +220,8 @@ public class LoaderTest {
 
         final Class<?> notOverridesClass2 = l2.loadClass("instrumentertest.DoesntOverrideToString");
         final Method getToStringNotOverrides2 = notOverridesClass2.getMethod("getToString");
-        final Object notOverrides2a = notOverridesClass2.newInstance();
-        final Object notOverrides2b = notOverridesClass2.newInstance();
+        final Object notOverrides2a = notOverridesClass2.getDeclaredConstructor().newInstance();
+        final Object notOverrides2b = notOverridesClass2.getDeclaredConstructor().newInstance();
 
         assertEquals(getToStringNotOverrides2.invoke(notOverrides2a),
                 getToStringNotOverrides2.invoke(notOverrides2a));

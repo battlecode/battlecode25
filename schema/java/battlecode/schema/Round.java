@@ -49,58 +49,72 @@ public final class Round extends Table {
   public ByteBuffer teamResourceAmountsAsByteBuffer() { return __vector_as_bytebuffer(6, 4); }
   public ByteBuffer teamResourceAmountsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 6, 4); }
   /**
+   * The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+   */
+  public int teamCoverageAmounts(int j) { int o = __offset(8); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int teamCoverageAmountsLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public IntVector teamCoverageAmountsVector() { return teamCoverageAmountsVector(new IntVector()); }
+  public IntVector teamCoverageAmountsVector(IntVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer teamCoverageAmountsAsByteBuffer() { return __vector_as_bytebuffer(8, 4); }
+  public ByteBuffer teamCoverageAmountsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 8, 4); }
+  /**
    * Ordered turn data for each robot during the round
    */
   public battlecode.schema.Turn turns(int j) { return turns(new battlecode.schema.Turn(), j); }
-  public battlecode.schema.Turn turns(battlecode.schema.Turn obj, int j) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int turnsLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public battlecode.schema.Turn turns(battlecode.schema.Turn obj, int j) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int turnsLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
   public battlecode.schema.Turn.Vector turnsVector() { return turnsVector(new battlecode.schema.Turn.Vector()); }
-  public battlecode.schema.Turn.Vector turnsVector(battlecode.schema.Turn.Vector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
+  public battlecode.schema.Turn.Vector turnsVector(battlecode.schema.Turn.Vector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
   /**
-   * The IDs of bodies that died.
+   * The IDs of bodies that died at the end of the round, with no attributable cause.
    */
-  public int diedIds(int j) { int o = __offset(10); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int diedIdsLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
+  public int diedIds(int j) { int o = __offset(12); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
+  public int diedIdsLength() { int o = __offset(12); return o != 0 ? __vector_len(o) : 0; }
   public IntVector diedIdsVector() { return diedIdsVector(new IntVector()); }
-  public IntVector diedIdsVector(IntVector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer diedIdsAsByteBuffer() { return __vector_as_bytebuffer(10, 4); }
-  public ByteBuffer diedIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 10, 4); }
+  public IntVector diedIdsVector(IntVector obj) { int o = __offset(12); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer diedIdsAsByteBuffer() { return __vector_as_bytebuffer(12, 4); }
+  public ByteBuffer diedIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 12, 4); }
   /**
    * The first sent Round in a match should have index 1. (The starting state,
    * created by the MatchHeader, can be thought to have index 0.)
    * It should increase by one for each following round.
    */
-  public int roundId() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public int roundId() { int o = __offset(14); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
   public static int createRound(FlatBufferBuilder builder,
       int teamIdsOffset,
       int teamResourceAmountsOffset,
+      int teamCoverageAmountsOffset,
       int turnsOffset,
       int diedIdsOffset,
       int roundId) {
-    builder.startTable(5);
+    builder.startTable(6);
     Round.addRoundId(builder, roundId);
     Round.addDiedIds(builder, diedIdsOffset);
     Round.addTurns(builder, turnsOffset);
+    Round.addTeamCoverageAmounts(builder, teamCoverageAmountsOffset);
     Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
     Round.addTeamIds(builder, teamIdsOffset);
     return Round.endRound(builder);
   }
 
-  public static void startRound(FlatBufferBuilder builder) { builder.startTable(5); }
+  public static void startRound(FlatBufferBuilder builder) { builder.startTable(6); }
   public static void addTeamIds(FlatBufferBuilder builder, int teamIdsOffset) { builder.addOffset(0, teamIdsOffset, 0); }
   public static int createTeamIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startTeamIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addTeamResourceAmounts(FlatBufferBuilder builder, int teamResourceAmountsOffset) { builder.addOffset(1, teamResourceAmountsOffset, 0); }
   public static int createTeamResourceAmountsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startTeamResourceAmountsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addTurns(FlatBufferBuilder builder, int turnsOffset) { builder.addOffset(2, turnsOffset, 0); }
+  public static void addTeamCoverageAmounts(FlatBufferBuilder builder, int teamCoverageAmountsOffset) { builder.addOffset(2, teamCoverageAmountsOffset, 0); }
+  public static int createTeamCoverageAmountsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
+  public static void startTeamCoverageAmountsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addTurns(FlatBufferBuilder builder, int turnsOffset) { builder.addOffset(3, turnsOffset, 0); }
   public static int createTurnsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
   public static void startTurnsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addDiedIds(FlatBufferBuilder builder, int diedIdsOffset) { builder.addOffset(3, diedIdsOffset, 0); }
+  public static void addDiedIds(FlatBufferBuilder builder, int diedIdsOffset) { builder.addOffset(4, diedIdsOffset, 0); }
   public static int createDiedIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startDiedIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static void addRoundId(FlatBufferBuilder builder, int roundId) { builder.addInt(4, roundId, 0); }
+  public static void addRoundId(FlatBufferBuilder builder, int roundId) { builder.addInt(5, roundId, 0); }
   public static int endRound(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

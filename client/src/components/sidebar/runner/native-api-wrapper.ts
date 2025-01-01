@@ -2,6 +2,7 @@ export type NativeAPI = {
     openScaffoldDirectory: () => Promise<string | undefined>
     getRootPath: () => Promise<string>
     getJavas: () => Promise<string[]>
+    getPythons: () => Promise<string[]>
     exportMap: (data: number[], name: string) => Promise<void>
     getServerVersion: (year: string) => Promise<string>
     path: {

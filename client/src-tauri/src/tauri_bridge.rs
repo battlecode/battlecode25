@@ -16,6 +16,7 @@ const tauriAPI = {
     openScaffoldDirectory: (...args) => invokeSingleResult('openScaffoldDirectory', [], ...args),
     getRootPath: (...args) => invokeSingleResult('getRootPath', [], ...args),
     getJavas: (...args) => invokeArrayResult('getJavas', [], ...args),
+    getPythons: (...args) => invokeArrayResult('getPythons', [], ...args),
     exportMap: (data, ...args) => invokeSingleResult('exportMap', data, ...args),
     getServerVersion: (...args) => invokeSingleResult('getServerVersion', [], ...args),
     path: {

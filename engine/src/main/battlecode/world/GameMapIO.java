@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
  * This class contains the code for reading a flatbuffer map file and converting it
  * to a proper LiveMap.
  */
-public final strictfp class GameMapIO {
+public final class GameMapIO {
     /**
      * The loader we use if we can't find a map in the correct path.
      */

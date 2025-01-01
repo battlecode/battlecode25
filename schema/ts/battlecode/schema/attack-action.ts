@@ -16,6 +16,9 @@ export class AttackAction {
   return this;
 }
 
+/**
+ * Id of the attack target
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

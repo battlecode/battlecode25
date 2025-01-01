@@ -4,6 +4,7 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 # Indicates that the robot died due to an uncaught exception
@@ -11,11 +12,11 @@ class DieExceptionAction(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def SizeOf(cls):
+    def SizeOf(cls) -> int:
         return 1
 
     # DieExceptionAction
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # DieExceptionAction

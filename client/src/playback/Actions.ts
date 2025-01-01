@@ -15,15 +15,7 @@ export default class Actions {
 
     constructor() {}
 
-    applyTurn(round: Round, turn: schema.Turn): void {
-        for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].duration--
-            if (this.actions[i].duration == 0) {
-                this.actions.splice(i, 1)
-                i--
-            }
-        }
-
+    applyTurnDelta(round: Round, turn: schema.Turn): void {
         const robotId = turn.robotId()
 
         if (turn.actionsLength() > 0) {
@@ -40,6 +32,17 @@ export default class Actions {
 
                 this.actions.push(newAction)
                 newAction.apply(round)
+            }
+        }
+    }
+
+    tickLifetimes(): void {
+        // Tick lifetimes of applied actions
+        for (let i = 0; i < this.actions.length; i++) {
+            this.actions[i].duration--
+            if (this.actions[i].duration == 0) {
+                this.actions.splice(i, 1)
+                i--
             }
         }
     }
@@ -100,18 +103,9 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
         }
     },
-    [schema.Action.DieExceptionAction]: class DieExceptionAction extends Action<schema.DieExceptionAction> {
-        apply(round: Round): void {
-            // TODO: revist this
-            console.log(`Robot ${this.robotId} has died due to an exception`)
-        }
-    },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
             const target = round.bodies.getById(this.actionData.id())
-            if (!target) {
-                throw new Error(`Target ${this.actionData.id()} not found for damage action`)
-            }
 
             // Apply damage to the target
             target.hp -= this.actionData.damage()
@@ -182,7 +176,8 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.actionData.loc()] = round.bodies.getById(this.robotId).team.id
+            const paintVal = (round.bodies.getById(this.robotId).team.id - 1) * 2 + 1 + this.actionData.isSecondary()
+            round.map.paint[this.actionData.loc()] = paintVal
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
@@ -208,7 +203,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             ctx.globalAlpha = 1
         }
     },
-    //!! change
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
@@ -269,16 +263,24 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            // This assumes ids are never reused
-            round.bodies.spawnBody(this.robotId, this.actionData)
+            round.bodies.spawnBodyFromAction(this.actionData)
+        }
+    },
+    [schema.Action.DieAction]: class DieAction extends Action<schema.DieAction> {
+        apply(round: Round): void {
+            if (this.actionData.dieType() === schema.DieType.EXCEPTION) {
+                // TODO: revisit this
+                console.log(`Robot ${this.robotId} has died due to an exception`)
+            }
+
+            round.bodies.markBodyAsDead(this.actionData.id())
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
         apply(round: Round): void {
-            /*
-            const team = round.bodies.getById(this.robotId).team
-            round.stat.getTeamStat(team).globalUpgrades.push(this.target)
-            */
+            const towerId = this.actionData.id()
+            const body = round.bodies.getById(towerId)
+            body.level += 1
         }
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {

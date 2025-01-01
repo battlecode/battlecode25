@@ -6,6 +6,7 @@ import Round from '../../../playback/Round'
 import Bodies from '../../../playback/Bodies'
 import { BATTLECODE_YEAR, DIRECTIONS } from '../../../constants'
 import { nativeAPI } from '../runner/native-api-wrapper'
+import { vectorAdd, vectorDistSquared } from '../../../playback/Vector'
 
 export function loadFileAsMap(file: File): Promise<Game> {
     return new Promise((resolve, reject) => {
@@ -22,7 +23,7 @@ export function loadFileAsMap(file: File): Promise<Game> {
 }
 
 export function exportMap(round: Round, name: string) {
-    const mapError = verifyMapGuarantees(round)
+    const mapError = verifyMap(round.map, round.bodies)
     if (mapError) return mapError
 
     round.map.staticMap.name = name
@@ -33,83 +34,88 @@ export function exportMap(round: Round, name: string) {
     return ''
 }
 
-function verifyMapGuarantees(round: Round) {
-    const staticMap = round.map.staticMap
-
-    throw new Error('Not implemented')
-
-    /*
-    if (round.map.isEmpty() && round.bodies.isEmpty()) {
+/**
+ * Check that the map is valid and conforms with guarantees.
+ * Returns a non-empty string with an error if applicable
+ */
+function verifyMap(map: CurrentMap, bodies: Bodies): string {
+    if (map.isEmpty() && bodies.isEmpty()) {
         return 'Map is empty'
     }
 
-    const spawnZoneCount = staticMap.spawnLocations.length
-    if (spawnZoneCount !== 6) {
-        return `Map has ${spawnZoneCount} spawn zones. Must have exactly 6`
-    }
+    // Validate map elements
+    let numWalls = 0
+    let numPaintTowers = 0
+    let numMoneyTowers = 0
+    const mapSize = map.width * map.height
+    for (let i = 0; i < mapSize; i++) {
+        const pos = map.indexToLocation(i)
+        const wall = map.staticMap.walls[i]
+        const ruin = map.staticMap.ruins.find((l) => l.x === pos.x && l.y === pos.y)
+        const body = bodies.getBodyAtLocation(pos.x, pos.y)
 
-    for (let i = 0; i < spawnZoneCount; i++) {
-        for (let j = i + 1; j < spawnZoneCount; j++) {
-            const distSquared =
-                Math.pow(staticMap.spawnLocations[i].x - staticMap.spawnLocations[j].x, 2) +
-                Math.pow(staticMap.spawnLocations[i].y - staticMap.spawnLocations[j].y, 2)
-            if (distSquared < 36) {
-                return `Spawn zones ${i} and ${j} are too close together, they must be at least sqrt(36) units apart (6 tiles)`
-            }
+        if (ruin && wall) {
+            return `Ruin and wall overlap at (${pos.x}, ${pos.y})`
         }
-    }
 
-    let totalSpawnableLocations = 0
-    for (let i = 0; i < spawnZoneCount; i++) {
-        const loc = staticMap.spawnLocations[i]
-        for (let x = loc.x - 1; x <= loc.x + 1; x++) {
-            for (let y = loc.y - 1; y <= loc.y + 1; y++) {
-                if (x < 0 || x >= round.map.width || y < 0 || y >= round.map.height) continue
-                const mapIdx = round.map.locationToIndex(x, y)
-                if (!round.map.water[mapIdx] && !staticMap.walls[mapIdx] && !staticMap.divider[mapIdx]) {
-                    totalSpawnableLocations++
+        if (ruin && body) {
+            return `Robot at (${pos.x}, ${pos.y}) is on top of a ruin`
+        }
+
+        if (wall && body) {
+            return `Robot at (${pos.x}, ${pos.y}) is on top of a wall`
+        }
+
+        if (ruin) {
+            // Check distance to nearby ruins
+            for (const checkRuin of map.staticMap.ruins) {
+                if (checkRuin === ruin) continue
+
+                const minDistSq = 25
+                if (vectorDistSquared(checkRuin, pos) < minDistSq) {
+                    return (
+                        `Ruin at (${pos.x}, ${pos.y}) is too close to ruin ` +
+                        `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
+                        `>= ${Math.sqrt(minDistSq).toFixed(1)} away`
+                    )
                 }
             }
         }
-    }
-    if (totalSpawnableLocations < 9 * 3 * 2) {
-        return `Map has ${totalSpawnableLocations} spawnable locations. Must have 9 * 3 for each team`
-    }
 
-    for (let zoneIdx = 0; zoneIdx < staticMap.spawnLocations.length; zoneIdx += 2) {
-        const floodMask = new Int8Array(round.map.width * round.map.height)
-        const floodQueue: number[] = []
-        const spawnZone = staticMap.spawnLocations[zoneIdx]
-        const startIdx = round.map.locationToIndex(spawnZone.x, spawnZone.y)
-        floodMask[startIdx] = 1
-        floodQueue.push(startIdx)
-        let totalFlooded = 1
-        while (floodQueue.length > 0) {
-            const idx = floodQueue.shift()!
-            for (let i = 1; i < 9; i++) {
-                const x = DIRECTIONS[i][0] + round.map.indexToLocation(idx).x
-                const y = DIRECTIONS[i][1] + round.map.indexToLocation(idx).y
-                if (x < 0 || x >= round.map.width || y < 0 || y >= round.map.height) continue
-                const newIdx = round.map.locationToIndex(x, y)
-                if (!staticMap.divider[newIdx] && !staticMap.walls[newIdx] && !floodMask[newIdx]) {
-                    // Check if we can reach an enemy spawn location
-                    for (let j = 0; j < staticMap.spawnLocations.length; j++) {
-                        const loc = staticMap.spawnLocations[j]
-                        if (loc.x == x && loc.y == y && j % 2 != 0)
-                            return `Maps cannot have spawn zones that are initially reachable by both teams`
-                    }
+        if (wall) {
+            // Check distance to nearby ruins
 
-                    floodMask[newIdx] = 1
-                    floodQueue.push(newIdx)
-                    totalFlooded++
+            for (const checkRuin of map.staticMap.ruins) {
+                const minDistSq = 8
+                if (vectorDistSquared(checkRuin, pos) < minDistSq) {
+                    return (
+                        `Wall at (${pos.x}, ${pos.y}) is too close to ruin ` +
+                        `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
+                        `>= ${Math.sqrt(minDistSq).toFixed(1)} away`
+                    )
                 }
             }
         }
-        if (totalFlooded >= 0.5 * round.map.width * round.map.height) {
-            return `Map is too open. Must be divided into at least 2 sections by the dam`
-        }
+
+        numPaintTowers += body && body.robotType === schema.RobotType.PAINT_TOWER ? 1 : 0
+        numMoneyTowers += body && body.robotType === schema.RobotType.MONEY_TOWER ? 1 : 0
+        numWalls += wall
     }
-*/
+
+    // Validate wall percentage
+    const maxPercent = 20
+    if (numWalls * 100 >= mapSize * maxPercent) {
+        const displayPercent = (numWalls / mapSize) * 100
+        return `Walls must take up at most ${maxPercent}% of the map, currently is ${displayPercent.toFixed(1)}%`
+    }
+
+    // Validate initial bodies
+    if (numPaintTowers !== 2) {
+        return `Expected exactly 2 paint towers, found ${numPaintTowers}`
+    }
+    if (numMoneyTowers !== 2) {
+        return `Expected exactly 2 money towers, found ${numMoneyTowers}`
+    }
 
     return ''
 }

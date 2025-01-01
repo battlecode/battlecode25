@@ -16,6 +16,9 @@ export class MessageAction {
   return this;
 }
 
+/**
+ * Id of the message target
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

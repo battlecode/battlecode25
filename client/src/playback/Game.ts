@@ -133,7 +133,7 @@ export default class Game {
 
     public getTeamByID(id: number): Team {
         for (const team of this.teams) if (team.id === id) return team
-        throw new Error('Team not found')
+        throw new Error(`Team '${id}' not found`)
     }
 
     /**

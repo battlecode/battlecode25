@@ -24,36 +24,44 @@ var TimelineMarker = /** @class */ (function () {
         bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
         return (obj || new TimelineMarker()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     };
-    TimelineMarker.prototype.round = function () {
+    TimelineMarker.prototype.team = function () {
         var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+        return offset ? this.bb.readInt8(this.bb_pos + offset) : 0;
     };
-    TimelineMarker.prototype.colorHex = function () {
+    TimelineMarker.prototype.round = function () {
         var offset = this.bb.__offset(this.bb_pos, 6);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
-    TimelineMarker.prototype.label = function (optionalEncoding) {
+    TimelineMarker.prototype.colorHex = function () {
         var offset = this.bb.__offset(this.bb_pos, 8);
+        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    };
+    TimelineMarker.prototype.label = function (optionalEncoding) {
+        var offset = this.bb.__offset(this.bb_pos, 10);
         return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
     };
     TimelineMarker.startTimelineMarker = function (builder) {
-        builder.startObject(3);
+        builder.startObject(4);
+    };
+    TimelineMarker.addTeam = function (builder, team) {
+        builder.addFieldInt8(0, team, 0);
     };
     TimelineMarker.addRound = function (builder, round) {
-        builder.addFieldInt32(0, round, 0);
+        builder.addFieldInt32(1, round, 0);
     };
     TimelineMarker.addColorHex = function (builder, colorHex) {
-        builder.addFieldInt32(1, colorHex, 0);
+        builder.addFieldInt32(2, colorHex, 0);
     };
     TimelineMarker.addLabel = function (builder, labelOffset) {
-        builder.addFieldOffset(2, labelOffset, 0);
+        builder.addFieldOffset(3, labelOffset, 0);
     };
     TimelineMarker.endTimelineMarker = function (builder) {
         var offset = builder.endObject();
         return offset;
     };
-    TimelineMarker.createTimelineMarker = function (builder, round, colorHex, labelOffset) {
+    TimelineMarker.createTimelineMarker = function (builder, team, round, colorHex, labelOffset) {
         TimelineMarker.startTimelineMarker(builder);
+        TimelineMarker.addTeam(builder, team);
         TimelineMarker.addRound(builder, round);
         TimelineMarker.addColorHex(builder, colorHex);
         TimelineMarker.addLabel(builder, labelOffset);

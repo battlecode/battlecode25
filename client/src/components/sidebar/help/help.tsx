@@ -82,7 +82,7 @@ export const HelpPage: React.FC<Props> = (props) => {
                 {hotkeyElement(`Space`, 'Pauses / Unpauses game')}
                 {hotkeyElement(
                     `LeftArrow and RightArrow`,
-                    'Controls speed if game is unpaused, or moves the current round if paused'
+                    'Controls speed if game is unpaused, or moves the current round/turn if paused'
                 )}
                 {hotkeyElement(`\` and 1`, 'Scroll through Game, Runner, and Queue')}
                 {/*
@@ -95,7 +95,9 @@ export const HelpPage: React.FC<Props> = (props) => {
                     `Ctrl/⌘ + O`,
                     'If you are on the queue tab, prompts you to select a replay file. Otherwise, opens the queue tab.'
                 )}
-                {hotkeyElement(`C`, 'Hides and Unhides Game control bar')}
+                {hotkeyElement(`R`, 'Resets the map camera if it has been panned/zoomed')}
+                {hotkeyElement(`C`, 'Hides and unhides game control bar')}
+                {hotkeyElement(`V`, 'Toggles per-turn playback for the current game')}
                 {hotkeyElement(`.`, 'Skip to the very last round of the current game')}
                 {hotkeyElement(`,`, 'Skip to the first round of the current game')}
             </div>

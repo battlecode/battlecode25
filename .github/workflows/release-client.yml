@@ -1,17 +1,15 @@
-name: Release
+name: Release Client
 on:
   push:
     tags:
-      - '*'
+      - 'client.*'
 
 env:
   # GCS_BUCKET is the name of the Google Cloud Storage bucket to which all artifacts are deployed.
   GCS_BUCKET: mitbattlecode-releases
 
-  # RELEASE_ARTIFACT_ID is the name of the Maven artifact produced by the buildsystem.
-  # Important: you must make sure no ID is a prefix of a different ID. Otherwise, you could
-  # inadvertently cause unintended episodes to become public.
-  RELEASE_ARTIFACT_ID: battlecode24
+  # CLIENT_ARTIFACT_ID is the name of the base client artifact produced by the buildsystem.
+  CLIENT_ARTIFACT_ID: battlecode25
 
   # IS_PUBLIC is whether to release deployments publicly. Set to exactly the text "YES" to do so.
   IS_PUBLIC: NO
@@ -48,29 +46,29 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
 
-      - name: Set up Node 16
+      - name: Set up Node 18
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
-      # Rust toolchain is preinstalled on runner images, but we need to add the arm64
-      # toolchain on macos to compile universal apps from the x86 runner
+      # Rust toolchain is preinstalled on runner images, but we need to add the x86
+      # toolchain on macos to compile universal apps from the M1 runner
       - name: Install macos dependencies
         if: startsWith(matrix.platform-name, 'macos')
         run: |
-          rustup target add aarch64-apple-darwin
-          npm install @tauri-apps/cli-darwin-x64
+          rustup target add x86_64-apple-darwin
+          npm install @tauri-apps/cli-darwin-arm64@1.6.3
 
       - name: Install linux dependencies
         if: startsWith(matrix.platform-name, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
-          npm install @tauri-apps/cli-linux-x64-gnu
+          npm install @tauri-apps/cli-linux-x64-gnu@1.6.3
 
       - name: Install windows dependencies
         if: startsWith(matrix.platform-name, 'windows')
-        run: npm install @tauri-apps/cli-win32-x64-msvc
+        run: npm install @tauri-apps/cli-win32-x64-msvc@1.6.3
 
       - name: Install schema
         run: npm install
@@ -82,6 +80,16 @@ jobs:
 
       - name: Build client webpack
         run: npm run build
+        working-directory: ./client
+
+      - name: Compile electron modules
+        run: npm run electron-compile-modules
+        working-directory: ./client
+
+      # Specially compile x86 electron modules to be included in universal build
+      - name: Compile (extra) electron modules
+        if: startsWith(matrix.platform-name, 'macos')
+        run: RUST_TARGET=x86_64-apple-darwin npm run electron-compile-modules
         working-directory: ./client
 
       - name: Build client applications
@@ -125,6 +133,7 @@ jobs:
       - name: Inject release version
         run: |
           release_version=${GITHUB_REF#refs/*/}
+          release_version=${release_version#client.}
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
           echo "The release version is $release_version"
 
@@ -138,28 +147,6 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v1'
 
-      - name: Clone private maps
-        if: ${{ env.IS_PUBLIC != 'YES' }}
-        uses: actions/checkout@v3
-        with:
-          repository: battlecode/private-maps
-          token: ${{ secrets.CI_REPOSITORY_CLONE_PAT }}
-          path: private-maps
-      
-      - name: Inject private maps
-        if: ${{ env.IS_PUBLIC != 'YES' }}
-        run: |
-          source="private-maps/$RELEASE_ARTIFACT_ID"
-          dest="engine/src/main/battlecode/world/resources"
-          if [ -d "$source" ]; then
-            cp -r -i "$source/." "$dest/" < /dev/null &> private-maps-copy-log
-            if [ -s "private-maps-copy-log" ]; then
-              echo "FAILED! Public and private maps should not intersect."
-              cat private-maps-copy-log
-              exit 1
-            fi
-          fi
-          
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -179,27 +166,27 @@ jobs:
         with:
           name: client-*
 
-      - name: Publish to local repository
-        run: ./gradlew publishToMavenLocal -Prelease_version=$RELEASE_VERSION
-
       - name: Determine access control
         run: |
           [[ "$IS_PUBLIC" = "YES" ]] && acl="public-read" || acl="project-private"
           echo "OBJECT_ACL=$acl" >> $GITHUB_ENV
           echo "Objects will be uploaded with ACL $acl"
 
+      - name: Publish to local repository
+        run: |
+          id_base=${CLIENT_ARTIFACT_ID}-client
+          path_base=client/artifacts/client
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-win-tauri -Partifact_path=${path_base}-windows/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-mac-tauri -Partifact_path=${path_base}-macos/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-linux-tauri -Partifact_path=${path_base}-linux/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-win-electron -Partifact_path=${path_base}-windows/electron-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-mac-electron -Partifact_path=${path_base}-macos/electron-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-linux-electron -Partifact_path=${path_base}-linux/electron-output.zip
+
       - name: Upload maven artifacts to remote repository
         run: gsutil -m rsync -a $OBJECT_ACL -r $HOME/.m2/repository/org/battlecode gs://$GCS_BUCKET/maven/org/battlecode
 
-      - name: Upload javadocs
-        run: |
-          unzip -d ${{ runner.temp }}/javadoc $HOME/.m2/repository/org/battlecode/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION/*-javadoc.jar
-          gsutil -m rsync -a $OBJECT_ACL -r ${{ runner.temp }}/javadoc gs://$GCS_BUCKET/javadoc/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION
-
-      - name: Upload specs
-        run: gsutil -m rsync -a $OBJECT_ACL -r ./specs gs://$GCS_BUCKET/specs/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION
-
       - name: Upload web client
         run: |
-          gsutil -m rsync -r -a $OBJECT_ACL ./artifacts/client-dist gs://$GCS_BUCKET/client/$RELEASE_ARTIFACT_ID/$RELEASE_VERSION
-        working-directory: ./client
+          gsutil -m rsync -r -a $OBJECT_ACL ./client-dist gs://$GCS_BUCKET/client/$CLIENT_ARTIFACT_ID/$RELEASE_VERSION
+        working-directory: ./client/artifacts

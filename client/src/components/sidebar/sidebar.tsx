@@ -18,7 +18,7 @@ import { useScaffold } from './runner/scaffold'
 import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../playback/Game'
-import gameRunner from '../../playback/GameRunner'
+import GameRunner from '../../playback/GameRunner'
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
@@ -93,7 +93,7 @@ export const Sidebar: React.FC = () => {
                 const loadedGame = Game.loadFullGameRaw(buffer)
 
                 // select the first match
-                gameRunner.setMatch(loadedGame.matches[0])
+                GameRunner.setMatch(loadedGame.matches[0])
 
                 context.setState((prevState) => ({
                     ...prevState,
@@ -209,13 +209,15 @@ export const Sidebar: React.FC = () => {
                             </div>
                         </>
                     )}
-                    <GamePage open={open && page == PageType.GAME} />
-                    <QueuePage open={open && page == PageType.QUEUE} />
-                    <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
-                    <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
-                    <HelpPage open={open && page == PageType.HELP} />
-                    <ConfigPage open={open && page == PageType.CONFIG} />
-                    <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    <div className="h-full overflow-y-scroll overflow-x-hidden">
+                        <GamePage open={open && page == PageType.GAME} />
+                        <QueuePage open={open && page == PageType.QUEUE} />
+                        <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
+                        <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
+                        <HelpPage open={open && page == PageType.HELP} />
+                        <ConfigPage open={open && page == PageType.CONFIG} />
+                        <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    </div>
                 </div>
             </Scrollbars>
         </div>

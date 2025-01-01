@@ -15,6 +15,9 @@ var BuildAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
+    /**
+     * Id of the tower bot
+     */
     BuildAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };

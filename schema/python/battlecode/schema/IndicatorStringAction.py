@@ -4,6 +4,8 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
+from typing import Optional
 np = import_numpy()
 
 # Update the indicator string for this robot
@@ -11,7 +13,7 @@ class IndicatorStringAction(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAs(cls, buf, offset=0):
+    def GetRootAs(cls, buf, offset: int = 0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = IndicatorStringAction()
         x.Init(buf, n + offset)
@@ -22,30 +24,30 @@ class IndicatorStringAction(object):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
     # IndicatorStringAction
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # IndicatorStringAction
-    def Value(self):
+    def Value(self) -> Optional[str]:
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
-def IndicatorStringActionStart(builder):
+def IndicatorStringActionStart(builder: flatbuffers.Builder):
     builder.StartObject(1)
 
-def Start(builder):
+def Start(builder: flatbuffers.Builder):
     IndicatorStringActionStart(builder)
 
-def IndicatorStringActionAddValue(builder, value):
+def IndicatorStringActionAddValue(builder: flatbuffers.Builder, value: int):
     builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(value), 0)
 
-def AddValue(builder, value):
+def AddValue(builder: flatbuffers.Builder, value: int):
     IndicatorStringActionAddValue(builder, value)
 
-def IndicatorStringActionEnd(builder):
+def IndicatorStringActionEnd(builder: flatbuffers.Builder) -> int:
     return builder.EndObject()
 
-def End(builder):
+def End(builder: flatbuffers.Builder) -> int:
     return IndicatorStringActionEnd(builder)

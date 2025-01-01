@@ -14,6 +14,7 @@ interface Props {
     leftText?: string
     rightText?: string
     width?: 'sm' | 'md' | 'lg' | 'full'
+    keepMounted?: boolean
 }
 
 export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
@@ -32,7 +33,7 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
         context.setState((prevState) => ({ ...prevState, disableHotkeys: props.open }))
     }, [props.open])
 
-    if (!props.open) return <></>
+    if (!props.keepMounted && !props.open) return <></>
 
     const leftText = props.leftText ?? 'Cancel'
     const rightText = props.rightText ?? 'Confirm'
@@ -41,14 +42,17 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
         widthType == 'sm'
             ? 'w-4/6 md:w-3/5 lg:w-6/12'
             : widthType == 'md'
-            ? 'w-5/6 md:w-3/4 lg:w-7/12'
-            : widthType == 'lg'
-            ? 'w-5/6 md:w-4/5 lg:w-9/12'
-            : widthType == 'full'
-            ? 'w-5/6 md:w-5/6 lg:w-11/12'
-            : ''
+              ? 'w-5/6 md:w-3/4 lg:w-7/12'
+              : widthType == 'lg'
+                ? 'w-5/6 md:w-4/5 lg:w-9/12'
+                : widthType == 'full'
+                  ? 'w-5/6 md:w-5/6 lg:w-11/12'
+                  : ''
     return (
-        <div className="fixed flex flex-col items-center justify-center w-full h-full top-0 left-0 bg-gray-500 bg-opacity-50 z-50">
+        <div
+            className="fixed flex flex-col items-center justify-center w-full h-full top-0 left-0 bg-gray-500 bg-opacity-50 z-50"
+            style={{ display: !props.open ? 'none' : '' }}
+        >
             <div
                 className={
                     'flex flex-col flex-between items-center bg-white border border-black shadow-lg rounded-xl py-4 px-6 ' +
