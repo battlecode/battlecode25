@@ -76,9 +76,6 @@ public class GameConstants {
     /** Paint capacity for mopper robots */
     public static final int PAINT_CAPACITY_MOPPER = 100;
 
-    /** The amount of a paint a paint tower starts with. */
-    public static final int INITIAL_PAINT_TOWER_PAINT = 500;
-
     /** The amount of money each team starts with. */
     public static final int INITIAL_TEAM_MONEY = 1000;
 
@@ -104,11 +101,20 @@ public class GameConstants {
     /** The number of defense towers a player starts with */
     public static final int NUMBER_INITIAL_DEFENSE_TOWERS = 0;
 
+    /** The amount of a paint a paint tower starts with. */
+    public static final int INITIAL_PAINT_TOWER_PAINT = 500;
+
+    /** The percentage of a robot's paint capacity that is full when first built. */
+    public static final int INITIAL_ROBOT_PAINT_PERCENTAGE = 50;
+
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
 
     /** The paint cost of marking a resource or tower pattern */
     public static final int MARK_PATTERN_PAINT_COST = 25;
+
+    /** The extra resources per turn that resource patterns give */
+    public static final int EXTRA_RESOURCES_FROM_PATTERN = 3;
 
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;

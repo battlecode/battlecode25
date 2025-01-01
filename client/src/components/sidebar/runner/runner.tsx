@@ -72,8 +72,10 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     }
 
     useEffect(() => {
-        if (availablePlayers.size > 0) setTeamA([...availablePlayers][0])
-        if (availablePlayers.size > 1) setTeamB([...availablePlayers][1])
+        const teamA = availablePlayers.size > 0 ? [...availablePlayers][0] : undefined
+        const teamB = availablePlayers.size > 1 ? [...availablePlayers][1] : teamA
+        setTeamA(teamA)
+        setTeamB(teamB)
     }, [availablePlayers])
 
     useEffect(() => {
@@ -327,13 +329,13 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
     return (
         <div className="flex flex-col mt-3">
             <label>Maps</label>
-            <div className="flex flex-col border border-black py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
+            <div className="flex flex-col border border-white py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
                 {[...availableMaps].map((m) => {
                     const selected = maps.has(m)
                     return (
                         <div
                             key={m}
-                            className={'cursor-pointer hover:bg-gray-200 flex items-center justify-between'}
+                            className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
                             onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
                         >
                             {m}
@@ -391,7 +393,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             return (
                 <div className="flex items-center gap-1 sele" style={props.style}>
                     <span
-                        className="text-blueDark decoration-blueDark text-xs whitespace-nowrap underline cursor-pointer"
+                        className="text-blueLight decoration-blueLight text-xs whitespace-nowrap underline cursor-pointer"
                         onClick={() => focusRobot(round, id)}
                     >
                         {`[Team ${team}, ID #${id}, Round ${round}]`}
@@ -458,7 +460,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             <BasicDialog open={popout} onCancel={() => updatePopout(false)} title="Console" width="lg">
                 <div className="flex flex-col grow h-full w-full">
                     <div
-                        className="flex-grow border border-black py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
+                        className="flex-grow border border-white py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
                         style={{ height: '80vh', maxHeight: '80vh' }}
                     >
                         {popout && lineList}

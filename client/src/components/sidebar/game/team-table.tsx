@@ -29,7 +29,7 @@ interface TeamTableProps {
 
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
     const round = useRound()
-    const teamStat = round?.stat.getTeamStat(round?.match.game.teams[props.teamIdx])
+    const teamStat = round?.stat?.getTeamStat(round?.match.game.teams[props.teamIdx])
     const map = round?.map
 
     return (
@@ -55,18 +55,25 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, tea
         moneyAmount = teamStat.moneyAmount
     }
 
+    const teamName = TEAM_COLOR_NAMES[teamIdx].toLowerCase()
     return (
-        <div className="flex items-center mt-2 mb-1 text-xs font-bold justify-around">
-            <div className="flex items-center w-[200px] ml-5">
-                Paint Coverage: <b>{paintPercent}%</b>
-                <div className="w-[30px] h-[30px]">
-                    <img style={{ transform: 'scale(1.5)' }} src={imageSource('resources/crumb_1.png')} />
+        <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
+            <div className="flex items-center w-[160px] ml-6">
+                <div className="w-[30px] h-[30px] mr-2">
+                    <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+                </div>
+                <div>Coverage:</div>
+                <div className="ml-1">
+                    <b>{paintPercent}%</b>
                 </div>
             </div>
             <div className="flex items-center w-[145px]">
-                Money: <b>{moneyAmount}</b>
-                <div className="w-[30px] h-[30px]">
-                    <img style={{ transform: 'scale(1.5)' }} src={imageSource('resources/crumb_1.png')} />
+                <div className="w-[30px] h-[30px] mr-2">
+                    <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/chip_${teamName}.png`)} />
+                </div>
+                <div>Chips:</div>
+                <div className="ml-1">
+                    <b>{moneyAmount}</b>
                 </div>
             </div>
         </div>
@@ -80,12 +87,12 @@ interface UnitsTableProps {
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
     const columns: Array<[string, React.ReactElement]> = [
-        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="0" />],
-        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="1" />],
+        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="0" />],
+        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="1" />],
         ['Defense Tower', <UnitsIcon teamIdx={teamIdx} robotType="defense_tower" key="2" />],
         ['Soldier', <UnitsIcon teamIdx={teamIdx} robotType="soldier" key="3" />],
-        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="4" />],
-        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="5" />]
+        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="4" />],
+        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="5" />]
     ]
 
     let data: [string, number[]][] = [['Count', [0, 0, 0, 0, 0, 0]]]

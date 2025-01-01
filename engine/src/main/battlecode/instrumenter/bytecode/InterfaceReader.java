@@ -30,7 +30,7 @@ class InterfaceReader extends ClassVisitor {
     private String[] interfaces = null;
 
     public InterfaceReader(TeamClassLoaderFactory factory) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM9);
         this.factory = factory;
     }
 

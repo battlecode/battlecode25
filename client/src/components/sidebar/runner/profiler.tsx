@@ -49,7 +49,7 @@ export const ProfilerDialog: React.FC = () => {
 
     React.useEffect(() => {
         // Update default theme
-        localStorage.setItem('speedscope-color-scheme', 'LIGHT')
+        localStorage.setItem('speedscope-color-scheme', 'DARK')
     }, [])
 
     return (

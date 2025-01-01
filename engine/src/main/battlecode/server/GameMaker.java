@@ -31,7 +31,7 @@ import static battlecode.util.FlatHelpers.*;
 /**
  * Writes a game to a flatbuffer, hooray.
  */
-public strictfp class GameMaker {
+public class GameMaker {
 
     /**
      * The protocol expects a series of valid state transitions;

@@ -25,7 +25,7 @@ import java.util.Map;
  * This class is used to hold information about the robots
  * in the game world.
  */
-public strictfp class ObjectInfo {
+public class ObjectInfo {
     private final int mapWidth;
     private final int mapHeight;
     private final MapLocation mapTopLeft;

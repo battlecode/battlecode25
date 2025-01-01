@@ -48,7 +48,7 @@ export const FloatingTooltip: React.FC<{
 
     return (
         <div
-            className="absolute bg-black/70 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap pointer-events-none"
+            className="absolute bg-black/70 opacity-95 z-20 text-white p-2 rounded-md text-xs whitespace-nowrap pointer-events-none"
             style={{
                 ...tooltipStyle,
                 visibility: showFloatingTooltip ? 'visible' : 'hidden'
@@ -64,7 +64,7 @@ export const DraggableTooltip: React.FC<{ container: Rect; content: React.ReactN
     return (
         <Draggable width={container.width} height={container.height}>
             {content && (
-                <div className="bg-black/90 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative pointer-events-auto">
+                <div className="bg-black/90 opacity-95 z-20 text-white p-2 rounded-md text-xs cursor-pointer relative pointer-events-auto">
                     {content}
                     <div className="absolute top-0 right-0" style={{ transform: 'scaleX(0.57) scaleY(0.73)' }}>
                         <ThreeBarsIcon />

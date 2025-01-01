@@ -21,7 +21,7 @@ import org.apache.commons.lang3.NotImplementedException;
  * All overriden methods should assertNotNull() all of their (Object) arguments,
  * if those objects are not explicitly stated to be nullable.
  */
-public final strictfp class RobotControllerImpl implements RobotController {
+public final class RobotControllerImpl implements RobotController {
 
     /**
      * The world the robot controlled by this controller inhabits.
@@ -103,6 +103,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public int getMapHeight() {
         return this.gameWorld.getGameMap().getHeight();
+    }
+
+    @Override
+    public boolean[][] getResourcePattern(){
+        return this.gameWorld.patternToBooleanArray(this.gameWorld.getResourcePattern());
+    }
+
+    @Override
+    public boolean[][] getTowerPattern(UnitType type) throws GameActionException{
+        assertIsTowerType(type);
+        return this.gameWorld.patternToBooleanArray(this.gameWorld.getTowerPattern(type));
     }
 
     // *********************************
@@ -500,6 +511,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.spawnRobot(type, loc, this.robot.getTeam());
         this.robot.addPaint(-type.paintCost);
         this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), -type.moneyCost);
+        InternalRobot robotSpawned = this.gameWorld.getRobot(loc);
+        this.gameWorld.getMatchMaker().addSpawnAction(robotSpawned.getID(), loc, getTeam(), type);
     }
 
     private void assertCanMark(MapLocation loc) throws GameActionException {
@@ -742,6 +755,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
         InternalRobot tower = this.gameWorld.getRobot(loc);
+        this.gameWorld.getMatchMaker().addSpawnAction(tower.getID(), loc, tower.getTeam(), type);
         this.gameWorld.getMatchMaker().addBuildAction(tower.getID());
     }
 
@@ -947,6 +961,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
         this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
+    }
+
+    @Override 
+    public Message[] readMessages(int roundNum) {
+        ArrayList<Message> messages = new ArrayList<>();
+        for (Message m : this.robot.getMessages()){
+            if (roundNum == -1 || m.getRound() == roundNum)
+                messages.add(m);
+        }
+        return messages.toArray(new Message[messages.size()]);
     }
 
     // ***********************************

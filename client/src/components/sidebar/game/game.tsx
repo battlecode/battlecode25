@@ -53,14 +53,25 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
         showGameWinner = showGameWinner && !!game && game.winner === game.teams[teamIdx]
 
         return (
-            <div className={'relative w-full py-2 px-3 text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')}>
+            <div
+                className={
+                    'relative w-full py-2 px-3 text-black text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')
+                }
+            >
                 <div>{game?.teams[teamIdx].name ?? NO_GAME_TEAM_NAME}</div>
                 <div className="absolute top-2 left-3">
                     <div className="relative flex items-center w-[24px] h-[24px]">
                         {showMatchWinner && (
                             <div className="absolute">
                                 <Tooltip text={'Current match winner'} location={'right'}>
-                                    <BiMedal opacity={0.5} fontSize={'24px'} width={'20px'} color={'yellow'} />
+                                    <BiMedal
+                                        opacity={0.5}
+                                        fontSize={'24px'}
+                                        width={'20px'}
+                                        color={'#ffd43b'}
+                                        strokeWidth={'1px'}
+                                        stroke="#7f6a1d"
+                                    />
                                 </Tooltip>
                             </div>
                         )}
@@ -75,7 +86,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 <div className="absolute top-3 right-3">
                     {showGameWinner && (
                         <Tooltip text={'Overall game winner'} location={'left'}>
-                            <Crown />
+                            <Crown className="opacity-50" />
                         </Tooltip>
                     )}
                 </div>
@@ -87,7 +98,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
         <div className="flex flex-col overflow-x-hidden">
             <div className="w-full pb-3 px-4 text-center">
                 {game && game.currentMatch && (
-                    <div className="border-black border rounded-md font-bold">{game.currentMatch.map.name}</div>
+                    <div className="border-white border rounded-md font-bold">{game.currentMatch.map.name}</div>
                 )}
             </div>
             {teamBox(0)}
@@ -105,13 +116,14 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 containerClassName="mt-2"
                 titleClassName="py-2"
             >
-                {game ? (
+                {game && game.playable ? (
                     <>
                         {/* Note: to keep animation smooth, we should still keep the elements rendered, but we pass showStats into
                             them so that they don't render any data (since we're likely hiding stats to prevent lag) */}
-                        <SpecialtyHistogram active={showStats} />
+                        {/*<SpecialtyHistogram active={showStats} />*/}
+                        <ResourceGraph active={showStats} property="paintPercent" propertyDisplayName="Coverage %" />
                         <br />
-                        {/*<ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />*/}
+                        <ResourceGraph active={showStats} property="moneyAmount" propertyDisplayName="Chips" />
                     </>
                 ) : (
                     <div>Select a game to see stats</div>

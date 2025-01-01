@@ -41,7 +41,7 @@ public class NetServer extends WebSocketServer {
         this.waitForClient = waitForClient;
 
         previousEvents = new ArrayList<>();
-        incomingEvents = new ArrayBlockingQueue<>(64);
+        incomingEvents = new ArrayBlockingQueue<>(2000);
 
         queueThread = new Thread(() -> {
             try {

@@ -2,10 +2,15 @@ package battlecode.doc;
 
 import battlecode.instrumenter.TeamClassLoaderFactory;
 import battlecode.instrumenter.bytecode.MethodCostUtil;
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
+import com.sun.source.doctree.DocTree;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.QualifiedNameable;
+import jdk.javadoc.doclet.Taglet;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A taglet for the "battlecode.doc.costlymethod" annotation.
@@ -21,45 +26,25 @@ public class CostlyMethodTaglet implements Taglet {
         map.put(TAG_NAME, new CostlyMethodTaglet());
     }
 
+    @Override
+    public Set<Taglet.Location> getAllowedLocations() {
+        return Set.of(Taglet.Location.METHOD);
+    }
+
+    @Override
     public String getName() {
         return TAG_NAME;
     }
 
-    public boolean inConstructor() {
-        return false;
-    }
-
-    public boolean inField() {
-        return false;
-    }
-
-    public boolean inMethod() {
-        return true;
-    }
-
-    public boolean inOverview() {
-        return false;
-    }
-
-    public boolean inPackage() {
-        return false;
-    }
-
-    public boolean inType() {
-        return false;
-    }
-
+    @Override
     public boolean isInlineTag() {
         return false;
     }
 
-    public String toString(Tag tag) {
-        final String methodName = tag.holder().name();
-        final String fileName = tag.holder().position().file().toString();
-
-        // Note: this makes an assumption that this method is in the battlecode/ package.
-        final String className = fileName.substring(fileName.lastIndexOf("battlecode/"),
-                fileName.length() - 5); // remove .java
+    public String toString(Element element) {
+        final String methodName = element.getSimpleName().toString();
+        final QualifiedNameable enclosingType = (QualifiedNameable) element.getEnclosingElement();
+        final String className = enclosingType.getQualifiedName().toString().replace('.', '/');
 
         final MethodCostUtil.MethodData data =
                 MethodCostUtil.getMethodData(className, methodName);
@@ -79,11 +64,11 @@ public class CostlyMethodTaglet implements Taglet {
                 "</code></dd>";
     }
 
-    public String toString(Tag[] tags) {
-        if (tags.length != 1) {
-            throw new IllegalArgumentException("Too many @"+TAG_NAME+"tags: "+tags.length);
+    public String toString(List<? extends DocTree> tags, Element element) {
+        if (tags.size() != 1) {
+            throw new IllegalArgumentException("Too many @"+TAG_NAME+"tags: "+tags.size());
         }
 
-        return toString(tags[0]);
+        return toString(element);
     }
 }

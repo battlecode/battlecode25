@@ -25,7 +25,7 @@ struct ChildProcessExitPayload {
 
 #[derive(Default, serde::Deserialize)]
 struct ServerApiResponse {
-    release_version_public: String
+    release_version_client: String
 }
 
 struct AppState {
@@ -71,11 +71,14 @@ async fn tauri_api(
         },
         "getJavas" => {
             let mut output = vec![];
-            let jvms = where_is_it::java::run(where_is_it::java::MatchOptions {
-                name: None,
-                arch: None,
-                version: Some(String::from("1.8"))
-            });
+            let mut jvms = vec![];
+            for supported in ["21", "23"] { 
+                jvms.append(&mut where_is_it::java::run(where_is_it::java::MatchOptions {
+                    name: None,
+                    arch: None,
+                    version: Some(String::from(supported))
+                }));
+            }
 
             // Add 'auto' option
             output.push(String::from("Auto"));
@@ -98,8 +101,8 @@ async fn tauri_api(
         "getPythons" => {
             let mut output = vec![];
             let pythons = where_is_it::python::run(where_is_it::python::MatchOptions {
-                major: None,
-                minor: None,
+                major: Some(3),
+                minor: Some(12),
                 patch: None,
                 pre: None,
                 dev: None,
@@ -143,10 +146,10 @@ async fn tauri_api(
         },
         "getServerVersion" => {
             let mut version = String::new();
-            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}/?format=json", &args[0]);
+            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}java/?format=json", &args[0]);
             if let Ok(res) = ureq::get(&uri).call() {
                 let res: ServerApiResponse = res.into_json().unwrap_or(Default::default());
-                version = res.release_version_public;
+                version = res.release_version_client;
             }
 
             Ok(vec![version])

@@ -28,7 +28,7 @@ export const InputDialog: React.FC<PropsWithChildren<Props>> = (props) => {
             onConfirm={() => props.onClose(value)}
         >
             <input
-                className="rounded-md px-4 py-2 bg-inherit border-[1px] border-black w-full"
+                className="rounded-md px-4 py-2 bg-inherit border-[1px] border-white w-full"
                 type={'text'}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}

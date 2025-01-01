@@ -3,6 +3,7 @@ import { D3LineChart, LineChartDataPoint } from './d3-line-chart'
 import assert from 'assert'
 import { useRound } from '../../../playback/GameRunner'
 import Round from '../../../playback/Round'
+import { QuickLineChart } from './quick-line-chart'
 
 interface Props {
     active: boolean
@@ -25,8 +26,8 @@ function getChartData(round: Round, property: string): LineChartDataPoint[] {
     return values[0].slice(0, round.roundNumber).map((value, index) => {
         return {
             round: index + 1,
-            white: 0, //value as number,
-            brown: 0 //values[1][index] as number
+            white: value as number,
+            brown: values[1][index] as number
         }
     })
 }
@@ -36,14 +37,9 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     const data = props.active && round ? getChartData(round, props.property) : []
 
     return (
-        <div className="mt-2 px-2 w-full">
-            <h2 className="mx-auto text-center">{props.propertyDisplayName}</h2>
-            <D3LineChart
-                data={data}
-                width={300 + 40} // Add 40 so that tooltip is visible outside of SVG container
-                height={300}
-                margin={{ top: 20, right: 20 + 20, bottom: 30, left: 40 + 20 }}
-            />
+        <div className="mt-2 w-full">
+            <h2 className="mx-auto text-center mb-2">{props.propertyDisplayName}</h2>
+            <QuickLineChart data={data} width={350} height={200} margin={{ top: 2, right: 20, bottom: 17, left: 30 }} />
         </div>
     )
 }

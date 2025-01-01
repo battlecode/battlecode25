@@ -115,9 +115,11 @@ class GameRendererClass {
 
     private updateCanvasDimensions(dims: Vector) {
         for (const canvas of Object.values(this.canvases)) {
-            canvas.width = dims.x * TILE_RESOLUTION
-            canvas.height = dims.y * TILE_RESOLUTION
-            canvas.getContext('2d')?.scale(TILE_RESOLUTION, TILE_RESOLUTION)
+            const dpi = window.devicePixelRatio ?? 1
+            const resolution = TILE_RESOLUTION * dpi * (GameConfig.config.resolutionScale / 100)
+            canvas.width = dims.x * resolution
+            canvas.height = dims.y * resolution
+            canvas.getContext('2d')?.scale(resolution, resolution)
         }
     }
 
