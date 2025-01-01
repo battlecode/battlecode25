@@ -58,15 +58,11 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
             margin,
             {
                 range: { min: 0, max: data.length },
-                options: {
-                    count: 8
-                }
+                options: {}
             },
             {
                 range: { min: 0, max: max },
-                options: {
-                    count: 8
-                }
+                options: {}
             }
         )
     }, [data.length, height, margin, width])
