@@ -67,11 +67,11 @@ jobs:
             fi
           fi
           
-      - name: Set up JDK 8
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: 8
-          distribution: adopt
+          java-version: 21
+          distribution: oracle
 
       - name: Publish to local repository
         run: ./gradlew publishServerPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${RELEASE_ARTIFACT_ID}-java
