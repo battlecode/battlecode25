@@ -35,7 +35,7 @@ export const PAINT_COLORS = ['#00000000', '#666666', '#565656', '#b28b52', '#997
 export const WALLS_COLOR = '#547f31'
 export const DIVIDER_COLOR = '#7b4724'
 export const TILE_COLOR = '#4c301e'
-export const GAMEAREA_BACKGROUND = '#332319'
+export const GAMEAREA_BACKGROUND = '#2e2323'
 export const SIDEBAR_BACKGROUND = '#3f3131'
 
 export const ATTACK_COLOR = '#db6b5c'
