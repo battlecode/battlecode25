@@ -455,7 +455,7 @@ export class Body {
 
     public onHoverInfo(): string[] {
         const defaultInfo = [
-            this.robotName,
+            `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
             `HP: ${this.hp}`,
             `Paint: ${this.paint}`,
