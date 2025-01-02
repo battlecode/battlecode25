@@ -266,7 +266,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
         int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
         if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
-            numActionCooldownToAdd = (int) Math.round(numActionCooldownToAdd
+            numActionCooldownToAdd += (int) Math.round(numActionCooldownToAdd
                     * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
                     / 100.0);
         }
@@ -280,7 +280,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
         int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
         if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
-            movementCooldown = (int) Math.round(movementCooldown
+            movementCooldown += (int) Math.round(movementCooldown
                     * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
                     / 100.0);
         }

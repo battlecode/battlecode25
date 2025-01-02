@@ -237,6 +237,7 @@ public class GameWorld {
         int primary = getPrimaryPaint(team);
         int secondary = getSecondaryPaint(team);
         boolean[] possibleSymmetries = new boolean[8];
+        for (int i = 0; i < 8; i++) possibleSymmetries[i] = true;
         int numRemainingSymmetries = 8;
 
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
@@ -307,8 +308,7 @@ public class GameWorld {
     public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
-        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center);
-        addRobot(center, unit);
+        spawnRobot(type, center, team);
     }
 
     public void completeResourcePattern(Team team, MapLocation center) {

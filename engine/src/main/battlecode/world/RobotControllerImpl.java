@@ -609,6 +609,7 @@ public final class RobotControllerImpl implements RobotController {
 
     private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
         assertNotNull(loc);
+        assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
         InternalRobot robot = this.gameWorld.getRobot(loc);
 
         if (!this.robot.getType().isTowerType()){ 
@@ -1001,7 +1002,7 @@ public final class RobotControllerImpl implements RobotController {
         if (robot.getType().isRobotType() && amount < 0) {
             throw new GameActionException(CANT_DO_THAT, "Moppers can only give paint to ally robots!");
         }
-        if (-1 * amount > this.robot.getPaint()) {
+        if (-1 * amount > robot.getPaint()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot take more paint from towers than they currently have!");
         }
         if (amount > this.robot.getPaint()) {

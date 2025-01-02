@@ -143,7 +143,7 @@ public class GameConstants {
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
 
-    /** The maximum distance from a robot for building towers */
+    /** The maximum distance from a robot for building and upgrading towers */
     public static final int BUILD_TOWER_RADIUS_SQUARED = 2;
 
     /** The maximum distance from a robot for completing special resource patterns */
