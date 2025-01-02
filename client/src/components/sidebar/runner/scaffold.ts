@@ -248,17 +248,21 @@ async function fetchData(scaffoldPath: string) {
     const path = nativeAPI!.path
     const fs = nativeAPI!.fs
 
-    const mapPath = await path.join(scaffoldPath, 'maps')
-    if (!(await fs.exists(mapPath))) await fs.mkdir(mapPath)
-
-    let sourcePath = await path.join(scaffoldPath, 'src')
-    if (!(await fs.exists(sourcePath))) {
-        // For running in the main battlecode folder
-        sourcePath = await path.join(scaffoldPath, 'example-bots', 'src', 'main')
-
-        if (!(await fs.exists(sourcePath))) {
-            throw new Error(`Can't find source path: ${sourcePath}`)
+    let sourcePath = ''
+    const checkPaths = [
+        await path.join(scaffoldPath, 'example-bots', 'src', 'main'), // Battlecode repo
+        await path.join(scaffoldPath, 'players'), // Python engine repo
+        await path.join(scaffoldPath, 'src') // Scaffold
+    ]
+    for (const path of checkPaths) {
+        if ((await fs.exists(path)) === 'true') {
+            sourcePath = path
+            break
         }
+    }
+
+    if (!sourcePath) {
+        throw new Error(`Can't find source path`)
     }
 
     const playerFiles = await fs.getFiles(sourcePath, 'true')
@@ -270,7 +274,8 @@ async function fetchData(scaffoldPath: string) {
                     (file) =>
                         file.endsWith('RobotPlayer.java') ||
                         file.endsWith('RobotPlayer.kt') ||
-                        file.endsWith('RobotPlayer.scala')
+                        file.endsWith('RobotPlayer.scala') ||
+                        file.endsWith('bot.py')
                 )
                 .map(async (file) => {
                     // Relative path will contain the folder and filename, so we can split on the separator
@@ -284,6 +289,11 @@ async function fetchData(scaffoldPath: string) {
                 })
         )
     )
+
+    const mapPath = await path.join(scaffoldPath, 'maps')
+    if ((await fs.exists(mapPath)) === 'false') {
+        await fs.mkdir(mapPath)
+    }
 
     const mapExtension = '.map' + (BATTLECODE_YEAR % 100)
     const mapFiles = await fs.getFiles(mapPath)
@@ -309,8 +319,8 @@ async function isValidScaffoldDir(path: string, nativeAPI: NativeAPI): Promise<S
     // Check that one of the runners exists as means of validating scaffold folder
     for (const lang of Object.keys(languageRunners)) {
         const runner = languageRunners[lang as SupportedLanguage]
-        const gradlewPath = await nativeAPI.path.join(path, runner)
-        if ((await nativeAPI.fs.exists(gradlewPath)) === 'true') {
+        const runnerPath = await nativeAPI.path.join(path, runner)
+        if ((await nativeAPI.fs.exists(runnerPath)) === 'true') {
             return lang as SupportedLanguage
         }
     }
@@ -348,9 +358,11 @@ async function dispatchMatch(
     validate: boolean,
     profile: boolean
 ): Promise<string> {
+    let options: string[] = []
+
     switch (language) {
         case SupportedLanguage.Java: {
-            const options = [
+            options = [
                 `run`,
                 `-x`,
                 `unpackClient`,
@@ -361,11 +373,13 @@ async function dispatchMatch(
                 `-PvalidateMaps=${validate}`,
                 `-PenableProfiler=${profile}`
             ]
-
-            return nativeAPI.child_process.spawn(scaffoldPath, langVersion.path, options)
+            break
         }
         case SupportedLanguage.Python: {
-            throw new Error('Not implemented')
+            options = [`run.py`, `run`, `--p1=${teamA}`, `--p2=${teamB}`, `--map=${[...selectedMaps][0]}`]
+            break
         }
     }
+
+    return nativeAPI.child_process.spawn(scaffoldPath, language, langVersion.path, options)
 }
