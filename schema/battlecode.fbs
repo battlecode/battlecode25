@@ -73,6 +73,17 @@ struct UnpaintAction {
     loc: ushort;
 }
 
+/// Visually indicate a tile marked with a color
+struct MarkAction {
+    loc: ushort;
+    isSecondary: byte;
+}
+
+/// Visually indicate a tile's marker has been removed
+struct UnmarkAction {
+    loc: ushort;
+}
+
 /// Visually indicate an attack
 struct AttackAction {
     /// Id of the attack target
@@ -94,6 +105,7 @@ struct BuildAction {
 struct TransferAction {
     /// Id of the transfer target
     id: ushort;
+    amount: int;
 }
 
 /// Visually indicate messaging from one robot to another
@@ -148,6 +160,8 @@ union Action {
     DamageAction,
     PaintAction,
     UnpaintAction,
+    MarkAction,
+    UnmarkAction,
     AttackAction,
     MopAction,
     BuildAction,

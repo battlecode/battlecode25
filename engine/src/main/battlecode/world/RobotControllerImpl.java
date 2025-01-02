@@ -535,6 +535,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanMark(loc);
         
         this.gameWorld.setMarker(getTeam(), loc, secondary ? 2 : 1);
+        this.gameWorld.getMatchMaker().addMarkAction(loc, secondary);
     }
 
     private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
@@ -561,6 +562,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanRemoveMark(loc);
 
         this.gameWorld.setMarker(getTeam(), loc, 0);
+        this.gameWorld.getMatchMaker().addUnmarkAction(loc);
     }
 
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
@@ -1025,7 +1027,7 @@ public final class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         robot.addPaint(amount);
         this.robot.addActionCooldownTurns(GameConstants.PAINT_TRANSFER_COOLDOWN);
-        this.gameWorld.getMatchMaker().addTransferAction(robot.getID());
+        this.gameWorld.getMatchMaker().addTransferAction(robot.getID(), amount);
     }
 
     @Override
