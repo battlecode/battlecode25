@@ -74,9 +74,17 @@ export function getDefaultConfig(): ClientConfig {
     return config
 }
 
-const ColorPicker = (props: { name: Colors }) => {
+//const ColorRow = (props: { displayName: string, colorName: Colors }) => {
+//    return (
+//        <>
+//            <ColorPicker name={colorName} />
+//        </>
+//    )
+//}
+
+const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const context = useAppContext()
-    const value = context.state.config.colors[props.name]
+    const value = context.state.config.colors[props.colorName]
 
     const [displayColorPicker, setDisplayColorPicker] = useState(false)
 
@@ -89,10 +97,10 @@ const ColorPicker = (props: { name: Colors }) => {
     }
 
     const onChange = (newColor: any) => {
-        updateGlobalColor(props.name, newColor.hex)
+        updateGlobalColor(props.colorName, newColor.hex)
         context.setState((prevState) => ({
             ...prevState,
-            config: { ...prevState.config, colors: { ...prevState.config.colors, [props.name]: newColor.hex } }
+            config: { ...prevState.config, colors: { ...prevState.config.colors, [props.colorName]: newColor.hex } }
         }))
         // hopefully after the setState is done
         setTimeout(() => GameRenderer.render(), 10)
@@ -100,6 +108,7 @@ const ColorPicker = (props: { name: Colors }) => {
 
     return (
         <>
+            <h4>displayName + "wahoo"</h4>
             <button
                 className={'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
                 style={{ backgroundColor: value }}
@@ -128,7 +137,8 @@ export const ConfigPage: React.FC<Props> = (props) => {
             </div>
             <div className="color-pickers">
                 Customize Colors:
-                <ColorPicker name={Colors.GAMEAREA_BACKGROUND} />
+                <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
+                <ColorPicker displayName={'Team One'} colorName={Colors.TEAM_ONE} />
             </div>
             <div className="flex flex-row mt-8">
                 <BrightButton
