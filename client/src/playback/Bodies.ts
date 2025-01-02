@@ -431,11 +431,13 @@ export class Body {
     }
 
     public onHoverInfo(): string[] {
+        if (!this.game.playable) return [this.robotName]
+
         const defaultInfo = [
             this.robotName,
             `ID: ${this.id}`,
-            `HP: ${this.hp}`,
-            `Paint: ${this.paint}`,
+            `HP: ${this.hp}/${this.metadata.baseHealth}`,
+            `Paint: ${this.paint}/${this.metadata.maxPaint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
