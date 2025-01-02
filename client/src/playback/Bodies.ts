@@ -249,12 +249,7 @@ export class Body {
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
 
         if (this.dead) ctx.globalAlpha = 0.5
-        // Add shadow
-        ctx.shadowBlur = 5
-        ctx.shadowColor = 'black'
         renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
-        ctx.shadowBlur = 0
-        ctx.shadowColor = ''
         ctx.globalAlpha = 1
 
         // Draw various statuses
