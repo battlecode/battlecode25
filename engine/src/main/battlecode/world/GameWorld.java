@@ -226,21 +226,25 @@ public class GameWorld {
     }
 
     public boolean checkResourcePattern(Team team, MapLocation center) {
-        return checkPattern(this.patternArray[RESOURCE_INDEX], team, center);
+        return checkPattern(this.patternArray[RESOURCE_INDEX], team, center, false);
     }
 
     public boolean checkTowerPattern(Team team, MapLocation center, UnitType towerType) {
-        return checkPattern(this.patternArray[towerTypeToPatternIndex(towerType)], team, center);
+        return checkPattern(this.patternArray[towerTypeToPatternIndex(towerType)], team, center, true);
     }
 
-    public boolean checkPattern(int pattern, Team team, MapLocation center) {
+    public boolean checkPattern(int pattern, Team team, MapLocation center, boolean isTowerPattern) {
         int primary = getPrimaryPaint(team);
         int secondary = getSecondaryPaint(team);
         boolean[] possibleSymmetries = new boolean[8];
+        for (int i = 0; i < 8; i++) possibleSymmetries[i] = true;
         int numRemainingSymmetries = 8;
 
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
+                // ignore checking paint for center ruin location
+                if (dx == 0 && dy == 0 && isTowerPattern)
+                    continue;
                 for (int sym = 0; sym < 8; sym++) {
                     if (possibleSymmetries[sym]) {
                         int dx2;
@@ -307,8 +311,7 @@ public class GameWorld {
     public void completeTowerPattern(Team team, UnitType type, MapLocation center) {
         this.towerLocations.add(center);
         this.towersByLoc[locationToIndex(center)] = team;
-        InternalRobot unit = new InternalRobot(this, idGenerator.nextID(), team, type, center);
-        addRobot(center, unit);
+        spawnRobot(type, center, team);
     }
 
     public void completeResourcePattern(Team team, MapLocation center) {
@@ -432,9 +435,12 @@ public class GameWorld {
         this.getmarkersArray(team)[locationToIndex(loc)] = marker;
     }
 
-    public void markPattern(int pattern, Team team, MapLocation center, int rotationAngle, boolean reflect) {
+    public void markPattern(int pattern, Team team, MapLocation center, int rotationAngle, boolean reflect, boolean isTowerPattern) {
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
+                // don't try marking a center ruin
+                if (dx == 0 && dy == 0 && isTowerPattern)
+                    continue;
                 int symmetry = 4 * (reflect ? 1 : 0) + rotationAngle;
                 int dx2;
                 int dy2;
@@ -484,11 +490,11 @@ public class GameWorld {
     }
 
     public void markTowerPattern(UnitType type, Team team, MapLocation loc, int rotationAngle, boolean reflect) {
-        markPattern(this.getTowerPattern(type), team, loc, rotationAngle, reflect);
+        markPattern(this.getTowerPattern(type), team, loc, rotationAngle, reflect, true);
     }
 
     public void markResourcePattern(Team team, MapLocation loc, int rotationAngle, boolean reflect) {
-        markPattern(this.getResourcePattern(), team, loc, rotationAngle, reflect);
+        markPattern(this.getResourcePattern(), team, loc, rotationAngle, reflect, false);
     }
 
     public boolean hasTower(MapLocation loc) {
@@ -550,7 +556,7 @@ public class GameWorld {
     }
 
     public boolean isPassable(MapLocation loc) {
-        return !this.walls[locationToIndex(loc)];
+        return !(this.walls[locationToIndex(loc)] || this.hasRuin(loc));
     }
 
     public ArrayList<MapLocation> getRuinArray() {

@@ -119,14 +119,14 @@ public class GameConstants {
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;
 
-    /** Maximum percent amount of paint to start cooldown */
-    public static final int DECREASED_MOVEMENT_THRESHOLD = 50;
+    /** Percent of paint capacity at which a robot begins to face increased cooldowns */
+    public static final int INCREASED_COOLDOWN_THRESHOLD = 50;
 
-    /** Intercept in the formula for the movement cooldown */
-    public static final int MOVEMENT_COOLDOWN_INTERCEPT = 100;
+    /** Intercept in the formula for the increased cooldown */
+    public static final int INCREASED_COOLDOWN_INTERCEPT = 100;
 
-    /** Slope of paint in the formula for the movement cooldown */
-    public static final int MOVEMENT_COOLDOWN_SLOPE = -2;
+    /** Slope of paint in the formula for the increased cooldown */
+    public static final int INCREASED_COOLDOWN_SLOPE = -2;
 
     /** Multiplier for paint penalties moppers face for ending on non-ally territory. */
     public static final int MOPPER_PAINT_PENALTY_MULTIPLIER = 2;
@@ -143,7 +143,7 @@ public class GameConstants {
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
 
-    /** The maximum distance from a robot for building towers */
+    /** The maximum distance from a robot for building and upgrading towers */
     public static final int BUILD_TOWER_RADIUS_SQUARED = 2;
 
     /** The maximum distance from a robot for completing special resource patterns */

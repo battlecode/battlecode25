@@ -23,12 +23,18 @@ id():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-static sizeOf():number {
-  return 2;
+amount():number {
+  return this.bb!.readInt32(this.bb_pos + 4);
 }
 
-static createTransferAction(builder:flatbuffers.Builder, id: number):flatbuffers.Offset {
-  builder.prep(2, 2);
+static sizeOf():number {
+  return 8;
+}
+
+static createTransferAction(builder:flatbuffers.Builder, id: number, amount: number):flatbuffers.Offset {
+  builder.prep(4, 8);
+  builder.writeInt32(amount);
+  builder.pad(2);
   builder.writeInt16(id);
   return builder.offset();
 }

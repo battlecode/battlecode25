@@ -13,6 +13,8 @@ class Action(object):
   DamageAction: int
   PaintAction: int
   UnpaintAction: int
+  MarkAction: int
+  UnmarkAction: int
   AttackAction: int
   MopAction: int
   BuildAction: int

@@ -20,31 +20,26 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Visually indicate transferring paint from one robot to another
+ * Visually indicate a tile's marker has been removed
  */
 @SuppressWarnings("unused")
-public final class TransferAction extends Struct {
+public final class UnmarkAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public TransferAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public UnmarkAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  /**
-   * Id of the transfer target
-   */
-  public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
-  public int amount() { return bb.getInt(bb_pos + 4); }
+  public int loc() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
 
-  public static int createTransferAction(FlatBufferBuilder builder, int id, int amount) {
-    builder.prep(4, 8);
-    builder.putInt(amount);
-    builder.pad(2);
-    builder.putShort((short) id);
+  public static int createUnmarkAction(FlatBufferBuilder builder, int loc) {
+    builder.prep(2, 2);
+    builder.putShort((short) loc);
     return builder.offset();
   }
 
   public static final class Vector extends BaseVector {
     public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
 
-    public TransferAction get(int j) { return get(new TransferAction(), j); }
-    public TransferAction get(TransferAction obj, int j) {  return obj.__assign(__element(j), bb); }
+    public UnmarkAction get(int j) { return get(new UnmarkAction(), j); }
+    public UnmarkAction get(UnmarkAction obj, int j) {  return obj.__assign(__element(j), bb); }
   }
 }
+

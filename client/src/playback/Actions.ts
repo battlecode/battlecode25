@@ -152,15 +152,29 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             )
         }
     },
+    [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
+        apply(round: Round): void {
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            const paintVal = teamId * 2 + 1 + this.actionData.isSecondary()
+            round.map.paint[this.actionData.loc()] = paintVal
+        }
+    },
     [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
         apply(round: Round): void {
             round.map.paint[this.actionData.loc()] = 0
         }
     },
-    [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
+    [schema.Action.MarkAction]: class MarkAction extends Action<schema.MarkAction> {
         apply(round: Round): void {
-            const paintVal = (round.bodies.getById(this.robotId).team.id - 1) * 2 + 1 + this.actionData.isSecondary()
-            round.map.paint[this.actionData.loc()] = paintVal
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            const color = teamId * 2 + 1 + this.actionData.isSecondary()
+            round.map.markers[teamId][this.actionData.loc()] = color
+        }
+    },
+    [schema.Action.UnmarkAction]: class UnmarkAction extends Action<schema.UnmarkAction> {
+        apply(round: Round): void {
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            round.map.markers[teamId][this.actionData.loc()] = 0
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
@@ -195,7 +209,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const factor = match.getInterpolationFactor()
             const isEndpoint = factor == 0 || factor == 1
             const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
-            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
             renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/hammer.png'), coords, size)
@@ -265,7 +279,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const factor = match.getInterpolationFactor()
             const isEndpoint = factor == 0 || factor == 1
             const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
-            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
             renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/gears.png'), coords, size)

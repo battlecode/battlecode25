@@ -35,6 +35,7 @@ type SchemaPacket = {
 export class CurrentMap {
     public readonly staticMap: StaticMap
     public readonly paint: Int8Array
+    public readonly markers: [Int8Array, Int8Array] // Each team has markers
 
     get width(): number {
         return this.dimension.width
@@ -53,11 +54,13 @@ export class CurrentMap {
 
             this.staticMap = from
             this.paint = new Int8Array(from.initialPaint)
+            this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
             this.paint = new Int8Array(from.paint)
+            this.markers = [new Int8Array(from.markers[0]), new Int8Array(from.markers[1])]
         }
     }
 
@@ -111,52 +114,34 @@ export class CurrentMap {
                         { x: true, y: false }
                     )
                 }
+
+                if (config.showPaintMarkers) {
+                    const markerA = this.markers[0][schemaIdx]
+                    if (markerA) {
+                        ctx.fillStyle = TEAM_COLORS[0]
+                        const label = markerA === 1 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.05, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
+
+                    const markerB = this.markers[1][schemaIdx]
+                    if (markerB) {
+                        ctx.fillStyle = TEAM_COLORS[1]
+                        const label = markerB === 3 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.65, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
+                }
             }
         }
-
-        // Render flags
-        /*
-        for (const flagId of this.flagData.keys()) {
-            const data = this.flagData.get(flagId)!
-            if (data.carrierId) continue
-            const coords = renderUtils.getRenderCoords(data.location.x, data.location.y, this.dimension)
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded('resources/bread_outline_64x64.png'),
-                coords,
-                1
-            )
-        }
-
-        // Render resource piles
-        for (const pileId of this.resourcePileData.keys()) {
-            const data = this.resourcePileData.get(pileId)!
-            if (data.amount == 0) continue
-            const loc = this.indexToLocation(pileId)
-            const size = (data.amount / 100) * 0.3 + 0.75
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            const crumbVersion = ((loc.x * 37 + loc.y * 19) % 3) + 1
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded(`resources/crumb_${crumbVersion}_64x64.png`),
-                coords,
-                size
-            )
-        }
-
-        // Render traps
-        for (const trapId of this.trapData.keys()) {
-            const data = this.trapData.get(trapId)!
-            const file = `traps/${BUILD_NAMES[data.type]}_64x64.png`
-            const loc = data.location
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            renderUtils.renderRoundedOutline(ctx, coords, TEAM_COLORS[data.team - 1])
-
-            ctx.globalAlpha = 0.6
-            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(file), coords, 0.8)
-            ctx.globalAlpha = 1
-        }
-        */
     }
 
     getTooltipInfo(square: Vector, match: Match): string[] {
@@ -168,6 +153,8 @@ export class CurrentMap {
         const paint = this.paint[schemaIdx]
         const wall = this.staticMap.walls[schemaIdx]
         const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+        const markerA = this.markers[0][schemaIdx]
+        const markerB = this.markers[1][schemaIdx]
 
         const info: string[] = []
         for (let i = 0; i < match.game.teams.length; i++) {
@@ -176,6 +163,12 @@ export class CurrentMap {
             } else if (paint === i * 2 + 2) {
                 info.push(`${TEAM_COLOR_NAMES[i]} Paint (Secondary)`)
             }
+        }
+        if (markerA) {
+            info.push(`Silver Marker (${markerA === 1 ? 'Primary' : 'Secondary'})`)
+        }
+        if (markerB) {
+            info.push(`Gold Marker (${markerB === 3 ? 'Primary' : 'Secondary'})`)
         }
         if (wall) {
             info.push('Wall')
