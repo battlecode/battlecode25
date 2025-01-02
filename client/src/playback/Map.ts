@@ -54,14 +54,14 @@ export class CurrentMap {
 
             this.staticMap = from
             this.paint = new Int8Array(from.initialPaint)
+            this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
             this.paint = new Int8Array(from.paint)
+            this.markers = [new Int8Array(from.markers[0]), new Int8Array(from.markers[1])]
         }
-
-        this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
     }
 
     indexToLocation(index: number): { x: number; y: number } {
@@ -115,15 +115,31 @@ export class CurrentMap {
                     )
                 }
 
-                /*
-                const markerA = this.markers[0][schemaIdx]
-                if (markerA) {
-                    ctx.fillStyle = 'red'
-                    const label = Math.round(range.min + i * labelGap).toString()
-                    const textWidth = context.measureText(label).width
-                    ctx.fillText(label, xPos - textWidth / 2, height)
+                if (config.showPaintMarkers) {
+                    const markerA = this.markers[0][schemaIdx]
+                    if (markerA) {
+                        ctx.fillStyle = TEAM_COLORS[0]
+                        const label = markerA === 1 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.05, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
+
+                    const markerB = this.markers[1][schemaIdx]
+                    if (markerB) {
+                        ctx.fillStyle = TEAM_COLORS[1]
+                        const label = markerB === 3 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.65, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
                 }
-                */
             }
         }
     }
@@ -137,6 +153,8 @@ export class CurrentMap {
         const paint = this.paint[schemaIdx]
         const wall = this.staticMap.walls[schemaIdx]
         const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+        const markerA = this.markers[0][schemaIdx]
+        const markerB = this.markers[1][schemaIdx]
 
         const info: string[] = []
         for (let i = 0; i < match.game.teams.length; i++) {
@@ -145,6 +163,12 @@ export class CurrentMap {
             } else if (paint === i * 2 + 2) {
                 info.push(`${TEAM_COLOR_NAMES[i]} Paint (Secondary)`)
             }
+        }
+        if (markerA) {
+            info.push(`Silver Marker (${markerA === 1 ? 'Primary' : 'Secondary'})`)
+        }
+        if (markerB) {
+            info.push(`Gold Marker (${markerB === 3 ? 'Primary' : 'Secondary'})`)
         }
         if (wall) {
             info.push('Wall')

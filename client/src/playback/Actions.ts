@@ -209,7 +209,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const factor = match.getInterpolationFactor()
             const isEndpoint = factor == 0 || factor == 1
             const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
-            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
             renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/hammer.png'), coords, size)
@@ -279,7 +279,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const factor = match.getInterpolationFactor()
             const isEndpoint = factor == 0 || factor == 1
             const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
-            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
             renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/gears.png'), coords, size)
