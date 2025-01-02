@@ -469,6 +469,7 @@ export class Body {
         const metadata = this.metadata
 
         this.hp = metadata.baseHealth()
+        this.paint = metadata.basePaint()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
     }

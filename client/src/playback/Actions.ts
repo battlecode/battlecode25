@@ -182,9 +182,10 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             // To discuss
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
             const radius = Math.sqrt(4)
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.actionData.loc())
+            const loc = body.getInterpolatedCoords(match)
             const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
 
             // Get the trap color, assumes only opposite team can trigger
