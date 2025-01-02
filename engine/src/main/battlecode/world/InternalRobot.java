@@ -596,6 +596,12 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
             } else if (owningTeam == this.getTeam().opponent()) {
                 this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+                int allyRobotCount = 0;
+                for (InternalRobot robot : this.gameWorld.getAllRobotsWithinRadiusSquared(this.location, 2, this.team)){
+                    if (robot.ID != this.ID)
+                        allyRobotCount++;
+                }
+                this.addPaint(-2 * allyRobotCount);
             }
         }
 
