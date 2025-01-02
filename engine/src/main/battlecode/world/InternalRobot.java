@@ -264,6 +264,12 @@ public class InternalRobot implements Comparable<InternalRobot> {
      * Resets the action cooldown.
      */
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
+        int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
+        if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
+            numActionCooldownToAdd += (int) Math.round(numActionCooldownToAdd
+                    * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
+                    / 100.0);
+        }
         setActionCooldownTurns(this.actionCooldownTurns + numActionCooldownToAdd);
     }
 
@@ -272,9 +278,10 @@ public class InternalRobot implements Comparable<InternalRobot> {
      */
     public void addMovementCooldownTurns() {
         int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
-        if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
-            movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN
-                    * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount)
+        int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
+        if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
+            movementCooldown += (int) Math.round(movementCooldown
+                    * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
                     / 100.0);
         }
         this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
@@ -589,6 +596,12 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
             } else if (owningTeam == this.getTeam().opponent()) {
                 this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+                int allyRobotCount = 0;
+                for (InternalRobot robot : this.gameWorld.getAllRobotsWithinRadiusSquared(this.location, 2, this.team)){
+                    if (robot.ID != this.ID)
+                        allyRobotCount++;
+                }
+                this.addPaint(-2 * allyRobotCount);
             }
         }
 

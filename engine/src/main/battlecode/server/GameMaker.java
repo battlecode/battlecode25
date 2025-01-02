@@ -520,6 +520,20 @@ public class GameMaker {
             });
         }
 
+        public void addMarkAction(MapLocation loc, boolean isSecondary){
+            applyToBuilders((builder) -> {
+                int action = MarkAction.createMarkAction(builder, locationToInt(loc), isSecondary ? (byte) 1 : 0);
+                builder.addAction(action, Action.MarkAction);
+            });
+        }
+
+        public void addUnmarkAction(MapLocation loc){
+            applyToBuilders((builder) -> {
+                int action = UnmarkAction.createUnmarkAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.UnmarkAction);
+            });
+        }
+
         /// Visually indicate an attack
         public void addAttackAction(int otherID){
             applyToBuilders((builder) -> {
@@ -545,9 +559,9 @@ public class GameMaker {
         }
 
         /// Visually indicate transferring paint from one robot to another
-        public void addTransferAction(int otherRobotID){
+        public void addTransferAction(int otherRobotID, int amount){
             applyToBuilders((builder) -> {
-                int action = TransferAction.createTransferAction(builder, otherRobotID);
+                int action = TransferAction.createTransferAction(builder, otherRobotID, amount);
                 builder.addAction(action, Action.TransferAction);
             });
         }

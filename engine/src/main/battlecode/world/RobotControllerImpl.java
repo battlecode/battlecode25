@@ -222,7 +222,7 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public boolean canSenseRobot(int id) {
         InternalRobot sensedRobot = getRobotByID(id);
-        return sensedRobot == null || canSenseLocation(sensedRobot.getLocation());
+        return sensedRobot != null && canSenseLocation(sensedRobot.getLocation());
     }
 
     @Override
@@ -535,6 +535,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanMark(loc);
         
         this.gameWorld.setMarker(getTeam(), loc, secondary ? 2 : 1);
+        this.gameWorld.getMatchMaker().addMarkAction(loc, secondary);
     }
 
     private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
@@ -561,6 +562,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanRemoveMark(loc);
 
         this.gameWorld.setMarker(getTeam(), loc, 0);
+        this.gameWorld.getMatchMaker().addUnmarkAction(loc);
     }
 
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
@@ -609,6 +611,7 @@ public final class RobotControllerImpl implements RobotController {
 
     private void assertCanUpgradeTower(MapLocation loc) throws GameActionException{
         assertNotNull(loc);
+        assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
         InternalRobot robot = this.gameWorld.getRobot(loc);
 
         if (!this.robot.getType().isTowerType()){ 
@@ -1001,7 +1004,7 @@ public final class RobotControllerImpl implements RobotController {
         if (robot.getType().isRobotType() && amount < 0) {
             throw new GameActionException(CANT_DO_THAT, "Moppers can only give paint to ally robots!");
         }
-        if (-1 * amount > this.robot.getPaint()) {
+        if (-1 * amount > robot.getPaint()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot take more paint from towers than they currently have!");
         }
         if (amount > this.robot.getPaint()) {
@@ -1024,7 +1027,7 @@ public final class RobotControllerImpl implements RobotController {
         InternalRobot robot = this.gameWorld.getRobot(loc);
         robot.addPaint(amount);
         this.robot.addActionCooldownTurns(GameConstants.PAINT_TRANSFER_COOLDOWN);
-        this.gameWorld.getMatchMaker().addTransferAction(robot.getID());
+        this.gameWorld.getMatchMaker().addTransferAction(robot.getID(), amount);
     }
 
     @Override
