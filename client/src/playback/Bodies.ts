@@ -426,6 +426,29 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
+    protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
+        if (this.level <= 1) return
+
+        const coords = renderUtils.getRenderCoords(this.pos.x, this.pos.y, match.currentRound.map.staticMap.dimension)
+
+        let numeral
+        if (this.level === 2) {
+            numeral = 'II'
+        } else {
+            numeral = 'III'
+        }
+
+        ctx.font = '0.5px serif'
+        ctx.fillStyle = this.team.color
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'top'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 10
+        ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
+        ctx.shadowColor = ''
+        ctx.shadowBlur = 0
+    }
+
     public getInterpolatedCoords(match: Match): Vector {
         return renderUtils.getInterpolatedCoords(this.lastPos, this.pos, match.getInterpolationFactor())
     }
@@ -528,6 +551,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -551,6 +575,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -574,6 +599,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 
