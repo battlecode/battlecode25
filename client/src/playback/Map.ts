@@ -35,6 +35,7 @@ type SchemaPacket = {
 export class CurrentMap {
     public readonly staticMap: StaticMap
     public readonly paint: Int8Array
+    public readonly markers: [Int8Array, Int8Array] // Each team has markers
 
     get width(): number {
         return this.dimension.width
@@ -59,6 +60,8 @@ export class CurrentMap {
             this.staticMap = from.staticMap
             this.paint = new Int8Array(from.paint)
         }
+
+        this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
     }
 
     indexToLocation(index: number): { x: number; y: number } {
@@ -111,52 +114,18 @@ export class CurrentMap {
                         { x: true, y: false }
                     )
                 }
+
+                /*
+                const markerA = this.markers[0][schemaIdx]
+                if (markerA) {
+                    ctx.fillStyle = 'red'
+                    const label = Math.round(range.min + i * labelGap).toString()
+                    const textWidth = context.measureText(label).width
+                    ctx.fillText(label, xPos - textWidth / 2, height)
+                }
+                */
             }
         }
-
-        // Render flags
-        /*
-        for (const flagId of this.flagData.keys()) {
-            const data = this.flagData.get(flagId)!
-            if (data.carrierId) continue
-            const coords = renderUtils.getRenderCoords(data.location.x, data.location.y, this.dimension)
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded('resources/bread_outline_64x64.png'),
-                coords,
-                1
-            )
-        }
-
-        // Render resource piles
-        for (const pileId of this.resourcePileData.keys()) {
-            const data = this.resourcePileData.get(pileId)!
-            if (data.amount == 0) continue
-            const loc = this.indexToLocation(pileId)
-            const size = (data.amount / 100) * 0.3 + 0.75
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            const crumbVersion = ((loc.x * 37 + loc.y * 19) % 3) + 1
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded(`resources/crumb_${crumbVersion}_64x64.png`),
-                coords,
-                size
-            )
-        }
-
-        // Render traps
-        for (const trapId of this.trapData.keys()) {
-            const data = this.trapData.get(trapId)!
-            const file = `traps/${BUILD_NAMES[data.type]}_64x64.png`
-            const loc = data.location
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            renderUtils.renderRoundedOutline(ctx, coords, TEAM_COLORS[data.team - 1])
-
-            ctx.globalAlpha = 0.6
-            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(file), coords, 0.8)
-            ctx.globalAlpha = 1
-        }
-        */
     }
 
     getTooltipInfo(square: Vector, match: Match): string[] {
