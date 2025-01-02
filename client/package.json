@@ -109,10 +109,11 @@
         "extraResources": [
             {
                 "from": "node_modules/where-is-it/build/where-is-it.${platform}-${arch}.node",
-                "to": "app/node_modules/where-is-it/where-is-it.node",
-                "filter": [
-                    "**/*"
-                ]
+                "to": "app/node_modules/where-is-it/where-is-it.node"
+            },
+            {
+                "from": "node_modules/where-is-it/build/where-is-it.${env.ELECTRON_MODULE_NAME}",
+                "to": "app/node_modules/where-is-it/where-is-it.node"
             }
         ]
     },

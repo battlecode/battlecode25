@@ -27,20 +27,23 @@ jobs:
             build-name: "macos"
             tauri-target: "universal-apple-darwin"
             tauri-copy-path: "bundle/macos/*.app"
+            electron-module-name: "UNUSED"
           - platform-name: "ubuntu-latest"
             build-name: "linux"
             tauri-target: "x86_64-unknown-linux-gnu"
             tauri-copy-path: "bundle/appimage/*.AppImage"
+            electron-module-name: "linux-x64-gnu.node"
             upload-dist: true
           - platform-name: "windows-latest"
             build-name: "windows"
             tauri-target: "x86_64-pc-windows-msvc"
             tauri-copy-path: "*.exe"
+            electron-module-name: "win32-x64-msvc.node"
     runs-on: ${{ matrix.platform-name }}
     env:
       TAURI_OUTPUT: ./src-tauri/target/${{ matrix.tauri-target }}/release/${{ matrix.tauri-copy-path }}
       TAURI_BUILD_COMMAND: npm run tauri-pack -- -t ${{ matrix.tauri-target }}
-      ELECTRON_BUILD_COMMAND: npm run electron-pack
+      ELECTRON_BUILD_COMMAND: ELECTRON_MODULE_NAME=${{ matrix.electron-module-name }} npm run electron-pack
 
     steps:
       - name: Checkout branch
