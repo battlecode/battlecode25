@@ -42,6 +42,7 @@ table RobotTypeMetadata {
     movementCooldown: int;
     baseHealth: int;
     basePaint: int;
+    maxPaint: int;
     actionRadiusSquared: int;
     visionRadiusSquared: int;
     bytecodeLimit: int;

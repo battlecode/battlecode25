@@ -42,20 +42,24 @@ var RobotTypeMetadata = /** @class */ (function () {
         var offset = this.bb.__offset(this.bb_pos, 12);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
-    RobotTypeMetadata.prototype.actionRadiusSquared = function () {
+    RobotTypeMetadata.prototype.maxPaint = function () {
         var offset = this.bb.__offset(this.bb_pos, 14);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
-    RobotTypeMetadata.prototype.visionRadiusSquared = function () {
+    RobotTypeMetadata.prototype.actionRadiusSquared = function () {
         var offset = this.bb.__offset(this.bb_pos, 16);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
-    RobotTypeMetadata.prototype.bytecodeLimit = function () {
+    RobotTypeMetadata.prototype.visionRadiusSquared = function () {
         var offset = this.bb.__offset(this.bb_pos, 18);
         return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
     };
+    RobotTypeMetadata.prototype.bytecodeLimit = function () {
+        var offset = this.bb.__offset(this.bb_pos, 20);
+        return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+    };
     RobotTypeMetadata.startRobotTypeMetadata = function (builder) {
-        builder.startObject(8);
+        builder.startObject(9);
     };
     RobotTypeMetadata.addType = function (builder, type) {
         builder.addFieldInt8(0, type, robot_type_1.RobotType.NONE);
@@ -72,26 +76,30 @@ var RobotTypeMetadata = /** @class */ (function () {
     RobotTypeMetadata.addBasePaint = function (builder, basePaint) {
         builder.addFieldInt32(4, basePaint, 0);
     };
+    RobotTypeMetadata.addMaxPaint = function (builder, maxPaint) {
+        builder.addFieldInt32(5, maxPaint, 0);
+    };
     RobotTypeMetadata.addActionRadiusSquared = function (builder, actionRadiusSquared) {
-        builder.addFieldInt32(5, actionRadiusSquared, 0);
+        builder.addFieldInt32(6, actionRadiusSquared, 0);
     };
     RobotTypeMetadata.addVisionRadiusSquared = function (builder, visionRadiusSquared) {
-        builder.addFieldInt32(6, visionRadiusSquared, 0);
+        builder.addFieldInt32(7, visionRadiusSquared, 0);
     };
     RobotTypeMetadata.addBytecodeLimit = function (builder, bytecodeLimit) {
-        builder.addFieldInt32(7, bytecodeLimit, 0);
+        builder.addFieldInt32(8, bytecodeLimit, 0);
     };
     RobotTypeMetadata.endRobotTypeMetadata = function (builder) {
         var offset = builder.endObject();
         return offset;
     };
-    RobotTypeMetadata.createRobotTypeMetadata = function (builder, type, actionCooldown, movementCooldown, baseHealth, basePaint, actionRadiusSquared, visionRadiusSquared, bytecodeLimit) {
+    RobotTypeMetadata.createRobotTypeMetadata = function (builder, type, actionCooldown, movementCooldown, baseHealth, basePaint, maxPaint, actionRadiusSquared, visionRadiusSquared, bytecodeLimit) {
         RobotTypeMetadata.startRobotTypeMetadata(builder);
         RobotTypeMetadata.addType(builder, type);
         RobotTypeMetadata.addActionCooldown(builder, actionCooldown);
         RobotTypeMetadata.addMovementCooldown(builder, movementCooldown);
         RobotTypeMetadata.addBaseHealth(builder, baseHealth);
         RobotTypeMetadata.addBasePaint(builder, basePaint);
+        RobotTypeMetadata.addMaxPaint(builder, maxPaint);
         RobotTypeMetadata.addActionRadiusSquared(builder, actionRadiusSquared);
         RobotTypeMetadata.addVisionRadiusSquared(builder, visionRadiusSquared);
         RobotTypeMetadata.addBytecodeLimit(builder, bytecodeLimit);
