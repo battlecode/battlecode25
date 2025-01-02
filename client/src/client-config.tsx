@@ -82,7 +82,7 @@ export function getDefaultConfig(): ClientConfig {
 //    )
 //}
 
-const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
+const ColorPicker = (props: { colorName: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.colorName]
 
@@ -108,7 +108,6 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
 
     return (
         <>
-            <h4>displayName + "wahoo"</h4>
             <button
                 className={'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
                 style={{ backgroundColor: value }}
@@ -137,8 +136,11 @@ export const ConfigPage: React.FC<Props> = (props) => {
             </div>
             <div className="color-pickers">
                 Customize Colors:
-                <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
-                <ColorPicker displayName={'Team One'} colorName={Colors.TEAM_ONE} />
+                <div className={'ml-2 text-xs flex flex-row'}>
+                    Background:
+                    <ColorPicker colorName={Colors.GAMEAREA_BACKGROUND} />
+                </div>
+                <ColorPicker colorName={Colors.WALLS_COLOR} />
             </div>
             <div className="flex flex-row mt-8">
                 <BrightButton
