@@ -31,11 +31,11 @@ export const TEAM_1 = '#fee493'
 export const TEAM_COLORS = [TEAM_0, TEAM_1]
 export const TEAM_COLOR_NAMES = ['Silver', 'Gold']
 
-export const PAINT_COLORS = ['#00000000', '#666666', '#4c4c4c', '#998957', '#7f7148']
+export const PAINT_COLORS = ['#00000000', '#666666', '#565656', '#b28b52', '#997746']
 export const WALLS_COLOR = '#547f31'
 export const DIVIDER_COLOR = '#7b4724'
 export const TILE_COLOR = '#4c301e'
-export const GAMEAREA_BACKGROUND = '#332319'
+export const GAMEAREA_BACKGROUND = '#2e2323'
 export const SIDEBAR_BACKGROUND = '#3f3131'
 
 export const ATTACK_COLOR = '#db6b5c'

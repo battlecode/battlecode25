@@ -95,7 +95,7 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
             case 'getJavas': {
                 const output = []
                 try {
-                    const jvms = whereIsIt.nodeFindJava(null, null, '1.8')
+                    const jvms = ['21', '23'].flatMap((v) => whereIsIt.nodeFindJava(null, null, v))
 
                     // Add 'auto' option
                     output.push('Auto')
@@ -115,7 +115,7 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
             case 'getPythons': {
                 const output = []
                 try {
-                    const pythons = whereIsIt.nodeFindPython(null, null, null, null, null, null, null)
+                    const pythons = whereIsIt.nodeFindPython(3, 12, null, null, null, null, null)
 
                     for (const py of pythons) {
                         const path = py.executable

@@ -87,12 +87,12 @@ interface UnitsTableProps {
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
     const columns: Array<[string, React.ReactElement]> = [
-        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="0" />],
-        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="1" />],
+        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="0" />],
+        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="1" />],
         ['Defense Tower', <UnitsIcon teamIdx={teamIdx} robotType="defense_tower" key="2" />],
         ['Soldier', <UnitsIcon teamIdx={teamIdx} robotType="soldier" key="3" />],
-        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="4" />],
-        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="5" />]
+        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="4" />],
+        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="5" />]
     ]
 
     let data: [string, number[]][] = [['Count', [0, 0, 0, 0, 0, 0]]]

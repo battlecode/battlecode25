@@ -15,7 +15,7 @@ import java.util.*;
  * The primary implementation of the GameWorld interface for containing and
  * modifying the game map and the objects on it.
  */
-public strictfp class GameWorld {
+public class GameWorld {
     /**
      * The current round we're running.
      */
@@ -101,9 +101,10 @@ public strictfp class GameWorld {
         this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
-
+        byte[] initialPaint = gm.getPaintArray();
         for (int i = 0; i < numSquares; i++) {
             this.resourcePatternCentersByLoc[i] = Team.NEUTRAL;
+            setPaint(indexToLocation(i), initialPaint[i]);
         }
 
         this.allRuinsByLoc = gm.getRuinArray();
@@ -940,7 +941,10 @@ public strictfp class GameWorld {
         if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
         }
-        robot.addPaint(type.paintCost); //TODO: initial paint amounts
+        if (type == UnitType.LEVEL_ONE_PAINT_TOWER)
+            robot.addPaint(GameConstants.INITIAL_PAINT_TOWER_PAINT);
+        else if (type.isRobotType())
+            robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0)); 
         return ID;
     }
 

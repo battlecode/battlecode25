@@ -88,7 +88,7 @@ export const NumInput: React.FC<NumInputProps> = (props) => {
     return (
         <input
             className={
-                'border border-white bg-light py-0.5 pl-1 rounded-md w-12 ' +
+                'border border-white bg-light py-0.5 pl-1 rounded-md w-14 ' +
                 (props.disabled ? 'opacity-50 ' : '') +
                 (props.className ?? '')
             }

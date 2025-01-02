@@ -7,6 +7,7 @@ import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPla
 import Match from './Match'
 import { Body } from './Bodies'
 import { ATTACK_COLOR, TEAM_COLORS } from '../constants'
+import { getImageIfLoaded } from '../util/ImageLoader'
 
 type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
@@ -151,24 +152,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             )
         }
     },
-    //[schema.Action.HEAL]: class Heal extends ToFromAction {
-    //    apply(round: Round): void {
-    //        // To discuss
-    //    }
-    //    drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
-    //        renderUtils.renderLine(
-    //            ctx,
-    //            renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
-    //            renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-    //            {
-    //                color: HEAL_COLOR,
-    //                lineWidth: 0.05,
-    //                opacity: 0.5,
-    //                renderArrow: true
-    //            }
-    //        )
-    //    }
-    //},
     [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
         apply(round: Round): void {
             round.map.paint[this.actionData.loc()] = 0
@@ -206,24 +189,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            /*
-            const radius = 3
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const body = match.currentRound.bodies.getById(this.actionData.id())
+            const coords = renderUtils.getRenderCoords(body.pos.x, body.pos.y, map.dimension, false)
+            const factor = match.getInterpolationFactor()
+            const isEndpoint = factor == 0 || factor == 1
+            const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
+            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
-
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = WATER_COLOR
-            ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
-            ctx.fill()
-            ctx.stroke()
+            ctx.globalAlpha = alpha
+            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/hammer.png'), coords, size)
             ctx.globalAlpha = 1
-            */
         }
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
@@ -281,6 +257,19 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const towerId = this.actionData.id()
             const body = round.bodies.getById(towerId)
             body.level += 1
+        }
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const map = match.currentRound.map
+            const body = match.currentRound.bodies.getById(this.actionData.id())
+            const coords = renderUtils.getRenderCoords(body.pos.x, body.pos.y, map.dimension, false)
+            const factor = match.getInterpolationFactor()
+            const isEndpoint = factor == 0 || factor == 1
+            const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
+            const alpha = isEndpoint ? 0.7 : factor < 0.5 ? factor : 1 - factor
+
+            ctx.globalAlpha = alpha
+            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/gears.png'), coords, size)
+            ctx.globalAlpha = 1
         }
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {
