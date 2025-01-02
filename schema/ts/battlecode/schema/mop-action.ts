@@ -16,17 +16,30 @@ export class MopAction {
   return this;
 }
 
-loc():number {
+/**
+ * Ids of the mopped targets, possibly 0
+ */
+id0():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-static sizeOf():number {
-  return 2;
+id1():number {
+  return this.bb!.readUint16(this.bb_pos + 2);
 }
 
-static createMopAction(builder:flatbuffers.Builder, loc: number):flatbuffers.Offset {
-  builder.prep(2, 2);
-  builder.writeInt16(loc);
+id2():number {
+  return this.bb!.readUint16(this.bb_pos + 4);
+}
+
+static sizeOf():number {
+  return 6;
+}
+
+static createMopAction(builder:flatbuffers.Builder, id0: number, id1: number, id2: number):flatbuffers.Offset {
+  builder.prep(2, 6);
+  builder.writeInt16(id2);
+  builder.writeInt16(id1);
+  builder.writeInt16(id0);
   return builder.offset();
 }
 
