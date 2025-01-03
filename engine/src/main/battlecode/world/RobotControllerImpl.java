@@ -561,8 +561,9 @@ public final class RobotControllerImpl implements RobotController {
         this.gameWorld.setMarker(getTeam(), loc, 0);
     }
 
-    private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
+    private void assertCanMarkTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
+        assertIsTowerType(type);
         assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
 
         if (!this.gameWorld.hasRuin(loc)) {
@@ -583,9 +584,9 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canMarkTowerPattern(MapLocation loc) {
+    public boolean canMarkTowerPattern(UnitType type, MapLocation loc) {
         try {
-            assertCanMarkTowerPattern(loc);
+            assertCanMarkTowerPattern(type, loc);
             return true;
         } catch (GameActionException e) {
             return false;
@@ -599,7 +600,7 @@ public final class RobotControllerImpl implements RobotController {
 
     @Override
     public void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
-        assertCanMarkTowerPattern(loc);
+        assertCanMarkTowerPattern(type, loc);
 
         this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
         this.gameWorld.markTowerPattern(type, getTeam(), loc, rotationAngle, reflect);

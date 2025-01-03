@@ -155,7 +155,7 @@ public class RobotPlayer {
                 rc.move(dir);
             // Mark the pattern we need to draw to build a tower here if we haven't already.
             MapLocation shouldBeMarked = curRuin.getMapLocation().subtract(dir);
-            if (rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(targetLoc)){
+            if (rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
                 rc.markTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
                 System.out.println("Trying to build a tower at " + targetLoc);
             }
