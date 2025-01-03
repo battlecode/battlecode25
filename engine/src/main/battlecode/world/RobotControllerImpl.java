@@ -533,9 +533,7 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void mark(MapLocation loc, boolean secondary) throws GameActionException {
         assertCanMark(loc);
-        
         this.gameWorld.setMarker(getTeam(), loc, secondary ? 2 : 1);
-        this.gameWorld.getMatchMaker().addMarkAction(loc, secondary);
     }
 
     private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
@@ -560,9 +558,7 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void removeMark(MapLocation loc) throws GameActionException {
         assertCanRemoveMark(loc);
-
         this.gameWorld.setMarker(getTeam(), loc, 0);
-        this.gameWorld.getMatchMaker().addUnmarkAction(loc);
     }
 
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {
@@ -614,6 +610,9 @@ public final class RobotControllerImpl implements RobotController {
         assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
         InternalRobot robot = this.gameWorld.getRobot(loc);
 
+        if (robot == null){
+            throw new GameActionException(CANT_DO_THAT, "There is no robot at the location");
+        }
         if (!this.robot.getType().isTowerType()){ 
             throw new GameActionException(CANT_DO_THAT, "No tower at the location");
         }

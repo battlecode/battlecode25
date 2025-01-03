@@ -45,23 +45,33 @@ baseHealth():number {
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
-actionRadiusSquared():number {
+basePaint():number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
-visionRadiusSquared():number {
+maxPaint():number {
   const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
-bytecodeLimit():number {
+actionRadiusSquared():number {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
+visionRadiusSquared():number {
+  const offset = this.bb!.__offset(this.bb_pos, 18);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+bytecodeLimit():number {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
 static startRobotTypeMetadata(builder:flatbuffers.Builder) {
-  builder.startObject(7);
+  builder.startObject(9);
 }
 
 static addType(builder:flatbuffers.Builder, type:RobotType) {
@@ -80,16 +90,24 @@ static addBaseHealth(builder:flatbuffers.Builder, baseHealth:number) {
   builder.addFieldInt32(3, baseHealth, 0);
 }
 
+static addBasePaint(builder:flatbuffers.Builder, basePaint:number) {
+  builder.addFieldInt32(4, basePaint, 0);
+}
+
+static addMaxPaint(builder:flatbuffers.Builder, maxPaint:number) {
+  builder.addFieldInt32(5, maxPaint, 0);
+}
+
 static addActionRadiusSquared(builder:flatbuffers.Builder, actionRadiusSquared:number) {
-  builder.addFieldInt32(4, actionRadiusSquared, 0);
+  builder.addFieldInt32(6, actionRadiusSquared, 0);
 }
 
 static addVisionRadiusSquared(builder:flatbuffers.Builder, visionRadiusSquared:number) {
-  builder.addFieldInt32(5, visionRadiusSquared, 0);
+  builder.addFieldInt32(7, visionRadiusSquared, 0);
 }
 
 static addBytecodeLimit(builder:flatbuffers.Builder, bytecodeLimit:number) {
-  builder.addFieldInt32(6, bytecodeLimit, 0);
+  builder.addFieldInt32(8, bytecodeLimit, 0);
 }
 
 static endRobotTypeMetadata(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -97,12 +115,14 @@ static endRobotTypeMetadata(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createRobotTypeMetadata(builder:flatbuffers.Builder, type:RobotType, actionCooldown:number, movementCooldown:number, baseHealth:number, actionRadiusSquared:number, visionRadiusSquared:number, bytecodeLimit:number):flatbuffers.Offset {
+static createRobotTypeMetadata(builder:flatbuffers.Builder, type:RobotType, actionCooldown:number, movementCooldown:number, baseHealth:number, basePaint:number, maxPaint:number, actionRadiusSquared:number, visionRadiusSquared:number, bytecodeLimit:number):flatbuffers.Offset {
   RobotTypeMetadata.startRobotTypeMetadata(builder);
   RobotTypeMetadata.addType(builder, type);
   RobotTypeMetadata.addActionCooldown(builder, actionCooldown);
   RobotTypeMetadata.addMovementCooldown(builder, movementCooldown);
   RobotTypeMetadata.addBaseHealth(builder, baseHealth);
+  RobotTypeMetadata.addBasePaint(builder, basePaint);
+  RobotTypeMetadata.addMaxPaint(builder, maxPaint);
   RobotTypeMetadata.addActionRadiusSquared(builder, actionRadiusSquared);
   RobotTypeMetadata.addVisionRadiusSquared(builder, visionRadiusSquared);
   RobotTypeMetadata.addBytecodeLimit(builder, bytecodeLimit);

@@ -449,11 +449,13 @@ export class Body {
     }
 
     public onHoverInfo(): string[] {
+        if (!this.game.playable) return [this.robotName]
+
         const defaultInfo = [
             `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
-            `HP: ${this.hp}`,
-            `Paint: ${this.paint}`,
+            `HP: ${this.hp}/${this.metadata.baseHealth()}`,
+            `Paint: ${this.paint}/${this.metadata.maxPaint()}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
@@ -487,6 +489,7 @@ export class Body {
         const metadata = this.metadata
 
         this.hp = metadata.baseHealth()
+        this.paint = metadata.basePaint()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
     }

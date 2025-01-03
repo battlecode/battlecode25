@@ -301,6 +301,8 @@ public class GameMaker {
             }
             RobotTypeMetadata.startRobotTypeMetadata(builder);
             RobotTypeMetadata.addType(builder, FlatHelpers.getRobotTypeFromUnitType(type));
+            RobotTypeMetadata.addMaxPaint(builder, type.paintCapacity);
+            RobotTypeMetadata.addBasePaint(builder, (int) Math.round(type.paintCapacity * GameConstants.INITIAL_UNIT_PAINT_PERCENTAGE / 100.0));
             RobotTypeMetadata.addActionCooldown(builder, type.actionCooldown);
             RobotTypeMetadata.addActionRadiusSquared(builder, type.actionRadiusSquared);
             RobotTypeMetadata.addBaseHealth(builder,type.health);
@@ -543,9 +545,9 @@ public class GameMaker {
         }
 
         /// Visually indicate a mop attack
-        public void addMopAction(MapLocation loc){
+        public void addMopAction(int  id1, int id2, int id3){
             applyToBuilders((builder) -> {
-                int action = MopAction.createMopAction(builder, locationToInt(loc));
+                int action = MopAction.createMopAction(builder, id1, id2, id3);
                 builder.addAction(action, Action.MopAction);
             });
         }
