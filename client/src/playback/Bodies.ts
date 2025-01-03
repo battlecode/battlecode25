@@ -436,8 +436,8 @@ export class Body {
         const defaultInfo = [
             this.robotName,
             `ID: ${this.id}`,
-            `HP: ${this.hp}/${this.metadata.baseHealth}`,
-            `Paint: ${this.paint}/${this.metadata.maxPaint}`,
+            `HP: ${this.hp}/${this.metadata.baseHealth()}`,
+            `Paint: ${this.paint}/${this.metadata.maxPaint()}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
