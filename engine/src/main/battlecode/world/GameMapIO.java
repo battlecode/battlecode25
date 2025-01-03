@@ -358,22 +358,10 @@ public final class GameMapIO {
                 if (teamsReversed){
                     bodyTeam = bodyTeam.opponent();
                 }
-                int initialPaint = (bodyType == UnitType.LEVEL_ONE_PAINT_TOWER) ? GameConstants.INITIAL_PAINT_TOWER_PAINT : 0;
+                int initialPaint = (int) Math.round(bodyType.paintCapacity * GameConstants.INITIAL_UNIT_PAINT_PERCENTAGE / 100.0);
                 initialBodies.add(new RobotInfo(curId, bodyTeam, bodyType, bodyType.health, new MapLocation(bodyX, bodyY), initialPaint));
             }
         }
-
-        // private static int createSpawnActionsVector(FlatBufferBuilder builder, ArrayList<Integer> ids, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
-        //     ByteBuffer bb = builder.createUnintializedVector(6, xs.size(), 2);
-        //     for (int i = 0; i < xs.size(); i++){
-        //         bb.putInt(ids.get(i));
-        //         bb.putShort((short)(int)xs.get(i));
-        //         bb.putShort((short)(int)ys.get(i));
-        //         bb.put(teams.get(i));
-        //         bb.put(types.get(i));
-        //     }
-        //     return builder.endVector();
-        // }
 
         private static int createSpawnActionsVector(FlatBufferBuilder builder, ArrayList<Integer> ids, ArrayList<Integer> xs, ArrayList<Integer> ys, ArrayList<Byte> teams, ArrayList<Byte> types){
             InitialBodyTable.startSpawnActionsVector(builder, ids.size());

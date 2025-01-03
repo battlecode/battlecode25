@@ -469,6 +469,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         if(dir == Direction.SOUTH) dirIdx = 1;
         else if(dir == Direction.EAST) dirIdx = 2;
         else if(dir == Direction.WEST) dirIdx = 3;
+        ArrayList<Integer> affectedIDs = new  ArrayList<>();
 
         for(int i = 0; i < 3; i ++) { // check all three spots
             int x = this.getLocation().x + dx[dirIdx][i], y = this.getLocation().y + dy[dirIdx][i];
@@ -480,12 +481,12 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 InternalRobot robot = this.gameWorld.getRobot(newLoc);
                 if(this.team != robot.getTeam()){
                     robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
-                    this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
+                    affectedIDs.add(robot.ID);
                 }
             }
         }
-        MapLocation centerLoc = this.location.add(dir);
-        this.gameWorld.getMatchMaker().addMopAction(centerLoc);
+        for (int i = 0; i < 3; i++) affectedIDs.add(0);
+        this.gameWorld.getMatchMaker().addMopAction(affectedIDs.get(0), affectedIDs.get(1), affectedIDs.get(2));
     }
 
     /**

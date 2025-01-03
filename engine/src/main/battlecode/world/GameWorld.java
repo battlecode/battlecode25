@@ -432,6 +432,12 @@ public class GameWorld {
     }
 
     public void setMarker(Team team, MapLocation loc, int marker) {
+        if (marker == 0){
+            this.matchMaker.addUnmarkAction(loc);
+        }
+        else {
+            this.matchMaker.addMarkAction(loc, !isPrimaryPaint(marker));
+        }
         this.getmarkersArray(team)[locationToIndex(loc)] = marker;
     }
 
@@ -947,10 +953,7 @@ public class GameWorld {
         if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
         }
-        if (type == UnitType.LEVEL_ONE_PAINT_TOWER)
-            robot.addPaint(GameConstants.INITIAL_PAINT_TOWER_PAINT);
-        else if (type.isRobotType())
-            robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0)); 
+        robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_UNIT_PAINT_PERCENTAGE / 100.0)); 
         return ID;
     }
 

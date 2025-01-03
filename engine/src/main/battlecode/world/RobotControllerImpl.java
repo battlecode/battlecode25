@@ -533,9 +533,7 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void mark(MapLocation loc, boolean secondary) throws GameActionException {
         assertCanMark(loc);
-        
         this.gameWorld.setMarker(getTeam(), loc, secondary ? 2 : 1);
-        this.gameWorld.getMatchMaker().addMarkAction(loc, secondary);
     }
 
     private void assertCanRemoveMark(MapLocation loc) throws GameActionException {
@@ -560,9 +558,7 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void removeMark(MapLocation loc) throws GameActionException {
         assertCanRemoveMark(loc);
-
         this.gameWorld.setMarker(getTeam(), loc, 0);
-        this.gameWorld.getMatchMaker().addUnmarkAction(loc);
     }
 
     private void assertCanMarkTowerPattern(MapLocation loc) throws GameActionException {

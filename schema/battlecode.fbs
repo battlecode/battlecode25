@@ -41,6 +41,8 @@ table RobotTypeMetadata {
     actionCooldown: int;
     movementCooldown: int;
     baseHealth: int;
+    basePaint: int;
+    maxPaint: int;
     actionRadiusSquared: int;
     visionRadiusSquared: int;
     bytecodeLimit: int;
@@ -92,7 +94,10 @@ struct AttackAction {
 
 /// Visually indicate a mop attack
 struct MopAction {
-    loc: ushort;
+    /// Ids of the mopped targets, possibly 0
+    id0: ushort;
+    id1: ushort;
+    id2: ushort;
 }
 
 /// Visually indicate a tower being built
