@@ -98,6 +98,14 @@ public class GameWorld {
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
+        this.allRuinsByLoc = gm.getRuinArray();
+        this.allRuins = new ArrayList<MapLocation>();
+        for (int i = 0; i < numSquares; i++){
+            if (this.allRuinsByLoc[i]){
+                this.allRuins.add(indexToLocation(i));
+            }
+        }
+
         this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
@@ -107,21 +115,11 @@ public class GameWorld {
             setPaint(indexToLocation(i), initialPaint[i]);
         }
 
-        this.allRuinsByLoc = gm.getRuinArray();
-        this.allRuins = new ArrayList<MapLocation>();
-        for (int i = 0; i < numSquares; i++){
-            if (this.allRuinsByLoc[i]){
-                this.allRuins.add(indexToLocation(i));
-            }
-        }
 
-        for (MapLocation ruin : this.allRuins){
-            this.allRuinsByLoc[locationToIndex(ruin)] = true;
-        }
       
         RobotInfo[] initialBodies = gm.getInitialBodies(); 
         this.towerLocations = new ArrayList<MapLocation>();
-        this.towersByLoc = new Team[numSquares]; //idk if both of these are used but I instantiated for now
+        this.towersByLoc = new Team[numSquares]; 
         for (int i = 0; i < numSquares; i++){
             towersByLoc[i] = Team.NEUTRAL;  
         }
@@ -407,6 +405,7 @@ public class GameWorld {
     }
 
     public void setPaint(MapLocation loc, int paint) {
+        if (!isPaintable(loc)) return;
         if (teamFromPaint(this.colorLocations[locationToIndex(loc)]) != Team.NEUTRAL){
         this.getTeamInfo().addPaintedSquares(-1, teamFromPaint(this.colorLocations[locationToIndex(loc)]));
         }
@@ -432,6 +431,7 @@ public class GameWorld {
     }
 
     public void setMarker(Team team, MapLocation loc, int marker) {
+        if (!isPaintable(loc)) return;
         if (marker == 0){
             this.matchMaker.addUnmarkAction(loc);
         }
@@ -444,13 +444,9 @@ public class GameWorld {
     public void markPattern(int pattern, Team team, MapLocation center, int rotationAngle, boolean reflect, boolean isTowerPattern) {
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
-                // don't try marking a center ruin
-                if (dx == 0 && dy == 0 && isTowerPattern)
-                    continue;
                 int symmetry = 4 * (reflect ? 1 : 0) + rotationAngle;
                 int dx2;
                 int dy2;
-
                 switch (symmetry) {
                     case 0:
                         dx2 = dx;
@@ -563,6 +559,10 @@ public class GameWorld {
 
     public boolean isPassable(MapLocation loc) {
         return !(this.walls[locationToIndex(loc)] || this.hasRuin(loc));
+    }
+
+    public boolean isPaintable(MapLocation loc){
+        return isPassable(loc);
     }
 
     public ArrayList<MapLocation> getRuinArray() {
