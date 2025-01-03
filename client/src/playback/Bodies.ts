@@ -436,12 +436,12 @@ export class Body {
         ctx.font = '0.5px serif'
         ctx.fillStyle = this.team.color
         ctx.textAlign = 'right'
-        ctx.textBaseline = 'top'
         ctx.shadowColor = 'black'
         ctx.shadowBlur = 10
         ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
         ctx.shadowColor = ''
         ctx.shadowBlur = 0
+        ctx.textAlign = 'start'
     }
 
     public getInterpolatedCoords(match: Match): Vector {
