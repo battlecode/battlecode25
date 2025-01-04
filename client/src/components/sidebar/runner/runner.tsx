@@ -22,6 +22,7 @@ type RunnerPageProps = {
 export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     const [
         setup,
+        error,
         availableMaps,
         availablePlayers,
         language,
@@ -100,6 +101,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
         <div className={'flex flex-col grow ' + (scaffoldLoading ? 'opacity-50 pointer-events-none' : '')}>
             {!setup ? (
                 <>
+                    {error && <div className="text-red">{`Setup Error: ${error}`}</div>}
                     <Button onClick={manuallySetupScaffold}>Setup Scaffold</Button>
                 </>
             ) : (

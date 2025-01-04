@@ -198,22 +198,39 @@ async fn tauri_api(
         },
         "child_process.spawn" => {
             let scaffold_path = &args[0];
-            let java_path = &args[1];
+            let lang = &args[1];
+            let lang_path = &args[2];
+
+            // Populate wrapper command
+            let mut envs = HashMap::new();
             let mut wrapper_path = std::path::PathBuf::new();
-            wrapper_path.push(scaffold_path);
-            wrapper_path.push(match cfg!(windows) {
-                true => "gradlew.bat",
-                false => "gradlew"
-            });
-            let mut child = Command::new(wrapper_path.to_str().unwrap())
-                .args(&args[2..])
-                .current_dir(scaffold_path.into());
-            if !java_path.is_empty() {
-                let mut envs = HashMap::new();
-                envs.insert(String::from("JAVA_HOME"), java_path.clone());
-                child = child.envs(envs);
+            match lang.as_str() {
+                "Java" => {
+                    wrapper_path.push(scaffold_path);
+                    wrapper_path.push(match cfg!(windows) {
+                        true => "gradlew.bat",
+                        false => "gradlew"
+                    });
+                    if !lang_path.is_empty() {
+                        envs.insert(String::from("JAVA_HOME"), lang_path.clone());
+                    }
+                },
+                "Python" => {
+                    if lang_path.is_empty() {
+                        wrapper_path.push(String::from("python"));
+                    } else {
+                        wrapper_path.push(lang_path.clone())
+                    }
+                },
+                _ => {}
             }
-            let child = child.spawn();
+
+            let child = Command::new(wrapper_path.to_str().unwrap())
+                .args(&args[3..])
+                .current_dir(scaffold_path.into())
+                .envs(envs)
+                .spawn();
+
             match child {
                 Ok(child) => {
                     let mut rx = child.0;

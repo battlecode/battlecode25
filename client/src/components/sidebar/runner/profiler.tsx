@@ -34,7 +34,7 @@ export const ProfilerDialog: React.FC = () => {
         if (!match.currentRound.bodies.hasId(selectedBodyID)) return
 
         const body = match.currentRound.bodies.getById(selectedBodyID)
-        const index = match.profilerFiles[body.team.id - 1].profiles.findIndex((p) => p.id === body.id)
+        const index = match.profilerFiles[body.team.id - 1]?.profiles.findIndex((p) => p.id === body.id)
 
         if (index === -1) return
 
