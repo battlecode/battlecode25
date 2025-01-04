@@ -43,7 +43,7 @@ jobs:
     env:
       TAURI_OUTPUT: ./src-tauri/target/${{ matrix.tauri-target }}/release/${{ matrix.tauri-copy-path }}
       TAURI_BUILD_COMMAND: npm run tauri-pack -- -t ${{ matrix.tauri-target }}
-      ELECTRON_BUILD_COMMAND: ELECTRON_MODULE_NAME=${{ matrix.electron-module-name }} npm run electron-pack
+      ELECTRON_BUILD_COMMAND: npx cross-env ELECTRON_MODULE_NAME=${{ matrix.electron-module-name }} npm run electron-pack
 
     steps:
       - name: Checkout branch
