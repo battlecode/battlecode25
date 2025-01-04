@@ -83,15 +83,33 @@ teamCoverageAmountsArray():Int32Array|null {
 }
 
 /**
+ * The total number of active resource patterns per team
+ */
+teamResourcePatternAmounts(index: number):number|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+}
+
+teamResourcePatternAmountsLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+teamResourcePatternAmountsArray():Int32Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+}
+
+/**
  * Ordered turn data for each robot during the round
  */
 turns(index: number, obj?:Turn):Turn|null {
-  const offset = this.bb!.__offset(this.bb_pos, 10);
+  const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? (obj || new Turn()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 turnsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 10);
+  const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
@@ -99,17 +117,17 @@ turnsLength():number {
  * The IDs of bodies that died at the end of the round, with no attributable cause.
  */
 diedIds(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
+  const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
 }
 
 diedIdsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
+  const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
 diedIdsArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
+  const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
@@ -119,12 +137,12 @@ diedIdsArray():Int32Array|null {
  * It should increase by one for each following round.
  */
 roundId():number {
-  const offset = this.bb!.__offset(this.bb_pos, 14);
+  const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
 static startRound(builder:flatbuffers.Builder) {
-  builder.startObject(6);
+  builder.startObject(7);
 }
 
 static addTeamIds(builder:flatbuffers.Builder, teamIdsOffset:flatbuffers.Offset) {
@@ -190,8 +208,29 @@ static startTeamCoverageAmountsVector(builder:flatbuffers.Builder, numElems:numb
   builder.startVector(4, numElems, 4);
 }
 
+static addTeamResourcePatternAmounts(builder:flatbuffers.Builder, teamResourcePatternAmountsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, teamResourcePatternAmountsOffset, 0);
+}
+
+static createTeamResourcePatternAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createTeamResourcePatternAmountsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createTeamResourcePatternAmountsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addInt32(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startTeamResourcePatternAmountsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+}
+
 static addTurns(builder:flatbuffers.Builder, turnsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, turnsOffset, 0);
+  builder.addFieldOffset(4, turnsOffset, 0);
 }
 
 static createTurnsVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
@@ -207,7 +246,7 @@ static startTurnsVector(builder:flatbuffers.Builder, numElems:number) {
 }
 
 static addDiedIds(builder:flatbuffers.Builder, diedIdsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(4, diedIdsOffset, 0);
+  builder.addFieldOffset(5, diedIdsOffset, 0);
 }
 
 static createDiedIdsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
@@ -228,7 +267,7 @@ static startDiedIdsVector(builder:flatbuffers.Builder, numElems:number) {
 }
 
 static addRoundId(builder:flatbuffers.Builder, roundId:number) {
-  builder.addFieldInt32(5, roundId, 0);
+  builder.addFieldInt32(6, roundId, 0);
 }
 
 static endRound(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -236,11 +275,12 @@ static endRound(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createRound(builder:flatbuffers.Builder, teamIdsOffset:flatbuffers.Offset, teamResourceAmountsOffset:flatbuffers.Offset, teamCoverageAmountsOffset:flatbuffers.Offset, turnsOffset:flatbuffers.Offset, diedIdsOffset:flatbuffers.Offset, roundId:number):flatbuffers.Offset {
+static createRound(builder:flatbuffers.Builder, teamIdsOffset:flatbuffers.Offset, teamResourceAmountsOffset:flatbuffers.Offset, teamCoverageAmountsOffset:flatbuffers.Offset, teamResourcePatternAmountsOffset:flatbuffers.Offset, turnsOffset:flatbuffers.Offset, diedIdsOffset:flatbuffers.Offset, roundId:number):flatbuffers.Offset {
   Round.startRound(builder);
   Round.addTeamIds(builder, teamIdsOffset);
   Round.addTeamResourceAmounts(builder, teamResourceAmountsOffset);
   Round.addTeamCoverageAmounts(builder, teamCoverageAmountsOffset);
+  Round.addTeamResourcePatternAmounts(builder, teamResourcePatternAmountsOffset);
   Round.addTurns(builder, turnsOffset);
   Round.addDiedIds(builder, diedIdsOffset);
   Round.addRoundId(builder, roundId);
