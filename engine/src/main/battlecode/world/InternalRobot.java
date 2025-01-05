@@ -375,17 +375,16 @@ public class InternalRobot implements Comparable<InternalRobot> {
                     this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.aoeAttackStrength);
                     this.gameWorld.getMatchMaker().addAttackAction(tower.ID);
                 }
-            } else { // otherwise, maybe paint
-                // If the tile is empty or same team paint, paint it
-                if (!this.gameWorld.isPaintable(loc)) continue;
-                if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
-                    this.gameWorld.setPaint(loc, paintType);
-                    this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
-                } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
-                    if(loc.isWithinDistanceSquared(newLoc, 2)){
-                        this.gameWorld.setPaint(loc, paintType);
-                        this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
-                    }
+            }  
+            // If the tile is empty or same team paint, paint it
+            if (!this.gameWorld.isPaintable(newLoc)) continue;
+            if(this.gameWorld.getPaint(newLoc) == 0 || getTeam() == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(newLoc))) {
+                this.gameWorld.setPaint(newLoc, paintType);
+                this.gameWorld.getMatchMaker().addPaintAction(newLoc, useSecondaryColor);
+            } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
+                if(loc.isWithinDistanceSquared(newLoc, 2)){
+                    this.gameWorld.setPaint(newLoc, paintType);
+                    this.gameWorld.getMatchMaker().addPaintAction(newLoc, useSecondaryColor);
                 }
             }
         }
