@@ -519,12 +519,16 @@ public class GameWorld {
         return this.towersByLoc[locationToIndex(loc)];
     }
 
-    public int extraResourcesFromPatterns(Team team){
+    public int getNumResourcePatterns(Team team){
         int numPatterns = 0;
         for (MapLocation loc : this.resourcePatternCenters)
             if (this.resourcePatternCentersByLoc[locationToIndex(loc)] == team)
                 numPatterns++;
-        return numPatterns * GameConstants.EXTRA_RESOURCES_FROM_PATTERN;
+        return numPatterns;
+    }
+
+    public int extraResourcesFromPatterns(Team team){
+        return getNumResourcePatterns(team) * GameConstants.EXTRA_RESOURCES_FROM_PATTERN;
     }
 
     /**
@@ -915,9 +919,9 @@ public class GameWorld {
 
     public void processEndOfRound() {
         int teamACoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.A) * 1000.0 / this.areaWithoutWalls);
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A), teamACoverage);
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getMoney(Team.A), teamACoverage, getNumResourcePatterns(Team.A));
         int teamBCoverage = (int) Math.round(this.teamInfo.getNumberOfPaintedSquares(Team.B) * 1000.0 / this.areaWithoutWalls);
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B), teamBCoverage);
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getMoney(Team.B), teamBCoverage, getNumResourcePatterns(Team.B));
         this.teamInfo.processEndOfRound();
 
         this.getMatchMaker().endRound();
