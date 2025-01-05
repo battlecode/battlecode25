@@ -53,7 +53,7 @@ export default class Round {
             `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
         )
 
-        this.bodies.processDied(this.currentDelta)
+        this.bodies.processRoundEnd(this.currentDelta)
 
         this.roundNumber += 1
 
@@ -95,10 +95,12 @@ export default class Round {
             this.initialRoundState = this.copy()
         }
 
-        // Tick actions once we pass the first turn so that round n shows the state
-        // of actions at the end of round n-1, until we start progressing
+        // Tick actions and remove died bots once we pass the first turn so that
+        // round n shows the state of actions at the end of round n-1, until we
+        // start progressing
         if (this.turnNumber === 0) {
             this.actions.tickLifetimes()
+            this.bodies.clearDiedBodies()
         }
 
         this.bodies.clearIndicators(turn.robotId())
