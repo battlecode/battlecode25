@@ -5,6 +5,8 @@ import { BATTLECODE_YEAR } from '../../../constants'
 enum TabType {
     NONE = '',
     OVERVIEW = 'Overview',
+    WHATS_NEW = "What's New",
+    DISPLAY = 'Game Area',
     GAME = 'Game Tab',
     RUNNER = 'Runner Tab',
     HOTKEYS = 'Hotkeys'
@@ -38,11 +40,42 @@ export const HelpPage: React.FC<Props> = (props) => {
             <>
                 <div>
                     {`Welcome to the Battlecode ${BATTLECODE_YEAR} client! `}
-                    {`We've completely overhauled the client this year, and we hope it is a better experience overall. `}
+                    <div className="h-2" />
+                    {`We've once again made massive updates to the client this year, and we hope it is a better experience overall. `}
                     {`As such, there may be issues, so please let us know if you come across anything at all. `}
+                    <div className="h-2" />
                     {`On this page, you will find some basic information about some of the more complex features of the client. `}
                     {`If anything is confusing or you have other questions, feel free to ask. `}
+                    <div className="h-2" />
                     <b>{`NOTE: If you are experiencing performance issues on Mac or a laptop, turn off low power mode. `}</b>
+                </div>
+            </>
+        ),
+        [TabType.WHATS_NEW]: (
+            <>
+                <ul>
+                    <li>{`- Per-robot turn visualization (activate by pressing 'T')`}</li>
+                    <li>{`- Reworked action/round display (see game area tab)`}</li>
+                    <li>{`- Map pan & zoom`}</li>
+                    <li>{`- Python support`}</li>
+                    <li>{`- Better error reporting for crashes`}</li>
+                    <li>{`- Bytecode profiler`}</li>
+                    <li>{`- Map editor undo`}</li>
+                    <li>{`- Runner console click to focus robot`}</li>
+                    <li>{`- Other runner improvements`}</li>
+                </ul>
+            </>
+        ),
+        [TabType.DISPLAY]: (
+            <>
+                <div>
+                    {`The display area is on the right side of the screen, and it is where you will visualize games. `}
+                    {`Here, you will see both teams' robots moving around and performing actions as they attempt to win the game. `}
+                    <div className="h-2" />
+                    {`Playback can be controlled via hotkeys or the control bar at the bottom of the screen. `}
+                    {`When looking at turn n, you are seeing a snapshot of the state and all actions that occurred at the end of round n-1. `}
+                    {`Thus, at round 1, you see the state of the game before any actions have occurred. `}
+                    {`The last 'round' of the game shows the state after the last turn occurred. `}
                 </div>
             </>
         ),
@@ -51,13 +84,11 @@ export const HelpPage: React.FC<Props> = (props) => {
                 <div>
                     {`The game page is where you will visualize the stats for a game. `}
                     {`Each statistic is specific to a match, and a game may contain multiple matches. `}
+                    <div className="h-2" />
                     {`The crown that appears above one team indicates who has won the majority of matches within a game. `}
-                    {`Each duck indicates how many ducks currently exist of that type for each team. The first duck is `}
-                    {`the standard duck, and the next three are the ducks that have specialized to level four and above. `}
-                    {`Red is attack, purple is build, and yellow is heal. The final caged duck represents how many ducks `}
-                    {`are in jail. `}
-                    {`Finally, the flags represent how many flags each team has that have not been captured. If a flag is `}
-                    {`outlined red, it means the flag is currently being carried. `}
+                    {`Each robot icon indicates how many robots currently exist of that type for each team. The first three are towers, `}
+                    {`and the next three are the regular robot bunnies. `}
+                    {`The other stats are reasonably self-explanatory.`}
                 </div>
             </>
         ),
@@ -66,12 +97,15 @@ export const HelpPage: React.FC<Props> = (props) => {
                 <div>
                     {`The runner is an easy way to run games from within the client. `}
                     {`To get started, make sure you are running the desktop version of the client. `}
-                    {`Then, select the root folder of the scaffold (battlecode${BATTLECODE_YEAR}-scaffold). `}
+                    {`Then, select the root folder of your language's scaffold (battlecode${
+                        BATTLECODE_YEAR % 100
+                    }-scaffold/YOUR-LANGUAGE). `}
                     {`Once you do that, you should see all of your maps and robots loaded in automatically. `}
-                    {`Before you run a game, ensure that your JDK installation has been correctly set up. `}
-                    {`The runner will attempt to detect the correct version of the JDK and display it in the `}
-                    {`dropdown. However, if no versions are listed and the 'Auto' setting does not work, you will `}
-                    {`have to manually customize the path to your JDK installation. `}
+                    <div className="h-2" />
+                    {`Before you run a game, ensure that your language installation has been correctly set up. `}
+                    {`The runner will attempt to detect the correct version of your language and display it in the `}
+                    {`dropdown. However, if no compatible versions are listed and the 'Auto' setting does not work, you will `}
+                    {`have to manually customize the path to your language installation. `}
                     {`Once everything is working, you'll be able to run games from within the client, and the `}
                     {`client will automatically load the game to be visualized once it is complete. `}
                 </div>
@@ -97,7 +131,7 @@ export const HelpPage: React.FC<Props> = (props) => {
                 )}
                 {hotkeyElement(`R`, 'Resets the map camera if it has been panned/zoomed')}
                 {hotkeyElement(`C`, 'Hides and unhides game control bar')}
-                {hotkeyElement(`V`, 'Toggles per-turn playback for the current game')}
+                {hotkeyElement(`T`, 'Toggles per-turn playback for the current game')}
                 {hotkeyElement(`.`, 'Skip to the very last round of the current game')}
                 {hotkeyElement(`,`, 'Skip to the first round of the current game')}
             </div>
