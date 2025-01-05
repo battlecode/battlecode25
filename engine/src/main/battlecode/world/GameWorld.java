@@ -39,7 +39,8 @@ public class GameWorld {
     private final ObjectInfo objectInfo;
 
     private final static int RESOURCE_INDEX = 0, DEFENSE_INDEX = 1, MONEY_INDEX = 2, PAINT_INDEX = 3;
-    private int[] patternArray; // 0 = resource pattern, 1 = defense tower, 2 = money tower, 3 = paint tower
+     // 0 = resource pattern, 1 = defense tower, 2 = money tower, 3 = paint tower
+    private int[] patternArray = {GameConstants.RESOURCE_PATTERN, GameConstants.DEFENSE_TOWER_PATTERN, GameConstants.MONEY_TOWER_PATTERN, GameConstants.PAINT_TOWER_PATTERN};
 
 
     private ArrayList<MapLocation> resourcePatternCenters;
@@ -106,7 +107,8 @@ public class GameWorld {
             }
         }
 
-        this.patternArray = gm.getPatternArray();
+        //ignore patterns passed in with map and use hardcoded values
+        //this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
         byte[] initialPaint = gm.getPaintArray();

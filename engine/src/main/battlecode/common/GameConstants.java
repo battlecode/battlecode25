@@ -33,6 +33,18 @@ public class GameConstants {
     /** The maximum percentage of the map that can be walls */
     public static final int MAX_WALL_PERCENTAGE = 20;
 
+    /** The 32 bit representation of the special resource pattern. */
+    public static final int RESOURCE_PATTERN = 22369621; 
+
+    /** The 32 bit representation of the paint tower pattern. */
+    public static final int PAINT_TOWER_PATTERN = 18157905;
+
+    /** The 32 bit representation of the money tower pattern. */
+    public static final int MONEY_TOWER_PATTERN = 15583086;
+
+    /** The 32 bit representation of the defense tower pattern. */
+    public static final int DEFENSE_TOWER_PATTERN = 4685252;
+
     // *********************************
     // ****** GAME PARAMETERS **********
     // *********************************
