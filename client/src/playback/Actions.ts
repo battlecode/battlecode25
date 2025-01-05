@@ -113,7 +113,20 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         }
     },
     [schema.Action.SplashAction]: class SplashAction extends Action<schema.SplashAction> {
-        draw(match: Match, ctx: CanvasRenderingContext2D): void {}
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
+            const pos = match.map.indexToLocation(this.actionData.loc())
+            const coords = renderUtils.getRenderCoords(pos.x, pos.y, match.map.dimension, true)
+
+            ctx.strokeStyle = body.team.color
+            ctx.globalAlpha = 0.3
+            ctx.fillStyle = body.team.color
+            ctx.beginPath()
+            ctx.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+            ctx.fill()
+            ctx.stroke()
+            ctx.globalAlpha = 1
+        }
     },
     [schema.Action.AttackAction]: class AttackAction extends Action<schema.AttackAction> {
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
