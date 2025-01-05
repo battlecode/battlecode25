@@ -598,7 +598,6 @@ public final class RobotControllerImpl implements RobotController {
         markTowerPattern(type, loc, 0, false);
     }
 
-    @Override
     public void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkTowerPattern(type, loc);
         if (rotationAngle < 0 || rotationAngle > 4)
@@ -693,7 +692,6 @@ public final class RobotControllerImpl implements RobotController {
         markResourcePattern(loc, 0, false);
     }
 
-    @Override
     public void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkResourcePattern(loc);
         if (rotationAngle < 0 || rotationAngle > 4)
