@@ -102,7 +102,7 @@ public class GameConstants {
     public static final int NUMBER_INITIAL_DEFENSE_TOWERS = 0;
 
     /** The percentage of a unit's paint capacity that is full when first built. */
-    public static final int INITIAL_UNIT_PAINT_PERCENTAGE = 50;
+    public static final int INITIAL_UNIT_PAINT_PERCENTAGE = 100;
 
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
