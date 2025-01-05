@@ -490,7 +490,7 @@ public final class RobotControllerImpl implements RobotController {
         }
 
         if (!sensePassability(loc)){
-            throw new GameActionException(CANT_DO_THAT, "Location has a wall!");
+            throw new GameActionException(CANT_DO_THAT, "Location has a wall or ruin!");
         }
     }
 
@@ -601,7 +601,9 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkTowerPattern(type, loc);
-
+        if (rotationAngle < 0 || rotationAngle > 4)
+            throw new GameActionException(CANT_DO_THAT, "Rotation angle should be one of 0, 1, 2, or 3 for" +
+            "0, 90, 180, 270 degrees clockwise respectively!");
         this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
         this.gameWorld.markTowerPattern(type, getTeam(), loc, rotationAngle, reflect);
     }
@@ -693,7 +695,9 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException {
         assertCanMarkResourcePattern(loc);
-
+        if (rotationAngle < 0 || rotationAngle > 4)
+            throw new GameActionException(CANT_DO_THAT, "Rotation angle should be one of 0, 1, 2, or 3 for" +
+            "0, 90, 180, 270 degrees clockwise respectively!");
         this.robot.addPaint(-GameConstants.MARK_PATTERN_PAINT_COST);
         this.gameWorld.markResourcePattern(getTeam(), loc, rotationAngle, reflect);
     }
@@ -983,9 +987,10 @@ public final class RobotControllerImpl implements RobotController {
     private void assertCanTransferPaint(MapLocation loc, int amount) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc, GameConstants.PAINT_TRANSFER_RADIUS_SQUARED);
-        assertNotNull(robot);
         assertIsActionReady();
         InternalRobot robot = this.gameWorld.getRobot(loc);
+        if (robot == null)
+            throw new GameActionException(CANT_DO_THAT, "There is no robot at this location!");
         if (loc == this.robot.getLocation()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot transfer paint to yourself!");
         }
