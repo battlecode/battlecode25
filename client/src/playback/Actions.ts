@@ -162,7 +162,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 {
                     teamForOffset: srcBody.team,
                     color: srcBody.team.color,
-                    lineWidth: 0.05,
+                    lineWidth: 0.06,
                     opacity: 0.5,
                     renderArrow: false
                 }
@@ -184,7 +184,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 {
                     teamForOffset: srcBody.team,
                     color: srcBody.team.color,
-                    lineWidth: 0.05,
+                    lineWidth: 0.06,
                     opacity: 1.0,
                     renderArrow: false
                 }
@@ -330,27 +330,30 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
-            // To dicuss
+            const src = round.bodies.getById(this.robotId)
+            const dst = round.bodies.getById(this.actionData.id())
+
+            src.paint -= this.actionData.amount()
+            dst.paint += this.actionData.amount()
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            /*
-            const radius = Math.sqrt(13)
-            const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const srcBody = match.currentRound.bodies.getById(this.robotId)
+            const dstBody = match.currentRound.bodies.getById(this.actionData.id())
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
+            const from = srcBody.getInterpolatedCoords(match)
+            const to = dstBody.getInterpolatedCoords(match)
 
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = 'black'
-            ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
-            ctx.fill()
-            ctx.stroke()
-            ctx.globalAlpha = 1
-            */
+            renderUtils.renderLine(
+                ctx,
+                renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
+                renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
+                {
+                    color: '#11fc30',
+                    lineWidth: 0.06,
+                    opacity: 0.5,
+                    renderArrow: true
+                }
+            )
         }
     },
     [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
