@@ -12,18 +12,19 @@ public final class Action {
   public static final byte MarkAction = 4;
   public static final byte UnmarkAction = 5;
   public static final byte AttackAction = 6;
-  public static final byte MopAction = 7;
-  public static final byte BuildAction = 8;
-  public static final byte TransferAction = 9;
-  public static final byte MessageAction = 10;
-  public static final byte SpawnAction = 11;
-  public static final byte DieAction = 12;
-  public static final byte UpgradeAction = 13;
-  public static final byte IndicatorStringAction = 14;
-  public static final byte IndicatorDotAction = 15;
-  public static final byte IndicatorLineAction = 16;
+  public static final byte SplashAction = 7;
+  public static final byte MopAction = 8;
+  public static final byte BuildAction = 9;
+  public static final byte TransferAction = 10;
+  public static final byte MessageAction = 11;
+  public static final byte SpawnAction = 12;
+  public static final byte DieAction = 13;
+  public static final byte UpgradeAction = 14;
+  public static final byte IndicatorStringAction = 15;
+  public static final byte IndicatorDotAction = 16;
+  public static final byte IndicatorLineAction = 17;
 
-  public static final String[] names = { "NONE", "DamageAction", "PaintAction", "UnpaintAction", "MarkAction", "UnmarkAction", "AttackAction", "MopAction", "BuildAction", "TransferAction", "MessageAction", "SpawnAction", "DieAction", "UpgradeAction", "IndicatorStringAction", "IndicatorDotAction", "IndicatorLineAction", };
+  public static final String[] names = { "NONE", "DamageAction", "PaintAction", "UnpaintAction", "MarkAction", "UnmarkAction", "AttackAction", "SplashAction", "MopAction", "BuildAction", "TransferAction", "MessageAction", "SpawnAction", "DieAction", "UpgradeAction", "IndicatorStringAction", "IndicatorDotAction", "IndicatorLineAction", };
 
   public static String name(int e) { return names[e]; }
 }

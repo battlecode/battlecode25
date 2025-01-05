@@ -28,6 +28,7 @@ export { RobotType } from './schema/robot-type';
 export { RobotTypeMetadata } from './schema/robot-type-metadata';
 export { Round } from './schema/round';
 export { SpawnAction } from './schema/spawn-action';
+export { SplashAction } from './schema/splash-action';
 export { TeamData } from './schema/team-data';
 export { TimelineMarker } from './schema/timeline-marker';
 export { TransferAction } from './schema/transfer-action';

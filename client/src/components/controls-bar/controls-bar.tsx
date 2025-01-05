@@ -29,7 +29,7 @@ export const ControlsBar: React.FC = () => {
         if (keyboard.keyCode === 'Space') GameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
-        if (keyboard.keyCode === 'KeyV') GameRunner.setPlaybackPerTurn(!playbackPerTurn)
+        if (keyboard.keyCode === 'KeyT') GameRunner.setPlaybackPerTurn(!playbackPerTurn)
 
         const applyArrows = () => {
             if (paused) {

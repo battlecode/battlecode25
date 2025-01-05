@@ -659,7 +659,8 @@ public final class RobotControllerImpl implements RobotController {
         moneyRequired += newType.moneyCost;
         this.gameWorld.getTeamInfo().addMoney(robot.getTeam(), -moneyRequired);
         robot.upgradeTower(newType);
-        this.gameWorld.getMatchMaker().addUpgradeAction(robot.getID());
+        this.gameWorld.getMatchMaker().addUpgradeAction(robot.getID(), robot.getHealth(), 
+        robot.getType().health, robot.getPaint(), robot.getType().paintCapacity);
     }
 
     private void assertCanMarkResourcePattern(MapLocation loc) throws GameActionException {

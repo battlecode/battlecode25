@@ -82,14 +82,21 @@ class RobotTypeMetadata(object):
         return 0
 
     # RobotTypeMetadata
-    def BytecodeLimit(self):
+    def MessageRadiusSquared(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
+    # RobotTypeMetadata
+    def BytecodeLimit(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
 def RobotTypeMetadataStart(builder: flatbuffers.Builder):
-    builder.StartObject(9)
+    builder.StartObject(10)
 
 def Start(builder: flatbuffers.Builder):
     RobotTypeMetadataStart(builder)
@@ -142,8 +149,14 @@ def RobotTypeMetadataAddVisionRadiusSquared(builder: flatbuffers.Builder, vision
 def AddVisionRadiusSquared(builder: flatbuffers.Builder, visionRadiusSquared: int):
     RobotTypeMetadataAddVisionRadiusSquared(builder, visionRadiusSquared)
 
+def RobotTypeMetadataAddMessageRadiusSquared(builder: flatbuffers.Builder, messageRadiusSquared: int):
+    builder.PrependInt32Slot(8, messageRadiusSquared, 0)
+
+def AddMessageRadiusSquared(builder: flatbuffers.Builder, messageRadiusSquared: int):
+    RobotTypeMetadataAddMessageRadiusSquared(builder, messageRadiusSquared)
+
 def RobotTypeMetadataAddBytecodeLimit(builder: flatbuffers.Builder, bytecodeLimit: int):
-    builder.PrependInt32Slot(8, bytecodeLimit, 0)
+    builder.PrependInt32Slot(9, bytecodeLimit, 0)
 
 def AddBytecodeLimit(builder: flatbuffers.Builder, bytecodeLimit: int):
     RobotTypeMetadataAddBytecodeLimit(builder, bytecodeLimit)

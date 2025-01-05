@@ -1,7 +1,6 @@
 import React from 'react'
 import { TeamTable } from './team-table'
 import { ResourceGraph } from './resource-graph'
-import { SpecialtyHistogram } from './histogram'
 import { useSearchParamBool } from '../../../app-search-params'
 import { useAppContext } from '../../../app-context'
 import { SectionHeader } from '../../section-header'

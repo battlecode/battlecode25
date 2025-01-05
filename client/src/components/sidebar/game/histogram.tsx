@@ -1,3 +1,4 @@
+/*
 import React from 'react'
 import { CanvasHistogram } from './quick-histogram'
 import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
@@ -12,11 +13,9 @@ function getChartData(round: Round): number[][][] {
     ]
     for (const [id, body] of round.bodies.bodies) {
         const teamIdx = body.team.id - 1
-        /*
         totals[teamIdx][0][body.attackLevel] += 1
         totals[teamIdx][1][body.buildLevel] += 1
         totals[teamIdx][2][body.healLevel] += 1
-        */
     }
 
     return totals
@@ -56,3 +55,4 @@ export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => 
         </div>
     )
 }
+*/

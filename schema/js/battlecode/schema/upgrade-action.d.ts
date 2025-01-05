@@ -10,6 +10,10 @@ export declare class UpgradeAction {
      * Id of the upgraded tower
      */
     id(): number;
+    newHealth(): number;
+    newMaxHealth(): number;
+    newPaint(): number;
+    newMaxPaint(): number;
     static sizeOf(): number;
-    static createUpgradeAction(builder: flatbuffers.Builder, id: number): flatbuffers.Offset;
+    static createUpgradeAction(builder: flatbuffers.Builder, id: number, newHealth: number, newMaxHealth: number, newPaint: number, newMaxPaint: number): flatbuffers.Offset;
 }

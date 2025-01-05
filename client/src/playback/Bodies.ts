@@ -222,7 +222,9 @@ export class Body {
     public indicatorString: string = ''
     public dead: boolean = false
     public hp: number = 0
+    public maxHp: number = 1
     public paint: number = 0
+    public maxPaint: number = 0
     public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
@@ -421,9 +423,7 @@ export class Body {
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
-        // TODO: adjust
-        const maxHP = this.game.playable ? this.metadata.baseHealth() : 1
-        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
+        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / this.maxHp), hpBarHeight)
     }
 
     protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
@@ -459,8 +459,8 @@ export class Body {
         const defaultInfo = [
             `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
-            `HP: ${this.hp}/${this.metadata.baseHealth()}`,
-            `Paint: ${this.paint}/${this.metadata.maxPaint()}`,
+            `HP: ${this.hp}/${this.maxHp}`,
+            `Paint: ${this.paint}/${this.maxPaint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
@@ -493,15 +493,12 @@ export class Body {
 
         const metadata = this.metadata
 
-        this.hp = metadata.baseHealth()
+        this.maxHp = metadata.baseHealth()
+        this.hp = this.maxHp
+        this.maxPaint = metadata.maxPaint()
         this.paint = metadata.basePaint()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
-    }
-
-    public getSpecialization(): { idx: number; name: string } {
-        // TODO: delete this function
-        return { idx: 0, name: 'base' }
     }
 }
 
