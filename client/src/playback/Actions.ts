@@ -179,28 +179,87 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
         apply(round: Round): void {
+            console.log('sweeping')
+
             // To discuss
         }
+        
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            const body = match.currentRound.bodies.getById(this.robotId)
-            const radius = Math.sqrt(4)
-            const map = match.currentRound.map
-            const loc = body.getInterpolatedCoords(match)
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const map = match.currentRound.map;
+            const mainBody = match.currentRound.bodies.getById(this.robotId); // Main robot
+        
+            // Fetch targets
+            const targetIds = [this.actionData.id0(), this.actionData.id1(), this.actionData.id2()];
+            const targets = targetIds
+                .filter(id => id !== 0) // Filter out IDs equal to 0
+                .map(id => match.currentRound.bodies.getById(id)); // Map only non-zero IDs
+        
+            const mainCoords = renderUtils.getRenderCoords(mainBody.pos.x, mainBody.pos.y, map.dimension, true);
+        
+            const factor = match.getInterpolationFactor();
+            const isActive = factor > 0.8
+            
+            // Draw static images for reference at their original positions
+            targets.forEach((target, index) => {
+                if (!target) return;
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
+                const baseCoords = renderUtils.getRenderCoords(target.pos.x, target.pos.y, map.dimension, false);
 
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = ATTACK_COLOR
-            ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
-            ctx.fill()
-            ctx.stroke()
-            ctx.globalAlpha = 1
+                // Render static image without sweeping/rotating
+                ctx.save();
+                renderUtils.renderCenteredImageOrLoadingIndicator(
+                    ctx,
+                    getImageIfLoaded('icons/mopper.png'),
+                    baseCoords,
+                    1 // Static size
+                );
+                ctx.restore();
+            });
+
+            if (isActive) {
+                const sweepOffset = Math.sin((factor - 0.9) * Math.PI * 10) * 0.1; // Back-and-forth motion
+                const rotationAngle = Math.sin((factor - 0.9) * Math.PI * 10) * 0.2; // Slight rotation
+                
+                // Loop through targets and draw visuals
+                targets.forEach((target, index) => {
+                    if (!target) return;
+            
+                    const baseCoords = renderUtils.getRenderCoords(target.pos.x, target.pos.y, map.dimension, false);
+                    
+                    // Apply the sweeping offset to the coordinates
+                    const coords = {
+                        x: baseCoords.x + (index % 2 === 0 ? sweepOffset : -sweepOffset), // Alternate direction for different targets
+                        y: baseCoords.y // Keep y constant for a horizontal sweep
+                    };
+            
+                    const size = 1; // Adjust size if needed
+            
+                    // Draw line from main robot to the target
+                    ctx.globalAlpha = 0.3;
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 0.05;
+                    ctx.beginPath();
+                    ctx.moveTo(mainCoords.x, mainCoords.y);
+                    ctx.lineTo(coords.x + 0.5, coords.y + 0.5);
+                    ctx.stroke();
+            
+                    // Render image with rotation
+                    ctx.globalAlpha = 0.8;
+                    ctx.save(); // Save current context state
+                    ctx.translate(coords.x, coords.y); // Move context to target position
+                    ctx.rotate(rotationAngle); // Rotate context
+                    renderUtils.renderCenteredImageOrLoadingIndicator(
+                        ctx,
+                        getImageIfLoaded('icons/mopper.png'),
+                        { x: 0, y: 0 }, // Draw at the new origin
+                        size
+                    );
+                    ctx.restore(); // Restore context to original state
+                });
+            }
+            ctx.globalAlpha = 1; // Reset global alpha
         }
-    },
+    },    
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
         apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
