@@ -249,12 +249,7 @@ export class Body {
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
 
         if (this.dead) ctx.globalAlpha = 0.5
-        // Add shadow
-        ctx.shadowBlur = 5
-        ctx.shadowColor = 'black'
         renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
-        ctx.shadowBlur = 0
-        ctx.shadowColor = ''
         ctx.globalAlpha = 1
 
         // Draw various statuses
@@ -426,6 +421,29 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
     }
 
+    protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
+        if (this.level <= 1) return
+
+        const coords = renderUtils.getRenderCoords(this.pos.x, this.pos.y, match.currentRound.map.staticMap.dimension)
+
+        let numeral
+        if (this.level === 2) {
+            numeral = 'II'
+        } else {
+            numeral = 'III'
+        }
+
+        ctx.font = '0.5px serif'
+        ctx.fillStyle = this.team.color
+        ctx.textAlign = 'right'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 10
+        ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
+        ctx.shadowColor = ''
+        ctx.shadowBlur = 0
+        ctx.textAlign = 'start'
+    }
+
     public getInterpolatedCoords(match: Match): Vector {
         return renderUtils.getInterpolatedCoords(this.lastPos, this.pos, match.getInterpolationFactor())
     }
@@ -434,7 +452,7 @@ export class Body {
         if (!this.game.playable) return [this.robotName]
 
         const defaultInfo = [
-            this.robotName,
+            `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
             `HP: ${this.hp}/${this.metadata.baseHealth()}`,
             `Paint: ${this.paint}/${this.metadata.maxPaint()}`,
@@ -531,6 +549,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -554,6 +573,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -577,6 +597,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
         }
     },
 

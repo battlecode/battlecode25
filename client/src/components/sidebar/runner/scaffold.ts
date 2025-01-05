@@ -22,6 +22,7 @@ export type LanguageVersion = {
 
 type Scaffold = [
     setup: boolean,
+    error: string,
     availableMaps: Set<string>,
     availablePlayers: Set<string>,
     language: SupportedLanguage,
@@ -49,6 +50,7 @@ export const useScaffold = (): Scaffold => {
     const [availablePlayers, setAvailablePlayers] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState<boolean>(true)
     const [scaffoldPath, setScaffoldPath] = useState<string | undefined>(undefined)
+    const [error, setError] = useState('')
     const matchPID = useRef<string | undefined>(undefined)
     const forceUpdate = useForceUpdate()
     const consoleLines = useRef<RingBuffer<ConsoleLine>>(new RingBuffer(10000))
@@ -64,8 +66,23 @@ export const useScaffold = (): Scaffold => {
         if (!nativeAPI) return
         setLoading(true)
         const path = await nativeAPI.openScaffoldDirectory()
+        if (!path) {
+            setLoading(false)
+            return
+        }
+
+        const validLang = await isValidScaffoldDir(path, nativeAPI)
         setLoading(false)
-        if (path) setScaffoldPath(path)
+
+        if (!validLang) {
+            setScaffoldPath(undefined)
+            setError('Invalid scaffold path! Please select a valid one (refer to the README for more details)')
+            return
+        }
+
+        setError('')
+        setScaffoldPath(path)
+        changeLanguage(validLang)
     }
 
     async function runMatch(
@@ -127,6 +144,9 @@ export const useScaffold = (): Scaffold => {
                 const [players, maps] = res[0].value
                 setAvailablePlayers(players)
                 setAvailableMaps(maps)
+            } else {
+                setAvailablePlayers(new Set())
+                setAvailableMaps(new Set())
             }
             if (res[1].status == 'fulfilled') {
                 const data = res[1].value
@@ -208,7 +228,8 @@ export const useScaffold = (): Scaffold => {
     }, [scaffoldPath])
 
     return [
-        !!scaffoldPath,
+        !!scaffoldPath && error === '',
+        error,
         availableMaps,
         availablePlayers,
         language,
@@ -227,17 +248,21 @@ async function fetchData(scaffoldPath: string) {
     const path = nativeAPI!.path
     const fs = nativeAPI!.fs
 
-    const mapPath = await path.join(scaffoldPath, 'maps')
-    if (!(await fs.exists(mapPath))) await fs.mkdir(mapPath)
-
-    let sourcePath = await path.join(scaffoldPath, 'src')
-    if (!(await fs.exists(sourcePath))) {
-        // For running in the main battlecode folder
-        sourcePath = await path.join(scaffoldPath, 'example-bots', 'src', 'main')
-
-        if (!(await fs.exists(sourcePath))) {
-            throw new Error(`Can't find source path: ${sourcePath}`)
+    let sourcePath = ''
+    const checkPaths = [
+        await path.join(scaffoldPath, 'example-bots', 'src', 'main'), // Battlecode repo
+        await path.join(scaffoldPath, 'players'), // Python engine repo
+        await path.join(scaffoldPath, 'src') // Scaffold
+    ]
+    for (const path of checkPaths) {
+        if ((await fs.exists(path)) === 'true') {
+            sourcePath = path
+            break
         }
+    }
+
+    if (!sourcePath) {
+        throw new Error(`Can't find source path`)
     }
 
     const playerFiles = await fs.getFiles(sourcePath, 'true')
@@ -249,7 +274,8 @@ async function fetchData(scaffoldPath: string) {
                     (file) =>
                         file.endsWith('RobotPlayer.java') ||
                         file.endsWith('RobotPlayer.kt') ||
-                        file.endsWith('RobotPlayer.scala')
+                        file.endsWith('RobotPlayer.scala') ||
+                        file.endsWith('bot.py')
                 )
                 .map(async (file) => {
                     // Relative path will contain the folder and filename, so we can split on the separator
@@ -263,6 +289,11 @@ async function fetchData(scaffoldPath: string) {
                 })
         )
     )
+
+    const mapPath = await path.join(scaffoldPath, 'maps')
+    if ((await fs.exists(mapPath)) === 'false') {
+        await fs.mkdir(mapPath)
+    }
 
     const mapExtension = '.map' + (BATTLECODE_YEAR % 100)
     const mapFiles = await fs.getFiles(mapPath)
@@ -279,24 +310,38 @@ async function fetchData(scaffoldPath: string) {
     return [players, maps]
 }
 
+async function isValidScaffoldDir(path: string, nativeAPI: NativeAPI): Promise<SupportedLanguage | null> {
+    const languageRunners: Record<SupportedLanguage, string> = {
+        [SupportedLanguage.Java]: 'gradlew',
+        [SupportedLanguage.Python]: 'run.py'
+    }
+
+    // Check that one of the runners exists as means of validating scaffold folder
+    for (const lang of Object.keys(languageRunners)) {
+        const runner = languageRunners[lang as SupportedLanguage]
+        const runnerPath = await nativeAPI.path.join(path, runner)
+        if ((await nativeAPI.fs.exists(runnerPath)) === 'true') {
+            return lang as SupportedLanguage
+        }
+    }
+
+    return null
+}
+
 async function findDefaultScaffoldPath(nativeAPI: NativeAPI): Promise<string | undefined> {
     const localPath = localStorage.getItem('scaffoldPath')
     if (localPath) return localPath
 
     let appPath = await nativeAPI.getRootPath()
-    const path = nativeAPI.path
-    const fs = nativeAPI.fs
 
     // Scan up a few parent directories to see if we can find the scaffold folder
     for (let i = 0; i <= 6; i++) {
-        // Check that gradlew exists as means of validating scaffold folder
-        const gradlewPath = await path.join(appPath, 'gradlew')
-        if ((await fs.exists(gradlewPath)) === 'true') {
+        if (await isValidScaffoldDir(appPath, nativeAPI)) {
             return appPath
         }
 
         // Set to parent dir
-        appPath = await path.dirname(appPath)
+        appPath = await nativeAPI.path.dirname(appPath)
     }
 
     return undefined
@@ -313,9 +358,11 @@ async function dispatchMatch(
     validate: boolean,
     profile: boolean
 ): Promise<string> {
+    let options: string[] = []
+
     switch (language) {
         case SupportedLanguage.Java: {
-            const options = [
+            options = [
                 `run`,
                 `-x`,
                 `unpackClient`,
@@ -326,11 +373,13 @@ async function dispatchMatch(
                 `-PvalidateMaps=${validate}`,
                 `-PenableProfiler=${profile}`
             ]
-
-            return nativeAPI.child_process.spawn(scaffoldPath, langVersion.path, options)
+            break
         }
         case SupportedLanguage.Python: {
-            throw new Error('Not implemented')
+            options = [`run.py`, `run`, `--p1=${teamA}`, `--p2=${teamB}`, `--map=${[...selectedMaps][0]}`]
+            break
         }
     }
+
+    return nativeAPI.child_process.spawn(scaffoldPath, language, langVersion.path, options)
 }

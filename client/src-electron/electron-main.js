@@ -157,22 +157,50 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
             case 'path.sep':
                 return path.sep
             case 'fs.existsSync':
-                return fs.existsSync(args[0])
+                return fs.existsSync(args[0]).toString()
             case 'fs.mkdirSync':
                 return fs.mkdirSync(args[0])
             case 'fs.getFiles':
                 return getFiles(args[0], args[1] === 'true')
             case 'child_process.spawn': {
                 const scaffoldPath = args[0]
-                const javaPath = args[1]
-                const flags = args[2]
-                const wrapperPath = path.join(scaffoldPath, GRADLE_WRAPPER)
+                const lang = args[1]
+                const langPath = args[2]
+                const flags = args[3]
+
                 const options = { cwd: scaffoldPath }
-                if (javaPath) options.env = { JAVA_HOME: javaPath }
+                let wrapperPath = ''
+                if (lang === 'Java') {
+                    wrapperPath = path.join(scaffoldPath, GRADLE_WRAPPER)
+                    if (langPath) {
+                        options.env = { JAVA_HOME: langPath }
+                    }
+                } else if (lang === 'Python') {
+                    if (langPath) {
+                        wrapperPath = langPath
+                    } else {
+                        wrapperPath = 'python'
+                    }
+                } else {
+                    throw new Error(`Unsupported language '${lang}'`)
+                }
 
                 const child = child_process.spawn(wrapperPath, flags, options)
 
                 const pid = await new Promise((resolve, reject) => {
+                    // Buffers to store partial data until a newline is encountered
+                    let stdoutBuffer = ''
+                    let stderrBuffer = ''
+
+                    const flushBuffer = (buffer, senderEvent, streamName) => {
+                        const lines = buffer.split('\n')
+                        buffer = lines.pop()
+                        lines.forEach((line) => {
+                            event.sender.send(senderEvent, { pid, data: line })
+                        })
+                        return buffer
+                    }
+
                     child.on('error', reject)
                     child.on('spawn', () => {
                         const pid = child.pid.toString()
@@ -180,13 +208,24 @@ ipcMain.handle('electronAPI', async (event, operation, ...args) => {
                         processes.set(pid, child)
 
                         child.stdout.on('data', (data) => {
-                            event.sender.send('child_process.stdout', { pid, data: data.toString() })
+                            stdoutBuffer += data.toString()
+                            stdoutBuffer = flushBuffer(stdoutBuffer, 'child_process.stdout', 'stdout')
                         })
                         child.stderr.on('data', (data) => {
-                            event.sender.send('child_process.stderr', { pid, data: data.toString() })
+                            stderrBuffer += data.toString()
+                            stderrBuffer = flushBuffer(stderrBuffer, 'child_process.stderr', 'stderr')
                         })
                         child.on('exit', (code, signal) => {
+                            // Flush any remaining data in the buffers
+                            if (stdoutBuffer) {
+                                event.sender.send('child_process.stdout', { pid, data: stdoutBuffer })
+                            }
+                            if (stderrBuffer) {
+                                event.sender.send('child_process.stderr', { pid, data: stderrBuffer })
+                            }
+
                             processes.delete(child.pid)
+
                             event.sender.send('child_process.exit', {
                                 pid,
                                 code: (code ?? 0).toString(),
