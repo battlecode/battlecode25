@@ -335,6 +335,7 @@ public class GameMaker {
         private TIntArrayList teamIDs;
         private TIntArrayList teamMoneyAmounts;
         private TIntArrayList teamPaintCoverageAmounts;
+        private TIntArrayList teamResourcePatternAmounts;
 
         private TIntArrayList diedIds; // ints
 
@@ -353,6 +354,7 @@ public class GameMaker {
             this.teamIDs = new TIntArrayList();
             this.teamMoneyAmounts = new TIntArrayList();
             this.teamPaintCoverageAmounts = new TIntArrayList();
+            this.teamResourcePatternAmounts = new TIntArrayList();
             this.diedIds = new TIntArrayList();
             this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
@@ -453,12 +455,14 @@ public class GameMaker {
                 int teamIDsP = Round.createTeamIdsVector(builder, teamIDs.toArray());
                 int teamCoverageAmountsP = Round.createTeamCoverageAmountsVector(builder, teamPaintCoverageAmounts.toArray());
                 int teamMoneyAmountsP = Round.createTeamResourceAmountsVector(builder, teamMoneyAmounts.toArray());
+                int teamResourcePatternAmountsP = Round.createTeamResourcePatternAmountsVector(builder, teamResourcePatternAmounts.toArray());
                 int diedIdsP = Round.createDiedIdsVector(builder, diedIds.toArray());
 
                 builder.startRound();
 
                 Round.addTeamIds(builder, teamIDsP);
                 Round.addTeamCoverageAmounts(builder, teamCoverageAmountsP);
+                Round.addTeamResourceAmounts(builder, teamResourcePatternAmountsP);
                 Round.addRoundId(builder, this.currentRound);
                 Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
@@ -602,10 +606,11 @@ public class GameMaker {
             });
         }
 
-        public void addTeamInfo(Team team, int moneyAmount, int paintCoverage) {
+        public void addTeamInfo(Team team, int moneyAmount, int paintCoverage, int numResourcePatterns) {
             teamIDs.add(TeamMapping.id(team));
             teamMoneyAmounts.add(moneyAmount);
             teamPaintCoverageAmounts.add(paintCoverage);
+            teamResourcePatternAmounts.add(numResourcePatterns);
         }
 
         public void addTimelineMarker(Team team, String label, int red, int green, int blue){
@@ -664,6 +669,7 @@ public class GameMaker {
             this.teamIDs.clear();
             this.teamMoneyAmounts.clear();
             this.teamPaintCoverageAmounts.clear();
+            this.teamResourcePatternAmounts.clear();
             this.diedIds.clear();
         }
     }
