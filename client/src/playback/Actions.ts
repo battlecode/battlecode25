@@ -82,22 +82,6 @@ export class Action<T extends ActionUnion> {
     }
 }
 
-//export abstract class ToFromAction extends Action {
-//    constructor(action: ActionUnion) {
-//        super(action)
-//    }
-
-//    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
-
-//    draw(match: Match, ctx: CanvasRenderingContext2D) {
-//        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
-//        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
-//        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
-//        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
-//        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
-//    }
-//}
-
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
     [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
         apply(round: Round): void {
@@ -357,14 +341,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         }
     },
     [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
-        apply(round: Round): void {
-            /*
-            const flagId = this.target
-            const flagData = round.map.flagData.get(flagId)!
-            flagData.carrierId = this.robotId
-            round.bodies.getById(this.robotId).carryingFlagId = flagId
-            */
-        }
+        apply(round: Round): void {}
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
