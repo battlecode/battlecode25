@@ -112,7 +112,10 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             target.hp -= this.actionData.damage()
         }
     },
-    [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
+    [schema.Action.SplashAction]: class SplashAction extends Action<schema.SplashAction> {
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {}
+    },
+    [schema.Action.AttackAction]: class AttackAction extends Action<schema.AttackAction> {
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const srcBody = match.currentRound.bodies.getById(this.robotId)
             const dstBody = match.currentRound.bodies.getById(this.actionData.id())
@@ -367,6 +370,10 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const towerId = this.actionData.id()
             const body = round.bodies.getById(towerId)
             body.level += 1
+            body.hp = this.actionData.newHealth()
+            body.maxHp = this.actionData.newMaxHealth()
+            body.paint = this.actionData.newPaint()
+            body.maxPaint = this.actionData.newMaxPaint()
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const map = match.currentRound.map
