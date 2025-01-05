@@ -359,6 +359,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
         if(this.type != UnitType.SPLASHER)
             throw new RuntimeException("Unit must be a splasher");
+        this.gameWorld.getMatchMaker().addSplashAction(loc);
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
