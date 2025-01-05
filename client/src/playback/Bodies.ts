@@ -31,23 +31,28 @@ export default class Bodies {
         }
     }
 
-    processDied(delta: schema.Round | null) {
+    processRoundEnd(delta: schema.Round | null) {
         // Process unattributed died bodies
         if (delta) {
             for (let i = 0; i < delta.diedIdsLength(); i++) {
                 const diedId = delta.diedIds(i)!
-                this.bodies.delete(diedId)
+                this.getById(diedId).dead = true
             }
         }
 
+        // Update body interp positions
+        // We need to update position here so that interp works correctly
+        for (const body of this.bodies.values()) {
+            body.lastPos = body.pos
+        }
+    }
+
+    clearDiedBodies() {
         // Remove if marked dead
         for (const body of this.bodies.values()) {
-            // We need to update position here so that interp works correctly
-            body.lastPos = body.pos
+            if (!body.dead) continue
 
-            if (body.dead) {
-                this.bodies.delete(body.id) // safe
-            }
+            this.bodies.delete(body.id) // safe
         }
     }
 
