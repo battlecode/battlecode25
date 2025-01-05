@@ -7,7 +7,7 @@ import {
 } from '../components/sidebar/map-editor/MapEditorBrush'
 import Bodies from './Bodies'
 import { CurrentMap, StaticMap } from './Map'
-import { Vector } from './Vector'
+import { Vector, vectorDistSquared } from './Vector'
 import { Team } from './Game'
 
 const applyInRadius = (
@@ -52,10 +52,11 @@ export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (idx: number) => {
             // Check if this is a valid wall location
+            const minWallDistSq = 8
             const pos = this.map.indexToLocation(idx)
-            const ruin = this.map.ruins.find((r) => r.x === pos.x && r.y === pos.y)
+            const ruin = this.map.ruins.findIndex((l) => vectorDistSquared(l, pos) < minWallDistSq)
             const paint = this.map.initialPaint[idx]
-            if (ruin || paint) return true
+            if (ruin !== -1 || paint) return true
             this.map.walls[idx] = 1
         }
 
@@ -100,11 +101,17 @@ export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (x: number, y: number) => {
             // Check if this is a valid ruin location
+            const minRuinDistSq = 25
+            const minWallDistSq = 8
+            const pos = { x, y }
             const idx = this.map.locationToIndex(x, y)
-            const foundIdx = this.map.ruins.findIndex((l) => l.x === x && l.y === y)
-            const wall = this.map.walls[idx]
+            const ruin = this.map.ruins.findIndex((l) => vectorDistSquared(l, pos) < minRuinDistSq)
+            const wall = this.map.walls.findIndex(
+                (v, i) => !!v && vectorDistSquared(this.map.indexToLocation(i), pos) < minWallDistSq
+            )
             const paint = this.map.initialPaint[idx]
-            if (foundIdx !== -1 || wall || paint) return true
+            if (ruin !== -1 || wall !== -1 || paint) return true
+
             this.map.ruins.push({ x, y })
         }
 
