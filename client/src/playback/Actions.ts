@@ -75,7 +75,9 @@ export class Action<T extends ActionUnion> {
      * @param stat if provided, this action will mutate the stat to reflect the action
      */
     apply(round: Round): void {}
+
     draw(match: Match, ctx: CanvasRenderingContext2D) {}
+
     copy(): Action<T> {
         // creates a new object using this object's prototype and all its parameters. this is a shallow copy, override this if you need a deep copy
         return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
@@ -113,10 +115,21 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         }
     },
     [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
-        apply(round: Round): void {
-            // To discuss
-        }
-        drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const srcBody = match.currentRound.bodies.getById(this.robotId)
+            const dstBody = match.currentRound.bodies.getById(this.actionData.id())
+
+            let from, to
+            if (srcBody.robotType === schema.RobotType.MOPPER) {
+                // For moppers, reverse the direction of the 'attack' since it represents
+                // taking paint from the other robot
+                from = dstBody.getInterpolatedCoords(match)
+                to = srcBody.getInterpolatedCoords(match)
+            } else {
+                from = srcBody.getInterpolatedCoords(match)
+                to = dstBody.getInterpolatedCoords(match)
+            }
+
             // Compute the start and end points for the animation projectile
             const dir = vectorSub(to, from)
             const len = vectorLength(dir)
@@ -132,7 +145,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 ctx,
                 renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
                 renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-                { teamForOffset: body.team, color: body.team.color, lineWidth: 0.05, opacity: 0.3, renderArrow: false }
+                {
+                    teamForOffset: srcBody.team,
+                    color: srcBody.team.color,
+                    lineWidth: 0.05,
+                    opacity: 0.5,
+                    renderArrow: false
+                }
             )
 
             // Projectile animation
@@ -148,7 +167,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                     projectileEnd.y,
                     match.currentRound.map.staticMap.dimension
                 ),
-                { teamForOffset: body.team, color: body.team.color, lineWidth: 0.05, opacity: 1.0, renderArrow: false }
+                {
+                    teamForOffset: srcBody.team,
+                    color: srcBody.team.color,
+                    lineWidth: 0.05,
+                    opacity: 1.0,
+                    renderArrow: false
+                }
             )
         }
     },
@@ -157,6 +182,22 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const teamId = round.bodies.getById(this.robotId).team.id - 1
             const paintVal = teamId * 2 + 1 + this.actionData.isSecondary()
             round.map.paint[this.actionData.loc()] = paintVal
+        }
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
+            const pos = body.getInterpolatedCoords(match)
+
+            const target = match.map.indexToLocation(this.actionData.loc())
+            renderUtils.renderLine(
+                ctx,
+                renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension),
+                renderUtils.getRenderCoords(target.x, target.y, match.currentRound.map.staticMap.dimension),
+                {
+                    color: body.team.color,
+                    lineWidth: 0.04,
+                    opacity: 0.25
+                }
+            )
         }
     },
     [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
@@ -178,9 +219,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
-        apply(round: Round): void {
-            // To discuss
-        }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const body = match.currentRound.bodies.getById(this.robotId)
             const radius = Math.sqrt(4)
@@ -202,7 +240,6 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
         }
     },
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
-        apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             const map = match.currentRound.map
             const body = match.currentRound.bodies.getById(this.actionData.id())
