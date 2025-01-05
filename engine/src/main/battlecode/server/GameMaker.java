@@ -309,6 +309,7 @@ public class GameMaker {
             RobotTypeMetadata.addBytecodeLimit(builder, 1000); //TODO: decide on bytecode limits
             RobotTypeMetadata.addMovementCooldown(builder, GameConstants.MOVEMENT_COOLDOWN); 
             RobotTypeMetadata.addVisionRadiusSquared(builder, GameConstants.VISION_RADIUS_SQUARED);
+            RobotTypeMetadata.addMessageRadiusSquared(builder, GameConstants.MESSAGE_RADIUS_SQUARED);
             robotTypeMetadataOffsets.add(RobotTypeMetadata.endRobotTypeMetadata(builder));
         }
         return GameHeader.createRobotTypeMetadataVector(builder, robotTypeMetadataOffsets.toArray());
@@ -548,6 +549,13 @@ public class GameMaker {
             });
         }
 
+        public void addSplashAction(MapLocation loc){
+            applyToBuilders((builder) -> {
+                int action = SplashAction.createSplashAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.SplashAction);
+            });
+        }
+
         /// Visually indicate a mop attack
         public void addMopAction(int  id1, int id2, int id3){
             applyToBuilders((builder) -> {
@@ -591,9 +599,9 @@ public class GameMaker {
         }
 
         //visually indicates tower has been upgraded
-        public void addUpgradeAction(int towerID){
+        public void addUpgradeAction(int towerID, int newHealth, int newMaxHealth, int newPaint, int newMaxPaint){
             applyToBuilders((builder) -> {
-                int action = UpgradeAction.createUpgradeAction(builder, towerID);
+                int action = UpgradeAction.createUpgradeAction(builder, towerID, newHealth, newMaxHealth, newPaint, newMaxPaint);
                 builder.addAction(action, Action.UpgradeAction);
             });
         }
