@@ -45,6 +45,7 @@ table RobotTypeMetadata {
     maxPaint: int;
     actionRadiusSquared: int;
     visionRadiusSquared: int;
+    messageRadiusSquared: int;
     bytecodeLimit: int;
 }
 
@@ -90,6 +91,12 @@ struct UnmarkAction {
 struct AttackAction {
     /// Id of the attack target
     id: ushort;
+}
+
+/// Visually indicate a splash attack
+struct SplashAction {
+    /// Location of the splash attack
+    loc: ushort;
 }
 
 /// Visually indicate a mop attack
@@ -141,6 +148,10 @@ struct DieAction {
 struct UpgradeAction {
     /// Id of the upgraded tower
     id: ushort;
+    newHealth: int;
+    newMaxHealth: int;
+    newPaint: int;
+    newMaxPaint: int;
 }
 
 /// Update the indicator string for this robot
@@ -168,6 +179,7 @@ union Action {
     MarkAction,
     UnmarkAction,
     AttackAction,
+    SplashAction,
     MopAction,
     BuildAction,
     TransferAction, 
