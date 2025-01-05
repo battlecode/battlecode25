@@ -39,7 +39,7 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     return (
         <div className="mt-2 w-full">
             <h2 className="mx-auto text-center mb-2">{props.propertyDisplayName}</h2>
-            <QuickLineChart data={data} width={350} height={200} margin={{ top: 2, right: 20, bottom: 17, left: 30 }} />
+            <QuickLineChart data={data} width={350} height={170} margin={{ top: 2, right: 20, bottom: 17, left: 30 }} />
         </div>
     )
 }

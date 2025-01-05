@@ -344,7 +344,8 @@ public class InternalRobot implements Comparable<InternalRobot> {
             }
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
-            if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
+            if(this.gameWorld.isPaintable(loc) && 
+            (this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc)))) {
                 this.gameWorld.setPaint(loc, paintType);
                 this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
             }
@@ -375,6 +376,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 }
             } else { // otherwise, maybe paint
                 // If the tile is empty or same team paint, paint it
+                if (!this.gameWorld.isPaintable(loc)) continue;
                 if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
                     this.gameWorld.setPaint(loc, paintType);
                     this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
@@ -411,7 +413,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         }
         
         // Either way, mop this tile if it has enemy paint
-        if(this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
+        if(this.gameWorld.isPaintable(loc) && this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
             this.gameWorld.setPaint(loc, 0);
             this.gameWorld.getMatchMaker().addUnpaintAction(loc);
         }

@@ -49,31 +49,46 @@ interface ResourceTableProps {
 export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, teamIdx }) => {
     let moneyAmount = 0
     let paintPercent = 0
+    let patternAmount = 0
 
     if (map && teamStat) {
         paintPercent = teamStat.paintPercent
         moneyAmount = teamStat.moneyAmount
+        patternAmount = teamStat.resourcePatterns
     }
 
     const teamName = TEAM_COLOR_NAMES[teamIdx].toLowerCase()
     return (
-        <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
-            <div className="flex items-center w-[160px] ml-6">
-                <div className="w-[30px] h-[30px] mr-2">
-                    <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+        <div className="flex flex-col items-center">
+            <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
+                <div className="flex items-center w-[160px] ml-6">
+                    <div className="w-[30px] h-[30px] mr-2">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+                    </div>
+                    <div>Coverage:</div>
+                    <div className="ml-1">
+                        <b>{paintPercent}%</b>
+                    </div>
                 </div>
-                <div>Coverage:</div>
-                <div className="ml-1">
-                    <b>{paintPercent}%</b>
+                <div className="flex items-center w-[145px]">
+                    <div className="w-[30px] h-[30px] mr-2">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/chip_${teamName}.png`)} />
+                    </div>
+                    <div>Chips:</div>
+                    <div className="ml-1">
+                        <b>{moneyAmount}</b>
+                    </div>
                 </div>
             </div>
-            <div className="flex items-center w-[145px]">
-                <div className="w-[30px] h-[30px] mr-2">
-                    <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/chip_${teamName}.png`)} />
-                </div>
-                <div>Chips:</div>
-                <div className="ml-1">
-                    <b>{moneyAmount}</b>
+            <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
+                <div className="flex items-center w-[210px] ml-6">
+                    <div className="w-[30px] h-[30px] mr-2">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+                    </div>
+                    <div>Active Boosts:</div>
+                    <div className="ml-1">
+                        <b>{patternAmount}</b>
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,15 +119,6 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
                     .filter((k) => typeof k === 'number' && k !== schema.RobotType.NONE)
                     .map((k) => teamStat.robotCounts[k as schema.RobotType])
             ]
-            /*
-            [
-                'Avg. Level',
-                teamStat.specializationTotalLevels
-                    .slice(0, 4)
-                    .map((c) => Math.round((c / totalCountAlive) * 100) / 100)
-                    .concat([Math.round((teamStat.specializationTotalLevels[4] / totalCountDead) * 100) / 100])
-            ]
-            */
         ]
     }
 

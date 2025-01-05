@@ -117,14 +117,13 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 titleClassName="py-2"
             >
                 {game && game.playable ? (
-                    <>
+                    <div /*className="flex items-center gap-2"*/>
                         {/* Note: to keep animation smooth, we should still keep the elements rendered, but we pass showStats into
                             them so that they don't render any data (since we're likely hiding stats to prevent lag) */}
-                        {/*<SpecialtyHistogram active={showStats} />*/}
                         <ResourceGraph active={showStats} property="paintPercent" propertyDisplayName="Coverage %" />
                         <br />
                         <ResourceGraph active={showStats} property="moneyAmount" propertyDisplayName="Chips" />
-                    </>
+                    </div>
                 ) : (
                     <div>Select a game to see stats</div>
                 )}

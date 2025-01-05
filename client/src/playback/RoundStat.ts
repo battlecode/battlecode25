@@ -17,6 +17,7 @@ export class TeamRoundStat {
     robotCounts: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
     moneyAmount: number = 0
     paintPercent: number = 0
+    resourcePatterns: number = 0
 
     copy(): TeamRoundStat {
         const newStat: TeamRoundStat = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
@@ -76,6 +77,7 @@ export default class RoundStat {
 
                 teamStat.moneyAmount = delta.teamResourceAmounts(i) ?? assert.fail('missing resource amount')
                 teamStat.paintPercent = delta.teamCoverageAmounts(i) ?? assert.fail('missing coverage amount')
+                teamStat.resourcePatterns = delta.teamResourcePatternAmounts(i) ?? assert.fail('missing pattern amount')
                 teamStat.paintPercent /= 10.0
 
                 /*

@@ -559,12 +559,13 @@ public interface RobotController {
      * the given location.
      * This requires there to be a ruin at the location.
      * 
+     * @param type which tower pattern type should be used
      * @param loc  the center of the 5x5 pattern
      * @return true if a tower pattern can be marked at loc
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canMarkTowerPattern(MapLocation loc);
+    boolean canMarkTowerPattern(UnitType type, MapLocation loc);
 
     /**
      * Builds a tower by marking a 5x5 pattern centered at the given location.
