@@ -371,8 +371,8 @@ public class InternalRobot implements Comparable<InternalRobot> {
             if(this.gameWorld.getRobot(newLoc) != null && this.gameWorld.getRobot(newLoc).getType().isTowerType()) {
                 InternalRobot tower = this.gameWorld.getRobot(newLoc);
                 if(this.team != tower.getTeam()){
-                    tower.addHealth(-UnitType.SPLASHER.attackStrength);
-                    this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.attackStrength);
+                    tower.addHealth(-UnitType.SPLASHER.aoeAttackStrength);
+                    this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.aoeAttackStrength);
                     this.gameWorld.getMatchMaker().addAttackAction(tower.ID);
                 }
             } else { // otherwise, maybe paint
