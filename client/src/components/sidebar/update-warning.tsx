@@ -33,8 +33,8 @@ export const UpdateWarning = () => {
             <p className="text-yellow-800 text-xs">
                 <b>NEW VERSION AVAILABLE!</b>
                 <br />
-                download with <code>gradle update</code> followed by <code>gradle build</code>, and then restart the
-                client: v{update.latest}
+                download with (<code>gradle update</code> followed by <code>gradle build</code>) for java and (
+                <code>python run.py update</code>) for python, and then restart the client: v{update.latest}
             </p>
         </div>
     )
