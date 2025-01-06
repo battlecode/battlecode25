@@ -82,7 +82,7 @@ battlecode/common/RobotController/completeTowerPattern                  50   tru
 battlecode/common/RobotController/canMarkResourcePattern                50   true
 battlecode/common/RobotController/markResourcePattern                   50   true
 battlecode/common/RobotController/canCompleteResourcePattern            50   true 
-battlecode/common/RobotController/canCompleteResourcePattern            50   true 
+battlecode/common/RobotController/completeResourcePattern               50   true 
 battlecode/common/RobotController/canUpgradeTower                       2    true
 battlecode/common/RobotController/upgradeTower                          0    true
 battlecode/common/Team/opponent                                         1    false
