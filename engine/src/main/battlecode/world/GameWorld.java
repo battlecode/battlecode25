@@ -131,8 +131,6 @@ public class GameWorld {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
             spawnRobot(robot.ID, robot.type, newLocation, robot.team);
-            InternalRobot tower = getRobot(newLocation);
-            tower.upgradeTower(tower.getType().getNextLevel());
             this.towerLocations.add(newLocation);
             towersByLoc[locationToIndex(newLocation)] = robot.team;
         }
