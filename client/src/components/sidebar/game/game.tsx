@@ -1,17 +1,15 @@
 import React from 'react'
 import { TeamTable } from './team-table'
 import { ResourceGraph } from './resource-graph'
-import { SpecialtyHistogram } from './histogram'
 import { useSearchParamBool } from '../../../app-search-params'
 import { useAppContext } from '../../../app-context'
 import { SectionHeader } from '../../section-header'
 import { Crown } from '../../../icons/crown'
 import { BiMedal } from 'react-icons/bi'
-import { EventType, useListenEvent } from '../../../app-events'
 import Tooltip from '../../tooltip'
-import { useForceUpdate } from '../../../util/react-util'
 import Match from '../../../playback/Match'
 import { Team } from '../../../playback/Game'
+import { useGame, useRound } from '../../../playback/GameRunner'
 
 const NO_GAME_TEAM_NAME = '?????'
 
@@ -21,50 +19,58 @@ interface Props {
 
 export const GamePage: React.FC<Props> = React.memo((props) => {
     const context = useAppContext()
-    const activeGame = context.state.activeGame
+    const game = useGame()
+    const round = useRound()
 
     const [showStats, setShowStats] = useSearchParamBool('showStats', true)
-
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
 
     if (!props.open) return null
 
     const getWinCount = (team: Team) => {
         // Only return up to the current match if tournament mode is enabled
-        if (!activeGame) return 0
+        if (!game) return 0
         let stopCounting = false
         const isWinner = (match: Match) => {
             if (context.state.tournament && stopCounting) return 0
-            if (match == activeGame.currentMatch) {
+            if (match == game.currentMatch) {
                 stopCounting = true
                 // Dont include this match if we aren't at the end yet
-                if (context.state.tournament && !match.currentTurn.isEnd()) return 0
+                if (context.state.tournament && !match.currentRound.isEnd()) return 0
             }
             return match.winner?.id === team.id ? 1 : 0
         }
-        return activeGame.matches.reduce((val, match) => val + isWinner(match), 0)
+        return game.matches.reduce((val, match) => val + isWinner(match), 0)
     }
 
     const teamBox = (teamIdx: number) => {
-        const winCount = activeGame ? getWinCount(activeGame.teams[teamIdx]) : 0
-        const isEndOfMatch = context.state.activeMatch && context.state.activeMatch.currentTurn.isEnd()
+        const winCount = game ? getWinCount(game.teams[teamIdx]) : 0
+        const isEndOfMatch = round?.isEnd()
 
         let showMatchWinner = !context.state.tournament || isEndOfMatch
-        showMatchWinner =
-            showMatchWinner && !!activeGame && activeGame.currentMatch?.winner === activeGame.teams[teamIdx]
+        showMatchWinner = showMatchWinner && !!game && game.currentMatch?.winner === game.teams[teamIdx]
         let showGameWinner = !context.state.tournament || (showMatchWinner && winCount >= 3)
-        showGameWinner = showGameWinner && !!activeGame && activeGame.winner === activeGame.teams[teamIdx]
+        showGameWinner = showGameWinner && !!game && game.winner === game.teams[teamIdx]
 
         return (
-            <div className={'relative w-full py-2 px-3 text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')}>
-                <div>{activeGame?.teams[teamIdx].name ?? NO_GAME_TEAM_NAME}</div>
+            <div
+                className={
+                    'relative w-full py-2 px-3 text-black text-center ' + (teamIdx == 0 ? 'bg-team0' : 'bg-team1')
+                }
+            >
+                <div>{game?.teams[teamIdx].name ?? NO_GAME_TEAM_NAME}</div>
                 <div className="absolute top-2 left-3">
                     <div className="relative flex items-center w-[24px] h-[24px]">
                         {showMatchWinner && (
                             <div className="absolute">
                                 <Tooltip text={'Current match winner'} location={'right'}>
-                                    <BiMedal opacity={0.5} fontSize={'24px'} width={'20px'} color={'yellow'} />
+                                    <BiMedal
+                                        opacity={0.5}
+                                        fontSize={'24px'}
+                                        width={'20px'}
+                                        color={'#ffd43b'}
+                                        strokeWidth={'1px'}
+                                        stroke="#7f6a1d"
+                                    />
                                 </Tooltip>
                             </div>
                         )}
@@ -79,7 +85,7 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 <div className="absolute top-3 right-3">
                     {showGameWinner && (
                         <Tooltip text={'Overall game winner'} location={'left'}>
-                            <Crown />
+                            <Crown className="opacity-50" />
                         </Tooltip>
                     )}
                 </div>
@@ -90,8 +96,8 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
     return (
         <div className="flex flex-col overflow-x-hidden">
             <div className="w-full pb-3 px-4 text-center">
-                {activeGame && activeGame.currentMatch && (
-                    <div className="border-black border rounded-md font-bold">{activeGame.currentMatch.map.name}</div>
+                {game && game.currentMatch && (
+                    <div className="border-white border rounded-md font-bold">{game.currentMatch.map.name}</div>
                 )}
             </div>
             {teamBox(0)}
@@ -109,14 +115,14 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                 containerClassName="mt-2"
                 titleClassName="py-2"
             >
-                {activeGame ? (
-                    <>
+                {game && game.playable ? (
+                    <div /*className="flex items-center gap-2"*/>
                         {/* Note: to keep animation smooth, we should still keep the elements rendered, but we pass showStats into
                             them so that they don't render any data (since we're likely hiding stats to prevent lag) */}
-                        <SpecialtyHistogram active={showStats} />
+                        <ResourceGraph active={showStats} property="paintPercent" propertyDisplayName="Coverage %" />
                         <br />
-                        <ResourceGraph active={showStats} property="resourceAmount" propertyDisplayName="Crumbs" />
-                    </>
+                        <ResourceGraph active={showStats} property="moneyAmount" propertyDisplayName="Chips" />
+                    </div>
                 ) : (
                     <div>Select a game to see stats</div>
                 )}

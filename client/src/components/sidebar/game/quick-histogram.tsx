@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
 
 interface HistogramProps {

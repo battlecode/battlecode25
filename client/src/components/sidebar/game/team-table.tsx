@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react'
-import { useAppContext } from '../../../app-context'
-import { useForceUpdate } from '../../../util/react-util'
-import { useListenEvent, EventType } from '../../../app-events'
-import { getImageIfLoaded, imageSource, removeTriggerOnImageLoad, triggerOnImageLoad } from '../../../util/ImageLoader'
+import React from 'react'
+import { imageSource } from '../../../util/ImageLoader'
 import { TEAM_COLOR_NAMES } from '../../../constants'
 import { schema } from 'battlecode-schema'
-import { TeamTurnStat } from '../../../playback/TurnStat'
+import { TeamRoundStat } from '../../../playback/RoundStat'
 import { DoubleChevronUpIcon } from '../../../icons/chevron'
 import { CurrentMap } from '../../../playback/Map'
+import { useRound } from '../../../playback/GameRunner'
 
 interface UnitsIconProps {
     teamIdx: 0 | 1
@@ -30,105 +28,96 @@ interface TeamTableProps {
 }
 
 export const TeamTable: React.FC<TeamTableProps> = (props: TeamTableProps) => {
-    const context = useAppContext()
-    const forceUpdate = useForceUpdate()
-    useListenEvent(EventType.TURN_PROGRESS, forceUpdate)
-
-    const match = context.state.activeMatch
-    const teamStat = match?.currentTurn?.stat.getTeamStat(match.game.teams[props.teamIdx])
-
-    const map = match?.currentTurn?.map
+    const round = useRound()
+    const teamStat = round?.stat?.getTeamStat(round?.match.game.teams[props.teamIdx])
+    const map = round?.map
 
     return (
         <div className="flex flex-col">
             <UnitsTable teamStat={teamStat} teamIdx={props.teamIdx} />
             <ResourceTable map={map} teamStat={teamStat} teamIdx={props.teamIdx} />
-            <GlobalUpgradeSection teamStat={teamStat} />
         </div>
     )
 }
 
 interface ResourceTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     map: CurrentMap | undefined
     teamIdx: 0 | 1
 }
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, teamIdx }) => {
-    let flags = 3
-    let carried = 0
-    let crumbs = 0
+    let moneyAmount = 0
+    let paintPercent = 0
+    let patternAmount = 0
+
     if (map && teamStat) {
-        flags = 0
-        for (const flag of map.flagData.values()) {
-            if (flag.team === teamIdx) {
-                flags++
-                if (flag.carrierId) carried++
-            }
-        }
-        crumbs = teamStat.resourceAmount
+        paintPercent = teamStat.paintPercent
+        moneyAmount = teamStat.moneyAmount
+        patternAmount = teamStat.resourcePatterns
     }
+
+    const teamName = TEAM_COLOR_NAMES[teamIdx].toLowerCase()
     return (
-        <div className="flex items-center mt-2 mb-1 text-xs font-bold justify-around">
-            <div className="flex items-center w-[145px] ml-5">
-                Crumbs: {crumbs}
-                <div className="w-[30px] h-[30px]">
-                    <img style={{ transform: 'scale(1.5)' }} src={imageSource('resources/crumb_1.png')} />
+        <div className="flex flex-col items-center">
+            <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
+                <div className="flex items-center w-[160px] ml-6">
+                    <div className="w-[30px] h-[30px] mr-2">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+                    </div>
+                    <div>Coverage:</div>
+                    <div className="ml-1">
+                        <b>{paintPercent}%</b>
+                    </div>
+                </div>
+                <div className="flex items-center w-[145px]">
+                    <div className="w-[30px] h-[30px] mr-2">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/chip_${teamName}.png`)} />
+                    </div>
+                    <div>Chips:</div>
+                    <div className="ml-1">
+                        <b>{moneyAmount}</b>
+                    </div>
                 </div>
             </div>
-            <div className="flex items-center w">
-                Flags:
-                {[1, 2, 3].map((i) => (
-                    <div className="w-[40px]" key={i}>
-                        <div className="w-[30px] h-[30px] mx-auto">
-                            <img
-                                className={flags >= i ? '' : 'opacity-25'}
-                                src={
-                                    carried < i
-                                        ? imageSource('resources/bread.png')
-                                        : imageSource('resources/bread_outline.png')
-                                }
-                            />
-                        </div>
+            <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
+                <div className="flex items-center w-[210px] ml-6">
+                    <div className="w-[30px] h-[30px] mr-3">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/grid_${teamName}.png`)} />
                     </div>
-                ))}
+                    <div>Active Boosts:</div>
+                    <div className="ml-1">
+                        <b>{patternAmount}</b>
+                    </div>
+                </div>
             </div>
         </div>
     )
 }
 
 interface UnitsTableProps {
-    teamStat: TeamTurnStat | undefined
+    teamStat: TeamRoundStat | undefined
     teamIdx: 0 | 1
 }
 
 export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => {
     const columns: Array<[string, React.ReactElement]> = [
-        ['Base', <UnitsIcon teamIdx={teamIdx} robotType="base" key="0" />],
-        ['Attack', <UnitsIcon teamIdx={teamIdx} robotType="attack" key="1" />],
-        ['Build', <UnitsIcon teamIdx={teamIdx} robotType="build" key="2" />],
-        ['Heal', <UnitsIcon teamIdx={teamIdx} robotType="heal" key="3" />],
-        ['Jailed', <UnitsIcon teamIdx={teamIdx} robotType="jailed" key="4" />]
+        ['Paint Tower', <UnitsIcon teamIdx={teamIdx} robotType="paint_tower" key="0" />],
+        ['Money Tower', <UnitsIcon teamIdx={teamIdx} robotType="money_tower" key="1" />],
+        ['Defense Tower', <UnitsIcon teamIdx={teamIdx} robotType="defense_tower" key="2" />],
+        ['Soldier', <UnitsIcon teamIdx={teamIdx} robotType="soldier" key="3" />],
+        ['Splasher', <UnitsIcon teamIdx={teamIdx} robotType="splasher" key="4" />],
+        ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="5" />]
     ]
 
-    let data: [string, number[]][] = [
-        ['Count', [0, 0, 0, 0, 0]],
-        ['Avg. Level', [0, 0, 0, 0, 0]]
-    ]
+    let data: [string, number[]][] = [['Count', [0, 0, 0, 0, 0, 0]]]
     if (teamStat) {
-        const totalCountAlive = Math.max(
-            teamStat?.robots[0] + teamStat?.robots[1] + teamStat?.robots[2] + teamStat?.robots[3],
-            1
-        )
-        const totalCountDead = Math.max(teamStat?.robots[4], 1)
         data = [
-            ['Count', teamStat?.robots],
             [
-                'Avg. Level',
-                teamStat.specializationTotalLevels
-                    .slice(0, 4)
-                    .map((c) => Math.round((c / totalCountAlive) * 100) / 100)
-                    .concat([Math.round((teamStat.specializationTotalLevels[4] / totalCountDead) * 100) / 100])
+                'Count',
+                Object.values(schema.RobotType)
+                    .filter((k) => typeof k === 'number' && k !== schema.RobotType.NONE)
+                    .map((k) => teamStat.robotCounts[k as schema.RobotType])
             ]
         ]
     }
@@ -155,28 +144,6 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
                     ))}
                 </tbody>
             </table>
-        </>
-    )
-}
-
-const GlobalUpgradeSection: React.FC<{ teamStat: TeamTurnStat | undefined }> = ({ teamStat }) => {
-    const upgradeTypes: Record<schema.GlobalUpgradeType, string> = {
-        [schema.GlobalUpgradeType.ACTION_UPGRADE]: 'Global Attack Upgrade',
-        [schema.GlobalUpgradeType.CAPTURING_UPGRADE]: 'Global Capturing Upgrade',
-        [schema.GlobalUpgradeType.HEALING_UPGRADE]: 'Global Healing Upgrade'
-    }
-    if (!teamStat) return <> </>
-    return (
-        <>
-            {teamStat.globalUpgrades.map(
-                (type) =>
-                    upgradeTypes[type] && (
-                        <div className="text-sm flex flex-row justify-center font-bold" key={type}>
-                            <DoubleChevronUpIcon />
-                            {upgradeTypes[type]}
-                        </div>
-                    )
-            )}
         </>
     )
 }

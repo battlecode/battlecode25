@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { JavaInstall, useScaffold } from './scaffold'
+import { LanguageVersion, SupportedLanguage, useScaffold } from './scaffold'
 import { Button, SmallButton } from '../../button'
 import { nativeAPI } from './native-api-wrapper'
 import { Select } from '../../forms'
@@ -10,6 +10,9 @@ import { FixedSizeList, ListOnScrollProps } from 'react-window'
 import { OpenExternal } from '../../../icons/open-external'
 import { BasicDialog } from '../../basic-dialog'
 import { RingBuffer } from '../../../util/ring-buffer'
+import { ProfilerDialog } from './profiler'
+import { GameRenderer } from '../../../playback/GameRenderer'
+import GameRunner from '../../../playback/GameRunner'
 
 type RunnerPageProps = {
     open: boolean
@@ -19,9 +22,12 @@ type RunnerPageProps = {
 export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     const [
         setup,
+        error,
         availableMaps,
         availablePlayers,
-        javaInstalls,
+        language,
+        langVersions,
+        changeLanguage,
         manuallySetupScaffold,
         reloadData,
         scaffoldLoading,
@@ -31,7 +37,7 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     ] = scaffold
 
     const getStoredInstalls = () => {
-        const installs = JSON.parse(localStorage.getItem('customInstalls') ?? '[]') as string[]
+        const installs = JSON.parse(localStorage.getItem(`customInstalls${language}`) ?? '[]') as string[]
         return installs.map((path) => ({
             display: path,
             path
@@ -39,22 +45,25 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     }
 
     const getDefaultInstall = () => {
-        const install = localStorage.getItem('defaultInstall') ?? ''
+        const install = localStorage.getItem(`defaultInstall${language}`) ?? ''
+
+        // If the language supports an 'auto' version, set this if nothing has been set
+        const autoVer = langVersions.find((v) => v.display == 'Auto')
+        if (!install && autoVer) return autoVer
+
         const storedInstalls = getStoredInstalls()
-        return [...javaInstalls, ...storedInstalls].find((i) => i.path == install)
+        return [...langVersions, ...storedInstalls].find((i) => i.path == install && i.display !== 'Auto')
     }
 
-    const [customInstalls, setCustomInstalls] = useState<JavaInstall[]>(getStoredInstalls())
-    const [java, setJava] = useState<JavaInstall | undefined>(getDefaultInstall())
+    const [customVersions, setCustomVersions] = useState<LanguageVersion[]>(getStoredInstalls())
+    const [langVersion, setLangVersion] = useState<LanguageVersion | undefined>(getDefaultInstall())
     const [teamA, setTeamA] = useState<string | undefined>(undefined)
     const [teamB, setTeamB] = useState<string | undefined>(undefined)
     const [maps, setMaps] = useState<Set<string>>(new Set())
-    const [runConfigOpen, setRunConfigOpen] = useState(true)
 
     const runGame = () => {
-        if (!teamA || !teamB || maps.size === 0 || !runMatch) return
-        const javaPath = java ? java.path : javaInstalls.length > 0 ? javaInstalls[0].path : ''
-        runMatch(javaPath, teamA, teamB, maps)
+        if (!teamA || !teamB || maps.size === 0 || !langVersion || !runMatch) return
+        runMatch(langVersion, teamA, teamB, maps)
     }
 
     const resetSettings = () => {
@@ -64,9 +73,21 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
     }
 
     useEffect(() => {
-        if (availablePlayers.size > 0) setTeamA([...availablePlayers][0])
-        if (availablePlayers.size > 1) setTeamB([...availablePlayers][1])
+        const teamA = availablePlayers.size > 0 ? [...availablePlayers][0] : undefined
+        const teamB = availablePlayers.size > 1 ? [...availablePlayers][1] : teamA
+        setTeamA(teamA)
+        setTeamB(teamB)
     }, [availablePlayers])
+
+    useEffect(() => {
+        setLangVersion(getDefaultInstall())
+    }, [langVersions])
+
+    useEffect(() => {
+        setCustomVersions(getStoredInstalls())
+        setLangVersion(getDefaultInstall())
+        reloadData()
+    }, [language])
 
     const MemoConsole = React.useMemo(() => <Console lines={consoleLines} />, [consoleLines.effectiveLength()])
 
@@ -74,87 +95,179 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
 
     if (!nativeAPI) return <>Run the client locally to use the runner</>
 
-    const runDisabled = !teamA || !teamB || maps.size === 0
+    const lastLogLine = consoleLines.get(consoleLines.length() - 1)
+    const runDisabled = !teamA || !teamB || maps.size === 0 || !langVersion
     return (
         <div className={'flex flex-col grow ' + (scaffoldLoading ? 'opacity-50 pointer-events-none' : '')}>
             {!setup ? (
                 <>
+                    {error && <div className="text-red">{`Setup Error: ${error}`}</div>}
                     <Button onClick={manuallySetupScaffold}>Setup Scaffold</Button>
                 </>
             ) : (
                 <>
-                    <SectionHeader
-                        title="Run Config"
-                        open={runConfigOpen}
-                        onClick={() => setRunConfigOpen(!runConfigOpen)}
-                        //containerClassName="mt-0"
-                        titleClassName="py-2"
+                    <LanguageSelector language={language} onChange={changeLanguage} />
+                    <LanguageVersionSelector
+                        language={language}
+                        version={langVersion}
+                        allVersions={[...langVersions, ...customVersions]}
+                        onSelect={(j) => {
+                            setLangVersion(j)
+                            localStorage.setItem(`defaultInstall${language}`, j && j.display !== 'Auto' ? j.path : '')
+                        }}
+                        onAddCustom={(c) => {
+                            const newVersions = [...customVersions, c]
+                            setCustomVersions(newVersions)
+                            localStorage.setItem(
+                                `customInstalls${language}`,
+                                JSON.stringify(newVersions.map((i) => i.path))
+                            )
+                        }}
+                    />
+                    <TeamSelector
+                        teamA={teamA}
+                        teamB={teamB}
+                        options={availablePlayers}
+                        onChangeA={(t) => setTeamA(t)}
+                        onChangeB={(t) => setTeamB(t)}
+                    />
+                    <MapSelector
+                        maps={maps}
+                        availableMaps={availableMaps}
+                        onSelect={(m) => setMaps(new Set([...maps, m]))}
+                        onDeselect={(m) => setMaps(new Set([...maps].filter((x) => x !== m)))}
+                    />
+                    <SmallButton
+                        className="mt-2"
+                        onClick={() => {
+                            resetSettings()
+                            reloadData()
+                        }}
                     >
-                        <TeamSelector
-                            teamA={teamA}
-                            teamB={teamB}
-                            options={availablePlayers}
-                            onChangeA={(t) => setTeamA(t)}
-                            onChangeB={(t) => setTeamB(t)}
-                        />
-                        <MapSelector
-                            maps={maps}
-                            availableMaps={availableMaps}
-                            onSelect={(m) => setMaps(new Set([...maps, m]))}
-                            onDeselect={(m) => setMaps(new Set([...maps].filter((x) => x !== m)))}
-                        />
-                        <JavaSelector
-                            java={java}
-                            javaInstalls={[...javaInstalls, ...customInstalls]}
-                            onSelect={(j) => {
-                                setJava(j)
-                                localStorage.setItem('defaultInstall', j ? j.path : '')
-                            }}
-                            onAddCustom={(c) => {
-                                const newInstalls = [...customInstalls, c]
-                                setCustomInstalls(newInstalls)
-                                localStorage.setItem('customInstalls', JSON.stringify(newInstalls.map((i) => i.path)))
-                            }}
-                        />
-                        <SmallButton
-                            className="mt-2"
-                            onClick={() => {
-                                resetSettings()
-                                reloadData()
-                            }}
-                        >
-                            Reload maps & players
-                        </SmallButton>
-                        <SmallButton
-                            className="mt-2"
-                            onClick={() => {
-                                resetSettings()
-                                manuallySetupScaffold()
-                            }}
-                        >
-                            Re-configure Scaffold
-                        </SmallButton>
-                    </SectionHeader>
+                        Reload maps and players
+                    </SmallButton>
+                    <SmallButton
+                        className="mt-[-5px]"
+                        onClick={() => {
+                            resetSettings()
+                            manuallySetupScaffold()
+                        }}
+                    >
+                        Change scaffold directory
+                    </SmallButton>
 
-                    {!killMatch ? (
-                        <div className="w-fit mx-auto">
-                            <Tooltip
-                                location="bottom"
-                                text={runDisabled ? 'Please select both teams and a map' : 'Run the game'}
-                            >
-                                <Button className="mt-2" onClick={runGame} disabled={runDisabled}>
-                                    Run Game
-                                </Button>
-                            </Tooltip>
-                        </div>
-                    ) : (
-                        <Button onClick={killMatch}>Kill Game</Button>
+                    <div className="flex flex-row mx-auto mt-0 gap-2">
+                        {!killMatch ? (
+                            <div className="w-fit">
+                                <Tooltip
+                                    location="right"
+                                    text={runDisabled ? 'Please select both teams and a map' : 'Run the game'}
+                                >
+                                    <Button onClick={runGame} disabled={runDisabled}>
+                                        Run
+                                    </Button>
+                                </Tooltip>
+                            </div>
+                        ) : (
+                            <Button onClick={killMatch}>Stop</Button>
+                        )}
+
+                        <div className="w-fit">{MemoConsole}</div>
+
+                        <ProfilerDialog />
+                    </div>
+
+                    {(killMatch || lastLogLine) && (
+                        <span className="text-center opacity-60 text-xxs mt-2 whitespace-nowrap max-w-full overflow-hidden text-ellipsis">
+                            {lastLogLine?.content ?? 'Waiting...'}
+                        </span>
                     )}
-
-                    {MemoConsole}
                 </>
             )}
         </div>
+    )
+}
+
+interface LanguageSelectorProps {
+    language: SupportedLanguage
+    onChange: (language: SupportedLanguage) => void
+}
+
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ language, onChange }) => {
+    return (
+        <div>
+            <div className="flex flex-col flex-grow">
+                <label>Language</label>
+                <Select className="w-full" value={language} onChange={(e) => onChange(e as SupportedLanguage)}>
+                    {Object.getOwnPropertyNames(SupportedLanguage).map((l) => (
+                        <option key={l} value={l}>
+                            {l}
+                        </option>
+                    ))}
+                </Select>
+            </div>
+        </div>
+    )
+}
+
+interface LanguageVersionSelectorProps {
+    language: SupportedLanguage
+    version: LanguageVersion | undefined
+    allVersions: LanguageVersion[]
+    onSelect: (version: LanguageVersion | undefined) => void
+    onAddCustom: (version: LanguageVersion) => void
+}
+
+const LanguageVersionSelector: React.FC<LanguageVersionSelectorProps> = (props) => {
+    const [selectPath, setSelectPath] = React.useState(false)
+
+    const closeDialog = (path: string) => {
+        if (path) {
+            const newJava = { display: path, path }
+            props.onAddCustom(newJava)
+            props.onSelect(newJava)
+        }
+        setSelectPath(false)
+    }
+
+    return (
+        <>
+            <div className="flex flex-col mt-3">
+                <label>{`${props.language} Version`}</label>
+                <Select
+                    className="w-full"
+                    value={props.version ? JSON.stringify(props.version) : ''}
+                    onChange={(e) => {
+                        if (e == '') {
+                            props.onSelect(undefined)
+                        } else if (e == 'CUSTOM') {
+                            setSelectPath(true)
+                        } else {
+                            const parsed = JSON.parse(e)
+                            const found = props.allVersions.find(
+                                (j) => j.path == parsed.path && j.display == parsed.display
+                            )!
+                            props.onSelect(found)
+                        }
+                    }}
+                >
+                    {props.version === undefined && <option value={''}>Select a version</option>}
+                    <option value={'CUSTOM'}>Custom</option>
+                    {props.allVersions.map((t) => (
+                        <option key={JSON.stringify(t)} value={JSON.stringify(t)}>
+                            {t.display}
+                        </option>
+                    ))}
+                </Select>
+            </div>
+            <InputDialog
+                open={selectPath}
+                onClose={closeDialog}
+                title={`Custom ${props.language} Path`}
+                description={`Enter the path to the ${props.language} installation`}
+                placeholder="Path..."
+            />
+        </>
     )
 }
 
@@ -168,11 +281,11 @@ interface TeamSelectorProps {
 
 const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onChangeA, onChangeB }) => {
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-row mt-3">
             <div className="flex flex-col flex-grow">
                 <label>Team A</label>
-                <Select className="w-full" value={teamA} onChange={(e) => onChangeA(e)}>
-                    {teamA === undefined && <option value={undefined}>Select a team</option>}
+                <Select className="w-full" value={teamA ?? 'NONE'} onChange={(e) => onChangeA(e)}>
+                    {teamA === undefined && <option value={'NONE'}>Select a team</option>}
                     {[...options].map((t) => (
                         <option key={t} value={t}>
                             {t}
@@ -194,8 +307,8 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
             </div>
             <div className="flex flex-col flex-grow">
                 <label className="ml-auto">Team B</label>
-                <Select className="w-full" value={teamB} onChange={(e) => onChangeB(e)}>
-                    {teamB === undefined && <option value={undefined}>Select a team</option>}
+                <Select className="w-full" value={teamB ?? 'NONE'} onChange={(e) => onChangeB(e)}>
+                    {teamB === undefined && <option value={'NONE'}>Select a team</option>}
                     {[...options].map((t) => (
                         <option key={t} value={t}>
                             {t}
@@ -218,13 +331,13 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
     return (
         <div className="flex flex-col mt-3">
             <label>Maps</label>
-            <div className="flex flex-col border border-black py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
+            <div className="flex flex-col border border-white py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
                 {[...availableMaps].map((m) => {
                     const selected = maps.has(m)
                     return (
                         <div
                             key={m}
-                            className={'cursor-pointer hover:bg-gray-200 flex items-center justify-between'}
+                            className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
                             onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
                         >
                             {m}
@@ -234,66 +347,6 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
                 })}
             </div>
         </div>
-    )
-}
-
-interface JavaSelectorProps {
-    java: JavaInstall | undefined
-    javaInstalls: JavaInstall[]
-    onSelect: (install: JavaInstall | undefined) => void
-    onAddCustom: (install: JavaInstall) => void
-}
-
-const JavaSelector: React.FC<JavaSelectorProps> = (props) => {
-    const [selectPath, setSelectPath] = React.useState(false)
-
-    const closeDialog = (path: string) => {
-        if (path) {
-            const newJava = { display: path, path }
-            props.onAddCustom(newJava)
-            props.onSelect(newJava)
-        }
-        setSelectPath(false)
-    }
-
-    return (
-        <>
-            <div className="flex flex-col flex-grow mt-3">
-                <label>Java Instance</label>
-                <Select
-                    className="w-full"
-                    value={props.java ? JSON.stringify(props.java) : ''}
-                    onChange={(e) => {
-                        if (e == '') {
-                            props.onSelect(undefined)
-                        } else if (e == 'CUSTOM') {
-                            setSelectPath(true)
-                        } else {
-                            const parsed = JSON.parse(e)
-                            const found = props.javaInstalls.find(
-                                (j) => j.path == parsed.path && j.display == parsed.display
-                            )!
-                            props.onSelect(found)
-                        }
-                    }}
-                >
-                    <option value={''}>Auto</option>
-                    <option value={'CUSTOM'}>Custom</option>
-                    {props.javaInstalls.map((t) => (
-                        <option key={JSON.stringify(t)} value={JSON.stringify(t)}>
-                            {t.display}
-                        </option>
-                    ))}
-                </Select>
-            </div>
-            <InputDialog
-                open={selectPath}
-                onClose={closeDialog}
-                title="Custom Java Path"
-                description="Enter the Java path (should end with /Home on Mac/Linux, root path otherwise)"
-                placeholder="Path..."
-            />
-        </>
     )
 }
 
@@ -320,11 +373,46 @@ export const Console: React.FC<Props> = ({ lines }) => {
         }
     }
 
-    const ConsoleRow = (props: { index: number; style: any }) => (
-        <span style={props.style} className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
-            {lines.get(props.index)!.content}
-        </span>
-    )
+    const focusRobot = (round: number, id: number) => {
+        setPopout(false)
+        GameRunner.jumpToRound(round)
+        GameRenderer.setSelectedRobot(id)
+    }
+
+    const ConsoleRow = (props: { index: number; style: any }) => {
+        const content = lines.get(props.index)!.content
+
+        // Check if the printout is from a bot. If so, add a special click element
+        // that selects the bot
+        const regexp = /\[([A-Z]): #([0-9]+)@([0-9]+)] (.*)/
+        const found = content.match(regexp)
+        if (found && found.length == 5) {
+            const team = found[1]
+            const id = Number(found[2])
+            const round = Number(found[3])
+            const ogText = found[4]
+
+            return (
+                <div className="flex items-center gap-1 sele" style={props.style}>
+                    <span
+                        className="text-blueLight decoration-blueLight text-xs whitespace-nowrap underline cursor-pointer"
+                        onClick={() => focusRobot(round, id)}
+                    >
+                        {`[Team ${team}, ID #${id}, Round ${round}]`}
+                    </span>
+                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
+                        {ogText}
+                    </span>
+                </div>
+            )
+        }
+
+        return (
+            <span style={props.style} className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
+                {content}
+            </span>
+        )
+    }
 
     const handleScroll = (e: ListOnScrollProps) => {
         if (!consoleRef.current) return
@@ -368,29 +456,13 @@ export const Console: React.FC<Props> = ({ lines }) => {
     )
     return (
         <>
-            <div className="flex flex-col grow h-full relative">
-                <div className="flex items-center gap-2">
-                    <label>Console</label>
-                    <Tooltip text={'Expand console'} location="top">
-                        <button
-                            className={'hover:bg-lightHighlight p-[0.2rem] rounded-md'}
-                            onClick={() => updatePopout(true)}
-                        >
-                            <OpenExternal className="w-[15px] h-[15px]" />
-                        </button>
-                    </Tooltip>
-                </div>
-                <div
-                    className="top-[25px] absolute flex-grow border border-black py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
-                    style={{ height: 'calc(100% - 25px)', maxHeight: 'calc(100% - 25px)' }}
-                >
-                    {!popout && lineList}
-                </div>
-            </div>
+            <Tooltip location="bottom" text={'View output from running the game'}>
+                <Button onClick={() => updatePopout(true)}>Console</Button>
+            </Tooltip>
             <BasicDialog open={popout} onCancel={() => updatePopout(false)} title="Console" width="lg">
                 <div className="flex flex-col grow h-full w-full">
                     <div
-                        className="flex-grow border border-black py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
+                        className="flex-grow border border-white py-1 px-1 rounded-md overflow-auto flex flex-col min-h-[250px] w-full"
                         style={{ height: '80vh', maxHeight: '80vh' }}
                     >
                         {popout && lineList}

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-import { TEAM_WHITE, TEAM_BROWN } from '../../../constants'
+import { TEAM_COLORS } from '../../../constants'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
 
 export interface LineChartDataPoint {
-    turn: number
+    round: number
     brown: number
     white: number
 }
@@ -21,7 +21,13 @@ interface LineChartProps {
     resolution?: number
 }
 
-export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, margin, resolution = 1 }) => {
+export const QuickLineChart: React.FC<LineChartProps> = ({
+    data,
+    width,
+    height,
+    margin,
+    resolution = window.devicePixelRatio ?? 1
+}) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
     useEffect(() => {
@@ -38,16 +44,16 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
         context.clearRect(0, 0, width, height)
 
         if (data.length > 0) {
-            context.strokeStyle = TEAM_BROWN
+            context.strokeStyle = TEAM_COLORS[1]
             context.beginPath()
-            context.moveTo(xScale(data[0].turn), yScale(data[0].brown))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].turn), yScale(data[i].brown))
+            context.moveTo(xScale(data[0].round), yScale(data[0].brown))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
             context.stroke()
 
-            context.strokeStyle = TEAM_WHITE
+            context.strokeStyle = TEAM_COLORS[0]
             context.beginPath()
-            context.moveTo(xScale(data[0].turn), yScale(data[0].white))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].turn), yScale(data[i].white))
+            context.moveTo(xScale(data[0].round), yScale(data[0].white))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))
             context.stroke()
         }
 
@@ -58,15 +64,11 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
             margin,
             {
                 range: { min: 0, max: data.length },
-                options: {
-                    count: 8
-                }
+                options: { textColor: 'white', lineColor: 'white' }
             },
             {
                 range: { min: 0, max: max },
-                options: {
-                    count: 8
-                }
+                options: { textColor: 'white', lineColor: 'white' }
             }
         )
     }, [data.length, height, margin, width])

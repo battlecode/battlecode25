@@ -1,17 +1,12 @@
 import { flatbuffers, schema } from 'battlecode-schema'
 import assert from 'assert'
 import Game, { Team } from './Game'
-import Turn from './Turn'
-import TurnStat from './TurnStat'
-import { getImageIfLoaded } from '../util/ImageLoader'
+import Round from './Round'
 import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
 import { Vector } from './Vector'
 import {
-    ATTACK_COLOR,
-    BUILD_COLOR,
-    HEAL_COLOR,
     INDICATOR_DOT_SIZE,
     INDICATOR_LINE_WIDTH,
     TOOLTIP_PATH_DECAY_OPACITY,
@@ -21,236 +16,112 @@ import {
 } from '../constants'
 import Match from './Match'
 import { ClientConfig } from '../client-config'
+import { TowerBrush } from './Brushes'
+import { getImageIfLoaded } from '../util/ImageLoader'
 
 export default class Bodies {
     public bodies: Map<number, Body> = new Map()
 
     constructor(
         public readonly game: Game,
-        initialBodies?: schema.SpawnedBodyTable,
-        initialStats?: TurnStat,
-        mapToVerify?: StaticMap
+        initialBodies?: schema.InitialBodyTable
     ) {
-        if (initialBodies) this.insertBodies(initialBodies, initialStats)
-
-        if (mapToVerify) {
-            for (let i = 0; i < mapToVerify.width * mapToVerify.height; i++) {
-                if (mapToVerify.walls[i] || mapToVerify.divider[i] || mapToVerify.initialWater[i]) {
-                    for (const body of this.bodies.values()) {
-                        if (body.pos.x == i % mapToVerify.width && body.pos.y == Math.floor(i / mapToVerify.width)) {
-                            assert.fail(
-                                `Body at (${body.pos.x}, ${body.pos.y}) is on top of a wall or divider or water`
-                            )
-                        }
-                    }
-                }
-            }
+        if (initialBodies) {
+            this.insertInitialBodies(initialBodies)
         }
     }
 
-    updateBodyPositions(delta: schema.Round, allowNullBodies: boolean) {
-        const movedLocs = delta.robotLocs()
-        if (!movedLocs) return
-        const movedIds = delta.robotIdsArray() ?? assert.fail('movedIDsArray not found in round')
-        const xsArray = movedLocs.xsArray() ?? assert.fail('movedLocs.xsArray not found in round')
-        const ysArray = movedLocs.ysArray() ?? assert.fail('movedLocs.ysArray not found in round')
-        for (let i = 0; i < delta.robotIdsLength(); i++) {
-            const id = movedIds[i]
-            const body = this.bodies.get(id)
-
-            assert(allowNullBodies || !!body, `Moved body ${id} not found in bodies`)
-
-            if (body) body.moveTo({ x: xsArray[i], y: ysArray[i] })
+    processRoundEnd(delta: schema.Round | null) {
+        // Process unattributed died bodies
+        if (delta) {
+            for (let i = 0; i < delta.diedIdsLength(); i++) {
+                const diedId = delta.diedIds(i)!
+                this.getById(diedId).dead = true
+            }
         }
+
+        // Update body interp positions
+        // We need to update position here so that interp works correctly
+        for (const body of this.bodies.values()) {
+            body.lastPos = body.pos
+        }
+    }
+
+    clearDiedBodies() {
+        // Remove if marked dead
+        for (const body of this.bodies.values()) {
+            if (!body.dead) continue
+
+            this.bodies.delete(body.id) // safe
+        }
+    }
+
+    spawnBodyFromAction(spawnAction: schema.SpawnAction): Body {
+        // This assumes ids are never reused
+        const id = spawnAction.id()
+        assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
+
+        const robotType = spawnAction.robotType()
+        const team = spawnAction.team()
+        const x = spawnAction.x()
+        const y = spawnAction.y()
+
+        return this.spawnBodyFromValues(id, robotType, this.game.getTeamByID(team), { x, y })
+    }
+
+    spawnBodyFromValues(id: number, type: schema.RobotType, team: Team, pos: Vector): Body {
+        assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
+
+        const bodyClass = BODY_DEFINITIONS[type] ?? assert.fail(`Body type ${type} not found in BODY_DEFINITIONS`)
+
+        const body = new bodyClass(this.game, pos, team, id)
+        this.bodies.set(id, body)
+
+        // Populate default hp, cooldowns, etc
+        body.populateDefaultValues()
+
+        return body
+    }
+
+    markBodyAsDead(id: number): void {
+        const body = this.getById(id)
+        body.dead = true
+        // Manually set hp since we don't receive a final delta
+        body.hp = 0
+    }
+
+    removeBody(id: number): void {
+        this.bodies.delete(id)
+    }
+
+    /**
+     * Clears all indicator objects from the given robot. If the id does not exist
+     * (i.e. it has not yet been spawned), does nothing
+     */
+    clearIndicators(id: number) {
+        if (!this.bodies.has(id)) return
+        const body = this.getById(id)
+        body.indicatorDots = []
+        body.indicatorLines = []
+        body.indicatorString = ''
     }
 
     /**
      * Applies a delta to the bodies array. Because of update order, bodies will first
      * be inserted, followed by a call to scopedCallback() in which all bodies are valid.
      */
-    applyDelta(turn: Turn, delta: schema.Round, nextDelta: schema.Round | null): void {
-        for (const body of this.bodies.values()) if (body.dead) body.jailed = true
-        //this.bodies.delete(body.id) in most games
+    applyTurnDelta(round: Round, turn: schema.Turn): void {
+        const body = this.getById(turn.robotId())
 
-        const bodies = delta.spawnedBodies()
-        if (bodies) this.insertBodies(bodies, turn.stat.completed ? undefined : turn.stat)
+        // Update properties
+        body.pos = { x: turn.x(), y: turn.y() }
+        body.hp = turn.health()
+        body.paint = turn.paint()
+        body.moveCooldown = turn.moveCooldown()
+        body.actionCooldown = turn.actionCooldown()
+        body.bytecodesUsed = turn.bytecodesUsed()
 
-        // Update positions with respect to interpolation. The first call to update will set the body's
-        // target location to the value in delta. This is important when the body eventually gets removed
-        // because it should still interpolate to its final position. The second call to update will set the
-        // target position to the body's true next position iff it exists. In this case, we allow null
-        // bodies and skip them since they may not exist in the next turn. Most of the updates here are extra
-        // since the first call is really only necessary for bodies that die, so there is potential for
-        // optimization.
-        this.updateBodyPositions(delta, false)
-        for (const [id, body] of this.bodies) if (!body.jailed) body.addToPrevSquares()
-        if (nextDelta) {
-            this.updateBodyPositions(nextDelta, true)
-        }
-
-        // Update bytecode counters
-        for (let i = 0; i < delta.bytecodeIdsLength(); i++) {
-            const id = delta.bytecodeIds(i)!
-            if (!this.hasId(id)) continue // Not spawned in yet (unique to this game)
-            this.getById(id).bytecodesUsed = delta.bytecodesUsed(i)!
-        }
-
-        assert(
-            delta.robotIdsLength() == delta.healLevelsLength() &&
-                delta.robotIdsLength() == delta.attackLevelsLength() &&
-                delta.robotIdsLength() == delta.buildLevelsLength() &&
-                delta.robotIdsLength() == delta.healsPerformedLength() &&
-                delta.robotIdsLength() == delta.attacksPerformedLength() &&
-                delta.robotIdsLength() == delta.buildsPerformedLength() &&
-                delta.robotIdsLength() == delta.robotHealthsLength(),
-            'Delta arrays are not the same length'
-        )
-
-        // Update robot properties
-        for (let i = 0; i < delta.robotIdsLength(); i++) {
-            const id = delta.robotIds(i)!
-            const body = this.getById(id)
-            body.healLevel = delta.healLevels(i)!
-            body.attackLevel = delta.attackLevels(i)!
-            body.buildLevel = delta.buildLevels(i)!
-            body.healsPerformed = delta.healsPerformed(i)!
-            body.attacksPerformed = delta.attacksPerformed(i)!
-            body.buildsPerformed = delta.buildsPerformed(i)!
-            body.moveCooldown = delta.robotMoveCooldowns(i)!
-            body.actionCooldown = delta.robotActionCooldowns(i)!
-            body.hp = delta.robotHealths(i)!
-        }
-
-        // Flag died robots
-        for (let i = 0; i < delta.diedIdsLength(); i++) {
-            const diedId = delta.diedIds(i)!
-            const diedBody = this.bodies.get(diedId)
-            if (!diedBody) {
-                console.warn(
-                    `diedIds: Body with id ${diedId} not found in bodies. This will happen because of a resignation, otherwise it is a bug.`
-                )
-                continue
-            }
-
-            diedBody.dead = true
-            // Manually set hp since we don't receive a final delta
-            diedBody.hp = 0
-        }
-
-        // Calculate some stats that do not need to recalculate every turn if they have
-        // not already been calculated
-        if (!turn.stat.completed) {
-            turn.stat.getTeamStat(this.game.teams[0]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[1]).specializationTotalLevels = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[0]).robots = [0, 0, 0, 0, 0]
-            turn.stat.getTeamStat(this.game.teams[1]).robots = [0, 0, 0, 0, 0]
-            for (const body of this.bodies.values()) {
-                const teamStat = turn.stat.getTeamStat(body.team)
-                if (body.dead || body.jailed) {
-                    teamStat.robots[4] += 1
-                    teamStat.specializationTotalLevels[4] += (body.healLevel + body.buildLevel + body.attackLevel) / 3
-                } else {
-                    teamStat.robots[body.getSpecialization().idx] += 1
-                    teamStat.specializationTotalLevels[1] += body.attackLevel
-                    teamStat.specializationTotalLevels[2] += body.buildLevel
-                    teamStat.specializationTotalLevels[3] += body.healLevel
-                }
-            }
-        }
-
-        // Clear existing indicators
-        for (const body of this.bodies.values()) {
-            body.indicatorDots = []
-            body.indicatorLines = []
-            body.indicatorString = ''
-        }
-
-        // Add new indicator dots
-        const locs = delta.indicatorDotLocs() ?? assert.fail(`Delta missing indicatorDotLocs`)
-        const dotColors = delta.indicatorDotRgbs() ?? assert.fail(`Delta missing indicatorDotRgbs`)
-        for (let i = 0; i < locs.xsLength(); i++) {
-            const bodyId = delta.indicatorDotIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            body.indicatorDots.push({
-                location: { x: locs.xs(i)!, y: locs.ys(i)! },
-                color: renderUtils.rgbToHex(dotColors.red(i)!, dotColors.green(i)!, dotColors.blue(i)!)
-            })
-        }
-
-        // Add new indicator lines
-        const starts = delta.indicatorLineStartLocs() ?? assert.fail(`Delta missing indicatorLineStarts`)
-        const ends = delta.indicatorLineEndLocs() ?? assert.fail(`Delta missing indicatorLineEnds`)
-        const lineColors = delta.indicatorLineRgbs() ?? assert.fail(`Delta missing indicatorLineRgbs`)
-        for (let i = 0; i < starts.xsLength(); i++) {
-            const bodyId = delta.indicatorLineIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            body.indicatorLines.push({
-                start: { x: starts.xs(i)!, y: starts.ys(i)! },
-                end: { x: ends.xs(i)!, y: ends.ys(i)! },
-                color: renderUtils.rgbToHex(lineColors.red(i)!, lineColors.green(i)!, lineColors.blue(i)!)
-            })
-        }
-
-        // Add new indicator strings
-        for (let i = 0; i < delta.indicatorStringIdsLength(); i++) {
-            const bodyId = delta.indicatorStringIds(i)!
-            // Check if exists because technically can add indicators when not spawned
-            if (!this.hasId(bodyId)) continue
-            const body = this.getById(bodyId)
-            const string = delta.indicatorStrings(i)
-            body.indicatorString = string
-        }
-    }
-
-    private insertBodies(bodies: schema.SpawnedBodyTable, stat?: TurnStat): void {
-        const teams = bodies.teamIdsArray() ?? assert.fail('Initial body teams not found in header')
-        const locs = bodies.locs() ?? assert.fail('Initial body locations not found in header')
-        const xsArray = locs.xsArray() ?? assert.fail('Initial body x locations not found in header')
-        const ysArray = locs.ysArray() ?? assert.fail('Initial body y locations not found in header')
-        const idsArray = bodies.robotIdsArray() ?? assert.fail('Initial body IDs not found in header')
-        assert(
-            teams.length == xsArray.length && xsArray.length == ysArray.length && ysArray.length == idsArray.length,
-            'Initial body arrays are not the same length'
-        )
-
-        for (let i = 0; i < bodies.robotIdsLength(); i++) {
-            const id = idsArray[i]
-            const bodyClass = BODY_DEFINITIONS[0] ?? assert.fail(`Body type ${0} not found in BODY_DEFINITIONS`)
-            const health = this.game.playable ? this.game.constants.robotBaseHealth() : 1
-
-            if (this.bodies.has(id)) {
-                //respawn jailed body
-                const body = this.bodies.get(id) ?? assert.fail(`Body with id ${id} not found in bodies`)
-                assert(body.jailed && body.dead, `Body with id ${id} is not jailed or dead`)
-                body.hp = health
-                body.jailed = false
-                body.dead = false
-                body.resetPos({ x: xsArray[i], y: ysArray[i] })
-            } else {
-                this.bodies.set(
-                    id,
-                    new bodyClass(
-                        this.game,
-                        { x: xsArray[i], y: ysArray[i] },
-                        health,
-                        this.game.getTeamByID(teams[i]),
-                        id
-                    )
-                )
-            }
-            if (stat) {
-                const newBody =
-                    this.bodies.get(id) ?? assert.fail(`Body with id ${id} should have been added to bodies`)
-                const teamStat =
-                    stat.getTeamStat(this.game.getTeamByID(teams[i])) ??
-                    assert.fail(`team ${i} not found in team stats in turn`)
-                // make team stat modifications based on types here (not really used for this game)
-            }
-        }
+        body.addToPrevSquares()
     }
 
     getById(id: number): Body {
@@ -277,27 +148,39 @@ export default class Bodies {
         overlayCtx: CanvasRenderingContext2D,
         config: ClientConfig,
         selectedBodyID?: number,
-        hoveredBodyID?: number
+        hoveredTile?: Vector
     ): void {
-        for (const body of this.bodies.values())
-            if (!body.jailed)
-                body.draw(match, ctx, overlayCtx, config, body.id === selectedBodyID, body.id === hoveredBodyID)
+        for (const body of this.bodies.values()) {
+            body.draw(
+                match,
+                ctx,
+                overlayCtx,
+                config,
+                body.id === selectedBodyID,
+                body.pos.x === hoveredTile?.x && body.pos.y === hoveredTile?.y
+            )
+        }
     }
 
     getNextID(): number {
-        return Math.max(-1, ...this.bodies.keys()) + 1
+        return Math.max(0, ...this.bodies.keys()) + 1
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
-        let found_dead_body: Body | undefined = undefined
+        let foundDead: Body | undefined = undefined
+
         for (const body of this.bodies.values()) {
-            if ((!team || body.team === team) && body.pos.x === x && body.pos.y === y) {
-                if (body.jailed) continue
-                if (body.dead) found_dead_body = body
-                else return body
+            const teamMatches = !team || body.team === team
+            if (teamMatches && body.pos.x === x && body.pos.y === y) {
+                if (!body.dead) return body
+
+                // If dead, keep iterating in case there is an alive body
+                // that will take priority
+                foundDead = body
             }
         }
-        return found_dead_body
+
+        return foundDead
     }
 
     isEmpty(): boolean {
@@ -305,71 +188,60 @@ export default class Bodies {
     }
 
     getEditorBrushes(map: StaticMap): MapEditorBrush[] {
-        return []
+        return [new TowerBrush(this, map)]
     }
 
-    toSpawnedBodyTable(builder: flatbuffers.Builder): number {
-        const robotIDs: Uint8Array = new Uint8Array(this.bodies.size)
-        const teamIDs: Uint8Array = new Uint8Array(this.bodies.size)
-        const xs: Uint8Array = new Uint8Array(this.bodies.size)
-        const ys: Uint8Array = new Uint8Array(this.bodies.size)
+    toInitialBodyTable(builder: flatbuffers.Builder): number {
+        schema.InitialBodyTable.startSpawnActionsVector(builder, this.bodies.size)
 
-        Array.from(this.bodies.values()).forEach((body, i) => {
-            robotIDs[i] = body.id
-            teamIDs[i] = body.team.id
-            xs[i] = body.pos.x
-            ys[i] = body.pos.y
-        })
+        for (const body of this.bodies.values()) {
+            schema.SpawnAction.createSpawnAction(builder, body.id, body.pos.x, body.pos.y, body.team.id, body.robotType)
+        }
+        const spawnActionsVector = builder.endVector()
 
-        const robotIDsVector = schema.SpawnedBodyTable.createRobotIdsVector(builder, robotIDs)
-        const teamIDsVector = schema.SpawnedBodyTable.createTeamIdsVector(builder, teamIDs)
+        return schema.InitialBodyTable.createInitialBodyTable(builder, spawnActionsVector)
+    }
 
-        const xsTable = schema.VecTable.createXsVector(builder, xs)
-        const ysTable = schema.VecTable.createYsVector(builder, ys)
-        schema.VecTable.startVecTable(builder)
-        schema.VecTable.addXs(builder, xsTable)
-        schema.VecTable.addYs(builder, ysTable)
-        const locsVecTable = schema.VecTable.endVecTable(builder)
-
-        schema.SpawnedBodyTable.startSpawnedBodyTable(builder)
-        schema.SpawnedBodyTable.addRobotIds(builder, robotIDsVector)
-        schema.SpawnedBodyTable.addTeamIds(builder, teamIDsVector)
-        schema.SpawnedBodyTable.addLocs(builder, locsVecTable)
-        return schema.SpawnedBodyTable.endSpawnedBodyTable(builder)
+    private insertInitialBodies(bodies: schema.InitialBodyTable): void {
+        for (let i = 0; i < bodies.spawnActionsLength(); i++) {
+            const spawnAction = bodies.spawnActions(i)!
+            this.spawnBodyFromAction(spawnAction)
+        }
     }
 }
 
 export class Body {
     public robotName: string = ''
-    public actionRadius: number = 0
-    public visionRadius: number = 0
+    public robotType: schema.RobotType = schema.RobotType.NONE
     protected imgPath: string = ''
-    public nextPos: Vector
+    protected size: number = 1
+    public lastPos: Vector
     private prevSquares: Vector[]
     public indicatorDots: { location: Vector; color: string }[] = []
     public indicatorLines: { start: Vector; end: Vector; color: string }[] = []
     public indicatorString: string = ''
     public dead: boolean = false
-    public jailed: boolean = false
+    public hp: number = 0
+    public maxHp: number = 1
+    public paint: number = 0
+    public maxPaint: number = 0
+    public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
+    public bytecodesUsed: number = 0
+
     constructor(
         private game: Game,
         public pos: Vector,
-        public hp: number,
         public readonly team: Team,
-        public readonly id: number,
-        public carryingFlagId: number | null = null,
-        public healLevel: number = 0,
-        public attackLevel: number = 0,
-        public buildLevel: number = 0,
-        public healsPerformed: number = 0,
-        public attacksPerformed: number = 0,
-        public buildsPerformed: number = 0,
-        public bytecodesUsed: number = 0
+        public readonly id: number
     ) {
-        this.nextPos = this.pos
+        this.lastPos = this.pos
         this.prevSquares = [this.pos]
+    }
+
+    get metadata() {
+        return this.game.robotTypeMetadata.get(this.robotType) ?? assert.fail('Robot missing metadata!')
     }
 
     public draw(
@@ -381,45 +253,26 @@ export class Body {
         hovered: boolean
     ): void {
         const pos = this.getInterpolatedCoords(match)
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentTurn.map.staticMap.dimension)
+        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
+
         if (this.dead) ctx.globalAlpha = 0.5
-        renderUtils.renderCenteredImageOrLoadingIndicator(
-            ctx,
-            getImageIfLoaded(this.imgPath),
-            renderCoords,
-            this.carryingFlagId !== null ? 1.1 : 1
-        )
+        renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
         ctx.globalAlpha = 1
 
-        if (selected || hovered) this.drawPath(match, overlayCtx)
-        if (selected || hovered || config.showAllRobotRadii) this.drawRadii(match, overlayCtx, !selected)
-        if (selected || hovered || config.showAllIndicators)
-            this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
-        if (selected || hovered || config.showHealthBars) this.drawHealthBar(match, overlayCtx)
-
-        if (this.carryingFlagId !== null) {
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                overlayCtx,
-                getImageIfLoaded('resources/bread_outline_thick_64x64.png'),
-                { x: renderCoords.x, y: renderCoords.y },
-                0.6
-            )
-
-            if (config.showFlagCarryIndicator) {
-                for (const direction of [
-                    { x: 0.5, y: 0 },
-                    { x: 0, y: 0.5 },
-                    { x: -0.5, y: 0 },
-                    { x: 0, y: -0.5 }
-                ]) {
-                    renderUtils.renderCarets(
-                        overlayCtx,
-                        { x: renderCoords.x + 0.5, y: renderCoords.y + 0.5 },
-                        direction,
-                        2,
-                        this.team.id == 1 ? '#ff0000aa' : '#00ffffaa'
-                    )
-                }
+        // Draw various statuses
+        const focused = selected || hovered
+        if (this.game.playable) {
+            if (focused) {
+                this.drawPath(match, overlayCtx)
+            }
+            if (focused || config.showAllRobotRadii) {
+                this.drawRadii(match, overlayCtx, !selected)
+            }
+            if (focused || config.showAllIndicators) {
+                this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
+            }
+            if (focused || config.showHealthBars) {
+                this.drawHealthBar(match, overlayCtx)
             }
         }
     }
@@ -450,26 +303,89 @@ export class Body {
         }
     }
 
+    private getAllLocationsWithinRadiusSquared(match: Match, location: Vector, radius: number) {
+        const ceiledRadius = Math.ceil(Math.sqrt(radius)) + 1
+        const minX = Math.max(location.x - ceiledRadius, 0)
+        const minY = Math.max(location.y - ceiledRadius, 0)
+        const maxX = Math.min(location.x + ceiledRadius, match.map.width - 1)
+        const maxY = Math.min(location.y + ceiledRadius, match.map.height - 1)
+
+        const coords: Vector[] = []
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                const dx = x - location.x
+                const dy = y - location.y
+                if (dx * dx + dy * dy <= radius) {
+                    coords.push({ x, y })
+                }
+            }
+        }
+
+        return coords
+    }
+
+    private drawEdges(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean, squares: Array<Vector>) {
+        for (let i = 0; i < squares.length; ++i) {
+            const squarePos = squares[i]
+            const renderCoords = renderUtils.getRenderCoords(
+                squarePos.x,
+                squarePos.y,
+                match.currentRound.map.staticMap.dimension
+            )
+
+            const hasTopNeighbor = squares.some((square) => square.x === squarePos.x && square.y === squarePos.y + 1)
+            const hasBottomNeighbor = squares.some((square) => square.x === squarePos.x && square.y === squarePos.y - 1)
+            const hasLeftNeighbor = squares.some((square) => square.x === squarePos.x - 1 && square.y === squarePos.y)
+            const hasRightNeighbor = squares.some((square) => square.x === squarePos.x + 1 && square.y === squarePos.y)
+
+            ctx.beginPath()
+
+            if (!hasTopNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y)
+            }
+
+            if (!hasBottomNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y + 1)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1)
+            }
+
+            if (!hasLeftNeighbor) {
+                ctx.moveTo(renderCoords.x, renderCoords.y)
+                ctx.lineTo(renderCoords.x, renderCoords.y + 1)
+            }
+
+            if (!hasRightNeighbor) {
+                ctx.moveTo(renderCoords.x + 1, renderCoords.y)
+                ctx.lineTo(renderCoords.x + 1, renderCoords.y + 1)
+            }
+
+            ctx.stroke()
+        }
+    }
+
     private drawRadii(match: Match, ctx: CanvasRenderingContext2D, lightly: boolean) {
-        const pos = this.getInterpolatedCoords(match)
+        // const pos = this.getInterpolatedCoords(match)
+        const pos = this.pos
+
         if (lightly) ctx.globalAlpha = 0.5
-        const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentTurn.map.staticMap.dimension)
+        const squares = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.actionRadiusSquared())
         ctx.beginPath()
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.actionRadius), 0, 360)
-        ctx.stroke()
+        this.drawEdges(match, ctx, lightly, squares)
 
         ctx.beginPath()
         ctx.strokeStyle = 'blue'
         ctx.lineWidth = 0.1
-        ctx.arc(renderCoords.x + 0.5, renderCoords.y + 0.5, Math.sqrt(this.visionRadius), 0, 360)
-        ctx.stroke()
+        const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.visionRadiusSquared())
+        this.drawEdges(match, ctx, lightly, squares2)
+
         ctx.globalAlpha = 1
     }
 
     private drawIndicators(match: Match, ctx: CanvasRenderingContext2D, lighter: boolean): void {
-        const dimension = match.currentTurn.map.staticMap.dimension
+        const dimension = match.currentRound.map.staticMap.dimension
         // Render indicator dots
         for (const data of this.indicatorDots) {
             ctx.globalAlpha = lighter ? 0.5 : 1
@@ -496,7 +412,7 @@ export class Body {
     }
 
     private drawHealthBar(match: Match, ctx: CanvasRenderingContext2D): void {
-        const dimension = match.currentTurn.map.staticMap.dimension
+        const dimension = match.currentRound.map.staticMap.dimension
         const interpCoords = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(interpCoords.x, interpCoords.y, dimension)
         const hpBarWidth = 0.8
@@ -507,24 +423,45 @@ export class Body {
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
-        const maxHP = this.game.constants.robotBaseHealth()
-        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
+        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / this.maxHp), hpBarHeight)
+    }
+
+    protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
+        if (this.level <= 1) return
+
+        const coords = renderUtils.getRenderCoords(this.pos.x, this.pos.y, match.currentRound.map.staticMap.dimension)
+
+        let numeral
+        if (this.level === 2) {
+            numeral = 'II'
+        } else {
+            numeral = 'III'
+        }
+
+        ctx.font = '0.5px serif'
+        ctx.fillStyle = this.team.color
+        ctx.textAlign = 'right'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 10
+        ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
+        ctx.shadowColor = ''
+        ctx.shadowBlur = 0
+        ctx.textAlign = 'start'
     }
 
     public getInterpolatedCoords(match: Match): Vector {
-        return renderUtils.getInterpolatedCoords(this.pos, this.nextPos, match.getInterpolationFactor())
+        return renderUtils.getInterpolatedCoords(this.lastPos, this.pos, match.getInterpolationFactor())
     }
 
     public onHoverInfo(): string[] {
+        if (!this.game.playable) return [this.robotName]
+
         const defaultInfo = [
-            (this.dead ? 'JAILED: ' : '') + this.robotName,
+            `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
-            `HP: ${this.hp}`,
+            `HP: ${this.hp}/${this.maxHp}`,
+            `Paint: ${this.paint}/${this.maxPaint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
-            this.carryingFlagId !== null ? `Has Flag! (ID: ${this.carryingFlagId})` : '',
-            `Attack Lvl: ${this.attackLevel} (${this.attacksPerformed} exp)`,
-            `Build Lvl: ${this.buildLevel} (${this.buildsPerformed} exp)`,
-            `Heal Lvl: ${this.healLevel} (${this.healsPerformed} exp)`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
             `Bytecodes Used: ${this.bytecodesUsed}`
@@ -544,17 +481,6 @@ export class Body {
         return newBody
     }
 
-    public moveTo(pos: Vector): void {
-        this.pos = this.nextPos
-        this.nextPos = pos
-    }
-
-    public resetPos(pos: Vector): void {
-        this.pos = pos
-        this.nextPos = pos
-        this.prevSquares = [pos]
-    }
-
     public addToPrevSquares(): void {
         this.prevSquares.push(this.pos)
         if (this.prevSquares.length > TOOLTIP_PATH_LENGTH) {
@@ -562,19 +488,21 @@ export class Body {
         }
     }
 
-    public getSpecialization(): { idx: number; name: string } {
-        assert(this.attackLevel >= 0 && this.attackLevel <= 6, 'Attack level out of bounds')
-        assert(this.healLevel >= 0 && this.healLevel <= 6, 'Heal level out of bounds')
-        assert(this.buildLevel >= 0 && this.buildLevel <= 6, 'Build level out of bounds')
-        assert([this.attackLevel, this.healLevel, this.buildLevel].sort()[1] <= 3, 'Specialization level too high')
-        if (this.attackLevel > 3) return { idx: 1, name: 'attack' }
-        if (this.buildLevel > 3) return { idx: 2, name: 'build' }
-        if (this.healLevel > 3) return { idx: 3, name: 'heal' }
-        return { idx: 0, name: 'base' }
+    public populateDefaultValues(): void {
+        if (!this.game.playable) return
+
+        const metadata = this.metadata
+
+        this.maxHp = metadata.baseHealth()
+        this.hp = this.maxHp
+        this.maxPaint = metadata.maxPaint()
+        this.paint = metadata.basePaint()
+        this.actionCooldown = metadata.actionCooldown()
+        this.moveCooldown = metadata.movementCooldown()
     }
 }
 
-export const BODY_DEFINITIONS: Record<number, typeof Body> = {
+export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
     // For future games, this dictionary translate schema values of robot
     // types to their respective class, such as this:
     //
@@ -595,15 +523,23 @@ export const BODY_DEFINITIONS: Record<number, typeof Body> = {
     // This game has no types or headquarters to speak of, so there is only
     // one type pointed to by 0:
 
-    0: class Duck extends Body {
-        public robotName = 'Duck'
+    [schema.RobotType.NONE]: class None extends Body {
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
 
-        constructor(game: Game, pos: Vector, hp: number, team: Team, id: number) {
-            super(game, pos, hp, team, id)
-            this.actionRadius = game.constants.actionRadius()
-            this.visionRadius = game.constants.visionRadius()
+            throw new Error("Body type 'NONE' not supported")
+        }
+    },
 
-            this.robotName = `${team.colorName} Duck`
+    [schema.RobotType.DEFENSE_TOWER]: class DefenseTower extends Body {
+        public robotName = 'DefenseTower'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Defense Tower`
+            this.robotType = schema.RobotType.DEFENSE_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/defense_tower_64x64.png`
+            this.size = 1.5
         }
 
         public draw(
@@ -614,62 +550,122 @@ export const BODY_DEFINITIONS: Record<number, typeof Body> = {
             selected: boolean,
             hovered: boolean
         ): void {
-            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/${this.getSpecialization().name}_64x64.png`
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
+        }
+    },
 
-            const levelIndicators: [string, number, [number, number]][] = [
-                [ATTACK_COLOR, this.attackLevel, [0.8, -0.5]],
-                [BUILD_COLOR, this.buildLevel, [0.5, -0.8]],
-                [HEAL_COLOR, this.healLevel, [0.2, -0.2]]
-            ]
-            const interpCoords = this.getInterpolatedCoords(match)
-            for (const [color, level, [dx, dy]] of levelIndicators) {
-                this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            }
+    [schema.RobotType.MONEY_TOWER]: class MoneyTower extends Body {
+        public robotName = 'MoneyTower'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Money Tower`
+            this.robotType = schema.RobotType.MONEY_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/money_tower_64x64.png`
+            this.size = 1.5
         }
 
-        private drawPetals(
+        public draw(
             match: Match,
             ctx: CanvasRenderingContext2D,
-            color: string,
-            level: number,
-            x: number,
-            y: number
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
         ): void {
-            if (level == 0) return
-            const drawCoords = renderUtils.getRenderCoords(x, y, match.currentTurn.map.staticMap.dimension)
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
+        }
+    },
 
-            ctx.fillStyle = color
-            ctx.strokeStyle = 'black'
-            ctx.beginPath()
-            ctx.moveTo(drawCoords.x, drawCoords.y)
-            for (let i = 0; i < level; i++) {
-                const petalWidthRads = (2 * Math.PI) / 12
-                const angle = i * petalWidthRads * 2
-                const petalLength = 0.15
-                ctx.bezierCurveTo(
-                    drawCoords.x + ((petalLength * 1) / 3) * Math.cos(angle - petalWidthRads * 2.5),
-                    drawCoords.y + ((petalLength * 1) / 3) * Math.sin(angle - petalWidthRads * 2.5),
-                    drawCoords.x + ((petalLength * 2) / 3) * Math.cos(angle - (petalWidthRads * 2.5) / 2),
-                    drawCoords.y + ((petalLength * 2) / 3) * Math.sin(angle - (petalWidthRads * 2.5) / 2),
-                    drawCoords.x + petalLength * Math.cos(angle),
-                    drawCoords.y + petalLength * Math.sin(angle)
-                )
-                ctx.bezierCurveTo(
-                    drawCoords.x + ((petalLength * 2) / 3) * Math.cos(angle + (petalWidthRads * 2.5) / 2),
-                    drawCoords.y + ((petalLength * 2) / 3) * Math.sin(angle + (petalWidthRads * 2.5) / 2),
-                    drawCoords.x + ((petalLength * 1) / 3) * Math.cos(angle + petalWidthRads * 2.5),
-                    drawCoords.y + ((petalLength * 1) / 3) * Math.sin(angle + petalWidthRads * 2.5),
-                    drawCoords.x,
-                    drawCoords.y
-                )
-            }
-            ctx.lineWidth = 0.05
-            ctx.globalAlpha = 0.5
-            ctx.stroke()
-            ctx.globalAlpha = 0.75
-            ctx.fill()
-            ctx.globalAlpha = 1
+    [schema.RobotType.PAINT_TOWER]: class PaintTower extends Body {
+        public robotName = 'PaintTower'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Paint Tower`
+            this.robotType = schema.RobotType.PAINT_TOWER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/paint_tower_64x64.png`
+            this.size = 1.5
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+            super.drawLevel(match, ctx)
+        }
+    },
+
+    [schema.RobotType.MOPPER]: class Mopper extends Body {
+        public robotName = 'Mopper'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Mopper`
+            this.robotType = schema.RobotType.MOPPER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/mopper_64x64.png`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+        }
+    },
+
+    [schema.RobotType.SOLDIER]: class Soldier extends Body {
+        public robotName = 'Soldier'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Soldier`
+            this.robotType = schema.RobotType.SOLDIER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/soldier_64x64.png`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+        }
+    },
+
+    [schema.RobotType.SPLASHER]: class Splasher extends Body {
+        public robotName = 'Splasher'
+
+        constructor(game: Game, pos: Vector, team: Team, id: number) {
+            super(game, pos, team, id)
+            this.robotName = `${team.colorName} Splasher`
+            this.robotType = schema.RobotType.SPLASHER
+            this.imgPath = `robots/${this.team.colorName.toLowerCase()}/splasher_64x64.png`
+        }
+
+        public draw(
+            match: Match,
+            ctx: CanvasRenderingContext2D,
+            overlayCtx: CanvasRenderingContext2D,
+            config: ClientConfig,
+            selected: boolean,
+            hovered: boolean
+        ): void {
+            super.draw(match, ctx, overlayCtx, config, selected, hovered)
         }
     }
 }

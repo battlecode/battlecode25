@@ -10,10 +10,44 @@ table VecTable {
     ys: [int];
 }
 
-table RGBTable {
-    red: [int];
-    green: [int];
-    blue: [int];
+enum RobotType: byte {
+    NONE,
+    PAINT_TOWER,
+    MONEY_TOWER,
+    DEFENSE_TOWER,
+    SOLDIER,
+    SPLASHER,
+    MOPPER
+}
+
+enum WinType: byte {
+    RESIGNATION,
+    MAJORITY_PAINTED,
+    ALL_UNITS_DESTROYED,
+    AREA_PAINTED,
+    MORE_TOWERS,
+    MORE_MONEY,
+    MORE_STORED_PAINT,
+    MORE_ROBOTS,
+    COIN_FLIP
+}
+
+enum DieType: byte {
+    UNKNOWN,
+    EXCEPTION
+}
+
+table RobotTypeMetadata {
+    type: RobotType;
+    actionCooldown: int;
+    movementCooldown: int;
+    baseHealth: int;
+    basePaint: int;
+    maxPaint: int;
+    actionRadiusSquared: int;
+    visionRadiusSquared: int;
+    messageRadiusSquared: int;
+    bytecodeLimit: int;
 }
 
 table TeamData {
@@ -22,122 +56,167 @@ table TeamData {
     teamId: byte;
 }
 
-table CommTable {
-    team1: [int];
-    team2: [int];
-}
-
-enum SpecializationType: byte {
-    ATTACK,
-    BUILD,
-    HEAL
-}
-
-table SpecializationMetadata {
-    type: SpecializationType;
-    level: int;
-    actionCost: int;
-    actionJailedPenalty: int;
-    cooldownReduction: int;
-    damageIncrease: int;
-    healIncrease: int;
-}
-
-enum BuildActionType: byte {
-    EXPLOSIVE_TRAP,
-    WATER_TRAP,
-    STUN_TRAP,
-    DIG,
-    FILL
-}
-
-table BuildActionMetadata {
-    type: BuildActionType;
-    cost: int;
-    buildCooldown: int;
-}
-
 table GameplayConstants {
-    setupPhaseLength: int;
-    flagMinDistance: int;
-    globalUpgradeRoundDelay: int;
-    passiveResourceRate: int;
-    robotBaseHealth: int;
-    jailedRounds: int;
-    visionRadius: int;
-    actionRadius: int;
 }
 
-enum GlobalUpgradeType: byte {
-    ACTION_UPGRADE,
-    HEALING_UPGRADE,
-    CAPTURING_UPGRADE
+/// Generic action representing damage to a robot
+struct DamageAction {
+    /// Id of the damage target
+    id: ushort;
+    damage: ushort; 
 }
 
-enum WinType: byte {
-    CAPTURE,
-    MORE_FLAG_CAPTURES,
-    LEVEL_SUM,
-    MORE_BREAD,
-    COIN_FLIP,
-    RESIGNATION
+/// Visually indicate a tile has been painted
+struct PaintAction {
+    loc: ushort;
+    isSecondary: byte;
 }
 
-table GlobalUpgradeMetadata {
-    type: GlobalUpgradeType;
-    upgradeAmount: int;
+/// Visually indicate a tile's paint has been removed
+struct UnpaintAction {
+    loc: ushort;
 }
 
-// A list of new bodies to be placed on the map.
-table SpawnedBodyTable {
-    robotIds: [int];
-    teamIds: [byte];
-    locs: VecTable;
+/// Visually indicate a tile marked with a color
+struct MarkAction {
+    loc: ushort;
+    isSecondary: byte;
+}
+
+/// Visually indicate a tile's marker has been removed
+struct UnmarkAction {
+    loc: ushort;
+}
+
+/// Visually indicate an attack
+struct AttackAction {
+    /// Id of the attack target
+    id: ushort;
+}
+
+/// Visually indicate a splash attack
+struct SplashAction {
+    /// Location of the splash attack
+    loc: ushort;
+}
+
+/// Visually indicate a mop attack
+struct MopAction {
+    /// Ids of the mopped targets, possibly 0
+    id0: ushort;
+    id1: ushort;
+    id2: ushort;
+}
+
+/// Visually indicate a tower being built
+struct BuildAction {
+    /// Id of the tower bot
+    id: ushort;
+}
+
+/// Visually indicate transferring paint from one robot to another
+struct TransferAction {
+    /// Id of the transfer target
+    id: ushort;
+    amount: int;
+}
+
+/// Visually indicate messaging from one robot to another
+struct MessageAction {
+    /// Id of the message target
+    id: ushort;
+    data: int;
+}
+
+/// Indicate that this robot was spawned on this turn
+struct SpawnAction {
+    /// Id of the bot that spawned
+    id: ushort;
+    x: ushort;
+    y: ushort;
+    team: byte;
+    robotType: RobotType;
+}
+
+/// Indicates that a robot died and should be removed
+struct DieAction {
+    /// Id of the robot that died
+    id: ushort;
+    dieType: DieType;
+}
+
+/// Visually indicate that a tower was upgraded
+struct UpgradeAction {
+    /// Id of the upgraded tower
+    id: ushort;
+    newHealth: int;
+    newMaxHealth: int;
+    newPaint: int;
+    newMaxPaint: int;
+}
+
+/// Update the indicator string for this robot
+table IndicatorStringAction {
+    value: string;
+}
+
+/// Update the indicator dot for this robot
+struct IndicatorDotAction {
+    loc: ushort;
+    colorHex: int;
+}
+
+/// Update the indicator line for this robot
+struct IndicatorLineAction {
+    startLoc: ushort;
+    endLoc: ushort;
+    colorHex: int;
+}
+
+union Action {
+    DamageAction,
+    PaintAction,
+    UnpaintAction,
+    MarkAction,
+    UnmarkAction,
+    AttackAction,
+    SplashAction,
+    MopAction,
+    BuildAction,
+    TransferAction, 
+    MessageAction,
+    SpawnAction,
+    DieAction,
+    UpgradeAction,
+    IndicatorStringAction,
+    IndicatorDotAction,
+    IndicatorLineAction
+}
+
+// A list of initial bodies to be placed on the map.
+table InitialBodyTable {
+    spawnActions: [SpawnAction];
 }
 
 table GameMap {
     name: string;
     size: Vec;
     symmetry: int; // The map symmetry: 0 for rotation, 1 for horizontal, 2 for vertical.
-    bodies: SpawnedBodyTable;
+    initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
-    water: [bool];
-    divider: [bool];
-    spawnLocations: VecTable; //alternates teams, starting with team 0
-    resourcePiles: VecTable;
-    resourcePileAmounts: [int];
+    paint: [byte];
+    ruins: VecTable;
+    paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
 }
 
-enum Action : byte {
-    // Target: ID of hit robot
-    ATTACK,
-    // Target: ID of healed robot
-    HEAL,
-    // Target: x + y * width of dig location
-    DIG,
-    // Target: x + y * width of fill location
-    FILL,
-    // Target: x + y * width of trap location
-    EXPLOSIVE_TRAP,
-    // Target: x + y * width of trap location
-    WATER_TRAP,
-    // Target: x + y * width of trap location
-    STUN_TRAP,
-    // Target: flag id
-    PICKUP_FLAG,
-    // Id: Flag id, Target: x + y * width of placed location
-    PLACE_FLAG,
-    // Target: flag id
-    CAPTURE_FLAG,
-    // Target: GlobalUpgradeType id
-    GLOBAL_UPGRADE,
-    /// Dies due to an uncaught exception
-    /// Target: none
-    DIE_EXCEPTION,
+/// Markers for events during the game indicated by the user
+table TimelineMarker{
+    team: byte;
+    round: int;
+    colorHex: int;
+    label: string;
 }
-
-
 
 //========================================================================================
 // Profiler tables
@@ -203,10 +282,7 @@ union Event {
 table GameHeader {
     specVersion: string;
     teams: [TeamData];
-
-    specializationMetadata: [SpecializationMetadata];
-    buildActionMetadata: [BuildActionMetadata];
-    globalUpgradeMetadata: [GlobalUpgradeMetadata];
+    robotTypeMetadata: [RobotTypeMetadata];
     constants: GameplayConstants;
 }
 
@@ -230,91 +306,45 @@ table MatchFooter {
     winType: WinType;
     /// The number of rounds played.
     totalRounds: int;
+    /// Markers for this match.
+    timelineMarkers: [TimelineMarker];
     /// Profiler data for team A and B if profiling is enabled.
     profilerFiles: [ProfilerFile];
 }
 
-/// A single time-step in a Game.
-/// The bulk of the data in the file is stored in tables like this.
-/// Note that a struct-of-arrays format is more space efficient than an array-
-/// of-structs.
+table Turn {
+    robotId: int;
+    health: int;
+    paint: int;
+    moveCooldown: int;
+    actionCooldown: int;
+    bytecodesUsed: int;
+    x: ubyte;
+    y: ubyte;
+    actions: [Action];
+}
+
+/// A single time-step in a Game, which contains a list of robot turns
 table Round {
     /// The IDs of teams in the Game.
-    teamIds: [int]; //done
+    teamIds: [int];
     /// The total amount of resource this round per team
-    teamResourceAmounts: [int]; //done
-    teamCommunication: CommTable; //done
+    teamResourceAmounts: [int];
+    /// The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+    teamCoverageAmounts: [int];
+    /// The total number of active resource patterns per team
+    teamResourcePatternAmounts: [int];
+    
+    /// Ordered turn data for each robot during the round
+    turns: [Turn];
 
-    robotIds: [int]; //done
-    robotLocs: VecTable; //done
-    robotMoveCooldowns: [int]; //done
-    robotActionCooldowns: [int]; //done
-    robotHealths: [int]; //done
-    attacksPerformed: [int]; //done
-    attackLevels: [int]; //done
-    buildsPerformed: [int]; //done
-    buildLevels: [int]; //done
-    healsPerformed: [int]; //done
-    healLevels: [int]; //done
-
-    /// New bodies.
-    spawnedBodies: SpawnedBodyTable;
-
-    /// The IDs of bodies that died.
-    diedIds: [int]; //done
-
-    /// The IDs of robots that performed actions.
-    /// IDs may repeat.
-    actionIds: [int]; //done
-    /// The actions performed. These actions allow us to track many things about the current state.
-    actions: [Action]; //done
-    /// The 'targets' of the performed actions. Actions without targets may have any value
-    actionTargets: [int]; //done
-
-    claimedResourcePiles: VecTable;
-
-    trapAddedIds: [int]; //done
-    trapAddedLocations: VecTable; //done
-    trapAddedTypes: [BuildActionType]; //done
-    trapAddedTeams: [byte]; //done
-
-    trapTriggeredIds: [int]; //done
-
-    digLocations: VecTable; //done
-    fillLocations: VecTable; //done
-
-    /// The IDs of the robots who changed their indicator strings
-    indicatorStringIds: [int];
-    /// The messages of the robots who changed their indicator strings
-    indicatorStrings: [string];
-
-    /// The IDs of bodies that set indicator dots
-    indicatorDotIds: [int];
-    /// The location of the indicator dots
-    indicatorDotLocs: VecTable;
-    /// The RGB values of the indicator dots
-    indicatorDotRGBs: RGBTable;
-
-    /// The IDs of bodies that set indicator lines
-    indicatorLineIds: [int];
-    /// The start location of the indicator lines
-    indicatorLineStartLocs: VecTable;
-    /// The end location of the indicator lines
-    indicatorLineEndLocs: VecTable;
-    /// The RGB values of the indicator lines
-    indicatorLineRGBs: RGBTable;
-
-    // logs have been replaced with indicator strings
+    /// The IDs of bodies that died at the end of the round, with no attributable cause.
+    diedIds: [int];
 
     /// The first sent Round in a match should have index 1. (The starting state,
     /// created by the MatchHeader, can be thought to have index 0.)
     /// It should increase by one for each following round.
     roundId: int;
-
-    /// The IDs of player bodies.
-    bytecodeIds: [int];
-    /// The bytecodes used by the player bodies.
-    bytecodesUsed: [int];
 }
 
 /// Necessary due to flatbuffers requiring unions to be wrapped in tables.

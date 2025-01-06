@@ -1,5 +1,5 @@
 import React from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, CLIENT_VERSION, SIDEBAR_BACKGROUND } from '../../constants'
 import { ThreeBarsIcon } from '../../icons/three-bars'
 import { GamePage } from './game/game'
 import { QueuePage } from './queue/queue'
@@ -18,6 +18,7 @@ import { useScaffold } from './runner/scaffold'
 import { ConfigPage } from '../../client-config'
 import { UpdateWarning } from './update-warning'
 import Game from '../../playback/Game'
+import GameRunner from '../../playback/GameRunner'
 
 export const Sidebar: React.FC = () => {
     const { width, height } = useWindowDimensions()
@@ -92,13 +93,10 @@ export const Sidebar: React.FC = () => {
                 const loadedGame = Game.loadFullGameRaw(buffer)
 
                 // select the first match
-                const selectedMatch = loadedGame.matches[0]
-                loadedGame.currentMatch = selectedMatch
+                GameRunner.setMatch(loadedGame.matches[0])
 
                 context.setState((prevState) => ({
                     ...prevState,
-                    activeGame: loadedGame,
-                    activeMatch: loadedGame.currentMatch,
                     queue: context.state.queue.concat([loadedGame]),
                     loadingRemoteContent: ''
                 }))
@@ -160,7 +158,8 @@ export const Sidebar: React.FC = () => {
 
     return (
         <div
-            className={`${minWidth} ${maxWidth} bg-light text-black h-screen transition-[min-width,max-width] overflow-hidden`}
+            className={`${minWidth} ${maxWidth} h-screen transition-[min-width,max-width] overflow-hidden text-white`}
+            style={{ backgroundColor: SIDEBAR_BACKGROUND }}
         >
             <Scrollbars
                 universal={true}
@@ -176,7 +175,7 @@ export const Sidebar: React.FC = () => {
                         {open && (
                             <>
                                 <p className="px-2 whitespace-nowrap font-extrabold text-xl">{`BATTLECODE ${BATTLECODE_YEAR}`}</p>
-                                <p className="text-xs">{`v${GAME_VERSION}`}</p>
+                                <p className="text-xs">{`v${CLIENT_VERSION}`}</p>
                             </>
                         )}
                         <div className="flex">
@@ -200,8 +199,10 @@ export const Sidebar: React.FC = () => {
                                     <div
                                         key={sidebarButton.page}
                                         className={
-                                            'w-[32%] text-center text-sm py-2 my-1 cursor-pointer hover:bg-lightHighlight border-b-2 ' +
-                                            (page == sidebarButton.page ? 'border-gray-800' : 'border-gray-200')
+                                            'w-[32%] text-center text-sm py-1 my-1 cursor-pointer hover:bg-lightHighlight border-b-2 ' +
+                                            (page == sidebarButton.page
+                                                ? 'border-gray-200 opacity-100'
+                                                : 'border-gray-400 opacity-60')
                                         }
                                         onClick={() => setPage(sidebarButton.page)}
                                     >
@@ -211,13 +212,15 @@ export const Sidebar: React.FC = () => {
                             </div>
                         </>
                     )}
-                    <GamePage open={open && page == PageType.GAME} />
-                    <QueuePage open={open && page == PageType.QUEUE} />
-                    <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
-                    <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
-                    <HelpPage open={open && page == PageType.HELP} />
-                    <ConfigPage open={open && page == PageType.CONFIG} />
-                    <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    <div className="h-full overflow-y-scroll overflow-x-hidden">
+                        <GamePage open={open && page == PageType.GAME} />
+                        <QueuePage open={open && page == PageType.QUEUE} />
+                        <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />
+                        <MapEditorPage open={open && page == PageType.MAP_EDITOR} />
+                        <HelpPage open={open && page == PageType.HELP} />
+                        <ConfigPage open={open && page == PageType.CONFIG} />
+                        <TournamentPage open={open && page == PageType.TOURNAMENT} />
+                    </div>
                 </div>
             </Scrollbars>
         </div>

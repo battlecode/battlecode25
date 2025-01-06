@@ -1,6 +1,6 @@
 import React from 'react'
 import { MapEditorBrushField, MapEditorBrushFieldType } from './MapEditorBrush'
-import { TEAM_COLORS, TEAM_COLOR_NAMES } from '../../../constants'
+import { TEAM_COLOR_NAMES } from '../../../constants'
 import { Toggle } from '../../toggle'
 import { Select, NumInput } from '../../forms'
 
@@ -47,8 +47,8 @@ export const MapEditorBrushRowField: React.FC<Props> = (props: Props) => {
             field = (
                 <Toggle
                     options={{
-                        [TEAM_COLOR_NAMES[0]]: { value: 0, selectedClass: 'bg-red' },
-                        [TEAM_COLOR_NAMES[1]]: { value: 1, selectedClass: 'bg-blueLight' }
+                        [TEAM_COLOR_NAMES[0]]: { value: 0, selectedClass: 'bg-team0 text-black' },
+                        [TEAM_COLOR_NAMES[1]]: { value: 1, selectedClass: 'bg-team1 text-black' }
                     }}
                     onChange={changeValue}
                 />

@@ -1,0 +1,195 @@
+name: Release Client
+on:
+  push:
+    tags:
+      - 'client.*'
+
+env:
+  # GCS_BUCKET is the name of the Google Cloud Storage bucket to which all artifacts are deployed.
+  GCS_BUCKET: mitbattlecode-releases
+
+  # CLIENT_ARTIFACT_ID is the name of the base client artifact produced by the buildsystem.
+  CLIENT_ARTIFACT_ID: battlecode25
+
+  # IS_PUBLIC is whether to release deployments publicly. Set to exactly the text "YES" to do so.
+  IS_PUBLIC: NO
+
+jobs:
+  build-client:
+    name: Build client
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix:
+        include:
+          - platform-name: "macos-latest"
+            build-name: "macos"
+            tauri-target: "universal-apple-darwin"
+            tauri-copy-path: "bundle/macos/*.app"
+            electron-module-name: "UNUSED"
+          - platform-name: "ubuntu-latest"
+            build-name: "linux"
+            tauri-target: "x86_64-unknown-linux-gnu"
+            tauri-copy-path: "bundle/appimage/*.AppImage"
+            electron-module-name: "linux-x64-gnu.node"
+            upload-dist: true
+          - platform-name: "windows-latest"
+            build-name: "windows"
+            tauri-target: "x86_64-pc-windows-msvc"
+            tauri-copy-path: "*.exe"
+            electron-module-name: "win32-x64-msvc.node"
+    runs-on: ${{ matrix.platform-name }}
+    env:
+      TAURI_OUTPUT: ./src-tauri/target/${{ matrix.tauri-target }}/release/${{ matrix.tauri-copy-path }}
+      TAURI_BUILD_COMMAND: npm run tauri-pack -- -t ${{ matrix.tauri-target }}
+      ELECTRON_BUILD_COMMAND: npx cross-env ELECTRON_MODULE_NAME=${{ matrix.electron-module-name }} npm run electron-pack
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Rust toolchain is preinstalled on runner images, but we need to add the x86
+      # toolchain on macos to compile universal apps from the M1 runner
+      - name: Install macos dependencies
+        if: startsWith(matrix.platform-name, 'macos')
+        run: |
+          rustup target add x86_64-apple-darwin
+          npm install @tauri-apps/cli-darwin-arm64@1.6.3
+
+      - name: Install linux dependencies
+        if: startsWith(matrix.platform-name, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+          npm install @tauri-apps/cli-linux-x64-gnu@1.6.3
+
+      - name: Install windows dependencies
+        if: startsWith(matrix.platform-name, 'windows')
+        run: npm install @tauri-apps/cli-win32-x64-msvc@1.6.3
+
+      - name: Install schema
+        run: npm install
+        working-directory: ./schema
+
+      - name: Install client
+        run: npm install
+        working-directory: ./client
+
+      - name: Build client webpack
+        run: npm run build
+        working-directory: ./client
+
+      - name: Compile electron modules
+        run: npm run electron-compile-modules
+        working-directory: ./client
+
+      # Specially compile x86 electron modules to be included in universal build
+      - name: Compile (extra) electron modules
+        if: startsWith(matrix.platform-name, 'macos')
+        run: RUST_TARGET=x86_64-apple-darwin npm run electron-compile-modules
+        working-directory: ./client
+
+      - name: Build client applications
+        run: npm run concurrently -- --kill-others-on-fail "${{ env.ELECTRON_BUILD_COMMAND }}" "${{ env.TAURI_BUILD_COMMAND }}"
+        working-directory: ./client
+
+      # 7-zip is preinstalled on runner images
+      - name: Zip tauri result
+        run: 7z a packaged-client/tauri-output.zip "${{ env.TAURI_OUTPUT }}"
+        working-directory: ./client
+
+      # Only need to create this artifact on one job since all platforms produce
+      # the same result
+      - name: Upload dist files artifact
+        if: matrix.upload-dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-dist
+          path: ./client/dist
+      
+      - name: Upload client artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-${{ matrix.build-name }}
+          path: |
+            ./client/packaged-client/*-output.zip
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: build-client
+    permissions:
+      contents: read
+      id-token: write
+      actions: write # To cleanup artifacts
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Inject release version
+        run: |
+          release_version=${GITHUB_REF#refs/*/}
+          release_version=${release_version#client.}
+          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+          echo "The release version is $release_version"
+
+      - name: Authenticate to Google Cloud Platform
+        uses: google-github-actions/auth@v1
+        with:
+          create_credentials_file: true
+          workload_identity_provider: projects/830784087321/locations/global/workloadIdentityPools/releases/providers/github-workflow
+          service_account: releases-agent@mitbattlecode.iam.gserviceaccount.com
+
+      - name: Set up Google Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: adopt
+
+      - name: Download all client artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./client/artifacts
+
+      # Always cleanup even if other commands failed so we don't unnecessarily store
+      # the artifacts in the cloud 
+      - name: Cleanup client artifacts
+        uses: geekyeggo/delete-artifact@54ab544f12cdb7b71613a16a2b5a37a9ade990af
+        if: always()
+        with:
+          name: client-*
+
+      - name: Determine access control
+        run: |
+          [[ "$IS_PUBLIC" = "YES" ]] && acl="public-read" || acl="project-private"
+          echo "OBJECT_ACL=$acl" >> $GITHUB_ENV
+          echo "Objects will be uploaded with ACL $acl"
+
+      - name: Publish to local repository
+        run: |
+          id_base=${CLIENT_ARTIFACT_ID}-client
+          path_base=client/artifacts/client
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-win-tauri -Partifact_path=${path_base}-windows/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-mac-tauri -Partifact_path=${path_base}-macos/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-linux-tauri -Partifact_path=${path_base}-linux/tauri-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-win-electron -Partifact_path=${path_base}-windows/electron-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-mac-electron -Partifact_path=${path_base}-macos/electron-output.zip
+          ./gradlew publishClientPublicationToMavenLocal -Prelease_version=$RELEASE_VERSION -Partifact_id=${id_base}-linux-electron -Partifact_path=${path_base}-linux/electron-output.zip
+
+      - name: Upload maven artifacts to remote repository
+        run: gsutil -m rsync -a $OBJECT_ACL -r $HOME/.m2/repository/org/battlecode gs://$GCS_BUCKET/maven/org/battlecode
+
+      - name: Upload web client
+        run: |
+          gsutil -m rsync -r -a $OBJECT_ACL ./client-dist gs://$GCS_BUCKET/client/$CLIENT_ARTIFACT_ID/$RELEASE_VERSION
+        working-directory: ./client/artifacts

@@ -4,15 +4,15 @@ import { CurrentMap, Dimension, StaticMap } from '../playback/Map'
 import { Vector } from '../playback/Vector'
 import { Body } from '../playback/Bodies'
 
+export const colorToHexString = (dColor: number) => {
+    return '#' + ('000000' + dColor.toString(16)).slice(-6)
+}
+
 export const getRenderCoords = (cellX: number, cellY: number, dims: Dimension, centered: boolean = false) => {
     const cx = dims.minCorner.x + cellX
     const cy = dims.minCorner.y + dims.height - cellY - 1 // Y is flipped
     const offset = centered ? 0.5 : 0
     return { x: cx + offset, y: cy + offset }
-}
-
-export const getInterpolatedCoordsFromBody = (body: Body, alpha: number) => {
-    return getInterpolatedCoords(body.pos, body.nextPos, alpha)
 }
 
 export const getInterpolatedCoords = (prev: Vector, cur: Vector, alpha: number) => {
@@ -40,8 +40,8 @@ export const get9SliceClipPath = (
             x < 0 || x == map.width
                 ? outsideMerge.x
                 : y < 0 || y == map.height
-                ? outsideMerge.y
-                : valFunc(vals[map.locationToIndex(x, y)])
+                  ? outsideMerge.y
+                  : valFunc(vals[map.locationToIndex(x, y)])
         neighbors.push(pushVal)
     }
     let points: number[][] = []
@@ -321,17 +321,30 @@ export const rgbToHex = (r: number, g: number, b: number) =>
         })
         .join('')
 
-export const renderCarets = (overlayCtx: CanvasRenderingContext2D, pos: Vector, direction: Vector, count: number, color: string) => {
+export const renderCarets = (
+    overlayCtx: CanvasRenderingContext2D,
+    pos: Vector,
+    direction: Vector,
+    count: number,
+    color: string
+) => {
     overlayCtx.fillStyle = color
     overlayCtx.beginPath()
-    const scale = .4
+    const scale = 0.4
     overlayCtx.lineCap = 'round'
     overlayCtx.lineWidth = 0.15
     overlayCtx.strokeStyle = color
     const tangent = { x: -direction.y, y: direction.x }
-    overlayCtx.moveTo(pos.x + direction.x * (1+scale) + tangent.x * scale, pos.y + direction.y * (1+scale) + tangent.y * scale)
+    overlayCtx.moveTo(
+        pos.x + direction.x * (1 + scale) + tangent.x * scale,
+        pos.y + direction.y * (1 + scale) + tangent.y * scale
+    )
     overlayCtx.lineTo(pos.x + direction.x, pos.y + direction.y)
-    overlayCtx.lineTo(pos.x + direction.x * (1+scale) - tangent.x * scale, pos.y + direction.y * (1+scale) - tangent.y * scale)
+    overlayCtx.lineTo(
+        pos.x + direction.x * (1 + scale) - tangent.x * scale,
+        pos.y + direction.y * (1 + scale) - tangent.y * scale
+    )
     overlayCtx.stroke()
-    if (count > 1) renderCarets(overlayCtx, { x: pos.x + direction.x, y: pos.y + direction.y }, direction, count - 1, color)
+    if (count > 1)
+        renderCarets(overlayCtx, { x: pos.x + direction.x, y: pos.y + direction.y }, direction, count - 1, color)
 }

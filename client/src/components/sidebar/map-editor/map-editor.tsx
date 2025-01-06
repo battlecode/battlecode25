@@ -1,18 +1,19 @@
 import React, { useEffect } from 'react'
-import { CurrentMap, StaticMap } from '../../../playback/Map'
+import { StaticMap } from '../../../playback/Map'
 import { MapEditorBrushRow } from './map-editor-brushes'
 import Bodies from '../../../playback/Bodies'
 import Game from '../../../playback/Game'
 import { Button, BrightButton, SmallButton } from '../../button'
 import { NumInput, Select } from '../../forms'
-import { useAppContext } from '../../../app-context'
 import Match from '../../../playback/Match'
-import { EventType, publishEvent, useListenEvent } from '../../../app-events'
-import { MapEditorBrush } from './MapEditorBrush'
+import { MapEditorBrush, UndoFunction } from './MapEditorBrush'
 import { exportMap, loadFileAsMap } from './MapGenerator'
 import { MAP_SIZE_RANGE } from '../../../constants'
 import { InputDialog } from '../../input-dialog'
 import { ConfirmDialog } from '../../confirm-dialog'
+import GameRunner, { useRound } from '../../../playback/GameRunner'
+import { GameRenderer } from '../../../playback/GameRenderer'
+import { RingBuffer } from '../../../util/ring-buffer'
 
 type MapParams = {
     width: number
@@ -25,17 +26,68 @@ interface Props {
     open: boolean
 }
 
+const UNDO_STACK_SIZE = 100
+
 export const MapEditorPage: React.FC<Props> = (props) => {
-    const context = useAppContext()
+    const round = useRound()
     const [cleared, setCleared] = React.useState(true)
     const [mapParams, setMapParams] = React.useState<MapParams>({ width: 30, height: 30, symmetry: 0 })
     const [brushes, setBrushes] = React.useState<MapEditorBrush[]>([])
     const [mapNameOpen, setMapNameOpen] = React.useState(false)
     const [clearConfirmOpen, setClearConfirmOpen] = React.useState(false)
     const [mapError, setMapError] = React.useState('')
+    const { canvasMouseDown } = GameRenderer.useCanvasClickEvents()
+    const { hoveredTile } = GameRenderer.useCanvasHoverEvents()
 
     const inputRef = React.useRef<HTMLInputElement>(null)
     const editGame = React.useRef<Game | null>(null)
+
+    const mapEmpty = () => !round || (round.map.isEmpty() && round.bodies.isEmpty())
+
+    // Total undo stack containing undos for strokes
+    const undoStack = React.useRef<RingBuffer<UndoFunction>>(new RingBuffer(UNDO_STACK_SIZE))
+
+    // Current undo stack for the current stroke
+    const strokeUndoStack = React.useRef<UndoFunction[]>([])
+
+    const handleUndo = () => {
+        if (strokeUndoStack.current.length > 0) {
+            const undo = strokeUndoStack.current.pop()
+            if (undo) undo()
+        } else {
+            const undo = undoStack.current.pop()
+            if (undo) undo()
+        }
+        GameRenderer.fullRender()
+        setCleared(mapEmpty())
+    }
+    const clearUndoStack = () => {
+        undoStack.current = new RingBuffer(UNDO_STACK_SIZE)
+        strokeUndoStack.current = []
+    }
+
+    useEffect(() => {
+        // Aggregate the current stroke stack into the total stack when the mouse is released
+        if (!canvasMouseDown && strokeUndoStack.current.length > 0) {
+            const currentStack = strokeUndoStack.current
+            undoStack.current.push(() => {
+                currentStack.reverse().forEach((undo) => undo && undo())
+            })
+            strokeUndoStack.current = []
+        }
+    }, [canvasMouseDown])
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                handleUndo()
+            }
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [undoStack, round])
 
     const openBrush = brushes.find((b) => b.open)
 
@@ -43,38 +95,39 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setBrushes(brushes.map((b) => b.opened(b === brush)))
     }
 
-    const mapEmpty = () =>
-        !context.state.activeMatch?.currentTurn ||
-        (context.state.activeMatch.currentTurn.map.isEmpty() && context.state.activeMatch.currentTurn.bodies.isEmpty())
-
     const applyBrush = (point: { x: number; y: number }) => {
         if (!openBrush) return
 
-        openBrush.apply(point.x, point.y, openBrush.fields)
-        publishEvent(EventType.INITIAL_RENDER, {})
+        const undoFunc = openBrush.apply(point.x, point.y, openBrush.fields, true)
+        strokeUndoStack.current.push(undoFunc)
+        GameRenderer.fullRender()
         setCleared(mapEmpty())
     }
 
     const changeWidth = (newWidth: number) => {
         newWidth = Math.max(MAP_SIZE_RANGE.min, Math.min(MAP_SIZE_RANGE.max, newWidth))
         setMapParams({ ...mapParams, width: newWidth, imported: null })
+        clearUndoStack()
     }
     const changeHeight = (newHeight: number) => {
         newHeight = Math.max(MAP_SIZE_RANGE.min, Math.min(MAP_SIZE_RANGE.max, newHeight))
         setMapParams({ ...mapParams, height: newHeight, imported: null })
+        clearUndoStack()
     }
     const changeSymmetry = (symmetry: string) => {
         const symmetryInt = parseInt(symmetry)
         if (symmetryInt < 0 || symmetryInt > 2) throw new Error('invalid symmetry value')
         setMapParams({ ...mapParams, symmetry: symmetryInt, imported: null })
+        clearUndoStack()
     }
 
     const fileUploaded = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length == 0) return
         const file = e.target.files[0]
         loadFileAsMap(file).then((game) => {
-            const map = game.currentMatch!.currentTurn!.map
+            const map = game.currentMatch!.currentRound!.map
             setMapParams({ width: map.width, height: map.height, symmetry: map.staticMap.symmetry, imported: game })
+            clearUndoStack()
         })
     }
 
@@ -82,10 +135,12 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         setClearConfirmOpen(false)
         setCleared(true)
         setMapParams({ ...mapParams, imported: null })
+        clearUndoStack()
     }
 
-    useListenEvent(EventType.TILE_CLICK, applyBrush, [brushes])
-    useListenEvent(EventType.TILE_DRAG, applyBrush, [brushes])
+    useEffect(() => {
+        if (canvasMouseDown && hoveredTile) applyBrush(hoveredTile)
+    }, [canvasMouseDown, hoveredTile])
 
     useEffect(() => {
         if (props.open) {
@@ -102,23 +157,15 @@ export const MapEditorPage: React.FC<Props> = (props) => {
             // multiple times
             mapParams.imported = undefined
 
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: editGame.current ?? undefined,
-                activeMatch: editGame.current?.currentMatch
-            }))
+            GameRunner.setMatch(editGame.current.currentMatch)
 
-            const turn = editGame.current.currentMatch!.currentTurn
-            const brushes = turn.map.getEditorBrushes().concat(turn.bodies.getEditorBrushes(turn.map.staticMap))
+            const round = editGame.current.currentMatch!.currentRound
+            const brushes = round.map.getEditorBrushes().concat(round.bodies.getEditorBrushes(round.map.staticMap))
             brushes[0].open = true
             setBrushes(brushes)
-            setCleared(turn.bodies.isEmpty() && turn.map.isEmpty())
+            setCleared(round.bodies.isEmpty() && round.map.isEmpty())
         } else {
-            context.setState((prevState) => ({
-                ...prevState,
-                activeGame: undefined,
-                activeMatch: undefined
-            }))
+            GameRunner.setGame(undefined)
         }
     }, [mapParams, props.open])
 
@@ -126,7 +173,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
     const renderedBrushes = React.useMemo(() => {
         return brushes.map((brush) => (
             <MapEditorBrushRow
-                key={JSON.stringify(brush)}
+                key={brush.name}
                 brush={brush}
                 open={brush == openBrush}
                 onClick={() => {
@@ -143,51 +190,56 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         <>
             <input type="file" hidden ref={inputRef} onChange={fileUploaded} />
 
-            <div className="flex flex-col flex-grow">
-                {renderedBrushes}
-                <SmallButton
-                    onClick={() => setClearConfirmOpen(true)}
-                    className={'mt-10 ' + (cleared ? 'invisible' : '')}
-                >
-                    Clear to unlock
-                </SmallButton>
-                <div className={'flex flex-col ' + (cleared ? '' : 'opacity-30 pointer-events-none')}>
-                    <div className="flex flex-row items-center justify-center">
-                        <span className="mr-2 text-sm">Width: </span>
-                        <NumInput
-                            value={mapParams.width}
-                            changeValue={changeWidth}
-                            min={MAP_SIZE_RANGE.min}
-                            max={MAP_SIZE_RANGE.max}
-                        />
-                        <span className="ml-3 mr-2 text-sm">Height: </span>
-                        <NumInput
-                            value={mapParams.height}
-                            changeValue={changeHeight}
-                            min={MAP_SIZE_RANGE.min}
-                            max={MAP_SIZE_RANGE.max}
-                        />
-                    </div>
-                    <div className="flex flex-row mt-3 items-center justify-center">
-                        <span className="mr-5 text-sm">Symmetry: </span>
-                        <Select onChange={changeSymmetry} value={mapParams.symmetry}>
-                            <option value="0">Rotational</option>
-                            <option value="1">Horizontal</option>
-                            <option value="2">Vertical</option>
-                        </Select>
-                    </div>
-                </div>
-
-                <div className="flex flex-row mt-8">
-                    <BrightButton
-                        onClick={() => {
-                            if (!context.state.activeMatch?.currentTurn) return
-                            setMapNameOpen(true)
-                        }}
+            <div className="h-full flex flex-col flex-grow justify-between">
+                <div>{renderedBrushes}</div>
+                <div className="pb-8">
+                    <SmallButton
+                        onClick={() => setClearConfirmOpen(true)}
+                        className={'mt-2 ' + (cleared ? 'invisible' : '')}
                     >
-                        Export
-                    </BrightButton>
-                    <Button onClick={() => inputRef.current?.click()}>Import</Button>
+                        Clear to unlock
+                    </SmallButton>
+                    <div className={'flex flex-col ' + (cleared ? '' : 'opacity-30 pointer-events-none')}>
+                        <div className="flex flex-row items-center justify-center">
+                            <span className="mr-2 text-sm">Width: </span>
+                            <NumInput
+                                value={mapParams.width}
+                                changeValue={changeWidth}
+                                min={MAP_SIZE_RANGE.min}
+                                max={MAP_SIZE_RANGE.max}
+                            />
+                            <span className="ml-3 mr-2 text-sm">Height: </span>
+                            <NumInput
+                                value={mapParams.height}
+                                changeValue={changeHeight}
+                                min={MAP_SIZE_RANGE.min}
+                                max={MAP_SIZE_RANGE.max}
+                            />
+                        </div>
+                        <div className="flex flex-row mt-3 items-center justify-center">
+                            <span className="mr-5 text-sm">Symmetry: </span>
+                            <Select onChange={changeSymmetry} value={mapParams.symmetry}>
+                                <option value="0">Rotational</option>
+                                <option value="1">Horizontal</option>
+                                <option value="2">Vertical</option>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row justify-center mt-4 gap-4">
+                        <Button
+                            className="mx-0"
+                            onClick={() => {
+                                if (!round) return
+                                setMapNameOpen(true)
+                            }}
+                        >
+                            Export
+                        </Button>
+                        <Button className="mx-0" onClick={() => inputRef.current?.click()}>
+                            Import
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -199,7 +251,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
                         setMapNameOpen(false)
                         return
                     }
-                    const error = exportMap(context.state.activeMatch!.currentTurn, name)
+                    const error = exportMap(round!, name)
                     setMapError(error)
                     if (!error) setMapNameOpen(false)
                 }}

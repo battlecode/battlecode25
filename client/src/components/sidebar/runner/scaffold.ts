@@ -8,32 +8,49 @@ import { useAppContext } from '../../../app-context'
 import Game from '../../../playback/Game'
 import Match from '../../../playback/Match'
 import { RingBuffer } from '../../../util/ring-buffer'
+import GameRunner from '../../../playback/GameRunner'
 
-export type JavaInstall = {
+export enum SupportedLanguage {
+    Java = 'Java',
+    Python = 'Python'
+}
+
+export type LanguageVersion = {
     display: string
     path: string
 }
 
 type Scaffold = [
     setup: boolean,
+    error: string,
     availableMaps: Set<string>,
     availablePlayers: Set<string>,
-    javaInstalls: JavaInstall[],
+    language: SupportedLanguage,
+    langVersions: LanguageVersion[],
+    changeLanguage: (lang: SupportedLanguage) => void,
     manuallySetupScaffold: () => Promise<void>,
     reloadData: () => void,
     scaffoldLoading: boolean,
-    runMatch: (javaPath: string, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
+    runMatch: (langVersion: LanguageVersion, teamA: string, teamB: string, selectedMaps: Set<string>) => Promise<void>,
     killMatch: (() => Promise<void>) | undefined,
     console: RingBuffer<ConsoleLine>
 ]
 
-export function useScaffold(): Scaffold {
+export const useScaffold = (): Scaffold => {
+    const getDefaultLanguage = () => {
+        const stored = localStorage.getItem('language')
+        if (stored) return stored as SupportedLanguage
+        return SupportedLanguage.Java
+    }
+
     const appContext = useAppContext()
-    const [javaInstalls, setJavaInstalls] = useState<JavaInstall[]>([])
+    const [language, setLanguage] = useState(getDefaultLanguage())
+    const [langVersions, setLangVersions] = useState<LanguageVersion[]>([])
     const [availableMaps, setAvailableMaps] = useState<Set<string>>(new Set())
     const [availablePlayers, setAvailablePlayers] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState<boolean>(true)
     const [scaffoldPath, setScaffoldPath] = useState<string | undefined>(undefined)
+    const [error, setError] = useState('')
     const matchPID = useRef<string | undefined>(undefined)
     const forceUpdate = useForceUpdate()
     const consoleLines = useRef<RingBuffer<ConsoleLine>>(new RingBuffer(10000))
@@ -45,28 +62,48 @@ export function useScaffold(): Scaffold {
         forceUpdate()
     }
 
-    async function manuallySetupScaffold() {
+    const manuallySetupScaffold = async () => {
         if (!nativeAPI) return
         setLoading(true)
         const path = await nativeAPI.openScaffoldDirectory()
+        if (!path) {
+            setLoading(false)
+            return
+        }
+
+        const validLang = await isValidScaffoldDir(path, nativeAPI)
         setLoading(false)
-        if (path) setScaffoldPath(path)
+
+        if (!validLang) {
+            setScaffoldPath(undefined)
+            setError('Invalid scaffold path! Please select a valid one (refer to the README for more details)')
+            return
+        }
+
+        setError('')
+        setScaffoldPath(path)
+        changeLanguage(validLang)
     }
 
-    async function runMatch(javaPath: string, teamA: string, teamB: string, selectedMaps: Set<string>): Promise<void> {
+    async function runMatch(
+        langVersion: LanguageVersion,
+        teamA: string,
+        teamB: string,
+        selectedMaps: Set<string>
+    ): Promise<void> {
         if (matchPID.current || !scaffoldPath) return
-        const shouldProfile = false
         consoleLines.current.clear()
         try {
             const newPID = await dispatchMatch(
-                javaPath,
+                language,
+                langVersion,
                 teamA,
                 teamB,
                 selectedMaps,
                 nativeAPI!,
                 scaffoldPath!,
                 appContext.state.config.validateMaps,
-                shouldProfile
+                appContext.state.config.profileGames
             )
             matchPID.current = newPID
         } catch (e: any) {
@@ -75,35 +112,52 @@ export function useScaffold(): Scaffold {
         forceUpdate()
     }
 
-    async function killMatch(): Promise<void> {
+    const killMatch = async (): Promise<void> => {
         if (!matchPID.current) return
         await nativeAPI!.child_process.kill(matchPID.current)
         matchPID.current = undefined
         forceUpdate()
     }
 
-    function reloadData() {
+    const changeLanguage = (lang: SupportedLanguage) => {
+        localStorage.setItem('language', lang)
+        setLanguage(lang)
+    }
+
+    const reloadData = () => {
         if (!nativeAPI || !scaffoldPath) return
         setLoading(true)
 
+        let langPromise
+        switch (language) {
+            case SupportedLanguage.Java:
+                langPromise = nativeAPI.getJavas()
+                break
+            case SupportedLanguage.Python:
+                langPromise = nativeAPI.getPythons()
+                break
+        }
+
         const dataPromise = fetchData(scaffoldPath)
-        const javasPromise = nativeAPI.getJavas()
-        Promise.allSettled([dataPromise, javasPromise]).then((res) => {
+        Promise.allSettled([dataPromise, langPromise]).then((res) => {
             if (res[0].status == 'fulfilled') {
                 const [players, maps] = res[0].value
                 setAvailablePlayers(players)
                 setAvailableMaps(maps)
+            } else {
+                setAvailablePlayers(new Set())
+                setAvailableMaps(new Set())
             }
             if (res[1].status == 'fulfilled') {
                 const data = res[1].value
-                const installs: JavaInstall[] = []
+                const versions: LanguageVersion[] = []
                 for (let i = 0; i < data.length; i += 2) {
-                    installs.push({
+                    versions.push({
                         display: data[i],
                         path: data[i + 1]
                     })
                 }
-                setJavaInstalls(installs)
+                setLangVersions(versions)
             }
             setLoading(false)
         })
@@ -138,35 +192,21 @@ export function useScaffold(): Scaffold {
         const onGameCreated = (game: Game) => {
             appContext.setState((prevState) => ({
                 ...prevState,
-                queue: prevState.queue.concat([game]),
-                activeGame: game,
-                activeMatch: game.currentMatch
+                queue: prevState.queue.concat([game])
             }))
+            GameRunner.setGame(game)
         }
 
         const onMatchCreated = (match: Match) => {
-            appContext.setState((prevState) => ({
-                ...prevState,
-                activeGame: match.game,
-                activeMatch: match
-            }))
+            GameRunner.setMatch(match)
         }
 
         const onGameComplete = (game: Game) => {
-            // Reset all matches to beginning
-            for (const match of game.matches) {
-                match.jumpToTurn(0, true)
-            }
-
-            // Start at first match
-            game.currentMatch = game.matches[0]
-
             appContext.setState((prevState) => ({
                 ...prevState,
-                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game]),
-                activeGame: game,
-                activeMatch: game.currentMatch
+                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
             }))
+            if (game.matches.length > 0) GameRunner.setMatch(game.matches[0])
         }
 
         setWebSocketListener(
@@ -188,10 +228,13 @@ export function useScaffold(): Scaffold {
     }, [scaffoldPath])
 
     return [
-        !!scaffoldPath,
+        !!scaffoldPath && error === '',
+        error,
         availableMaps,
         availablePlayers,
-        javaInstalls,
+        language,
+        langVersions,
+        changeLanguage,
         manuallySetupScaffold,
         reloadData,
         loading,
@@ -205,17 +248,21 @@ async function fetchData(scaffoldPath: string) {
     const path = nativeAPI!.path
     const fs = nativeAPI!.fs
 
-    const mapPath = await path.join(scaffoldPath, 'maps')
-    if (!(await fs.exists(mapPath))) await fs.mkdir(mapPath)
-
-    let sourcePath = await path.join(scaffoldPath, 'src')
-    if (!(await fs.exists(sourcePath))) {
-        // For running in the main battlecode folder
-        sourcePath = await path.join(scaffoldPath, 'example-bots', 'src', 'main')
-
-        if (!(await fs.exists(sourcePath))) {
-            throw new Error(`Can't find source path: ${sourcePath}`)
+    let sourcePath = ''
+    const checkPaths = [
+        await path.join(scaffoldPath, 'example-bots', 'src', 'main'), // Battlecode repo
+        await path.join(scaffoldPath, 'players'), // Python engine repo
+        await path.join(scaffoldPath, 'src') // Scaffold
+    ]
+    for (const path of checkPaths) {
+        if ((await fs.exists(path)) === 'true') {
+            sourcePath = path
+            break
         }
+    }
+
+    if (!sourcePath) {
+        throw new Error(`Can't find source path`)
     }
 
     const playerFiles = await fs.getFiles(sourcePath, 'true')
@@ -227,7 +274,8 @@ async function fetchData(scaffoldPath: string) {
                     (file) =>
                         file.endsWith('RobotPlayer.java') ||
                         file.endsWith('RobotPlayer.kt') ||
-                        file.endsWith('RobotPlayer.scala')
+                        file.endsWith('RobotPlayer.scala') ||
+                        file.endsWith('bot.py')
                 )
                 .map(async (file) => {
                     // Relative path will contain the folder and filename, so we can split on the separator
@@ -241,6 +289,11 @@ async function fetchData(scaffoldPath: string) {
                 })
         )
     )
+
+    const mapPath = await path.join(scaffoldPath, 'maps')
+    if ((await fs.exists(mapPath)) === 'false') {
+        await fs.mkdir(mapPath)
+    }
 
     const mapExtension = '.map' + (BATTLECODE_YEAR % 100)
     const mapFiles = await fs.getFiles(mapPath)
@@ -257,31 +310,46 @@ async function fetchData(scaffoldPath: string) {
     return [players, maps]
 }
 
+async function isValidScaffoldDir(path: string, nativeAPI: NativeAPI): Promise<SupportedLanguage | null> {
+    const languageRunners: Record<SupportedLanguage, string> = {
+        [SupportedLanguage.Java]: 'gradlew',
+        [SupportedLanguage.Python]: 'run.py'
+    }
+
+    // Check that one of the runners exists as means of validating scaffold folder
+    for (const lang of Object.keys(languageRunners)) {
+        const runner = languageRunners[lang as SupportedLanguage]
+        const runnerPath = await nativeAPI.path.join(path, runner)
+        if ((await nativeAPI.fs.exists(runnerPath)) === 'true') {
+            return lang as SupportedLanguage
+        }
+    }
+
+    return null
+}
+
 async function findDefaultScaffoldPath(nativeAPI: NativeAPI): Promise<string | undefined> {
     const localPath = localStorage.getItem('scaffoldPath')
     if (localPath) return localPath
 
     let appPath = await nativeAPI.getRootPath()
-    const path = nativeAPI.path
-    const fs = nativeAPI.fs
 
     // Scan up a few parent directories to see if we can find the scaffold folder
     for (let i = 0; i <= 6; i++) {
-        // Check that gradlew exists as means of validating scaffold folder
-        const gradlewPath = await path.join(appPath, 'gradlew')
-        if ((await fs.exists(gradlewPath)) === 'true') {
+        if (await isValidScaffoldDir(appPath, nativeAPI)) {
             return appPath
         }
 
         // Set to parent dir
-        appPath = await path.dirname(appPath)
+        appPath = await nativeAPI.path.dirname(appPath)
     }
 
     return undefined
 }
 
 async function dispatchMatch(
-    javaPath: string,
+    language: SupportedLanguage,
+    langVersion: LanguageVersion,
     teamA: string,
     teamB: string,
     selectedMaps: Set<string>,
@@ -290,17 +358,28 @@ async function dispatchMatch(
     validate: boolean,
     profile: boolean
 ): Promise<string> {
-    const options = [
-        `run`,
-        `-x`,
-        `unpackClient`,
-        `-PwaitForClient=true`,
-        `-PteamA=${teamA}`,
-        `-PteamB=${teamB}`,
-        `-Pmaps=${[...selectedMaps].join(',')}`,
-        `-PvalidateMaps=${validate}`,
-        `-PenableProfiler=${profile}`
-    ]
+    let options: string[] = []
 
-    return nativeAPI.child_process.spawn(scaffoldPath, javaPath, options)
+    switch (language) {
+        case SupportedLanguage.Java: {
+            options = [
+                `run`,
+                `-x`,
+                `unpackClient`,
+                `-PwaitForClient=true`,
+                `-PteamA=${teamA}`,
+                `-PteamB=${teamB}`,
+                `-Pmaps=${[...selectedMaps].join(',')}`,
+                `-PvalidateMaps=${validate}`,
+                `-PenableProfiler=${profile}`
+            ]
+            break
+        }
+        case SupportedLanguage.Python: {
+            options = [`run.py`, `run`, `--p1=${teamA}`, `--p2=${teamB}`, `--map=${[...selectedMaps][0]}`]
+            break
+        }
+    }
+
+    return nativeAPI.child_process.spawn(scaffoldPath, language, langVersion.path, options)
 }

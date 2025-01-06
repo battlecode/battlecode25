@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, CLIENT_VERSION } from '../../constants'
 import { nativeAPI } from './runner/native-api-wrapper'
 
 const UPDATE_CHECK_MINUTES = 5
@@ -13,7 +13,7 @@ export const UpdateWarning = () => {
             nativeAPI
                 .getServerVersion(`${BATTLECODE_YEAR % 100}`)
                 .then((latest) => {
-                    if (latest && latest.trim() != GAME_VERSION) {
+                    if (latest && latest.trim() != CLIENT_VERSION) {
                         setUpdate({ latest })
                     }
                 })
