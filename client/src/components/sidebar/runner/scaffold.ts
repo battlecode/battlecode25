@@ -376,7 +376,7 @@ async function dispatchMatch(
             break
         }
         case SupportedLanguage.Python: {
-            options = [`run.py`, `run`, `--p1=${teamA}`, `--p2=${teamB}`, `--map=${[...selectedMaps][0]}`]
+            options = [`run.py`, `run`, `--p1=${teamA}`, `--p2=${teamB}`, `--maps=${[...selectedMaps].join(',')}`]
             break
         }
     }
