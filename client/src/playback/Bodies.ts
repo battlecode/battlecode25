@@ -205,12 +205,7 @@ export default class Bodies {
     private insertInitialBodies(bodies: schema.InitialBodyTable): void {
         for (let i = 0; i < bodies.spawnActionsLength(); i++) {
             const spawnAction = bodies.spawnActions(i)!
-            const body = this.spawnBodyFromAction(spawnAction)
-
-            // Scuffed hardcode, but initial towers (money/paint) start with an increased level
-            if (body.robotType === schema.RobotType.MONEY_TOWER || body.robotType === schema.RobotType.PAINT_TOWER) {
-                body.level = 2
-            }
+            this.spawnBodyFromAction(spawnAction)
         }
     }
 }
