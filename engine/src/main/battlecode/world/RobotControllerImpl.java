@@ -1003,10 +1003,10 @@ public final class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT, "Towers cannot transfer paint!");
         }
         if (amount > 0 && this.robot.getType() != UnitType.MOPPER) {
-            throw new GameActionException(CANT_DO_THAT, "Only mopppers can give paint to allies!");
+            throw new GameActionException(CANT_DO_THAT, "Only moppers can give paint to allies!");
         }
         if (robot.getType().isRobotType() && amount < 0) {
-            throw new GameActionException(CANT_DO_THAT, "Moppers can only give paint to ally robots!");
+            throw new GameActionException(CANT_DO_THAT, "Paint can only be withdrawn from towers!");
         }
         if (-1 * amount > robot.getPaint()) {
             throw new GameActionException(CANT_DO_THAT, "Cannot take more paint from towers than they currently have!");
