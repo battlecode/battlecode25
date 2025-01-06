@@ -3,6 +3,10 @@ import Game from './playback/Game'
 import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playback/Tournament'
 import { ClientConfig, getDefaultConfig } from './client-config'
 
+export interface TimelineMarker {
+    round: number
+}
+
 export interface AppState {
     queue: Game[]
     tournament: Tournament | undefined

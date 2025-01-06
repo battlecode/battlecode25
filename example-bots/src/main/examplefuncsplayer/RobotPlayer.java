@@ -181,7 +181,9 @@ public class RobotPlayer {
             rc.move(dir);
         }
         // Try to paint beneath us as we walk to avoid paint penalties.
-         if (rc.canAttack(rc.getLocation())){
+        // Avoiding wasting paint by re-painting our own tiles.
+        MapInfo currentTile = rc.senseMapInfo(rc.getLocation());
+        if (!currentTile.getPaint().isAlly() && rc.canAttack(rc.getLocation())){
             rc.attack(rc.getLocation());
         }
     }

@@ -7,6 +7,7 @@ import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
 import * as Profiler from './Profiler'
+import * as Timeline from './Timeline'
 
 // Amount of rounds before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
@@ -18,6 +19,7 @@ export default class Match {
     public maxRound: number = 1
     public currentRound: Round
     public readonly profilerFiles: Profiler.ParsedProfilerFile[] = []
+    public readonly timelineMarkers: Timeline.TimelineMarker[] = []
     public readonly stats: RoundStat[] = []
     private readonly deltas: schema.Round[] = []
     private readonly snapshots: Round[] = []
@@ -95,7 +97,24 @@ export default class Match {
     public addMatchFooter(footer: schema.MatchFooter): void {
         this.winner = this.game.teams[footer.winner() - 1]
         this.winType = footer.winType()
+        this.addTimelineMarkers(footer)
         this.addProfilerFiles(footer)
+    }
+
+    /*
+     * Parse timeline markers from the match footer and store them
+     */
+    public addTimelineMarkers(footer: schema.MatchFooter): void {
+        for (let i = 0; i < footer.timelineMarkersLength(); i++) {
+            const marker = footer.timelineMarkers(i)!
+
+            this.timelineMarkers.push({
+                round: marker.round(),
+                team: marker.team(),
+                colorHex: marker.colorHex(),
+                label: marker.label() ?? 'Unknown'
+            })
+        }
     }
 
     /*
