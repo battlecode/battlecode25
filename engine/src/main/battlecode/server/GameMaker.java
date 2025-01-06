@@ -359,6 +359,7 @@ public class GameMaker {
             this.diedIds = new TIntArrayList();
             this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
+            this.timelineMarkerTeams = new ArrayList<>();
             this.timelineMarkerRounds = new ArrayList<>();
             this.timelineMarkerLabels = new ArrayList<>();
             this.timelineMarkerColors = new ArrayList<>();
