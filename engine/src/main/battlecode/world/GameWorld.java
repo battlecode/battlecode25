@@ -158,7 +158,6 @@ public class GameWorld {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
             
-            updateResourcePatterns();
             updateDynamicBodies();
 
             this.controlProvider.roundEnded();
@@ -787,7 +786,8 @@ public class GameWorld {
 
     public void processBeginningOfRound() {
         currentRound++;
-
+        updateResourcePatterns();
+        
         this.getMatchMaker().startRound(currentRound);
         // Process beginning of each robot's round
         objectInfo.eachRobot((robot) -> {
