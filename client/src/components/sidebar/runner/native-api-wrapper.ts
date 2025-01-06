@@ -18,7 +18,7 @@ export type NativeAPI = {
         getFiles: (path: string, recursive?: string) => Promise<string[]>
     }
     child_process: {
-        spawn: (scaffoldPath: string, javaPath: string, args: string[]) => Promise<string>
+        spawn: (scaffoldPath: string, lang: string, langPath: string, args: string[]) => Promise<string>
         kill: (pid: string) => Promise<void>
         onStdout: (callback: (x: { pid: string; data: string }) => void) => void
         onStderr: (callback: (x: { pid: string; data: string }) => void) => void

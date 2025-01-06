@@ -31,23 +31,28 @@ export default class Bodies {
         }
     }
 
-    processDied(delta: schema.Round | null) {
+    processRoundEnd(delta: schema.Round | null) {
         // Process unattributed died bodies
         if (delta) {
             for (let i = 0; i < delta.diedIdsLength(); i++) {
                 const diedId = delta.diedIds(i)!
-                this.bodies.delete(diedId)
+                this.getById(diedId).dead = true
             }
         }
 
+        // Update body interp positions
+        // We need to update position here so that interp works correctly
+        for (const body of this.bodies.values()) {
+            body.lastPos = body.pos
+        }
+    }
+
+    clearDiedBodies() {
         // Remove if marked dead
         for (const body of this.bodies.values()) {
-            // We need to update position here so that interp works correctly
-            body.lastPos = body.pos
+            if (!body.dead) continue
 
-            if (body.dead) {
-                this.bodies.delete(body.id) // safe
-            }
+            this.bodies.delete(body.id) // safe
         }
     }
 
@@ -158,7 +163,7 @@ export default class Bodies {
     }
 
     getNextID(): number {
-        return Math.max(-1, ...this.bodies.keys()) + 1
+        return Math.max(0, ...this.bodies.keys()) + 1
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
@@ -217,7 +222,9 @@ export class Body {
     public indicatorString: string = ''
     public dead: boolean = false
     public hp: number = 0
+    public maxHp: number = 1
     public paint: number = 0
+    public maxPaint: number = 0
     public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
@@ -268,34 +275,6 @@ export class Body {
                 this.drawHealthBar(match, overlayCtx)
             }
         }
-
-        /*
-        if (this.carryingFlagId !== null) {
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                overlayCtx,
-                getImageIfLoaded('resources/bread_outline_thick_64x64.png'),
-                { x: renderCoords.x, y: renderCoords.y },
-                0.6
-            )
-
-            if (config.showFlagCarryIndicator) {
-                for (const direction of [
-                    { x: 0.5, y: 0 },
-                    { x: 0, y: 0.5 },
-                    { x: -0.5, y: 0 },
-                    { x: 0, y: -0.5 }
-                ]) {
-                    renderUtils.renderCarets(
-                        overlayCtx,
-                        { x: renderCoords.x + 0.5, y: renderCoords.y + 0.5 },
-                        direction,
-                        2,
-                        this.team.id == 1 ? '#ff0000aa' : '#00ffffaa'
-                    )
-                }
-            }
-        }
-        */
     }
 
     private drawPath(match: Match, ctx: CanvasRenderingContext2D) {
@@ -444,9 +423,30 @@ export class Body {
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
-        // TODO: adjust
-        const maxHP = this.game.playable ? this.metadata.baseHealth() : 1
-        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
+        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / this.maxHp), hpBarHeight)
+    }
+
+    protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
+        if (this.level <= 1) return
+
+        const coords = renderUtils.getRenderCoords(this.pos.x, this.pos.y, match.currentRound.map.staticMap.dimension)
+
+        let numeral
+        if (this.level === 2) {
+            numeral = 'II'
+        } else {
+            numeral = 'III'
+        }
+
+        ctx.font = '0.5px serif'
+        ctx.fillStyle = this.team.color
+        ctx.textAlign = 'right'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 10
+        ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
+        ctx.shadowColor = ''
+        ctx.shadowBlur = 0
+        ctx.textAlign = 'start'
     }
 
     public getInterpolatedCoords(match: Match): Vector {
@@ -454,11 +454,13 @@ export class Body {
     }
 
     public onHoverInfo(): string[] {
+        if (!this.game.playable) return [this.robotName]
+
         const defaultInfo = [
-            this.robotName,
+            `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
-            `HP: ${this.hp}`,
-            `Paint: ${this.paint}`,
+            `HP: ${this.hp}/${this.maxHp}`,
+            `Paint: ${this.paint}/${this.maxPaint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
@@ -491,14 +493,12 @@ export class Body {
 
         const metadata = this.metadata
 
-        this.hp = metadata.baseHealth()
+        this.maxHp = metadata.baseHealth()
+        this.hp = this.maxHp
+        this.maxPaint = metadata.maxPaint()
+        this.paint = metadata.basePaint()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
-    }
-
-    public getSpecialization(): { idx: number; name: string } {
-        // TODO: delete this function
-        return { idx: 0, name: 'base' }
     }
 }
 
@@ -551,11 +551,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -579,11 +575,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -607,11 +599,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -634,11 +622,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -661,11 +644,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -688,11 +666,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     }
 }

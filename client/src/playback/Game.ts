@@ -61,7 +61,15 @@ export default class Game {
         const gameHeaderEvent = wrapper.events(0, eventSlot) ?? assert.fail('Event was null')
         assert(gameHeaderEvent.eType() === schema.Event.GameHeader, 'First event must be GameHeader')
         const gameHeader = gameHeaderEvent.e(new schema.GameHeader()) as schema.GameHeader
+
+        // check spec version
         this.specVersion = (gameHeader.specVersion() as string) || assert.fail('Unknown spec version')
+        if (this.specVersion !== SPEC_VERSION) {
+            throw new Error(
+                `Your client is using spec version ${SPEC_VERSION}, but the game has spec version ${this.specVersion}. Try updating?`
+            )
+        }
+
         this.teams = [
             Team.fromSchema(gameHeader.teams(0) ?? assert.fail('Team 0 was null')),
             Team.fromSchema(gameHeader.teams(1) ?? assert.fail('Team 1 was null'))

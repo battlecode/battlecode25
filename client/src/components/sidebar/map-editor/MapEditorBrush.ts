@@ -22,7 +22,7 @@ export abstract class SymmetricMapEditorBrush<MapType extends CurrentMap | Stati
         y: number,
         fields: Record<string, MapEditorBrushField>,
         robotOne: boolean
-    ): UndoFunction
+    ): UndoFunction | null
 
     constructor(protected readonly map: MapType) {
         super()
@@ -30,10 +30,26 @@ export abstract class SymmetricMapEditorBrush<MapType extends CurrentMap | Stati
 
     apply(x: number, y: number, fields: Record<string, MapEditorBrushField>, robotOne: boolean): UndoFunction {
         const undoFunctions: UndoFunction[] = []
-        undoFunctions.push(this.symmetricApply(x, y, fields, robotOne))
+        const undo0 = this.symmetricApply(x, y, fields, robotOne)
+
+        // Return early if brush could not be applied
+        if (!undo0) return () => {}
+
+        undoFunctions.push(undo0)
+
         const symmetryPoint = this.map.applySymmetry({ x: x, y: y })
-        if (symmetryPoint.x != x || symmetryPoint.y != y)
-            undoFunctions.push(this.symmetricApply(symmetryPoint.x, symmetryPoint.y, fields, !robotOne))
+        if (symmetryPoint.x != x || symmetryPoint.y != y) {
+            const undo1 = this.symmetricApply(symmetryPoint.x, symmetryPoint.y, fields, !robotOne)
+
+            // If the symmetry is not applied, revert the original change
+            if (!undo1) {
+                undo0()
+                return () => {}
+            }
+
+            undoFunctions.push(undo1)
+        }
+
         return () => undoFunctions.forEach((f) => f && f())
     }
 }

@@ -31,9 +31,12 @@ public final class TransferAction extends Struct {
    * Id of the transfer target
    */
   public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int amount() { return bb.getInt(bb_pos + 4); }
 
-  public static int createTransferAction(FlatBufferBuilder builder, int id) {
-    builder.prep(2, 2);
+  public static int createTransferAction(FlatBufferBuilder builder, int id, int amount) {
+    builder.prep(4, 8);
+    builder.putInt(amount);
+    builder.pad(2);
     builder.putShort((short) id);
     return builder.offset();
   }

@@ -6,7 +6,7 @@ import Round from '../../../playback/Round'
 import Bodies from '../../../playback/Bodies'
 import { BATTLECODE_YEAR, DIRECTIONS } from '../../../constants'
 import { nativeAPI } from '../runner/native-api-wrapper'
-import { vectorAdd, vectorDistSquared } from '../../../playback/Vector'
+import { Vector } from '../../../playback/Vector'
 
 export function loadFileAsMap(file: File): Promise<Game> {
     return new Promise((resolve, reject) => {
@@ -32,6 +32,15 @@ export function exportMap(round: Round, name: string) {
     exportFile(data, name + `.map${BATTLECODE_YEAR % 100}`)
 
     return ''
+}
+
+const squareIntersects = (check: Vector, center: Vector, radius: number) => {
+    return (
+        check.x >= center.x - radius &&
+        check.x <= center.x + radius &&
+        check.y >= center.y - radius &&
+        check.y <= center.y + radius
+    )
 }
 
 /**
@@ -71,12 +80,11 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
             for (const checkRuin of map.staticMap.ruins) {
                 if (checkRuin === ruin) continue
 
-                const minDistSq = 25
-                if (vectorDistSquared(checkRuin, pos) < minDistSq) {
+                if (squareIntersects(checkRuin, pos, 4)) {
                     return (
                         `Ruin at (${pos.x}, ${pos.y}) is too close to ruin ` +
                         `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
-                        `>= ${Math.sqrt(minDistSq).toFixed(1)} away`
+                        `>= 5 away`
                     )
                 }
             }
@@ -86,12 +94,11 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
             // Check distance to nearby ruins
 
             for (const checkRuin of map.staticMap.ruins) {
-                const minDistSq = 8
-                if (vectorDistSquared(checkRuin, pos) < minDistSq) {
+                if (squareIntersects(checkRuin, pos, 2)) {
                     return (
                         `Wall at (${pos.x}, ${pos.y}) is too close to ruin ` +
                         `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
-                        `>= ${Math.sqrt(minDistSq).toFixed(1)} away`
+                        `>= 3 away`
                     )
                 }
             }
@@ -115,6 +122,19 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
     }
     if (numMoneyTowers !== 2) {
         return `Expected exactly 2 money towers, found ${numMoneyTowers}`
+    }
+    for (const body of bodies.bodies.values()) {
+        // Check distance to nearby ruins
+
+        for (const checkRuin of map.staticMap.ruins) {
+            if (squareIntersects(checkRuin, body.pos, 2)) {
+                return (
+                    `Tower at (${body.pos.x}, ${body.pos.y}) is too close to ruin ` +
+                    `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
+                    `>= 3 away`
+                )
+            }
+        }
     }
 
     return ''

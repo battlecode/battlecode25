@@ -17,6 +17,7 @@ export class TeamRoundStat {
     robotCounts: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
     moneyAmount: number = 0
     paintPercent: number = 0
+    resourcePatterns: number = 0
 
     copy(): TeamRoundStat {
         const newStat: TeamRoundStat = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
@@ -52,14 +53,15 @@ export default class RoundStat {
     }
 
     /**
-     * Mutates this stat to reflect the given delta.
+     * Mutates this stat to reflect the current round. Uses information from the delta
+     * when possible, and recomputes otherwise.
      */
-    applyRoundDelta(round: Round, delta: schema.Round): void {
+    applyRoundDelta(round: Round, delta: schema.Round | null): void {
         // We want to apply the stat to round i + 1 so when we are visualizing
         // round i, we see the state at the end of round i - 1
         assert(
-            round.roundNumber === delta.roundId() + 1,
-            `Wrong round ID: is ${delta.roundId()}, should be ${round.roundNumber + 1}`
+            !delta || round.roundNumber === delta.roundId() + 1,
+            `Wrong round ID: is ${delta?.roundId()}, should be ${round.roundNumber + 1}`
         )
 
         // Do not recompute if this stat is already completed
@@ -67,34 +69,41 @@ export default class RoundStat {
 
         // Compute team stats for this round
         const time = Date.now()
-        for (let i = 0; i < delta.teamIdsLength(); i++) {
-            const team = this.game.teams[(delta.teamIds(i) ?? assert.fail('teamID not found in round')) - 1]
-            assert(team != undefined, `team ${i} not found in game.teams in round`)
-            const teamStat = this.teams.get(team) ?? assert.fail(`team ${i} not found in team stats in round`)
+        if (delta) {
+            for (let i = 0; i < delta.teamIdsLength(); i++) {
+                const team = this.game.teams[(delta.teamIds(i) ?? assert.fail('teamID not found in round')) - 1]
+                assert(team != undefined, `team ${i} not found in game.teams in round`)
+                const teamStat = this.teams.get(team) ?? assert.fail(`team ${i} not found in team stats in round`)
 
-            // Clear robot counts, will be recomputed later
-            teamStat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
+                teamStat.moneyAmount = delta.teamResourceAmounts(i) ?? assert.fail('missing resource amount')
+                teamStat.paintPercent = delta.teamCoverageAmounts(i) ?? assert.fail('missing coverage amount')
+                teamStat.resourcePatterns = delta.teamResourcePatternAmounts(i) ?? assert.fail('missing pattern amount')
+                teamStat.paintPercent /= 10.0
 
-            teamStat.moneyAmount = delta.teamResourceAmounts(i) ?? assert.fail('missing resource amount')
-            teamStat.paintPercent = delta.teamCoverageAmounts(i) ?? assert.fail('missing coverage amount')
+                /*
+                // Compute average datapoint every 10 rounds
+                if (round.roundNumber % 10 == 0) {
+                    const teamStat = this.teams.get(team) ?? assert.fail(`team ${team} not found in team stats in round`)
+                    let avgValue = teamStat.resourceAmount
+                    let avgCount = 1
+                    for (let i = round.roundNumber - 1; i >= Math.max(0, round.roundNumber - 100); i--) {
+                        const prevStat = round.match.stats[i].getTeamStat(team)
+                        avgValue += prevStat.resourceAmount
+                        avgCount += 1
+                    }
 
-            /*
-            // Compute average datapoint every 10 rounds
-            if (round.roundNumber % 10 == 0) {
-                const teamStat = this.teams.get(team) ?? assert.fail(`team ${team} not found in team stats in round`)
-                let avgValue = teamStat.resourceAmount
-                let avgCount = 1
-                for (let i = round.roundNumber - 1; i >= Math.max(0, round.roundNumber - 100); i--) {
-                    const prevStat = round.match.stats[i].getTeamStat(team)
-                    avgValue += prevStat.resourceAmount
-                    avgCount += 1
+                    teamStat.resourceAmountAverageDatapoint = avgValue / avgCount
                 }
-
-                teamStat.resourceAmountAverageDatapoint = avgValue / avgCount
+                */
             }
-            */
         }
 
+        // Clear robot counts for recomputing
+        for (const stat of this.teams.values()) {
+            stat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
+        }
+
+        // Compute total robot counts
         for (const body of round.bodies.bodies.values()) {
             const teamStat = round.stat.getTeamStat(body.team)
 
@@ -105,7 +114,9 @@ export default class RoundStat {
         }
 
         const timems = Date.now() - time
-        if (timems > 1) console.log(`took ${timems}ms to calculate income averages`)
+        if (timems > 1) {
+            console.warn(`took ${timems}ms to calculate stat for round ${round.roundNumber}`)
+        }
 
         this.completed = true
     }

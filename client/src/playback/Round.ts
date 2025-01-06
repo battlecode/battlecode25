@@ -18,7 +18,12 @@ export default class Round {
         public bodies: Bodies,
         public actions: Actions,
         private currentDelta: schema.Round | null = null
-    ) {}
+    ) {
+        // Populate initial stat for round 0 (initial state)
+        if (roundNumber === 0) {
+            this.stat.applyRoundDelta(this, null)
+        }
+    }
 
     get teams(): Team[] {
         return this.match.game.teams
@@ -27,6 +32,7 @@ export default class Round {
     get stat(): RoundStat {
         const stat = this.match.stats[this.roundNumber]
         if (stat) return stat
+
         const newStat = new RoundStat(this.match.game)
         this.match.stats[this.roundNumber] = newStat
         return newStat
@@ -47,15 +53,11 @@ export default class Round {
             `Cannot start a new round without completing the previous one, round ${this.roundNumber}`
         )
 
-        this.bodies.processDied(this.currentDelta)
-        this.actions.tickLifetimes()
+        this.bodies.processRoundEnd(this.currentDelta)
 
         this.roundNumber += 1
 
-        // Finish the previous round if it exists
-        if (this.currentDelta) {
-            this.stat.applyRoundDelta(this, this.currentDelta)
-        }
+        this.stat.applyRoundDelta(this, this.currentDelta)
 
         this.initialRoundState = null
         this.turnNumber = 0
@@ -91,6 +93,14 @@ export default class Round {
             // Store the initial round state for resetting only after stepping, that way snapshots dont need to store it, halving memory usage
             assert(this.turnNumber === 0, 'Initial round state should only be set at turn 0')
             this.initialRoundState = this.copy()
+        }
+
+        // Tick actions and remove died bots once we pass the first turn so that
+        // round n shows the state of actions at the end of round n-1, until we
+        // start progressing
+        if (this.turnNumber === 0) {
+            this.actions.tickLifetimes()
+            this.bodies.clearDiedBodies()
         }
 
         this.bodies.clearIndicators(turn.robotId())

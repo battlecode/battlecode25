@@ -21,11 +21,28 @@ var UpgradeAction = /** @class */ (function () {
     UpgradeAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };
-    UpgradeAction.sizeOf = function () {
-        return 2;
+    UpgradeAction.prototype.newHealth = function () {
+        return this.bb.readInt32(this.bb_pos + 4);
     };
-    UpgradeAction.createUpgradeAction = function (builder, id) {
-        builder.prep(2, 2);
+    UpgradeAction.prototype.newMaxHealth = function () {
+        return this.bb.readInt32(this.bb_pos + 8);
+    };
+    UpgradeAction.prototype.newPaint = function () {
+        return this.bb.readInt32(this.bb_pos + 12);
+    };
+    UpgradeAction.prototype.newMaxPaint = function () {
+        return this.bb.readInt32(this.bb_pos + 16);
+    };
+    UpgradeAction.sizeOf = function () {
+        return 20;
+    };
+    UpgradeAction.createUpgradeAction = function (builder, id, newHealth, newMaxHealth, newPaint, newMaxPaint) {
+        builder.prep(4, 20);
+        builder.writeInt32(newMaxPaint);
+        builder.writeInt32(newPaint);
+        builder.writeInt32(newMaxHealth);
+        builder.writeInt32(newHealth);
+        builder.pad(2);
         builder.writeInt16(id);
         return builder.offset();
     };

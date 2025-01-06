@@ -10,7 +10,7 @@ export const Button = (props: PropsWithChildren<Props>) => {
     return (
         <button
             className={
-                'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row bg-light hover:bg-lightHighlight border-black border rounded-md ' +
+                'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row bg-light hover:bg-lightHighlight border-white border rounded-md ' +
                 (props.className ?? '') +
                 (props.disabled ? ' opacity-50 cursor-not-allowed' : '')
             }
@@ -24,7 +24,7 @@ export const Button = (props: PropsWithChildren<Props>) => {
 export const SmallButton = (props: PropsWithChildren<Props>) => (
     <button
         className={
-            'text-xs mx-auto px-4 py-1 mt-1 mb-2 flex flex-row bg-light hover:bg-lightHighlight border-black border rounded-md ' +
+            'text-xs mx-auto px-4 py-1 mt-1 mb-2 flex flex-row bg-light hover:bg-lightHighlight border-white border rounded-md ' +
             (props.className ?? '')
         }
         onClick={props.onClick}
@@ -36,7 +36,7 @@ export const SmallButton = (props: PropsWithChildren<Props>) => (
 export const BrightButton = (props: PropsWithChildren<Props>) => (
     <button
         className={
-            'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row bg-cyan hover:bg-cyanDark rounded-md text-white' +
+            'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex border-white border flex-row bg-lightHighlight hover:bg-medHighlight rounded-md ' +
             (props.className ?? '')
         }
         onClick={props.onClick}

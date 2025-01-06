@@ -7,13 +7,15 @@ import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
 import GameRunner, { useControls, usePlaybackPerTurn, useRound } from '../../playback/GameRunner'
 import { HiddenIcon, VisibleIcon } from '../../icons/visible'
+import { TEAM_COLORS } from '../../constants'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
-    const round = useRound()
     const [minimized, setMinimized] = React.useState(false)
-    const keyboard = useKeyboard()
+    const [markerTeam, setMarkerTeam] = React.useState(0)
     const { paused, targetUPS } = useControls()
+    const keyboard = useKeyboard()
+    const round = useRound()
     const playbackPerTurn = usePlaybackPerTurn()
 
     const hasNextMatch = round && round?.match.game.matches.indexOf(round.match!) + 1 < round.match.game.matches.length
@@ -29,7 +31,7 @@ export const ControlsBar: React.FC = () => {
         if (keyboard.keyCode === 'Space') GameRunner.setPaused(!paused)
 
         if (keyboard.keyCode === 'KeyC') setMinimized(!minimized)
-        if (keyboard.keyCode === 'KeyV') GameRunner.setPlaybackPerTurn(!playbackPerTurn)
+        if (keyboard.keyCode === 'KeyT') GameRunner.setPlaybackPerTurn(!playbackPerTurn)
 
         const applyArrows = () => {
             if (paused) {
@@ -101,8 +103,26 @@ export const ControlsBar: React.FC = () => {
                             {playbackPerTurn ? '-' : '+'}
                         </button>
                     </Tooltip>
+                    {appState.config.showTimelineMarkers && (
+                        <Tooltip
+                            text={
+                                markerTeam == 0
+                                    ? 'Switch timeline markers to Gold'
+                                    : 'Switch timeline markers to Silver'
+                            }
+                            wrapperClass="flex pointer-events-auto"
+                        >
+                            <button
+                                className={'rounded-md text-[12px] aspect-[1] flex justify-center select-none'}
+                                style={{ color: TEAM_COLORS[markerTeam] }}
+                                onClick={() => setMarkerTeam(1 - markerTeam)}
+                            >
+                                {markerTeam === 0 ? 'S' : 'G'}
+                            </button>
+                        </Tooltip>
+                    )}
                 </div>
-                <ControlsBarTimeline targetUPS={targetUPS} />
+                <ControlsBarTimeline targetUPS={targetUPS} markersTeam={markerTeam} />
                 <ControlsBarButton
                     icon={<ControlIcons.ReverseIcon />}
                     tooltip="Reverse"

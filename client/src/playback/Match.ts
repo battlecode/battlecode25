@@ -7,6 +7,7 @@ import { CurrentMap, StaticMap } from './Map'
 import Actions from './Actions'
 import Bodies from './Bodies'
 import * as Profiler from './Profiler'
+import * as Timeline from './Timeline'
 
 // Amount of rounds before a snapshot of the game state is saved for the next recalculation
 const SNAPSHOT_EVERY = 50
@@ -17,10 +18,11 @@ const MAX_SIMULATION_STEPS = 50000
 export default class Match {
     public maxRound: number = 1
     public currentRound: Round
-    public readonly profilerFiles: Profiler.ParsedProfilerFile[]
-    public readonly stats: RoundStat[]
-    private readonly deltas: schema.Round[]
-    private readonly snapshots: Round[]
+    public readonly profilerFiles: Profiler.ParsedProfilerFile[] = []
+    public readonly timelineMarkers: Timeline.TimelineMarker[] = []
+    public readonly stats: RoundStat[] = []
+    private readonly deltas: schema.Round[] = []
+    private readonly snapshots: Round[] = []
     private _currentSimulationStep: number = 0
     private _playbackPerTurn: boolean = false
 
@@ -32,10 +34,6 @@ export default class Match {
         initialBodies: Bodies
     ) {
         this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
-        this.snapshots = []
-        this.stats = []
-        this.deltas = []
-        this.profilerFiles = []
     }
 
     get constants(): schema.GameplayConstants {
@@ -49,7 +47,7 @@ export default class Match {
     set playbackPerTurn(value: boolean) {
         this._playbackPerTurn = value
         this._currentSimulationStep = 0
-        this.currentRound.jumpToTurn(value ? 0 : this.currentRound.turnsLength)
+        this.currentRound.jumpToTurn(0)
     }
 
     /**
@@ -99,7 +97,24 @@ export default class Match {
     public addMatchFooter(footer: schema.MatchFooter): void {
         this.winner = this.game.teams[footer.winner() - 1]
         this.winType = footer.winType()
+        this.addTimelineMarkers(footer)
         this.addProfilerFiles(footer)
+    }
+
+    /*
+     * Parse timeline markers from the match footer and store them
+     */
+    public addTimelineMarkers(footer: schema.MatchFooter): void {
+        for (let i = 0; i < footer.timelineMarkersLength(); i++) {
+            const marker = footer.timelineMarkers(i)!
+
+            this.timelineMarkers.push({
+                round: marker.round(),
+                team: marker.team(),
+                colorHex: marker.colorHex(),
+                label: marker.label() ?? 'Unknown'
+            })
+        }
     }
 
     /*

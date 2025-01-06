@@ -10,6 +10,7 @@ export declare class TransferAction {
      * Id of the transfer target
      */
     id(): number;
+    amount(): number;
     static sizeOf(): number;
-    static createTransferAction(builder: flatbuffers.Builder, id: number): flatbuffers.Offset;
+    static createTransferAction(builder: flatbuffers.Builder, id: number, amount: number): flatbuffers.Offset;
 }

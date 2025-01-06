@@ -1,9 +1,10 @@
 import React from 'react'
 import GameRunner from './GameRunner'
-import { TILE_RESOLUTION } from '../constants'
+import { TEAM_COLOR_NAMES, TILE_RESOLUTION } from '../constants'
 import { Vector } from './Vector'
 import assert from 'assert'
 import { GameConfig } from '../app-context'
+import { loadImage } from '../util/ImageLoader'
 
 export enum CanvasLayers {
     Background,
@@ -45,6 +46,20 @@ class GameRendererClass {
         topCanvas.onmouseenter = (e) => this.canvasMouseEnter(e)
         topCanvas.onclick = (e) => this.canvasClick(e)
         topCanvas.oncontextmenu = (e) => e.preventDefault()
+
+        // Preload all game images
+        loadImage('icons/gears_64x64.png')
+        loadImage('icons/hammer_64x64.png')
+        loadImage('icons/mop_64x64.png')
+        loadImage('ruins/silver.png')
+        for (const color of TEAM_COLOR_NAMES) {
+            loadImage(`robots/${color.toLowerCase()}/defense_tower_64x64.png`)
+            loadImage(`robots/${color.toLowerCase()}/money_tower_64x64.png`)
+            loadImage(`robots/${color.toLowerCase()}/paint_tower_64x64.png`)
+            loadImage(`robots/${color.toLowerCase()}/soldier_64x64.png`)
+            loadImage(`robots/${color.toLowerCase()}/splasher_64x64.png`)
+            loadImage(`robots/${color.toLowerCase()}/mopper_64x64.png`)
+        }
     }
 
     clearSelected() {
@@ -115,9 +130,13 @@ class GameRendererClass {
 
     private updateCanvasDimensions(dims: Vector) {
         for (const canvas of Object.values(this.canvases)) {
-            canvas.width = dims.x * TILE_RESOLUTION
-            canvas.height = dims.y * TILE_RESOLUTION
-            canvas.getContext('2d')?.scale(TILE_RESOLUTION, TILE_RESOLUTION)
+            // perf issues, prefer config.renderscale
+            const dpi = 1 //window.devicePixelRatio ?? 1
+
+            const resolution = TILE_RESOLUTION * dpi * (GameConfig.config.resolutionScale / 100)
+            canvas.width = dims.x * resolution
+            canvas.height = dims.y * resolution
+            canvas.getContext('2d')?.scale(resolution, resolution)
         }
     }
 
