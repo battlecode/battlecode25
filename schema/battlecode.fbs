@@ -23,6 +23,7 @@ enum RobotType: byte {
 enum WinType: byte {
     RESIGNATION,
     MAJORITY_PAINTED,
+    ALL_UNITS_DESTROYED,
     AREA_PAINTED,
     MORE_TOWERS,
     MORE_MONEY,

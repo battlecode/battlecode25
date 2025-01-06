@@ -429,6 +429,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
 
         if(loc == null) { // area attack
             this.towerHasAreaAttacked = true;
+            int aoeDamage = this.type.aoeAttackStrength + (int) Math.round(this.gameWorld.getDefenseTowerDamageIncrease(team) * GameConstants.DEFENSE_ATTACK_BUFF_AOE_EFFECTIVENESS/100.0);
 
             MapLocation[] allLocs = this.gameWorld.getAllLocationsWithinRadiusSquared(this.getLocation(), this.type.actionRadiusSquared);
             for(MapLocation newLoc : allLocs) {
@@ -436,9 +437,9 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 if(this.gameWorld.getRobot(newLoc) != null) {
                     InternalRobot unit = this.gameWorld.getRobot(newLoc);
                     if(this.team != unit.getTeam()){
-                        unit.addHealth(-this.type.aoeAttackStrength);
+                        unit.addHealth(-aoeDamage);
                         this.gameWorld.getMatchMaker().addAttackAction(unit.getID());
-                        this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), this.type.attackStrength);
+                        this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), aoeDamage);
                     }
                 }
             }
