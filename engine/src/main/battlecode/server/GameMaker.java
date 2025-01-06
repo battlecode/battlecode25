@@ -31,7 +31,7 @@ import static battlecode.util.FlatHelpers.*;
 /**
  * Writes a game to a flatbuffer, hooray.
  */
-public strictfp class GameMaker {
+public class GameMaker {
 
     /**
      * The protocol expects a series of valid state transitions;
@@ -301,12 +301,15 @@ public strictfp class GameMaker {
             }
             RobotTypeMetadata.startRobotTypeMetadata(builder);
             RobotTypeMetadata.addType(builder, FlatHelpers.getRobotTypeFromUnitType(type));
+            RobotTypeMetadata.addMaxPaint(builder, type.paintCapacity);
+            RobotTypeMetadata.addBasePaint(builder, (int) Math.round(type.paintCapacity * GameConstants.INITIAL_UNIT_PAINT_PERCENTAGE / 100.0));
             RobotTypeMetadata.addActionCooldown(builder, type.actionCooldown);
             RobotTypeMetadata.addActionRadiusSquared(builder, type.actionRadiusSquared);
             RobotTypeMetadata.addBaseHealth(builder,type.health);
-            RobotTypeMetadata.addBytecodeLimit(builder, 1000); //TODO: decide on bytecode limits
+            RobotTypeMetadata.addBytecodeLimit(builder, 25000);
             RobotTypeMetadata.addMovementCooldown(builder, GameConstants.MOVEMENT_COOLDOWN); 
             RobotTypeMetadata.addVisionRadiusSquared(builder, GameConstants.VISION_RADIUS_SQUARED);
+            RobotTypeMetadata.addMessageRadiusSquared(builder, GameConstants.MESSAGE_RADIUS_SQUARED);
             robotTypeMetadataOffsets.add(RobotTypeMetadata.endRobotTypeMetadata(builder));
         }
         return GameHeader.createRobotTypeMetadataVector(builder, robotTypeMetadataOffsets.toArray());
@@ -332,12 +335,15 @@ public strictfp class GameMaker {
         // Round statistics
         private TIntArrayList teamIDs;
         private TIntArrayList teamMoneyAmounts;
+        private TIntArrayList teamPaintCoverageAmounts;
+        private TIntArrayList teamResourcePatternAmounts;
 
         private TIntArrayList diedIds; // ints
 
         private int currentRound;
         private int currentMapWidth = -1;
 
+        private ArrayList<Byte> timelineMarkerTeams;
         private ArrayList<Integer> timelineMarkerRounds; 
         private ArrayList<String> timelineMarkerLabels;
         private ArrayList<Integer> timelineMarkerColors;
@@ -348,6 +354,8 @@ public strictfp class GameMaker {
         public MatchMaker() {
             this.teamIDs = new TIntArrayList();
             this.teamMoneyAmounts = new TIntArrayList();
+            this.teamPaintCoverageAmounts = new TIntArrayList();
+            this.teamResourcePatternAmounts = new TIntArrayList();
             this.diedIds = new TIntArrayList();
             this.currentRound = 0;
             this.logger = new ByteArrayOutputStream();
@@ -415,7 +423,7 @@ public strictfp class GameMaker {
 
                 TIntArrayList timelineMarkerOffsets = new TIntArrayList();
                 for (int i = 0; i < this.timelineMarkerRounds.size(); i++){
-                    int timelineMarkerOffset = TimelineMarker.createTimelineMarker(builder, timelineMarkerRounds.get(i), 
+                    int timelineMarkerOffset = TimelineMarker.createTimelineMarker(builder, timelineMarkerTeams.get(i), timelineMarkerRounds.get(i), 
                     timelineMarkerColors.get(i), builder.createString(timelineMarkerLabels.get(i)));
                     timelineMarkerOffsets.add(timelineMarkerOffset);
                 }
@@ -446,12 +454,16 @@ public strictfp class GameMaker {
             createEvent((builder) -> {
                 // Round statistics
                 int teamIDsP = Round.createTeamIdsVector(builder, teamIDs.toArray());
+                int teamCoverageAmountsP = Round.createTeamCoverageAmountsVector(builder, teamPaintCoverageAmounts.toArray());
                 int teamMoneyAmountsP = Round.createTeamResourceAmountsVector(builder, teamMoneyAmounts.toArray());
+                int teamResourcePatternAmountsP = Round.createTeamResourcePatternAmountsVector(builder, teamResourcePatternAmounts.toArray());
                 int diedIdsP = Round.createDiedIdsVector(builder, diedIds.toArray());
 
                 builder.startRound();
 
                 Round.addTeamIds(builder, teamIDsP);
+                Round.addTeamCoverageAmounts(builder, teamCoverageAmountsP);
+                Round.addTeamResourceAmounts(builder, teamResourcePatternAmountsP);
                 Round.addRoundId(builder, this.currentRound);
                 Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
@@ -515,6 +527,20 @@ public strictfp class GameMaker {
             });
         }
 
+        public void addMarkAction(MapLocation loc, boolean isSecondary){
+            applyToBuilders((builder) -> {
+                int action = MarkAction.createMarkAction(builder, locationToInt(loc), isSecondary ? (byte) 1 : 0);
+                builder.addAction(action, Action.MarkAction);
+            });
+        }
+
+        public void addUnmarkAction(MapLocation loc){
+            applyToBuilders((builder) -> {
+                int action = UnmarkAction.createUnmarkAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.UnmarkAction);
+            });
+        }
+
         /// Visually indicate an attack
         public void addAttackAction(int otherID){
             applyToBuilders((builder) -> {
@@ -523,10 +549,17 @@ public strictfp class GameMaker {
             });
         }
 
-        /// Visually indicate a mop attack
-        public void addMopAction(MapLocation loc){
+        public void addSplashAction(MapLocation loc){
             applyToBuilders((builder) -> {
-                int action = MopAction.createMopAction(builder, locationToInt(loc));
+                int action = SplashAction.createSplashAction(builder, locationToInt(loc));
+                builder.addAction(action, Action.SplashAction);
+            });
+        }
+
+        /// Visually indicate a mop attack
+        public void addMopAction(int  id1, int id2, int id3){
+            applyToBuilders((builder) -> {
+                int action = MopAction.createMopAction(builder, id1, id2, id3);
                 builder.addAction(action, Action.MopAction);
             });
         }
@@ -540,9 +573,9 @@ public strictfp class GameMaker {
         }
 
         /// Visually indicate transferring paint from one robot to another
-        public void addTransferAction(int otherRobotID){
+        public void addTransferAction(int otherRobotID, int amount){
             applyToBuilders((builder) -> {
-                int action = TransferAction.createTransferAction(builder, otherRobotID);
+                int action = TransferAction.createTransferAction(builder, otherRobotID, amount);
                 builder.addAction(action, Action.TransferAction);
             });
         }
@@ -556,39 +589,43 @@ public strictfp class GameMaker {
         }
 
         /// Indicate that this robot was spawned on this turn
-        public void addSpawnAction(MapLocation loc, Team team, UnitType type){
+        public void addSpawnAction(int id, MapLocation loc, Team team, UnitType type){
             applyToBuilders((builder) -> {
                 byte teamID = TeamMapping.id(team);
                 byte robotType = FlatHelpers.getRobotTypeFromUnitType(type);
-                int action = SpawnAction.createSpawnAction(builder, loc.x, loc.y, teamID, robotType);
+                int action = SpawnAction.createSpawnAction(builder, id, loc.x, loc.y, teamID, robotType);
                 builder.addAction(action, Action.SpawnAction);
             });
         }
 
         //visually indicates tower has been upgraded
-        public void addUpgradeAction(int towerID){
+        public void addUpgradeAction(int towerID, int newHealth, int newMaxHealth, int newPaint, int newMaxPaint){
             applyToBuilders((builder) -> {
-                int action = UpgradeAction.createUpgradeAction(builder, towerID);
+                int action = UpgradeAction.createUpgradeAction(builder, towerID, newHealth, newMaxHealth, newPaint, newMaxPaint);
                 builder.addAction(action, Action.UpgradeAction);
             });
         }
 
-        public void addDieExceptionAction(){
+        public void addDieAction(int id, boolean fromException){
+            byte deathReason = fromException ? DieType.EXCEPTION : DieType.UNKNOWN;
             applyToBuilders((builder) -> {
-                int action = DieExceptionAction.createDieExceptionAction(builder, (byte) -1);
-                builder.addAction(action, Action.DieExceptionAction);
+                int action = DieAction.createDieAction(builder, id, deathReason);
+                builder.addAction(action, Action.DieAction);
             });
         }
 
-        public void addTeamInfo(Team team, int moneyAmount) {
+        public void addTeamInfo(Team team, int moneyAmount, int paintCoverage, int numResourcePatterns) {
             teamIDs.add(TeamMapping.id(team));
             teamMoneyAmounts.add(moneyAmount);
+            teamPaintCoverageAmounts.add(paintCoverage);
+            teamResourcePatternAmounts.add(numResourcePatterns);
         }
 
-        public void addTimelineMarker(String label, int red, int green, int blue){
+        public void addTimelineMarker(Team team, String label, int red, int green, int blue){
             if (!showIndicators){
                 return;
             }
+            this.timelineMarkerTeams.add((byte) team.ordinal());
             this.timelineMarkerRounds.add(this.currentRound);
             this.timelineMarkerLabels.add(label);
             int color = FlatHelpers.RGBtoInt(red, green, blue);
@@ -639,6 +676,8 @@ public strictfp class GameMaker {
         private void clearData() {
             this.teamIDs.clear();
             this.teamMoneyAmounts.clear();
+            this.teamPaintCoverageAmounts.clear();
+            this.teamResourcePatternAmounts.clear();
             this.diedIds.clear();
         }
     }

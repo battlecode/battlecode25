@@ -16,7 +16,7 @@ export const Select: React.FC<PropsWithChildren<SelectProps>> = (props) => {
                 style={props.style}
                 className={
                     props.className +
-                    ' appearance-none border border-black py-1 px-1 rounded-md w-full h-full overflow-hidden'
+                    ' appearance-none border bg-light border-white py-1 pl-1 pr-6 rounded-md w-full h-full overflow-hidden'
                 }
                 value={props.value}
                 disabled={props.disabled}
@@ -24,8 +24,8 @@ export const Select: React.FC<PropsWithChildren<SelectProps>> = (props) => {
             >
                 {props.children}
             </select>
-            <div className="absolute inset-y-0 right-0 flex items-center mx-1 my-2 bg-white bg-opacity-75 pointer-events-none">
-                <svg className="w-5 h-5 fill-current text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <div className="absolute inset-y-0 right-0 flex items-center mx-1 my-2 pointer-events-none">
+                <svg className="w-5 h-5 fill-current text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         clipRule="evenodd"
@@ -88,7 +88,7 @@ export const NumInput: React.FC<NumInputProps> = (props) => {
     return (
         <input
             className={
-                'border border-black py-0.5 px-1 rounded-md w-12 ' +
+                'border border-white bg-light py-0.5 pl-1 rounded-md w-14 ' +
                 (props.disabled ? 'opacity-50 ' : '') +
                 (props.className ?? '')
             }

@@ -31,39 +31,34 @@ export default class Bodies {
         }
     }
 
-    prepareForNextRound() {
+    processRoundEnd(delta: schema.Round | null) {
+        // Process unattributed died bodies
+        if (delta) {
+            for (let i = 0; i < delta.diedIdsLength(); i++) {
+                const diedId = delta.diedIds(i)!
+                this.getById(diedId).dead = true
+            }
+        }
+
+        // Update body interp positions
+        // We need to update position here so that interp works correctly
         for (const body of this.bodies.values()) {
-            // Clear existing indicators
-            body.indicatorDots = []
-            body.indicatorLines = []
-            body.indicatorString = ''
             body.lastPos = body.pos
-
-            // Remove if dead
-            if (body.dead) {
-                this.bodies.delete(body.id)
-            }
         }
     }
 
-    processDiedIds(delta: schema.Round) {
-        for (let i = 0; i < delta.diedIdsLength(); i++) {
-            const diedId = delta.diedIds(i)!
-            const diedBody = this.bodies.get(diedId)
-            if (!diedBody) {
-                console.warn(
-                    `diedIds: Body with id ${diedId} not found in bodies. This will happen because of a resignation, otherwise it is a bug.`
-                )
-                continue
-            }
+    clearDiedBodies() {
+        // Remove if marked dead
+        for (const body of this.bodies.values()) {
+            if (!body.dead) continue
 
-            diedBody.dead = true
-            // Manually set hp since we don't receive a final delta
-            diedBody.hp = 0
+            this.bodies.delete(body.id) // safe
         }
     }
 
-    spawnBodyFromAction(id: number, spawnAction: schema.SpawnAction): Body {
+    spawnBodyFromAction(spawnAction: schema.SpawnAction): Body {
+        // This assumes ids are never reused
+        const id = spawnAction.id()
         assert(!this.bodies.has(id), `Trying to spawn body with id ${id} that already exists`)
 
         const robotType = spawnAction.robotType()
@@ -88,8 +83,27 @@ export default class Bodies {
         return body
     }
 
+    markBodyAsDead(id: number): void {
+        const body = this.getById(id)
+        body.dead = true
+        // Manually set hp since we don't receive a final delta
+        body.hp = 0
+    }
+
     removeBody(id: number): void {
         this.bodies.delete(id)
+    }
+
+    /**
+     * Clears all indicator objects from the given robot. If the id does not exist
+     * (i.e. it has not yet been spawned), does nothing
+     */
+    clearIndicators(id: number) {
+        if (!this.bodies.has(id)) return
+        const body = this.getById(id)
+        body.indicatorDots = []
+        body.indicatorLines = []
+        body.indicatorString = ''
     }
 
     /**
@@ -149,7 +163,7 @@ export default class Bodies {
     }
 
     getNextID(): number {
-        return Math.max(-1, ...this.bodies.keys()) + 1
+        return Math.max(0, ...this.bodies.keys()) + 1
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
@@ -178,33 +192,20 @@ export default class Bodies {
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
-        const robotIds = new Int32Array(this.bodies.size)
+        schema.InitialBodyTable.startSpawnActionsVector(builder, this.bodies.size)
 
-        Array.from(this.bodies.values()).forEach((body, i) => {
-            robotIds[i] = body.id
-        })
-
-        const robotIdsVector = schema.InitialBodyTable.createRobotIdsVector(builder, robotIds)
-
-        // Fill out spawn actions
-        schema.InitialBodyTable.startSpawnActionsVector(builder, robotIds.length)
-        for (let i = 0; i < robotIds.length; i++) {
-            const body = this.bodies.get(robotIds[i])!
-            schema.SpawnAction.createSpawnAction(builder, body.pos.x, body.pos.y, body.team.id, body.robotType)
+        for (const body of this.bodies.values()) {
+            schema.SpawnAction.createSpawnAction(builder, body.id, body.pos.x, body.pos.y, body.team.id, body.robotType)
         }
         const spawnActionsVector = builder.endVector()
 
-        return schema.InitialBodyTable.createInitialBodyTable(builder, robotIdsVector, spawnActionsVector)
+        return schema.InitialBodyTable.createInitialBodyTable(builder, spawnActionsVector)
     }
 
     private insertInitialBodies(bodies: schema.InitialBodyTable): void {
-        assert(bodies.robotIdsLength() == bodies.spawnActionsLength(), 'Initial body arrays are not the same length')
-
-        for (let i = 0; i < bodies.robotIdsLength(); i++) {
-            const id = bodies.robotIds(i)!
+        for (let i = 0; i < bodies.spawnActionsLength(); i++) {
             const spawnAction = bodies.spawnActions(i)!
-
-            this.spawnBodyFromAction(id, spawnAction)
+            this.spawnBodyFromAction(spawnAction)
         }
     }
 }
@@ -221,7 +222,9 @@ export class Body {
     public indicatorString: string = ''
     public dead: boolean = false
     public hp: number = 0
+    public maxHp: number = 1
     public paint: number = 0
+    public maxPaint: number = 0
     public level: number = 1 // For towers
     public moveCooldown: number = 0
     public actionCooldown: number = 0
@@ -272,34 +275,6 @@ export class Body {
                 this.drawHealthBar(match, overlayCtx)
             }
         }
-
-        /*
-        if (this.carryingFlagId !== null) {
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                overlayCtx,
-                getImageIfLoaded('resources/bread_outline_thick_64x64.png'),
-                { x: renderCoords.x, y: renderCoords.y },
-                0.6
-            )
-
-            if (config.showFlagCarryIndicator) {
-                for (const direction of [
-                    { x: 0.5, y: 0 },
-                    { x: 0, y: 0.5 },
-                    { x: -0.5, y: 0 },
-                    { x: 0, y: -0.5 }
-                ]) {
-                    renderUtils.renderCarets(
-                        overlayCtx,
-                        { x: renderCoords.x + 0.5, y: renderCoords.y + 0.5 },
-                        direction,
-                        2,
-                        this.team.id == 1 ? '#ff0000aa' : '#00ffffaa'
-                    )
-                }
-            }
-        }
-        */
     }
 
     private drawPath(match: Match, ctx: CanvasRenderingContext2D) {
@@ -448,9 +423,30 @@ export class Body {
         ctx.fillStyle = 'rgba(0,0,0,.3)'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
-        // TODO: adjust
-        const maxHP = this.game.playable ? this.metadata.baseHealth() : 1
-        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / maxHP), hpBarHeight)
+        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / this.maxHp), hpBarHeight)
+    }
+
+    protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
+        if (this.level <= 1) return
+
+        const coords = renderUtils.getRenderCoords(this.pos.x, this.pos.y, match.currentRound.map.staticMap.dimension)
+
+        let numeral
+        if (this.level === 2) {
+            numeral = 'II'
+        } else {
+            numeral = 'III'
+        }
+
+        ctx.font = '0.5px serif'
+        ctx.fillStyle = this.team.color
+        ctx.textAlign = 'right'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 10
+        ctx.fillText(numeral, coords.x + 1 - 0.05, coords.y + 0.4)
+        ctx.shadowColor = ''
+        ctx.shadowBlur = 0
+        ctx.textAlign = 'start'
     }
 
     public getInterpolatedCoords(match: Match): Vector {
@@ -458,11 +454,13 @@ export class Body {
     }
 
     public onHoverInfo(): string[] {
+        if (!this.game.playable) return [this.robotName]
+
         const defaultInfo = [
-            this.robotName,
+            `${this.robotName}${this.level === 2 ? ' (Lvl II)' : ''}${this.level >= 3 ? ' (Lvl III)' : ''}`,
             `ID: ${this.id}`,
-            `HP: ${this.hp}`,
-            `Paint: ${this.paint}`,
+            `HP: ${this.hp}/${this.maxHp}`,
+            `Paint: ${this.paint}/${this.maxPaint}`,
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
@@ -495,14 +493,12 @@ export class Body {
 
         const metadata = this.metadata
 
-        this.hp = metadata.baseHealth()
+        this.maxHp = metadata.baseHealth()
+        this.hp = this.maxHp
+        this.maxPaint = metadata.maxPaint()
+        this.paint = metadata.basePaint()
         this.actionCooldown = metadata.actionCooldown()
         this.moveCooldown = metadata.movementCooldown()
-    }
-
-    public getSpecialization(): { idx: number; name: string } {
-        // TODO: delete this function
-        return { idx: 0, name: 'base' }
     }
 }
 
@@ -555,11 +551,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -583,11 +575,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -611,11 +599,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -638,11 +622,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -665,11 +644,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     },
 
@@ -692,11 +666,6 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             hovered: boolean
         ): void {
             super.draw(match, ctx, overlayCtx, config, selected, hovered)
-
-            const interpCoords = this.getInterpolatedCoords(match)
-            // for (const [color, level, [dx, dy]] of levelIndicators) {
-            //     this.drawPetals(match, ctx, color, level, interpCoords.x + dx, interpCoords.y + dy)
-            // }
         }
     }
 }

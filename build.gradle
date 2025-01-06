@@ -3,10 +3,13 @@ apply plugin: 'maven-publish'
 
 import java.nio.file.*
 
-sourceCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
-if(JavaVersion.current() != JavaVersion.VERSION_1_8) {
-    throw new GradleException("The engine must be run using the Java 8 JDK")
+if(JavaVersion.current() < JavaVersion.VERSION_21) {
+    throw new GradleException("The engine must be run using >= Java 21 JDK")
 }
 
 // Avoid weird configuration-time dependency bugs
@@ -60,6 +63,11 @@ task headless(type: JavaExec, dependsOn: [':engine:build', ':example-bots:build'
   classpath = files(serverJar) + project(':example-bots').sourceSets.main.output + configurations.scala
   args = ['-c=-']
   jvmArgs = [
+    '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.math=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.util=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED',
+    '--add-opens=java.base/sun.security.action=ALL-UNNAMED',
     '-Dbc.server.wait-for-client=' + (project.findProperty('waitForClient') ?: 'false'),
     '-Dbc.server.mode=headless',
     '-Dbc.server.map-path=maps',
@@ -112,10 +120,10 @@ task release_main(type: Jar, dependsOn: [':engine:build']) {
     Files.write(f_version.toPath(), [project.property("release_version")]);
   }
 
-  archiveBaseName = "battlecode";
+  archiveBaseName.set("battlecode")
   if (project.hasProperty("release_version"))
-    archiveVersion = project.property("release_version");
-  destinationDirectory = project.projectDir;
+    archiveVersion.set(project.property("release_version"))
+  destinationDirectory.set(project.projectDir)
 
   FileCollection src = files(f_version);
   src += zipTree(serverJar);
@@ -133,19 +141,21 @@ task release_docs(type: Jar, dependsOn: [':engine:javadoc']) {
       throw new InvalidUserDataException("Must provide property \"release_version\"")
   }
 
-  archiveBaseName = "battlecode-javadoc"
+  archiveBaseName.set("battlecode-javadoc")
   if (project.hasProperty("release_version"))
-    archiveVersion = project.property("release_version");
-  destinationDirectory = project.projectDir;
+    archiveVersion.set(project.property("release_version"))
+  destinationDirectory.set(project.projectDir)
+  archiveClassifier.set('javadoc')
 
   from new File(project(":engine").docsDir, "javadoc")
 }
 
 task release_sources(type: Jar, dependsOn: classes) {
-  archiveBaseName = "battlecode-source"
+  archiveBaseName.set("battlecode-source")
   if (project.hasProperty("release_version"))
-    archiveVersion = project.property("release_version");
-  destinationDirectory = project.projectDir;
+    archiveVersion.set(project.property("release_version"))
+  destinationDirectory.set(project.projectDir)
+  archiveClassifier.set('sources')
 
   from project(":engine").sourceSets.main.allSource
 }
@@ -158,14 +168,8 @@ publishing {
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact release_main
-
-      artifact release_docs {
-        classifier 'javadoc'
-      }
-
-      artifact release_sources {
-        classifier 'sources'
-      }
+      artifact release_docs
+      artifact release_sources
     }
 
     client(MavenPublication) {

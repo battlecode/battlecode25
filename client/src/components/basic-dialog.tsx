@@ -55,7 +55,7 @@ export const BasicDialog: React.FC<PropsWithChildren<Props>> = (props) => {
         >
             <div
                 className={
-                    'flex flex-col flex-between items-center bg-white border border-black shadow-lg rounded-xl py-4 px-6 ' +
+                    'flex flex-col flex-between items-center bg-[#3f3131] border border-white shadow-lg rounded-xl py-4 px-6 ' +
                     widthStyle
                 }
             >

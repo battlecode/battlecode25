@@ -17,10 +17,10 @@ const MAX_SIMULATION_STEPS = 50000
 export default class Match {
     public maxRound: number = 1
     public currentRound: Round
-    public readonly profilerFiles: Profiler.ParsedProfilerFile[]
-    public readonly stats: RoundStat[]
-    private readonly deltas: schema.Round[]
-    private readonly snapshots: Round[]
+    public readonly profilerFiles: Profiler.ParsedProfilerFile[] = []
+    public readonly stats: RoundStat[] = []
+    private readonly deltas: schema.Round[] = []
+    private readonly snapshots: Round[] = []
     private _currentSimulationStep: number = 0
     private _playbackPerTurn: boolean = false
 
@@ -32,10 +32,6 @@ export default class Match {
         initialBodies: Bodies
     ) {
         this.currentRound = new Round(this, 0, new CurrentMap(map), initialBodies, new Actions())
-        this.snapshots = []
-        this.stats = []
-        this.deltas = []
-        this.profilerFiles = []
     }
 
     get constants(): schema.GameplayConstants {
@@ -49,7 +45,7 @@ export default class Match {
     set playbackPerTurn(value: boolean) {
         this._playbackPerTurn = value
         this._currentSimulationStep = 0
-        this.currentRound.jumpToTurn(value ? 0 : this.currentRound.turnsLength)
+        this.currentRound.jumpToTurn(0)
     }
 
     /**

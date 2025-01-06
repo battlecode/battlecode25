@@ -15,7 +15,7 @@ import org.apache.commons.lang3.NotImplementedException;
  * - tiebreak by creation time (priority to later creation)
  * - tiebreak by robot ID (priority to lower ID)
  */
-public strictfp class InternalRobot implements Comparable<InternalRobot> {
+public class InternalRobot implements Comparable<InternalRobot> {
 
     private final RobotControllerImpl controller;
     protected final GameWorld gameWorld;
@@ -35,7 +35,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     private int roundsAlive;
     private int turnsWithoutPaint;
-    private boolean hasSentSpawnAction;
     private int actionCooldownTurns;
     private int movementCooldownTurns;
 
@@ -61,7 +60,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param loc  the location of the robot
      * @param team the team of the robot
      */
-    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc, boolean skipSpawnAction) {
+    public InternalRobot(GameWorld gw, int id, Team team, UnitType type, MapLocation loc) {
         this.gameWorld = gw;
 
         this.ID = id;
@@ -81,7 +80,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
-        this.hasSentSpawnAction = skipSpawnAction;
         this.turnsWithoutPaint = 0;
         this.actionCooldownTurns = type.actionCooldown;
         this.movementCooldownTurns = GameConstants.COOLDOWN_LIMIT;
@@ -266,6 +264,12 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * Resets the action cooldown.
      */
     public void addActionCooldownTurns(int numActionCooldownToAdd) {
+        int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
+        if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
+            numActionCooldownToAdd += (int) Math.round(numActionCooldownToAdd
+                    * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
+                    / 100.0);
+        }
         setActionCooldownTurns(this.actionCooldownTurns + numActionCooldownToAdd);
     }
 
@@ -274,9 +278,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      */
     public void addMovementCooldownTurns() {
         int movementCooldown = GameConstants.MOVEMENT_COOLDOWN;
-        if (paintAmount < GameConstants.MOVEMENT_COOLDOWN) {
-            movementCooldown = (int) Math.round(GameConstants.MOVEMENT_COOLDOWN
-                    * (GameConstants.MOVEMENT_COOLDOWN_INTERCEPT + GameConstants.MOVEMENT_COOLDOWN_SLOPE * paintAmount)
+        int paintPercentage = (int) Math.round(this.paintAmount * 100.0/ this.type.paintCapacity);
+        if (paintPercentage < GameConstants.INCREASED_COOLDOWN_THRESHOLD && type.isRobotType()) {
+            movementCooldown += (int) Math.round(movementCooldown
+                    * (GameConstants.INCREASED_COOLDOWN_INTERCEPT + GameConstants.INCREASED_COOLDOWN_SLOPE * paintPercentage)
                     / 100.0);
         }
         this.setMovementCooldownTurns(this.movementCooldownTurns + movementCooldown);
@@ -309,7 +314,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health += healthAmount;
         this.health = Math.min(this.health, this.type.health);
         if (this.health <= 0) {
-            this.gameWorld.destroyRobot(this.ID);
+            this.gameWorld.destroyRobot(this.ID, false, true);
         }
     }
 
@@ -330,7 +335,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         addPaint(-UnitType.SOLDIER.attackCost);
 
         // Attack if it's a tower
-        if(this.gameWorld.getRobot(loc) != null && UnitType.isTowerType(this.gameWorld.getRobot(loc).getType())) {
+        if(this.gameWorld.getRobot(loc) != null && this.gameWorld.getRobot(loc).getType().isTowerType()) {
             InternalRobot tower = this.gameWorld.getRobot(loc);
             if(this.team != tower.getTeam()){
                 tower.addHealth(-UnitType.SOLDIER.attackStrength);
@@ -339,7 +344,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             }
         } else { // otherwise, maybe paint
             // If the tile is empty or same team paint, paint it
-            if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
+            if(this.gameWorld.isPaintable(loc) && 
+            (this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc)))) {
                 this.gameWorld.setPaint(loc, paintType);
                 this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
             }
@@ -353,6 +359,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     public void splasherAttack(MapLocation loc, boolean useSecondaryColor) {
         if(this.type != UnitType.SPLASHER)
             throw new RuntimeException("Unit must be a splasher");
+        this.gameWorld.getMatchMaker().addSplashAction(loc);
         int paintType = (useSecondaryColor ? this.gameWorld.getSecondaryPaint(this.team) : this.gameWorld.getPrimaryPaint(this.team));
 
         // This attack costs some paint
@@ -361,23 +368,23 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         MapLocation[] allLocs = this.gameWorld.getAllLocationsWithinRadiusSquared(loc, 4);
         for(MapLocation newLoc : allLocs) {
             // Attack if it's a tower (only if different team)
-            if(this.gameWorld.getRobot(newLoc) != null && UnitType.isTowerType(this.gameWorld.getRobot(newLoc).getType())) {
+            if(this.gameWorld.getRobot(newLoc) != null && this.gameWorld.getRobot(newLoc).getType().isTowerType()) {
                 InternalRobot tower = this.gameWorld.getRobot(newLoc);
                 if(this.team != tower.getTeam()){
-                    tower.addHealth(-UnitType.SPLASHER.attackStrength);
-                    this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.attackStrength);
+                    tower.addHealth(-UnitType.SPLASHER.aoeAttackStrength);
+                    this.gameWorld.getMatchMaker().addDamageAction(tower.ID, UnitType.SPLASHER.aoeAttackStrength);
                     this.gameWorld.getMatchMaker().addAttackAction(tower.ID);
                 }
-            } else { // otherwise, maybe paint
-                // If the tile is empty or same team paint, paint it
-                if(this.gameWorld.getPaint(loc) == 0 || this.gameWorld.teamFromPaint(paintType) == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
-                    this.gameWorld.setPaint(loc, paintType);
-                    this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
-                } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
-                    if(loc.isWithinDistanceSquared(newLoc, 2)){
-                        this.gameWorld.setPaint(loc, paintType);
-                        this.gameWorld.getMatchMaker().addPaintAction(loc, useSecondaryColor);
-                    }
+            }  
+            // If the tile is empty or same team paint, paint it
+            if (!this.gameWorld.isPaintable(newLoc)) continue;
+            if(this.gameWorld.getPaint(newLoc) == 0 || getTeam() == this.gameWorld.teamFromPaint(this.gameWorld.getPaint(newLoc))) {
+                this.gameWorld.setPaint(newLoc, paintType);
+                this.gameWorld.getMatchMaker().addPaintAction(newLoc, useSecondaryColor);
+            } else { // If the tile has opposite enemy team, paint only if within sqrt(2) radius
+                if(loc.isWithinDistanceSquared(newLoc, 2)){
+                    this.gameWorld.setPaint(newLoc, paintType);
+                    this.gameWorld.getMatchMaker().addPaintAction(newLoc, useSecondaryColor);
                 }
             }
         }
@@ -396,7 +403,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         addPaint(-UnitType.MOPPER.attackCost);
 
         // If there's a robot on the tile, remove 10 from their paint stash and add 5 to ours
-        if(this.gameWorld.getRobot(loc) != null && UnitType.isRobotType(this.gameWorld.getRobot(loc).getType())) {
+        if(this.gameWorld.getRobot(loc) != null && this.gameWorld.getRobot(loc).getType().isRobotType()) {
             InternalRobot robot = this.gameWorld.getRobot(loc);
             if(this.team != robot.getTeam()) {
                 robot.addPaint(-GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
@@ -406,7 +413,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         }
         
         // Either way, mop this tile if it has enemy paint
-        if(this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
+        if(this.gameWorld.isPaintable(loc) && this.gameWorld.teamFromPaint(paintType) != this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc))) {
             this.gameWorld.setPaint(loc, 0);
             this.gameWorld.getMatchMaker().addUnpaintAction(loc);
         }
@@ -417,8 +424,8 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void towerAttack(MapLocation loc) {
-        // if(!UnitType.isTowerType(this.type))
-        //     throw new GameActionException(CANT_DO_THAT, "Unit must be a tower");
+        if(!this.type.isTowerType())
+            throw new RuntimeException("Unit must be a tower");
 
         if(loc == null) { // area attack
             this.towerHasAreaAttacked = true;
@@ -464,6 +471,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if(dir == Direction.SOUTH) dirIdx = 1;
         else if(dir == Direction.EAST) dirIdx = 2;
         else if(dir == Direction.WEST) dirIdx = 3;
+        ArrayList<Integer> affectedIDs = new  ArrayList<>();
 
         for(int i = 0; i < 3; i ++) { // check all three spots
             int x = this.getLocation().x + dx[dirIdx][i], y = this.getLocation().y + dy[dirIdx][i];
@@ -471,16 +479,16 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             if(!this.gameWorld.getGameMap().onTheMap(newLoc)) continue;
 
             // Attack if it's a robot (only if different team)
-            if(this.gameWorld.getRobot(newLoc) != null && UnitType.isRobotType(this.gameWorld.getRobot(newLoc).getType())) {
+            if(this.gameWorld.getRobot(newLoc) != null && this.gameWorld.getRobot(newLoc).getType().isRobotType()) {
                 InternalRobot robot = this.gameWorld.getRobot(newLoc);
                 if(this.team != robot.getTeam()){
                     robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
-                    this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
+                    affectedIDs.add(robot.ID);
                 }
             }
         }
-        MapLocation centerLoc = this.location.add(dir);
-        this.gameWorld.getMatchMaker().addMopAction(centerLoc);
+        for (int i = 0; i < 3; i++) affectedIDs.add(0);
+        this.gameWorld.getMatchMaker().addMopAction(affectedIDs.get(0), affectedIDs.get(1), affectedIDs.get(2));
     }
 
     /**
@@ -516,6 +524,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public int getSentMessagesCount() {
         return sentMessagesCount;
+    }
+
+    public Message[] getMessages(){
+        return incomingMessages.toArray(new Message[incomingMessages.size()]);
     }
 
     public Message getFrontMessage() {
@@ -558,8 +570,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.cleanMessages();
         this.indicatorString = "";
         this.diedLocation = null;
-        addPaint(this.type.paintPerTurn);
-        this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn);
+        if (this.type.paintPerTurn != 0 )
+            addPaint(this.type.paintPerTurn + this.gameWorld.extraResourcesFromPatterns(this.team));
+        if (this.type.moneyPerTurn != 0)
+            this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn+this.gameWorld.extraResourcesFromPatterns(this.team));
     }
 
     public void processBeginningOfTurn() {
@@ -569,10 +583,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
-        if (!this.hasSentSpawnAction){
-            this.gameWorld.getMatchMaker().addSpawnAction(this.location, this.team, this.type);
-            this.hasSentSpawnAction = true;
-        }
     }
 
     public void processEndOfTurn() {
@@ -583,14 +593,22 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().endTurn(this.ID, this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
         this.roundsAlive++;
 
-        Team owningTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(this.location));
-        if (owningTeam == Team.NEUTRAL) {
-            this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
-        } else if (owningTeam == this.getTeam().opponent()) {
-            this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+        if (this.getType().isRobotType()){
+            Team owningTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(this.location));
+            if (owningTeam == Team.NEUTRAL) {
+                this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
+            } else if (owningTeam == this.getTeam().opponent()) {
+                this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+                int allyRobotCount = 0;
+                for (InternalRobot robot : this.gameWorld.getAllRobotsWithinRadiusSquared(this.location, 2, this.team)){
+                    if (robot.ID != this.ID)
+                        allyRobotCount++;
+                }
+                this.addPaint(-2 * allyRobotCount);
+            }
         }
 
-        if (this.paintAmount == 0 && UnitType.isRobotType(type)){
+        if (this.paintAmount == 0 && type.isRobotType()){
             this.turnsWithoutPaint += 1;
             if (this.turnsWithoutPaint == GameConstants.MAX_TURNS_WITHOUT_PAINT)
                 this.gameWorld.destroyRobot(this.ID);
@@ -621,8 +639,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     public void die_exception() {
-        this.gameWorld.getMatchMaker().addDieExceptionAction();
-        this.gameWorld.destroyRobot(getID());
+        this.gameWorld.destroyRobot(getID(), true, false);
     }
 
     // *****************************************

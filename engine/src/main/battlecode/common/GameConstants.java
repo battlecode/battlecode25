@@ -33,6 +33,18 @@ public class GameConstants {
     /** The maximum percentage of the map that can be walls */
     public static final int MAX_WALL_PERCENTAGE = 20;
 
+    /** The 32 bit representation of the special resource pattern. */
+    public static final int RESOURCE_PATTERN = 22369621; 
+
+    /** The 32 bit representation of the paint tower pattern. */
+    public static final int PAINT_TOWER_PATTERN = 18157905;
+
+    /** The 32 bit representation of the money tower pattern. */
+    public static final int MONEY_TOWER_PATTERN = 15583086;
+
+    /** The 32 bit representation of the defense tower pattern. */
+    public static final int DEFENSE_TOWER_PATTERN = 4685252;
+
     // *********************************
     // ****** GAME PARAMETERS **********
     // *********************************
@@ -76,9 +88,6 @@ public class GameConstants {
     /** Paint capacity for mopper robots */
     public static final int PAINT_CAPACITY_MOPPER = 100;
 
-    /** The amount of a paint a paint tower starts with. */
-    public static final int INITIAL_PAINT_TOWER_PAINT = 500;
-
     /** The amount of money each team starts with. */
     public static final int INITIAL_TEAM_MONEY = 1000;
 
@@ -104,26 +113,29 @@ public class GameConstants {
     /** The number of defense towers a player starts with */
     public static final int NUMBER_INITIAL_DEFENSE_TOWERS = 0;
 
+    /** The percentage of a unit's paint capacity that is full when first built. */
+    public static final int INITIAL_UNIT_PAINT_PERCENTAGE = 100;
+
     /** The width and height of the patterns that robots can draw */
     public static final int PATTERN_SIZE = 5;
 
     /** The paint cost of marking a resource or tower pattern */
     public static final int MARK_PATTERN_PAINT_COST = 25;
 
-    /** The end of the setup rounds in the game */
-    public static final int SETUP_ROUNDS = 200;
+    /** The extra resources per turn that resource patterns give */
+    public static final int EXTRA_RESOURCES_FROM_PATTERN = 3;
 
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;
 
-    /** Maximum percent amount of paint to start cooldown */
-    public static final int DECREASED_MOVEMENT_THRESHOLD = 50;
+    /** Percent of paint capacity at which a robot begins to face increased cooldowns */
+    public static final int INCREASED_COOLDOWN_THRESHOLD = 50;
 
-    /** Intercept in the formula for the movement cooldown */
-    public static final int MOVEMENT_COOLDOWN_INTERCEPT = 100;
+    /** Intercept in the formula for the increased cooldown */
+    public static final int INCREASED_COOLDOWN_INTERCEPT = 100;
 
-    /** Slope of paint in the formula for the movement cooldown */
-    public static final int MOVEMENT_COOLDOWN_SLOPE = -2;
+    /** Slope of paint in the formula for the increased cooldown */
+    public static final int INCREASED_COOLDOWN_SLOPE = -2;
 
     /** Multiplier for paint penalties moppers face for ending on non-ally territory. */
     public static final int MOPPER_PAINT_PENALTY_MULTIPLIER = 2;
@@ -140,7 +152,7 @@ public class GameConstants {
     /** The maximum distance from a tower for building robots */
     public static final int BUILD_ROBOT_RADIUS_SQUARED = 4;
 
-    /** The maximum distance from a robot for building towers */
+    /** The maximum distance from a robot for building and upgrading towers */
     public static final int BUILD_TOWER_RADIUS_SQUARED = 2;
 
     /** The maximum distance from a robot for completing special resource patterns */

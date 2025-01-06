@@ -96,7 +96,7 @@ public class MapBuilder {
                 UnitType.LEVEL_ONE_PAINT_TOWER,
                 UnitType.LEVEL_ONE_PAINT_TOWER.health,
                 loc,
-                GameConstants.INITIAL_PAINT_TOWER_PAINT
+                500
         ));
     }
 

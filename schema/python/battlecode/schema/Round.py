@@ -84,10 +84,66 @@ class Round(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
+    # The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+    # Round
+    def TeamCoverageAmounts(self, j: int):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
+        return 0
+
+    # Round
+    def TeamCoverageAmountsAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
+        return 0
+
+    # Round
+    def TeamCoverageAmountsLength(self) -> int:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # Round
+    def TeamCoverageAmountsIsNone(self) -> bool:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        return o == 0
+
+    # The total number of active resource patterns per team
+    # Round
+    def TeamResourcePatternAmounts(self, j: int):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
+        return 0
+
+    # Round
+    def TeamResourcePatternAmountsAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
+        return 0
+
+    # Round
+    def TeamResourcePatternAmountsLength(self) -> int:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # Round
+    def TeamResourcePatternAmountsIsNone(self) -> bool:
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        return o == 0
+
     # Ordered turn data for each robot during the round
     # Round
     def Turns(self, j: int) -> Optional[Turn]:
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
@@ -99,20 +155,20 @@ class Round(object):
 
     # Round
     def TurnsLength(self) -> int:
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
     def TurnsIsNone(self) -> bool:
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         return o == 0
 
-    # The IDs of bodies that died.
+    # The IDs of bodies that died at the end of the round, with no attributable cause.
     # Round
     def DiedIds(self, j: int):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         if o != 0:
             a = self._tab.Vector(o)
             return self._tab.Get(flatbuffers.number_types.Int32Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
@@ -120,21 +176,21 @@ class Round(object):
 
     # Round
     def DiedIdsAsNumpy(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         if o != 0:
             return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Int32Flags, o)
         return 0
 
     # Round
     def DiedIdsLength(self) -> int:
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
     # Round
     def DiedIdsIsNone(self) -> bool:
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         return o == 0
 
     # The first sent Round in a match should have index 1. (The starting state,
@@ -142,13 +198,13 @@ class Round(object):
     # It should increase by one for each following round.
     # Round
     def RoundId(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
 def RoundStart(builder: flatbuffers.Builder):
-    builder.StartObject(5)
+    builder.StartObject(7)
 
 def Start(builder: flatbuffers.Builder):
     RoundStart(builder)
@@ -177,8 +233,32 @@ def RoundStartTeamResourceAmountsVector(builder, numElems: int) -> int:
 def StartTeamResourceAmountsVector(builder, numElems: int) -> int:
     return RoundStartTeamResourceAmountsVector(builder, numElems)
 
+def RoundAddTeamCoverageAmounts(builder: flatbuffers.Builder, teamCoverageAmounts: int):
+    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(teamCoverageAmounts), 0)
+
+def AddTeamCoverageAmounts(builder: flatbuffers.Builder, teamCoverageAmounts: int):
+    RoundAddTeamCoverageAmounts(builder, teamCoverageAmounts)
+
+def RoundStartTeamCoverageAmountsVector(builder, numElems: int) -> int:
+    return builder.StartVector(4, numElems, 4)
+
+def StartTeamCoverageAmountsVector(builder, numElems: int) -> int:
+    return RoundStartTeamCoverageAmountsVector(builder, numElems)
+
+def RoundAddTeamResourcePatternAmounts(builder: flatbuffers.Builder, teamResourcePatternAmounts: int):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(teamResourcePatternAmounts), 0)
+
+def AddTeamResourcePatternAmounts(builder: flatbuffers.Builder, teamResourcePatternAmounts: int):
+    RoundAddTeamResourcePatternAmounts(builder, teamResourcePatternAmounts)
+
+def RoundStartTeamResourcePatternAmountsVector(builder, numElems: int) -> int:
+    return builder.StartVector(4, numElems, 4)
+
+def StartTeamResourcePatternAmountsVector(builder, numElems: int) -> int:
+    return RoundStartTeamResourcePatternAmountsVector(builder, numElems)
+
 def RoundAddTurns(builder: flatbuffers.Builder, turns: int):
-    builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(turns), 0)
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(turns), 0)
 
 def AddTurns(builder: flatbuffers.Builder, turns: int):
     RoundAddTurns(builder, turns)
@@ -190,7 +270,7 @@ def StartTurnsVector(builder, numElems: int) -> int:
     return RoundStartTurnsVector(builder, numElems)
 
 def RoundAddDiedIds(builder: flatbuffers.Builder, diedIds: int):
-    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(diedIds), 0)
+    builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(diedIds), 0)
 
 def AddDiedIds(builder: flatbuffers.Builder, diedIds: int):
     RoundAddDiedIds(builder, diedIds)
@@ -202,7 +282,7 @@ def StartDiedIdsVector(builder, numElems: int) -> int:
     return RoundStartDiedIdsVector(builder, numElems)
 
 def RoundAddRoundId(builder: flatbuffers.Builder, roundId: int):
-    builder.PrependInt32Slot(4, roundId, 0)
+    builder.PrependInt32Slot(6, roundId, 0)
 
 def AddRoundId(builder: flatbuffers.Builder, roundId: int):
     RoundAddRoundId(builder, roundId)

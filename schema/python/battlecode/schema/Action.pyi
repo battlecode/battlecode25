@@ -13,14 +13,17 @@ class Action(object):
   DamageAction: int
   PaintAction: int
   UnpaintAction: int
+  MarkAction: int
+  UnmarkAction: int
   AttackAction: int
+  SplashAction: int
   MopAction: int
   BuildAction: int
   TransferAction: int
   MessageAction: int
   SpawnAction: int
+  DieAction: int
   UpgradeAction: int
-  DieExceptionAction: int
   IndicatorStringAction: int
   IndicatorDotAction: int
   IndicatorLineAction: int

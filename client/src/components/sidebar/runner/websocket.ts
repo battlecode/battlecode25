@@ -109,6 +109,7 @@ export default class WebSocketListener {
 
                 this.onMatchCreated(currentMatch)
                 this.activeMatch = currentMatch
+                this.lastSetRound = currentMatch.currentRound.roundNumber
 
                 break
             }

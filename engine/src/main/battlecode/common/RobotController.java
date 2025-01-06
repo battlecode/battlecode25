@@ -9,7 +9,7 @@ import java.util.Map;
  * controls the newly created robot.
  */
 @SuppressWarnings("unused")
-public strictfp interface RobotController {
+public interface RobotController {
 
     // *********************************
     // ****** GLOBAL QUERY METHODS *****
@@ -45,6 +45,25 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     int getMapHeight();
+
+    /**
+     * Returns the 5x5 resource pattern.
+     * @return a boolean array of arrays, where entry [i][j] is true 
+     * if the i'th row and j'th column of the pattern should use the secondary color
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean[][] getResourcePattern();
+
+    /**
+     * Returns the 5x5 pattern needed to be drawn to build a tower of the specified type.
+     * @param type the type of tower to build. Must be a tower type.
+     * @return a boolean array of arrays, where entry [i][j] is true 
+     * if the i'th row and j'th column of the pattern should use the secondary color
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean[][] getTowerPattern(UnitType type) throws GameActionException;
 
     // *********************************
     // ****** UNIT QUERY METHODS *******
@@ -540,12 +559,13 @@ public strictfp interface RobotController {
      * the given location.
      * This requires there to be a ruin at the location.
      * 
+     * @param type which tower pattern type should be used
      * @param loc  the center of the 5x5 pattern
      * @return true if a tower pattern can be marked at loc
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canMarkTowerPattern(MapLocation loc);
+    boolean canMarkTowerPattern(UnitType type, MapLocation loc);
 
     /**
      * Builds a tower by marking a 5x5 pattern centered at the given location.
@@ -557,19 +577,6 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
-
-    /**
-     * Builds a tower by marking a 5x5 pattern centered at the given location.
-     * This requires there to be a ruin at the location.
-     * 
-     * @param type          the type of tower to mark the pattern for
-     * @param loc           the center of the 5x5 pattern
-     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
-     * @param reflect       whether to reflect the pattern
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
 
     /**
      * Checks if a tower can be upgraded by verifying conditions on the location, team, 
@@ -609,17 +616,6 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void markResourcePattern(MapLocation loc) throws GameActionException;
-
-    /**
-     * Marks a 5x5 special resource pattern centered at the given location.
-     * 
-     * @param loc           the center of the resource pattern
-     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
-     * @param reflect       whether to reflect the pattern
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
 
     /**
      * Checks if the robot can build a tower at the given location.
@@ -759,6 +755,17 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
+
+    /**
+     * Reads all messages sent to this unit within the past 5 rounds if roundNum = -1, or only
+     * messages sent from the specified round otherwise
+     * 
+     * @param roundNum the round number to read messages from, or -1 to read all messages in the queue
+     * @return All messages of the specified round, or all messages from the past 5 round.
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    Message[] readMessages(int roundNum);
 
     // ***********************************
     // ****** OTHER ACTION METHODS *******

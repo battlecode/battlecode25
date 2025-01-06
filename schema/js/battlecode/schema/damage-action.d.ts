@@ -6,6 +6,9 @@ export declare class DamageAction {
     bb: flatbuffers.ByteBuffer | null;
     bb_pos: number;
     __init(i: number, bb: flatbuffers.ByteBuffer): DamageAction;
+    /**
+     * Id of the damage target
+     */
     id(): number;
     damage(): number;
     static sizeOf(): number;

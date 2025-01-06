@@ -16,6 +16,9 @@ export class BuildAction {
   return this;
 }
 
+/**
+ * Id of the tower bot
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }

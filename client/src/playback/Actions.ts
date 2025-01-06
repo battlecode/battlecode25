@@ -5,8 +5,7 @@ import assert from 'assert'
 import * as renderUtils from '../util/RenderUtil'
 import { vectorAdd, vectorLength, vectorMultiply, vectorSub, vectorMultiplyInPlace, Vector } from './Vector'
 import Match from './Match'
-import { Body } from './Bodies'
-import { ATTACK_COLOR, TEAM_COLORS } from '../constants'
+import { getImageIfLoaded } from '../util/ImageLoader'
 
 type ActionUnion = Exclude<ReturnType<typeof unionToAction>, null>
 
@@ -36,7 +35,7 @@ export default class Actions {
         }
     }
 
-    prepareForNextRound(): void {
+    tickLifetimes(): void {
         // Tick lifetimes of applied actions
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--
@@ -74,39 +73,19 @@ export class Action<T extends ActionUnion> {
      * @param stat if provided, this action will mutate the stat to reflect the action
      */
     apply(round: Round): void {}
+
     draw(match: Match, ctx: CanvasRenderingContext2D) {}
+
     copy(): Action<T> {
         // creates a new object using this object's prototype and all its parameters. this is a shallow copy, override this if you need a deep copy
         return Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this))
     }
 }
 
-//export abstract class ToFromAction extends Action {
-//    constructor(action: ActionUnion) {
-//        super(action)
-//    }
-
-//    abstract drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void
-
-//    draw(match: Match, ctx: CanvasRenderingContext2D) {
-//        const body = match.currentRound.bodies.getById(this.robotID) ?? assert.fail('Acting body not found')
-//        const interpStart = renderUtils.getInterpolatedCoordsFromBody(body, match.getInterpolationFactor())
-//        const targetBody = match.currentRound.bodies.getById(this.target) ?? assert.fail('Action target not found')
-//        const interpEnd = renderUtils.getInterpolatedCoordsFromBody(targetBody, match.getInterpolationFactor())
-//        this.drawToFrom(match, ctx, interpStart, interpEnd, body)
-//    }
-//}
-
 export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion>> = {
     [schema.Action.NONE]: class NONE extends Action<ActionUnion> {
         apply(round: Round): void {
             throw new Error("yoo what !?! this shouldn't happen! :( (NONE action)")
-        }
-    },
-    [schema.Action.DieExceptionAction]: class DieExceptionAction extends Action<schema.DieExceptionAction> {
-        apply(round: Round): void {
-            // TODO: revist this
-            console.log(`Robot ${this.robotId} has died due to an exception`)
         }
     },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
@@ -117,11 +96,38 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             target.hp -= this.actionData.damage()
         }
     },
-    [schema.Action.AttackAction]: class AttackActionr extends Action<schema.AttackAction> {
-        apply(round: Round): void {
-            // To discuss
+    [schema.Action.SplashAction]: class SplashAction extends Action<schema.SplashAction> {
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
+            const pos = match.map.indexToLocation(this.actionData.loc())
+            const coords = renderUtils.getRenderCoords(pos.x, pos.y, match.map.dimension, true)
+
+            ctx.strokeStyle = body.team.color
+            ctx.globalAlpha = 0.3
+            ctx.fillStyle = body.team.color
+            ctx.beginPath()
+            ctx.arc(coords.x, coords.y, 2, 0, 2 * Math.PI)
+            ctx.fill()
+            ctx.stroke()
+            ctx.globalAlpha = 1
         }
-        drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
+    },
+    [schema.Action.AttackAction]: class AttackAction extends Action<schema.AttackAction> {
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const srcBody = match.currentRound.bodies.getById(this.robotId)
+            const dstBody = match.currentRound.bodies.getById(this.actionData.id())
+
+            let from, to
+            if (srcBody.robotType === schema.RobotType.MOPPER) {
+                // For moppers, reverse the direction of the 'attack' since it represents
+                // taking paint from the other robot
+                from = dstBody.getInterpolatedCoords(match)
+                to = srcBody.getInterpolatedCoords(match)
+            } else {
+                from = srcBody.getInterpolatedCoords(match)
+                to = dstBody.getInterpolatedCoords(match)
+            }
+
             // Compute the start and end points for the animation projectile
             const dir = vectorSub(to, from)
             const len = vectorLength(dir)
@@ -137,7 +143,13 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 ctx,
                 renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
                 renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-                { teamForOffset: body.team, color: body.team.color, lineWidth: 0.05, opacity: 0.3, renderArrow: false }
+                {
+                    teamForOffset: srcBody.team,
+                    color: srcBody.team.color,
+                    lineWidth: 0.06,
+                    opacity: 0.5,
+                    renderArrow: false
+                }
             )
 
             // Projectile animation
@@ -153,124 +165,202 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                     projectileEnd.y,
                     match.currentRound.map.staticMap.dimension
                 ),
-                { teamForOffset: body.team, color: body.team.color, lineWidth: 0.05, opacity: 1.0, renderArrow: false }
+                {
+                    teamForOffset: srcBody.team,
+                    color: srcBody.team.color,
+                    lineWidth: 0.06,
+                    opacity: 1.0,
+                    renderArrow: false
+                }
             )
-        }
-    },
-    //[schema.Action.HEAL]: class Heal extends ToFromAction {
-    //    apply(round: Round): void {
-    //        // To discuss
-    //    }
-    //    drawToFrom(match: Match, ctx: CanvasRenderingContext2D, from: Vector, to: Vector, body: Body): void {
-    //        renderUtils.renderLine(
-    //            ctx,
-    //            renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
-    //            renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-    //            {
-    //                color: HEAL_COLOR,
-    //                lineWidth: 0.05,
-    //                opacity: 0.5,
-    //                renderArrow: true
-    //            }
-    //        )
-    //    }
-    //},
-    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
-        apply(round: Round): void {
-            round.map.paint[this.actionData.loc()] = 0
         }
     },
     [schema.Action.PaintAction]: class PaintAction extends Action<schema.PaintAction> {
         apply(round: Round): void {
-            round.map.paint[this.actionData.loc()] = round.bodies.getById(this.robotId).team.id
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            const paintVal = teamId * 2 + 1 + this.actionData.isSecondary()
+            round.map.paint[this.actionData.loc()] = paintVal
+        }
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
+            const pos = body.getInterpolatedCoords(match)
+
+            const target = match.map.indexToLocation(this.actionData.loc())
+            renderUtils.renderLine(
+                ctx,
+                renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension),
+                renderUtils.getRenderCoords(target.x, target.y, match.currentRound.map.staticMap.dimension),
+                {
+                    color: body.team.color,
+                    lineWidth: 0.04,
+                    opacity: 0.4
+                }
+            )
+        }
+    },
+    [schema.Action.UnpaintAction]: class UnpaintAction extends Action<schema.UnpaintAction> {
+        apply(round: Round): void {
+            round.map.paint[this.actionData.loc()] = 0
+        }
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const body = match.currentRound.bodies.getById(this.robotId)
+            const pos = body.getInterpolatedCoords(match)
+
+            const target = match.map.indexToLocation(this.actionData.loc())
+            renderUtils.renderLine(
+                ctx,
+                renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension),
+                renderUtils.getRenderCoords(target.x, target.y, match.currentRound.map.staticMap.dimension),
+                {
+                    color: body.team.color,
+                    lineWidth: 0.04,
+                    opacity: 0.4
+                }
+            )
+        }
+    },
+    [schema.Action.MarkAction]: class MarkAction extends Action<schema.MarkAction> {
+        apply(round: Round): void {
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            const color = teamId * 2 + 1 + this.actionData.isSecondary()
+            round.map.markers[teamId][this.actionData.loc()] = color
+        }
+    },
+    [schema.Action.UnmarkAction]: class UnmarkAction extends Action<schema.UnmarkAction> {
+        apply(round: Round): void {
+            const teamId = round.bodies.getById(this.robotId).team.id - 1
+            round.map.markers[teamId][this.actionData.loc()] = 0
         }
     },
     [schema.Action.MopAction]: class MopAction extends Action<schema.MopAction> {
-        apply(round: Round): void {
-            // To discuss
-        }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            const radius = Math.sqrt(4)
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.actionData.loc())
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const mainBody = match.currentRound.bodies.getById(this.robotId) // Main robot
+            const mainPos = mainBody.getInterpolatedCoords(match)
+            const mainCoords = renderUtils.getRenderCoords(mainPos.x, mainPos.y, map.dimension, true)
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
-
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = ATTACK_COLOR
+            ctx.strokeStyle = mainBody.team.color
+            ctx.globalAlpha = 0.3
+            ctx.fillStyle = mainBody.team.color
             ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
+            ctx.arc(mainCoords.x, mainCoords.y, 1.0, 0, 2 * Math.PI)
             ctx.fill()
             ctx.stroke()
             ctx.globalAlpha = 1
+
+            // Fetch targets
+            const targetIds = [this.actionData.id0(), this.actionData.id1(), this.actionData.id2()]
+            const targets = targetIds
+                .filter((id) => id !== 0) // Filter out IDs equal to 0
+                .map((id) => match.currentRound.bodies.getById(id)) // Map only non-zero IDs
+
+            const factor = match.getInterpolationFactor()
+
+            const sweepOffset = Math.sin((factor - 0.9) * Math.PI * 10) * 0.1 // Back-and-forth motion
+            const rotationAngle = Math.sin((factor - 0.9) * Math.PI * 10) * 0.2 // Slight rotation
+
+            // Loop through targets and draw visuals
+            targets.forEach((target, index) => {
+                if (!target) return
+
+                const baseCoords = renderUtils.getRenderCoords(target.pos.x, target.pos.y, map.dimension, false)
+
+                // Apply the sweeping offset to the coordinates
+                const coords = {
+                    x: baseCoords.x + (index % 2 === 0 ? sweepOffset : -sweepOffset), // Alternate direction for different targets
+                    y: baseCoords.y // Keep y constant for a horizontal sweep
+                }
+
+                // Draw line from main robot to the target
+                ctx.globalAlpha = 0.5
+                ctx.strokeStyle = 'white'
+                ctx.lineWidth = 0.05
+                ctx.beginPath()
+                ctx.moveTo(mainCoords.x, mainCoords.y)
+                ctx.lineTo(coords.x + 0.5, coords.y + 0.5)
+                ctx.stroke()
+
+                // Render image with rotation
+                ctx.globalAlpha = 0.75
+                const transform = ctx.getTransform()
+                ctx.translate(coords.x, coords.y) // Move context to target position
+                ctx.rotate(rotationAngle) // Rotate context
+                renderUtils.renderCenteredImageOrLoadingIndicator(
+                    ctx,
+                    getImageIfLoaded('icons/mopper.png'),
+                    { x: 0, y: 0 }, // Draw at the new origin
+                    1
+                )
+                ctx.setTransform(transform)
+            })
+
+            ctx.globalAlpha = 1 // Reset global alpha
         }
     },
-    //!! change
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
-        apply(round: Round): void {}
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            /*
-            const radius = 3
             const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const body = match.currentRound.bodies.getById(this.actionData.id())
+            const coords = renderUtils.getRenderCoords(body.pos.x, body.pos.y, map.dimension, false)
+            const factor = match.getInterpolationFactor()
+            const isEndpoint = factor == 0 || factor == 1
+            const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
-
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = WATER_COLOR
-            ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
-            ctx.fill()
-            ctx.stroke()
+            ctx.globalAlpha = alpha
+            renderUtils.renderCenteredImageOrLoadingIndicator(
+                ctx,
+                getImageIfLoaded('icons/hammer_64x64.png'),
+                coords,
+                size
+            )
             ctx.globalAlpha = 1
-            */
         }
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
-            // To dicuss
+            const src = round.bodies.getById(this.robotId)
+            const dst = round.bodies.getById(this.actionData.id())
+
+            src.paint -= this.actionData.amount()
+            dst.paint += this.actionData.amount()
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            /*
-            const radius = Math.sqrt(13)
-            const map = match.currentRound.map
-            const loc = map.indexToLocation(this.target)
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, map.dimension, true)
+            const srcBody = match.currentRound.bodies.getById(this.robotId)
+            const dstBody = match.currentRound.bodies.getById(this.actionData.id())
 
-            // Get the trap color, assumes only opposite team can trigger
-            const triggeredBot = match.currentRound.bodies.getById(this.robotId)
-            ctx.strokeStyle = TEAM_COLORS[1 - (triggeredBot.team.id - 1)]
+            const from = srcBody.getInterpolatedCoords(match)
+            const to = dstBody.getInterpolatedCoords(match)
 
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = 'black'
-            ctx.beginPath()
-            ctx.arc(coords.x, coords.y, radius, 0, 2 * Math.PI)
-            ctx.fill()
-            ctx.stroke()
-            ctx.globalAlpha = 1
-            */
+            renderUtils.renderLine(
+                ctx,
+                renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
+                renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
+                {
+                    color: '#11fc30',
+                    lineWidth: 0.06,
+                    opacity: 0.5,
+                    renderArrow: true
+                }
+            )
         }
     },
     [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
-        apply(round: Round): void {
-            /*
-            const flagId = this.target
-            const flagData = round.map.flagData.get(flagId)!
-            flagData.carrierId = this.robotId
-            round.bodies.getById(this.robotId).carryingFlagId = flagId
-            */
-        }
+        apply(round: Round): void {}
     },
     [schema.Action.SpawnAction]: class SpawnAction extends Action<schema.SpawnAction> {
         apply(round: Round): void {
-            // This assumes ids are never reused
-            round.bodies.spawnBodyFromAction(this.robotId, this.actionData)
+            round.bodies.spawnBodyFromAction(this.actionData)
+        }
+    },
+    [schema.Action.DieAction]: class DieAction extends Action<schema.DieAction> {
+        apply(round: Round): void {
+            if (this.actionData.dieType() === schema.DieType.EXCEPTION) {
+                // TODO: revisit this
+                console.log(`Robot ${this.robotId} has died due to an exception`)
+            }
+
+            round.bodies.markBodyAsDead(this.actionData.id())
         }
     },
     [schema.Action.UpgradeAction]: class UpgradeAction extends Action<schema.UpgradeAction> {
@@ -278,6 +368,28 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const towerId = this.actionData.id()
             const body = round.bodies.getById(towerId)
             body.level += 1
+            body.hp = this.actionData.newHealth()
+            body.maxHp = this.actionData.newMaxHealth()
+            body.paint = this.actionData.newPaint()
+            body.maxPaint = this.actionData.newMaxPaint()
+        }
+        draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            const map = match.currentRound.map
+            const body = match.currentRound.bodies.getById(this.actionData.id())
+            const coords = renderUtils.getRenderCoords(body.pos.x, body.pos.y, map.dimension, false)
+            const factor = match.getInterpolationFactor()
+            const isEndpoint = factor == 0 || factor == 1
+            const size = isEndpoint ? 1 : Math.max(factor * 2, 0.3)
+            const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
+
+            ctx.globalAlpha = alpha
+            renderUtils.renderCenteredImageOrLoadingIndicator(
+                ctx,
+                getImageIfLoaded('icons/gears_64x64.png'),
+                coords,
+                size
+            )
+            ctx.globalAlpha = 1
         }
     },
     [schema.Action.IndicatorStringAction]: class IndicatorStringAction extends Action<schema.IndicatorStringAction> {

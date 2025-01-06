@@ -43,7 +43,7 @@ public class InstrumentingClassVisitor extends ClassVisitor implements Opcodes {
                                      boolean checkDisallowed,
                                      boolean debugMethodsEnabled,
                                      boolean profilerEnabled) throws InstrumentationException {
-        super(Opcodes.ASM5, cv);
+        super(Opcodes.ASM9, cv);
         this.loader = loader;
         this.silenced = silenced;
         this.checkDisallowed = checkDisallowed;
@@ -146,6 +146,19 @@ public class InstrumentingClassVisitor extends ClassVisitor implements Opcodes {
                 loader.getRefUtil().classReference(outerName, checkDisallowed),
                 innerName, access
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public void visitNestHost(final String nestHost) {
+        super.visitNestHost(loader.getRefUtil().classReference(nestHost, checkDisallowed));
+    }
+    /**
+     * @inheritDoc
+     */
+    public void visitNestMember(final String nestMember) {
+        super.visitNestMember(loader.getRefUtil().classReference(nestMember, checkDisallowed));
     }
 
 }

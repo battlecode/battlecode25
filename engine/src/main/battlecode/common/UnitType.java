@@ -1,21 +1,21 @@
 package battlecode.common;
 
 public enum UnitType {
-    SOLDIER(100, 250, 5, 250, -1, 200, 10, 20, 20, -1, 0, 0),
-    SPLASHER(150, 400, 50, 150, -1, 300, 50, 9, -1, 50, 0, 0),
-    MOPPER(50, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
+    SOLDIER(200, 250, 5, 250, -1, 200, 10, 20, 20, -1, 0, 0),
+    SPLASHER(300, 400, 50, 150, -1, 300, 50, 9, -1, 50, 0, 0),
+    MOPPER(100, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
     
     LEVEL_ONE_PAINT_TOWER(0, 25,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0),
-    LEVEL_TWO_PAINT_TOWER(0, 100, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
-    LEVEL_THREE_PAINT_TOWER(0, 100, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
+    LEVEL_TWO_PAINT_TOWER(0, 250, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
+    LEVEL_THREE_PAINT_TOWER(0, 500, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
 
     LEVEL_ONE_MONEY_TOWER(0, 25,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 10),
-    LEVEL_TWO_MONEY_TOWER(0, 100,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 15),
-    LEVEL_THREE_MONEY_TOWER(0, 100, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 20),
+    LEVEL_TWO_MONEY_TOWER(0, 250,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 15),
+    LEVEL_THREE_MONEY_TOWER(0, 500, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 20),
 
     LEVEL_ONE_DEFENSE_TOWER(0, 25,  0, 2500, 1, 1000, 10, 25, 60, 30, 0, 0),
-    LEVEL_TWO_DEFENSE_TOWER(0, 50,  0, 3000, 2, 1000, 10, 25, 65, 35, 0, 0),
-    LEVEL_THREE_DEFENSE_TOWER(0, 50, 0, 3500, 3, 1000, 10, 25, 70, 40, 0, 0);
+    LEVEL_TWO_DEFENSE_TOWER(0, 250,  0, 3000, 2, 1000, 10, 25, 65, 35, 0, 0),
+    LEVEL_THREE_DEFENSE_TOWER(0, 500, 0, 3500, 3, 1000, 10, 25, 70, 40, 0, 0);
 
 
     // the paint cost to build the unit
@@ -54,20 +54,20 @@ public enum UnitType {
     // how much money the unit generates per turn
     public final int moneyPerTurn;
 
-    public static boolean isRobotType(UnitType type){
-        return type == SOLDIER || type == SPLASHER || type == MOPPER;
+    public boolean isRobotType(){
+        return this == SOLDIER || this == SPLASHER || this == MOPPER;
     }
 
-    public static boolean isTowerType(UnitType type){
-        return !isRobotType(type);
+    public boolean isTowerType(){
+        return !this.isRobotType();
     }
 
-    public static boolean canUpgradeType(UnitType type){
-        return (type.level == 1 || type.level == 2) && isTowerType(type);
+    public boolean canUpgradeType(){
+        return (this.level == 1 || this.level == 2) && this.isTowerType();
     }
 
-    public static UnitType getNextLevel(UnitType type){
-        switch (type){
+    public UnitType getNextLevel(){
+        switch (this){
             case LEVEL_ONE_DEFENSE_TOWER: return LEVEL_TWO_DEFENSE_TOWER;
             case LEVEL_TWO_DEFENSE_TOWER: return LEVEL_THREE_DEFENSE_TOWER;
             case LEVEL_ONE_MONEY_TOWER: return LEVEL_TWO_MONEY_TOWER;

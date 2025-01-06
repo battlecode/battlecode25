@@ -27,10 +27,22 @@ public final class UpgradeAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public UpgradeAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
+  /**
+   * Id of the upgraded tower
+   */
   public int id() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int newHealth() { return bb.getInt(bb_pos + 4); }
+  public int newMaxHealth() { return bb.getInt(bb_pos + 8); }
+  public int newPaint() { return bb.getInt(bb_pos + 12); }
+  public int newMaxPaint() { return bb.getInt(bb_pos + 16); }
 
-  public static int createUpgradeAction(FlatBufferBuilder builder, int id) {
-    builder.prep(2, 2);
+  public static int createUpgradeAction(FlatBufferBuilder builder, int id, int newHealth, int newMaxHealth, int newPaint, int newMaxPaint) {
+    builder.prep(4, 20);
+    builder.putInt(newMaxPaint);
+    builder.putInt(newPaint);
+    builder.putInt(newMaxHealth);
+    builder.putInt(newHealth);
+    builder.pad(2);
     builder.putShort((short) id);
     return builder.offset();
   }
@@ -42,4 +54,3 @@ public final class UpgradeAction extends Struct {
     public UpgradeAction get(UpgradeAction obj, int j) {  return obj.__assign(__element(j), bb); }
   }
 }
-

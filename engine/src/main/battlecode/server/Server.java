@@ -28,7 +28,7 @@ import javax.management.RuntimeErrorException;
  * configuration parameters to the game engine and engine output to an abstract
  * match data sink.
  */
-public strictfp class Server implements Runnable {
+public class Server implements Runnable {
     /**
      * The GameInfo that signals the server to terminate when it is encountered on the game queue.
      */

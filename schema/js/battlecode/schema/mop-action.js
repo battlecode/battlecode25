@@ -15,15 +15,26 @@ var MopAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
-    MopAction.prototype.loc = function () {
+    /**
+     * Ids of the mopped targets, possibly 0
+     */
+    MopAction.prototype.id0 = function () {
         return this.bb.readUint16(this.bb_pos);
     };
-    MopAction.sizeOf = function () {
-        return 2;
+    MopAction.prototype.id1 = function () {
+        return this.bb.readUint16(this.bb_pos + 2);
     };
-    MopAction.createMopAction = function (builder, loc) {
-        builder.prep(2, 2);
-        builder.writeInt16(loc);
+    MopAction.prototype.id2 = function () {
+        return this.bb.readUint16(this.bb_pos + 4);
+    };
+    MopAction.sizeOf = function () {
+        return 6;
+    };
+    MopAction.createMopAction = function (builder, id0, id1, id2) {
+        builder.prep(2, 6);
+        builder.writeInt16(id2);
+        builder.writeInt16(id1);
+        builder.writeInt16(id0);
         return builder.offset();
     };
     return MopAction;
