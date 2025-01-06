@@ -187,15 +187,19 @@ public class GameWorld {
     }
 
     private void updateResourcePatterns() {
+        ArrayList<MapLocation> newResourcePatternCenters = new ArrayList<>();
         for (MapLocation center : resourcePatternCenters) {
             Team team = resourcePatternCentersByLoc[locationToIndex(center)];
             boolean stillActive = checkResourcePattern(team, center);
 
             if (!stillActive) {
-                resourcePatternCenters.remove(center);
                 resourcePatternCentersByLoc[locationToIndex(center)] = Team.NEUTRAL;
             }
+            else{
+                newResourcePatternCenters.add(center);
+            }
         }
+        this.resourcePatternCenters = newResourcePatternCenters;
     }
 
     public int getResourcePatternBit(int dx, int dy) {
@@ -241,7 +245,6 @@ public class GameWorld {
         // boolean[] possibleSymmetries = new boolean[8];
         // for (int i = 0; i < 8; i++) possibleSymmetries[i] = true;
         // int numRemainingSymmetries = 8;
-
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
                 // ignore checking paint for center ruin location
