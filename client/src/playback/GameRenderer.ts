@@ -50,6 +50,7 @@ class GameRendererClass {
         // Preload all game images
         loadImage('icons/gears_64x64.png')
         loadImage('icons/hammer_64x64.png')
+        loadImage('icons/mop_64x64.png')
         loadImage('ruins/silver.png')
         for (const color of TEAM_COLOR_NAMES) {
             loadImage(`robots/${color.toLowerCase()}/defense_tower_64x64.png`)

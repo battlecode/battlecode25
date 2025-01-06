@@ -263,7 +263,8 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             targets.forEach((target, index) => {
                 if (!target) return
 
-                const baseCoords = renderUtils.getRenderCoords(target.pos.x, target.pos.y, map.dimension, false)
+                const targetPos = target.getInterpolatedCoords(match)
+                const baseCoords = renderUtils.getRenderCoords(targetPos.x, targetPos.y, map.dimension, false)
 
                 // Apply the sweeping offset to the coordinates
                 const coords = {
@@ -281,20 +282,24 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
                 ctx.stroke()
 
                 // Render image with rotation
-                ctx.globalAlpha = 0.75
+                ctx.globalAlpha = 1.0
+                ctx.shadowBlur = 4
+                ctx.shadowColor = 'black'
                 const transform = ctx.getTransform()
                 ctx.translate(coords.x, coords.y) // Move context to target position
                 ctx.rotate(rotationAngle) // Rotate context
                 renderUtils.renderCenteredImageOrLoadingIndicator(
                     ctx,
-                    getImageIfLoaded('icons/mopper.png'),
+                    getImageIfLoaded('icons/mop_64x64.png'),
                     { x: 0, y: 0 }, // Draw at the new origin
                     1
                 )
+                ctx.shadowBlur = 0
+                ctx.shadowColor = ''
                 ctx.setTransform(transform)
             })
 
-            ctx.globalAlpha = 1 // Reset global alpha
+            ctx.globalAlpha = 1
         }
     },
     [schema.Action.BuildAction]: class BuildAction extends Action<schema.BuildAction> {
@@ -308,12 +313,16 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
+            ctx.shadowBlur = 4
+            ctx.shadowColor = 'black'
             renderUtils.renderCenteredImageOrLoadingIndicator(
                 ctx,
                 getImageIfLoaded('icons/hammer_64x64.png'),
                 coords,
                 size
             )
+            ctx.shadowBlur = 0
+            ctx.shadowColor = ''
             ctx.globalAlpha = 1
         }
     },
@@ -383,12 +392,16 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
+            ctx.shadowBlur = 4
+            ctx.shadowColor = 'black'
             renderUtils.renderCenteredImageOrLoadingIndicator(
                 ctx,
                 getImageIfLoaded('icons/gears_64x64.png'),
                 coords,
                 size
             )
+            ctx.shadowBlur = 0
+            ctx.shadowColor = ''
             ctx.globalAlpha = 1
         }
     },
