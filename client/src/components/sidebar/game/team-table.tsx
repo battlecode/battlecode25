@@ -82,8 +82,8 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({ map, teamStat, tea
             </div>
             <div className="flex items-center w-full mt-2 mb-1 text-xs font-bold justify-around">
                 <div className="flex items-center w-[210px] ml-6">
-                    <div className="w-[30px] h-[30px] mr-2">
-                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/paint_${teamName}.png`)} />
+                    <div className="w-[30px] h-[30px] mr-3">
+                        <img style={{ transform: 'scale(1.5)' }} src={imageSource(`icons/grid_${teamName}.png`)} />
                     </div>
                     <div>Active Boosts:</div>
                     <div className="ml-1">
