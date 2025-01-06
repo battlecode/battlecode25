@@ -113,7 +113,7 @@ export const ControlsBar: React.FC = () => {
                             wrapperClass="flex pointer-events-auto"
                         >
                             <button
-                                className={'rounded-md text-[14px] aspect-[1] flex justify-center select-none'}
+                                className={'rounded-md text-[12px] aspect-[1] flex justify-center select-none'}
                                 style={{ color: TEAM_COLORS[markerTeam] }}
                                 onClick={() => setMarkerTeam(1 - markerTeam)}
                             >
