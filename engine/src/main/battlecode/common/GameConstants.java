@@ -34,7 +34,7 @@ public class GameConstants {
     public static final int MAX_WALL_PERCENTAGE = 20;
 
     /** The 32 bit representation of the special resource pattern. */
-    public static final int RESOURCE_PATTERN = 22369621; 
+    public static final int RESOURCE_PATTERN = 22365525; 
 
     /** The 32 bit representation of the paint tower pattern. */
     public static final int PAINT_TOWER_PATTERN = 18157905;

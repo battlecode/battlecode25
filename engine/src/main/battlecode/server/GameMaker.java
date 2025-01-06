@@ -468,7 +468,7 @@ public class GameMaker {
 
                 Round.addTeamIds(builder, teamIDsP);
                 Round.addTeamCoverageAmounts(builder, teamCoverageAmountsP);
-                Round.addTeamResourceAmounts(builder, teamResourcePatternAmountsP);
+                Round.addTeamResourcePatternAmounts(builder, teamResourcePatternAmountsP);
                 Round.addRoundId(builder, this.currentRound);
                 Round.addTeamResourceAmounts(builder, teamMoneyAmountsP);
                 Round.addDiedIds(builder, diedIdsP);
