@@ -944,7 +944,10 @@ public final class RobotControllerImpl implements RobotController {
         if (this.robot.getLocation().distanceSquaredTo(loc) > GameConstants.MESSAGE_RADIUS_SQUARED){
             throw new GameActionException(CANT_DO_THAT, "Location specified is not within the message radius!");
         }
-        if (!this.gameWorld.connectedByPaint(this.robot.getLocation(), loc)){
+
+        MapLocation robotLoc = this.robot.getType().isTowerType() ? loc : this.robot.getLocation();
+        MapLocation towerLoc = this.robot.getType().isTowerType() ? this.robot.getLocation() : loc;
+        if (!this.gameWorld.connectedByPaint(this.robot.getTeam(), robotLoc, towerLoc)){
             throw new GameActionException(CANT_DO_THAT, "Location specified is not connected to current location by paint!");
         }
     }
@@ -956,6 +959,7 @@ public final class RobotControllerImpl implements RobotController {
             assertCanSendMessage(loc, message);
             return true;
         } catch (GameActionException e) {
+            //System.out.println(e);
             return false;
         }
     }

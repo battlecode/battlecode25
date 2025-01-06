@@ -695,21 +695,21 @@ public class GameWorld {
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
-    public boolean connectedByPaint(MapLocation loc1, MapLocation loc2) {
-        if(getPaint(loc1) == 0 || getPaint(loc2) == 0 || teamFromPaint(getPaint(loc1)) != teamFromPaint(getPaint(loc2))) return false;
-        Team t = teamFromPaint(getPaint(loc1));
+    public boolean connectedByPaint(Team t, MapLocation robotLoc, MapLocation towerLoc) {
+        if (teamFromPaint(getPaint(robotLoc)) != t)
+            return false;
         Queue<MapLocation> q = new LinkedList<MapLocation>();
         Set<MapLocation> vis = new HashSet<MapLocation>();
-        q.add(loc1);
+        q.add(robotLoc);
         MapLocation cur;
         int[] dx = {1, 0, -1, 0}, dy = {0, 1, 0, -1};
         while(!q.isEmpty()) {
             cur = q.peek();
             q.remove();
-            if(getGameMap().onTheMap(cur) || vis.contains(cur) || teamFromPaint(getPaint(cur)) != t) continue;
-            vis.add(cur);
-            if(cur == loc2)
+            if(cur.equals(towerLoc))
                 return true;
+            if(!getGameMap().onTheMap(cur) || vis.contains(cur) || teamFromPaint(getPaint(cur)) != t) continue;
+            vis.add(cur);
             for(int i = 0; i < 4; i ++)
                 q.add(new MapLocation(cur.x + dx[i], cur.y + dy[i]));
         }
