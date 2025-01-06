@@ -1,41 +1,36 @@
 import React, { useRef } from 'react'
 import { useAppContext } from '../../app-context'
 import GameRunner, { useCurrentUPS, usePlaybackPerTurn, useRound, useTurnNumber } from '../../playback/GameRunner'
+import { TimelineMarker } from '../../playback/Timeline'
 import { GAME_MAX_TURNS } from '../../constants'
+import { colorToHexString } from '../../util/RenderUtil'
 import assert from 'assert'
 
 const TIMELINE_WIDTH = 350
 
-interface TimelineMarker {
-    round: number
-    phase: number
-    description: string
-}
-
-const markers: TimelineMarker[] = [
-    { round: 0, phase: 1, description: 'Game Start' },
-    { round: Math.floor(GAME_MAX_TURNS * 0.25), phase: 2, description: 'Early Game' },
-    { round: Math.floor(GAME_MAX_TURNS * 0.5), phase: 3, description: 'Mid Game' },
-    { round: Math.floor(GAME_MAX_TURNS * 0.75), phase: 4, description: 'Late Game' },
-    { round: GAME_MAX_TURNS - 1, phase: 5, description: 'End Game' }
-]
-
 interface Props {
     targetUPS: number
+    markersTeam: number
 }
 
 interface MarkerProps {
     currentRound: number
     maxRound: number
+    markers: TimelineMarker[]
+    team: number
 }
 
-const TimelineMarkers: React.FC<MarkerProps> = ({ currentRound, maxRound }) => {
+const TimelineMarkers: React.FC<MarkerProps> = ({ currentRound, maxRound, markers, team }) => {
+    const roundsRendered = new Set<number>()
     return (
         <div className="absolute left-0 right-0 bottom-[2.5px] pointer-events-none">
             {markers.map((marker, i) => {
-                const position = (marker.round / maxRound) * TIMELINE_WIDTH
-                const isActive = currentRound >= marker.round
+                if (marker.team !== team || roundsRendered.has(marker.round)) return
 
+                // Only display the first marker for each round
+                roundsRendered.add(marker.round)
+
+                const position = (marker.round / maxRound) * TIMELINE_WIDTH
                 return (
                     <div key={i} className="absolute group" style={{ left: `${position}px` }}>
                         {/* Clickable area */}
@@ -47,21 +42,21 @@ const TimelineMarkers: React.FC<MarkerProps> = ({ currentRound, maxRound }) => {
                         {/* Visible marker */}
                         <div
                             className={`absolute top-1/2 left-1/2 w-1 h-2 -translate-x-1/2 -translate-y-1/2 pointer-events-none
-                                    rounded-[50px] transition-colors
-                                    ${isActive ? 'bg-gray-300' : 'bg-gray-400'}
-                                    group-hover:bg-blue-400`}
-                            style={{ boxShadow: '0 0 2px #00000088' }}
+                                    rounded-[50px] transition-colors group-hover:bg-blue-400`}
+                            style={{
+                                boxShadow: '0 0 2px #00000088',
+                                backgroundColor: colorToHexString(marker.colorHex)
+                            }}
                         />
 
                         {/* Tooltip */}
                         <div
-                            className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30 pointer-events-none"
+                            className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-[9999] pointer-events-none"
                             style={{ bottom: '15px', left: '0', transform: 'translateX(-50%)' }}
                         >
-                            <div className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm shadow-lg whitespace-nowrap">
-                                <div className="font-bold">Phase {marker.phase}</div>
-                                <div className="text-gray-300">{marker.description}</div>
-                                <div className="absolute left-1/2 -bottom-2 -translate-x-1/2 border-8 border-transparent border-t-gray-800" />
+                            <div className="bg-darkHighlight border-dark border-2 text-white px-3 py-2 rounded-lg text-sm shadow-lg whitespace-nowrap">
+                                <div className="font-bold">Round {marker.round}</div>
+                                <div className="text-gray-300">{marker.label}</div>
                             </div>
                         </div>
                     </div>
@@ -71,7 +66,7 @@ const TimelineMarkers: React.FC<MarkerProps> = ({ currentRound, maxRound }) => {
     )
 }
 
-export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
+export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS, markersTeam }) => {
     const appContext = useAppContext()
     const currentUPS = useCurrentUPS()
     const playbackPerTurn = usePlaybackPerTurn()
@@ -101,7 +96,8 @@ export const ControlsBarTimeline: React.FC<Props> = ({ targetUPS }) => {
         <>
             <div className="flex flex-col">
                 <Timeline
-                    showMarkers={appContext.state.config.showTimelineMarkers}
+                    markers={appContext.state.config.showTimelineMarkers ? round.match.timelineMarkers : undefined}
+                    markersTeam={markersTeam}
                     value={round.roundNumber}
                     max={maxRound}
                     onClick={(progress) => {
@@ -134,8 +130,9 @@ export const Timeline: React.FC<{
     value: number
     max: number
     onClick: (value: number) => void
-    showMarkers?: boolean
-}> = ({ children, value, max, onClick, showMarkers }) => {
+    markers?: TimelineMarker[]
+    markersTeam?: number
+}> = ({ children, value, max, onClick, markers, markersTeam }) => {
     const down = useRef(false)
 
     const timelineHover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -187,7 +184,9 @@ export const Timeline: React.FC<{
                 style={{ right: (1 - value / max) * 100 + '%' }}
             ></div>
 
-            {showMarkers && <TimelineMarkers currentRound={value} maxRound={max} />}
+            {markers && (
+                <TimelineMarkers currentRound={value} maxRound={max} markers={markers} team={markersTeam ?? 0} />
+            )}
 
             <div
                 className="absolute left-0 right-0 top-0 bottom-0 z-index-1 cursor-pointer"

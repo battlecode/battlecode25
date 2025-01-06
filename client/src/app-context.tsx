@@ -4,7 +4,7 @@ import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playbac
 import { ClientConfig, getDefaultConfig } from './client-config'
 
 export interface TimelineMarker {
-    round: number;
+    round: number
 }
 
 export interface AppState {
@@ -14,7 +14,6 @@ export interface AppState {
     loadingRemoteContent: string
     disableHotkeys: boolean
     config: ClientConfig
-    timelineMarkers: TimelineMarker[]
 }
 
 const DEFAULT_APP_STATE: AppState = {
@@ -23,8 +22,7 @@ const DEFAULT_APP_STATE: AppState = {
     tournamentState: DEFAULT_TOURNAMENT_STATE,
     loadingRemoteContent: '',
     disableHotkeys: false,
-    config: getDefaultConfig(),
-    timelineMarkers: []
+    config: getDefaultConfig()
 }
 
 export interface AppContext {

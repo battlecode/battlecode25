@@ -60,6 +60,7 @@ export const HelpPage: React.FC<Props> = (props) => {
                     <li>{`- Python support`}</li>
                     <li>{`- Better error reporting for crashes`}</li>
                     <li>{`- Bytecode profiler`}</li>
+                    <li>{`- Timeline markers`}</li>
                     <li>{`- Map editor undo`}</li>
                     <li>{`- Runner console click to focus robot`}</li>
                     <li>{`- Other runner improvements`}</li>
