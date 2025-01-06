@@ -964,8 +964,11 @@ public class GameWorld {
         controlProvider.robotSpawned(robot);
         if (type.isTowerType()){
             this.teamInfo.addTowers(1, team);
+            robot.addPaint(GameConstants.INITIAL_TOWER_PAINT_AMOUNT);
         }
-        robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_UNIT_PAINT_PERCENTAGE / 100.0)); 
+        else{
+            robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0)); 
+        }
         return ID;
     }
 
