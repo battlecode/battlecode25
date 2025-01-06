@@ -615,7 +615,7 @@ public final class RobotControllerImpl implements RobotController {
         if (robot == null){
             throw new GameActionException(CANT_DO_THAT, "There is no robot at the location");
         }
-        if (!this.robot.getType().isTowerType()){ 
+        if (!robot.getType().isTowerType()){ 
             throw new GameActionException(CANT_DO_THAT, "No tower at the location");
         }
 
