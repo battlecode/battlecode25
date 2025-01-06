@@ -14,7 +14,7 @@ env:
   RELEASE_ARTIFACT_ID: battlecode25
 
   # IS_PUBLIC is whether to release deployments publicly. Set to exactly the text "YES" to do so.
-  IS_PUBLIC: NO
+  IS_PUBLIC: YES
 
 jobs:
   release:
