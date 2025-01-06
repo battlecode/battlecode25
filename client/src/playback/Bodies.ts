@@ -115,7 +115,7 @@ export default class Bodies {
 
         // Update properties
         body.pos = { x: turn.x(), y: turn.y() }
-        body.hp = turn.health()
+        body.hp = Math.max(turn.health(), 0)
         body.paint = turn.paint()
         body.moveCooldown = turn.moveCooldown()
         body.actionCooldown = turn.actionCooldown()
