@@ -101,18 +101,23 @@ export class CurrentMap {
                 // Render rounded (clipped) paint
                 const paint = this.paint[schemaIdx]
                 if (paint) {
-                    renderUtils.renderRounded(
-                        ctx,
-                        i,
-                        j,
-                        this,
-                        this.paint,
-                        () => {
-                            ctx.fillStyle = PAINT_COLORS[paint]
-                            ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
-                        },
-                        { x: true, y: false }
-                    )
+                    if (config.enableFancyPaint) {
+                        renderUtils.renderRounded(
+                            ctx,
+                            i,
+                            j,
+                            this,
+                            this.paint,
+                            () => {
+                                ctx.fillStyle = PAINT_COLORS[paint]
+                                ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
+                            },
+                            { x: true, y: false }
+                        )
+                    } else {
+                        ctx.fillStyle = PAINT_COLORS[paint]
+                        ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
+                    }
                 }
 
                 if (config.showPaintMarkers) {

@@ -7,7 +7,7 @@ import {
 } from '../components/sidebar/map-editor/MapEditorBrush'
 import Bodies from './Bodies'
 import { CurrentMap, StaticMap } from './Map'
-import { Vector, vectorDistSquared } from './Vector'
+import { Vector } from './Vector'
 import { Team } from './Game'
 
 const applyInRadius = (
@@ -31,6 +31,15 @@ const applyInRadius = (
     }
 }
 
+const squareIntersects = (check: Vector, center: Vector, radius: number) => {
+    return (
+        check.x >= center.x - radius &&
+        check.x <= center.x + radius &&
+        check.y >= center.y - radius &&
+        check.y <= center.y + radius
+    )
+}
+
 export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public readonly name = 'Walls'
     public readonly fields = {
@@ -52,9 +61,8 @@ export class WallsBrush extends SymmetricMapEditorBrush<StaticMap> {
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (idx: number) => {
             // Check if this is a valid wall location
-            const minWallDistSq = 8
             const pos = this.map.indexToLocation(idx)
-            const ruin = this.map.ruins.findIndex((l) => vectorDistSquared(l, pos) < minWallDistSq)
+            const ruin = this.map.ruins.findIndex((l) => squareIntersects(l, pos, 2))
             const paint = this.map.initialPaint[idx]
             if (ruin !== -1 || paint) return true
             this.map.walls[idx] = 1
@@ -100,17 +108,22 @@ export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
 
     public symmetricApply(x: number, y: number, fields: Record<string, MapEditorBrushField>) {
         const add = (x: number, y: number) => {
+            // Check if ruin is too close to the border
+            if (x <= 1 || x >= this.map.width - 2 || y <= 1 || y >= this.map.height - 2) {
+                return true
+            }
+
             // Check if this is a valid ruin location
-            const minRuinDistSq = 25
-            const minWallDistSq = 8
             const pos = { x, y }
             const idx = this.map.locationToIndex(x, y)
-            const ruin = this.map.ruins.findIndex((l) => vectorDistSquared(l, pos) < minRuinDistSq)
+            const ruin = this.map.ruins.findIndex((l) => squareIntersects(l, pos, 4))
             const wall = this.map.walls.findIndex(
-                (v, i) => !!v && vectorDistSquared(this.map.indexToLocation(i), pos) < minWallDistSq
+                (v, i) => !!v && squareIntersects(this.map.indexToLocation(i), pos, 2)
             )
             const paint = this.map.initialPaint[idx]
-            if (ruin !== -1 || wall !== -1 || paint) return true
+            if (ruin !== -1 || wall !== -1 || paint) {
+                return true
+            }
 
             this.map.ruins.push({ x, y })
         }
@@ -122,10 +135,10 @@ export class RuinsBrush extends SymmetricMapEditorBrush<StaticMap> {
         }
 
         if (fields.shouldAdd.value) {
-            if (add(x, y)) return () => {}
+            if (add(x, y)) return null
             return () => remove(x, y)
         } else {
-            if (remove(x, y)) return () => {}
+            if (remove(x, y)) return null
             return () => add(x, y)
         }
     }
@@ -236,26 +249,44 @@ export class TowerBrush extends SymmetricMapEditorBrush<StaticMap> {
         const towerType: schema.RobotType = fields.towerType.value
         const isTower: boolean = fields.isTower.value
 
-        const spawnBody = (team: Team) => {
-            const pos: Vector = { x, y }
+        const add = (x: number, y: number, team: Team) => {
+            // Check if this is a valid tower location
+            const pos = { x, y }
+            const idx = this.map.locationToIndex(x, y)
+            const body = this.bodies.getBodyAtLocation(x, y)
+            const wall = this.map.walls[idx]
+            const ruin = this.map.ruins.findIndex((l) => squareIntersects(l, pos, 2))
+
+            if (body || wall || ruin !== -1) return null
+
             const id = this.bodies.getNextID()
             this.bodies.spawnBodyFromValues(id, towerType, team, pos)
+
             return id
         }
 
-        const foundBody = this.bodies.getBodyAtLocation(x, y)
+        const remove = (x: number, y: number) => {
+            const body = this.bodies.getBodyAtLocation(x, y)
+
+            if (!body) return null
+
+            const team = body.team
+            this.bodies.removeBody(body.id)
+
+            return team
+        }
+
         if (isTower) {
-            if (foundBody) return () => {}
             let teamIdx = robotOne ? 0 : 1
             if (fields.team.value === 1) teamIdx = 1 - teamIdx
             const team = this.bodies.game.teams[teamIdx]
-            const id = spawnBody(team)
-            return () => this.bodies.removeBody(id)
+            const id = add(x, y, team)
+            if (id) return () => this.bodies.removeBody(id)
+            return null
         } else {
-            if (!foundBody) return () => {}
-            const team = foundBody.team
-            this.bodies.removeBody(foundBody.id)
-            return () => spawnBody(team)
+            const team = remove(x, y)
+            if (!team) return null
+            return () => add(x, y, team)
         }
     }
 }

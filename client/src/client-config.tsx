@@ -15,6 +15,7 @@ const DEFAULT_CONFIG = {
     showHealthBars: true,
     showPaintMarkers: true,
     showMapXY: true,
+    enableFancyPaint: true,
     streamRunnerGames: true,
     profileGames: false,
     validateMaps: false,
@@ -27,6 +28,7 @@ const configDescription: Record<keyof ClientConfig, string> = {
     showHealthBars: 'Show health bars below all robots',
     showPaintMarkers: 'Show paint markers created using mark()',
     showMapXY: 'Show X,Y when hovering a tile',
+    enableFancyPaint: 'Enable fancy paint rendering',
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
     profileGames: 'Enable saving profiling data when running games',
     validateMaps: 'Validate maps before running a game',
@@ -109,7 +111,7 @@ const ConfigNumberElement: React.FC<{ configKey: keyof ClientConfig }> = ({ conf
                     }, 10)
                 }}
                 min={10}
-                max={100}
+                max={200}
             />
             <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
         </div>

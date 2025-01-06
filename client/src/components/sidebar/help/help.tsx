@@ -47,7 +47,7 @@ export const HelpPage: React.FC<Props> = (props) => {
                     {`On this page, you will find some basic information about some of the more complex features of the client. `}
                     {`If anything is confusing or you have other questions, feel free to ask. `}
                     <div className="h-2" />
-                    <b>{`NOTE: If you are experiencing performance issues on Mac or a laptop, turn off low power mode. `}</b>
+                    <b>{`NOTE: If you are experiencing performance issues on Mac or a laptop, turn off low power mode. Also, check the config tab for performance settings. `}</b>
                 </div>
             </>
         ),

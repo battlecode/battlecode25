@@ -308,7 +308,12 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
-            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/hammer.png'), coords, size)
+            renderUtils.renderCenteredImageOrLoadingIndicator(
+                ctx,
+                getImageIfLoaded('icons/hammer_64x64.png'),
+                coords,
+                size
+            )
             ctx.globalAlpha = 1
         }
     },
@@ -378,7 +383,12 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const alpha = isEndpoint ? 1 : (factor < 0.5 ? factor : 1 - factor) * 2
 
             ctx.globalAlpha = alpha
-            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded('icons/gears.png'), coords, size)
+            renderUtils.renderCenteredImageOrLoadingIndicator(
+                ctx,
+                getImageIfLoaded('icons/gears_64x64.png'),
+                coords,
+                size
+            )
             ctx.globalAlpha = 1
         }
     },
