@@ -16,7 +16,6 @@ public class TeamInfo {
     private int[] moneyCounts;
     private int[] totalPaintedSquares;
     private int[] totalNumberOfTowers;
-
     private int[] oldMoneyCounts;
 
     /**

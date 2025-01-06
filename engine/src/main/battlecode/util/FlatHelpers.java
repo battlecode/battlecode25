@@ -78,6 +78,8 @@ public class FlatHelpers {
         switch (factor) {
             case PAINT_ENOUGH_AREA:
                 return WinType.MAJORITY_PAINTED;
+            case DESTROY_ALL_UNITS:
+                return WinType.ALL_UNITS_DESTROYED;
             case MORE_SQUARES_PAINTED:
                 return WinType.AREA_PAINTED;
             case MORE_TOWERS_ALIVE:

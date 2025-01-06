@@ -9,6 +9,10 @@ public enum DominationFactor {
      */
     PAINT_ENOUGH_AREA,
     /**
+     * Win by destroying all of the enemy team's robots and towers.
+     */
+    DESTROY_ALL_UNITS,
+    /**
      * Win by having more squares painted than the other team at the end of the game (tiebreak 1).
      */
     MORE_SQUARES_PAINTED,

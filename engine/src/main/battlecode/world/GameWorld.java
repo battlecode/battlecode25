@@ -47,6 +47,8 @@ public class GameWorld {
     private Team[] resourcePatternCentersByLoc;
     private ArrayList<MapLocation> towerLocations;
     private Team[] towersByLoc; // indexed by location
+    private int[] currentDamageIncreases = {0,0};
+    private int[] currentNumberUnits = {0,0};
 
     // List of all ruins, not indexed by location
     private ArrayList<MapLocation> allRuins;
@@ -129,6 +131,8 @@ public class GameWorld {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
             spawnRobot(robot.ID, robot.type, newLocation, robot.team);
+            InternalRobot tower = getRobot(newLocation);
+            tower.upgradeTower(tower.getType().getNextLevel());
             this.towerLocations.add(newLocation);
             towersByLoc[locationToIndex(newLocation)] = robot.team;
         }
@@ -537,6 +541,15 @@ public class GameWorld {
 
     public int extraResourcesFromPatterns(Team team){
         return getNumResourcePatterns(team) * GameConstants.EXTRA_RESOURCES_FROM_PATTERN;
+    }
+
+    public int getDefenseTowerDamageIncrease(Team team){
+        return this.currentDamageIncreases[team.ordinal()];
+    }
+
+    public void upgradeTower(UnitType newType, Team team){
+        if (newType == UnitType.LEVEL_TWO_DEFENSE_TOWER || newType == UnitType.LEVEL_THREE_DEFENSE_TOWER)
+            this.currentDamageIncreases[team.ordinal()] += GameConstants.EXTRA_TOWER_DAMAGE_LEVEL_INCREASE;
     }
 
     /**
@@ -966,9 +979,11 @@ public class GameWorld {
             this.teamInfo.addTowers(1, team);
             robot.addPaint(GameConstants.INITIAL_TOWER_PAINT_AMOUNT);
         }
-        else{
+        else
             robot.addPaint((int) Math.round(type.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0)); 
-        }
+        if (type == UnitType.LEVEL_ONE_DEFENSE_TOWER)
+            this.currentDamageIncreases[team.ordinal()] += GameConstants.EXTRA_DAMAGE_FROM_DEFENSE_TOWER;
+        this.currentNumberUnits[team.ordinal()] += 1;
         return ID;
     }
 
@@ -999,6 +1014,12 @@ public class GameWorld {
                 this.towerLocations.remove(loc);
                 this.teamInfo.addTowers(-1, robot.getTeam());
             }
+            switch (robot.getType()){
+                case LEVEL_ONE_DEFENSE_TOWER: this.currentDamageIncreases[robot.getTeam().ordinal()] -= GameConstants.EXTRA_DAMAGE_FROM_DEFENSE_TOWER; break;
+                case LEVEL_TWO_DEFENSE_TOWER: this.currentDamageIncreases[robot.getTeam().ordinal()] -= GameConstants.EXTRA_DAMAGE_FROM_DEFENSE_TOWER + GameConstants.EXTRA_TOWER_DAMAGE_LEVEL_INCREASE; break;
+                case LEVEL_THREE_DEFENSE_TOWER: this.currentDamageIncreases[robot.getTeam().ordinal()] -= GameConstants.EXTRA_DAMAGE_FROM_DEFENSE_TOWER + 2 * GameConstants.EXTRA_TOWER_DAMAGE_LEVEL_INCREASE; break;
+                default: break;
+            }
 
             removeRobot(loc);
         }
@@ -1009,6 +1030,10 @@ public class GameWorld {
             matchMaker.addDieAction(id, fromException);
         else
             matchMaker.addDied(id);
+        this.currentNumberUnits[robot.getTeam().ordinal()] -= 1;
+        if (this.currentNumberUnits[robot.getTeam().ordinal()] == 0){
+            setWinner(robot.getTeam().opponent(), DominationFactor.DESTROY_ALL_UNITS);
+        }
     }
 
     // *********************************
