@@ -123,6 +123,19 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
     if (numMoneyTowers !== 2) {
         return `Expected exactly 2 money towers, found ${numMoneyTowers}`
     }
+    for (const body of bodies.bodies.values()) {
+        // Check distance to nearby ruins
+
+        for (const checkRuin of map.staticMap.ruins) {
+            if (squareIntersects(checkRuin, body.pos, 2)) {
+                return (
+                    `Tower at (${body.pos.x}, ${body.pos.y}) is too close to ruin ` +
+                    `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
+                    `>= 3 away`
+                )
+            }
+        }
+    }
 
     return ''
 }
