@@ -55,8 +55,11 @@ public class GameConstants {
     /** The maximum number of rounds in a game. **/
     public static final int GAME_MAX_NUMBER_OF_ROUNDS = 2000;
 
-    /** The maximum number of bytecodes a bot is allow to use in one turn */
-    public static final int BYTECODE_LIMIT = 25000;
+    /** The maximum number of bytecodes a robot is allowed to use in one turn */
+    public static final int ROBOT_BYTECODE_LIMIT = 15000;
+
+    /** The maximum number of bytecodes a tower is allowed to use in one turn */
+    public static final int TOWER_BYTECODE_LIMIT = 20000;
 
     /**
      * The maximum length of indicator strings that a player can associate with a
@@ -75,15 +78,6 @@ public class GameConstants {
 
     /** Paint penalty for ending a turn on neutral territory */
     public static final int PENALTY_NEUTRAL_TERRITORY = 1;
-
-    /** Paint capacity for soldier robots */
-    public static final int PAINT_CAPACITY_SOLDIER = 200;
-
-    /** Paint capacity for splasher robots */
-    public static final int PAINT_CAPACITY_SPLASHER = 300;
-
-    /** Paint capacity for mopper robots */
-    public static final int PAINT_CAPACITY_MOPPER = 100;
 
     /** The amount of money each team starts with. */
     public static final int INITIAL_TEAM_MONEY = 1000;
@@ -124,6 +118,12 @@ public class GameConstants {
 
     /** The extra resources per turn that resource patterns give */
     public static final int EXTRA_RESOURCES_FROM_PATTERN = 3;
+
+    /** The extra damage all ally towers get for each level 1 defense tower */
+    public static final int EXTRA_DAMAGE_FROM_DEFENSE_TOWER = 10;
+
+    /** The increase in extra damage for ally towers for upgrading a defense tower */
+    public static final int EXTRA_TOWER_DAMAGE_LEVEL_INCREASE = 5;
 
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;
@@ -168,6 +168,21 @@ public class GameConstants {
     /** The amount of paint depleted from enemies in a swing mopper attack */
     public static final int MOPPER_SWING_PAINT_DEPLETION = 5;
 
+    /** The maximum amount of bytes that can be encoded in a message */
+    public static final int MAX_MESSAGE_BYTES = 4;
+
+    /** The maximum squared radius a robot can send a message to */
+    public static final int MESSAGE_RADIUS_SQUARED = 20;
+
+    /** The maximum number of rounds a message will exist for */
+    public static final int MESSAGE_ROUND_DURATION = 5;
+
+    /** The maximum number of messages a robot can send per turn */
+    public static final int MAX_MESSAGES_SENT_ROBOT = 1;
+
+    /** The maximum number of messages a tower can send per turn */
+    public static final int MAX_MESSAGES_SENT_TOWER = 20;
+
     // *********************************
     // ****** COOLDOWNS ****************
     // *********************************
@@ -193,20 +208,5 @@ public class GameConstants {
 
     /** THe amount added to the action cooldown counter after transferring paint */
     public static final int PAINT_TRANSFER_COOLDOWN = 10;
-
-    /** The maximum amount of bytes that can be encoded in a message */
-    public static final int MAX_MESSAGE_BYTES = 4;
-
-    /** The maximum squared radius a robot can send a message to */
-    public static final int MESSAGE_RADIUS_SQUARED = 20;
-
-    /** The maximum number of rounds a message will exist for */
-    public static final int MESSAGE_ROUND_DURATION = 5;
-
-    /** The maximum number of messages a robot can send per turn */
-    public static final int MAX_MESSAGES_SENT_ROBOT = 1;
-
-    /** The maximum number of messages a tower can send per turn */
-    public static final int MAX_MESSAGES_SENT_TOWER = 20;
 
 }

@@ -76,7 +76,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         this.paintAmount = 0;
 
         this.controlBits = 0;
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.currentBytecodeLimit = type.isRobotType() ? GameConstants.ROBOT_BYTECODE_LIMIT : GameConstants.TOWER_BYTECODE_LIMIT;
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
@@ -448,9 +448,10 @@ public class InternalRobot implements Comparable<InternalRobot> {
             if(this.gameWorld.getRobot(loc) != null) {
                 InternalRobot unit = this.gameWorld.getRobot(loc);
                 if(this.team != unit.getTeam()){
-                    unit.addHealth(-this.type.attackStrength);
+                    int damage = this.type.attackStrength + this.gameWorld.getDefenseTowerDamageIncrease(team);
+                    unit.addHealth(-damage);
                     this.gameWorld.getMatchMaker().addAttackAction(unit.getID());
-                    this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), this.type.attackStrength);
+                    this.gameWorld.getMatchMaker().addDamageAction(unit.getID(), damage);
                 }
             }
         }
@@ -581,7 +582,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         this.towerHasSingleAttacked = this.towerHasAreaAttacked = false;
         this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.currentBytecodeLimit = this.type.isRobotType() ? GameConstants.ROBOT_BYTECODE_LIMIT : GameConstants.TOWER_BYTECODE_LIMIT;
         this.gameWorld.getMatchMaker().startTurn(this.ID);
     }
 

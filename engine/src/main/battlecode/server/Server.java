@@ -408,6 +408,9 @@ public class Server implements Runnable {
             case PAINT_ENOUGH_AREA:
                 sb.append("The winning team painted enough of the map.");
                 break;
+            case DESTROY_ALL_UNITS:
+                sb.append("The winning team destroyed all of the enemy team's units.");
+                break;
             case MORE_SQUARES_PAINTED:
                 sb.append("The winning team won on tiebreakers (painted more of the map).");
                 break;
