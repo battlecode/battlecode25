@@ -39,7 +39,8 @@ public class GameWorld {
     private final ObjectInfo objectInfo;
 
     private final static int RESOURCE_INDEX = 0, DEFENSE_INDEX = 1, MONEY_INDEX = 2, PAINT_INDEX = 3;
-    private int[] patternArray; // 0 = resource pattern, 1 = defense tower, 2 = money tower, 3 = paint tower
+     // 0 = resource pattern, 1 = defense tower, 2 = money tower, 3 = paint tower
+    private int[] patternArray = {GameConstants.RESOURCE_PATTERN, GameConstants.DEFENSE_TOWER_PATTERN, GameConstants.MONEY_TOWER_PATTERN, GameConstants.PAINT_TOWER_PATTERN};
 
 
     private ArrayList<MapLocation> resourcePatternCenters;
@@ -106,7 +107,8 @@ public class GameWorld {
             }
         }
 
-        this.patternArray = gm.getPatternArray();
+        //ignore patterns passed in with map and use hardcoded values
+        //this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
         byte[] initialPaint = gm.getPaintArray();
@@ -234,72 +236,77 @@ public class GameWorld {
     public boolean checkPattern(int pattern, Team team, MapLocation center, boolean isTowerPattern) {
         int primary = getPrimaryPaint(team);
         int secondary = getSecondaryPaint(team);
-        boolean[] possibleSymmetries = new boolean[8];
-        for (int i = 0; i < 8; i++) possibleSymmetries[i] = true;
-        int numRemainingSymmetries = 8;
+        // boolean[] possibleSymmetries = new boolean[8];
+        // for (int i = 0; i < 8; i++) possibleSymmetries[i] = true;
+        // int numRemainingSymmetries = 8;
 
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
                 // ignore checking paint for center ruin location
                 if (dx == 0 && dy == 0 && isTowerPattern)
                     continue;
-                for (int sym = 0; sym < 8; sym++) {
-                    if (possibleSymmetries[sym]) {
-                        int dx2;
-                        int dy2;
-
-                        switch (sym) {
-                            case 0:
-                                dx2 = dx;
-                                dy2 = dy;
-                                break;
-                            case 1:
-                                dx2 = -dy;
-                                dy2 = dx;
-                                break;
-                            case 2:
-                                dx2 = -dx;
-                                dy2 = -dy;
-                                break;
-                            case 3:
-                                dx2 = dy;
-                                dy2 = -dx;
-                                break;
-                            case 4:
-                                dx2 = -dx;
-                                dy2 = dy;
-                                break;
-                            case 5:
-                                dx2 = dy;
-                                dy2 = dx;
-                                break;
-                            case 6:
-                                dx2 = dx;
-                                dy2 = -dy;
-                                break;
-                            case 7:
-                                dx2 = -dy;
-                                dy2 = -dx;
-                                break;
-                            default:
-                                dx2 = 0;
-                                dy2 = 0;
-                                break;
-                        }
-
-                        int bit = getPatternBit(pattern, dx, dy);
-                        int paint = getPaint(center.translate(dx2, dy2));
-
-                        if (paint != (bit == 1 ? secondary : primary)) {
-                            possibleSymmetries[sym] = false;
-                            numRemainingSymmetries -= 1;
-                        }
-                    }
-                }
-
-                if (numRemainingSymmetries == 0) {
+                int bit = getPatternBit(pattern, dx, dy);
+                int paint = getPaint(center.translate(dx, dy));
+                if (paint != (bit == 1 ? secondary : primary))
                     return false;
-                }
+                // Remove symmetry logic as all patterns are symmetric
+                // for (int sym = 0; sym < 8; sym++) {
+                //     if (possibleSymmetries[sym]) {
+                //         int dx2;
+                //         int dy2;
+
+                //         switch (sym) {
+                //             case 0:
+                //                 dx2 = dx;
+                //                 dy2 = dy;
+                //                 break;
+                //             case 1:
+                //                 dx2 = -dy;
+                //                 dy2 = dx;
+                //                 break;
+                //             case 2:
+                //                 dx2 = -dx;
+                //                 dy2 = -dy;
+                //                 break;
+                //             case 3:
+                //                 dx2 = dy;
+                //                 dy2 = -dx;
+                //                 break;
+                //             case 4:
+                //                 dx2 = -dx;
+                //                 dy2 = dy;
+                //                 break;
+                //             case 5:
+                //                 dx2 = dy;
+                //                 dy2 = dx;
+                //                 break;
+                //             case 6:
+                //                 dx2 = dx;
+                //                 dy2 = -dy;
+                //                 break;
+                //             case 7:
+                //                 dx2 = -dy;
+                //                 dy2 = -dx;
+                //                 break;
+                //             default:
+                //                 dx2 = 0;
+                //                 dy2 = 0;
+                //                 break;
+                //         }
+
+                //         int bit = getPatternBit(pattern, dx, dy);
+                //         int paint = getPaint(center.translate(dx2, dy2));
+
+                //         if (paint != (bit == 1 ? secondary : primary)) {
+                //             possibleSymmetries[sym] = false;
+                //             numRemainingSymmetries -= 1;
+                //         }
+                //     }
+                // }
+
+                // if (numRemainingSymmetries == 0) {
+                //     return false;
+                // }
             }
         }
 
@@ -444,45 +451,46 @@ public class GameWorld {
     public void markPattern(int pattern, Team team, MapLocation center, int rotationAngle, boolean reflect, boolean isTowerPattern) {
         for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
             for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
-                int symmetry = 4 * (reflect ? 1 : 0) + rotationAngle;
-                int dx2;
-                int dy2;
-                switch (symmetry) {
-                    case 0:
-                        dx2 = dx;
-                        dy2 = dy;
-                        break;
-                    case 1:
-                        dx2 = -dy;
-                        dy2 = dx;
-                        break;
-                    case 2:
-                        dx2 = -dx;
-                        dy2 = -dy;
-                        break;
-                    case 3:
-                        dx2 = dy;
-                        dy2 = -dx;
-                        break;
-                    case 4:
-                        dx2 = -dx;
-                        dy2 = dy;
-                        break;
-                    case 5:
-                        dx2 = dy;
-                        dy2 = dx;
-                        break;
-                    case 6:
-                        dx2 = dx;
-                        dy2 = -dy;
-                        break;
-                    case 7:
-                        dx2 = -dy;
-                        dy2 = -dx;
-                        break;
-                    default:
-                        throw new RuntimeException("THIS ERROR SHOULD NEVER HAPPEN! checkPattern is broken");
-                }
+                // int symmetry = 4 * (reflect ? 1 : 0) + rotationAngle;
+                int dx2 = dx;
+                int dy2 = dy;
+                // Remove symmetry logic as all patterns are symmetric
+                // switch (symmetry) {
+                //     case 0:
+                //         dx2 = dx;
+                //         dy2 = dy;
+                //         break;
+                //     case 1:
+                //         dx2 = -dy;
+                //         dy2 = dx;
+                //         break;
+                //     case 2:
+                //         dx2 = -dx;
+                //         dy2 = -dy;
+                //         break;
+                //     case 3:
+                //         dx2 = dy;
+                //         dy2 = -dx;
+                //         break;
+                //     case 4:
+                //         dx2 = -dx;
+                //         dy2 = dy;
+                //         break;
+                //     case 5:
+                //         dx2 = dy;
+                //         dy2 = dx;
+                //         break;
+                //     case 6:
+                //         dx2 = dx;
+                //         dy2 = -dy;
+                //         break;
+                //     case 7:
+                //         dx2 = -dy;
+                //         dy2 = -dx;
+                //         break;
+                //     default:
+                //         throw new RuntimeException("THIS ERROR SHOULD NEVER HAPPEN! checkPattern is broken");
+                // }
 
                 int bit = getPatternBit(pattern, dx, dy);
                 MapLocation loc = center.translate(dx2, dy2);

@@ -579,19 +579,6 @@ public interface RobotController {
     void markTowerPattern(UnitType type, MapLocation loc) throws GameActionException;
 
     /**
-     * Builds a tower by marking a 5x5 pattern centered at the given location.
-     * This requires there to be a ruin at the location.
-     * 
-     * @param type          the type of tower to mark the pattern for
-     * @param loc           the center of the 5x5 pattern
-     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
-     * @param reflect       whether to reflect the pattern
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void markTowerPattern(UnitType type, MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
-
-    /**
      * Checks if a tower can be upgraded by verifying conditions on the location, team, 
      * tower level, and cost.
      * 
@@ -629,17 +616,6 @@ public interface RobotController {
      * @battlecode.doc.costlymethod
      */
     void markResourcePattern(MapLocation loc) throws GameActionException;
-
-    /**
-     * Marks a 5x5 special resource pattern centered at the given location.
-     * 
-     * @param loc           the center of the resource pattern
-     * @param rotationAngle the angle to rotate (in units of 90 degrees clockwise)
-     * @param reflect       whether to reflect the pattern
-     * 
-     * @battlecode.doc.costlymethod
-     */
-    void markResourcePattern(MapLocation loc, int rotationAngle, boolean reflect) throws GameActionException;
 
     /**
      * Checks if the robot can build a tower at the given location.
