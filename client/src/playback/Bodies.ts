@@ -163,7 +163,7 @@ export default class Bodies {
     }
 
     getNextID(): number {
-        return Math.max(-1, ...this.bodies.keys()) + 1
+        return Math.max(0, ...this.bodies.keys()) + 1
     }
 
     getBodyAtLocation(x: number, y: number, team?: Team): Body | undefined {
