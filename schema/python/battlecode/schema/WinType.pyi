@@ -11,6 +11,7 @@ uoffset: typing.TypeAlias = flatbuffers.number_types.UOffsetTFlags.py_type
 class WinType(object):
   RESIGNATION: int
   MAJORITY_PAINTED: int
+  ALL_UNITS_DESTROYED: int
   AREA_PAINTED: int
   MORE_TOWERS: int
   MORE_MONEY: int

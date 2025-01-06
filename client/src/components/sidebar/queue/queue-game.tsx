@@ -32,6 +32,8 @@ export const QueuedGame: React.FC<Props> = (props) => {
                 return 'by resignation '
             case schema.WinType.MAJORITY_PAINTED:
                 return 'by having paint majority '
+            case schema.WinType.ALL_UNITS_DESTROYED:
+                return 'by destroying all enemy units '
             case schema.WinType.AREA_PAINTED:
                 return 'by painting more territory '
             case schema.WinType.MORE_TOWERS:

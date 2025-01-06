@@ -108,8 +108,9 @@ export default class Match {
         for (let i = 0; i < footer.timelineMarkersLength(); i++) {
             const marker = footer.timelineMarkers(i)!
 
+            // Add one to round so that the visualizer properly shows the action completed state
             this.timelineMarkers.push({
-                round: marker.round(),
+                round: marker.round() + 1,
                 team: marker.team(),
                 colorHex: marker.colorHex(),
                 label: marker.label() ?? 'Unknown'

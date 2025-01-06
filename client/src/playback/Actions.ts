@@ -93,7 +93,7 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const target = round.bodies.getById(this.actionData.id())
 
             // Apply damage to the target
-            target.hp -= this.actionData.damage()
+            target.hp = Math.max(target.hp - this.actionData.damage(), 0)
         }
     },
     [schema.Action.SplashAction]: class SplashAction extends Action<schema.SplashAction> {
