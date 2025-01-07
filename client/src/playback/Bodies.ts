@@ -381,6 +381,15 @@ export class Body {
         const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.visionRadiusSquared())
         this.drawEdges(match, ctx, lightly, squares2)
 
+        // Currently vision/message radius are always the same
+        /*
+        ctx.beginPath()
+        ctx.strokeStyle = 'brown'
+        ctx.lineWidth = 0.1
+        const squares3 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.messageRadiusSquared())
+        this.drawEdges(match, ctx, lightly, squares3)
+        */
+
         ctx.globalAlpha = 1
     }
 
