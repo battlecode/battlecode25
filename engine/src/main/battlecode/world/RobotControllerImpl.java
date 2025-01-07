@@ -156,6 +156,11 @@ public final class RobotControllerImpl implements RobotController {
         return this.robot.getType();
     }
 
+    @Override
+    public int getNumberTowers(){
+        return this.gameWorld.getTeamInfo().getTotalNumberOfTowers(getTeam());
+    }
+
     // ***********************************
     // ****** GENERAL VISION METHODS *****
     // ***********************************

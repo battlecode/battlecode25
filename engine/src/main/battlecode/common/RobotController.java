@@ -132,6 +132,15 @@ public interface RobotController {
      */
     UnitType getType();
 
+    /**
+     * Returns how many allied towers are currently alive.
+     * 
+     * @return the number of alive allied towers.
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    int getNumberTowers();
+
     // ***********************************
     // ****** GENERAL VISION METHODS *****
     // ***********************************
@@ -774,10 +783,10 @@ public interface RobotController {
     /**
      * Tests whether you can transfer paint to a given robot/tower.
      * 
-     * You can give paint to an allied robot if you are a mopper and can act at the
+     * You can give paint to an allied robot/tower if you are a mopper and can act at the
      * given location.
-     * You can give/take paint from allied towers regardless of type, if you can act
-     * at the location.
+     * You can take paint from allied towers regardless of type, if you can act
+     * at the location. Pass in a negative number to take paint.
      * 
      * @param loc    the location of the robot/tower to transfer paint to
      * @param amount the amount of paint to transfer. Positive to give paint,
@@ -789,7 +798,8 @@ public interface RobotController {
 
     /**
      * Transfers paint from the robot's stash to the stash of the allied
-     * robot or tower at loc.
+     * robot or tower at loc. Pass in a negative number to take paint, positive
+     * to give paint.
      * 
      * @param loc    the location of the robot/tower to transfer paint to
      * @param amount the amount of paint to transfer. Positive to give paint,

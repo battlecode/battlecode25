@@ -51,6 +51,7 @@ battlecode/common/RobotController/getMapWidth                           1    tru
 battlecode/common/RobotController/getMovementCooldownTurns              1    true
 battlecode/common/RobotController/getRoundNum                           1    true
 battlecode/common/RobotController/getTeam                               1    true
+battlecode/common/RobotController/getNumberTowers                       5    true
 battlecode/common/RobotController/isActionReady                         1    true
 battlecode/common/RobotController/isLocationOccupied                    5    true
 battlecode/common/RobotController/isMovementReady                       1    true
