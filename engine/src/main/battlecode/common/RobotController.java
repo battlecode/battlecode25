@@ -750,6 +750,20 @@ public interface RobotController {
     boolean canSendMessage(MapLocation loc);
 
     /**
+     * Returns true if the unit can send a message to a specific
+     * location, false otherwise. We can send a message to a location
+     * if it is within a specific distance and connected by paint,
+     * and only if one unit is a robot and the other is a tower.
+     * 
+     * @param loc the location to send the message to
+     * @param messageContent the contents of the message.
+     * Does not affect whether or not the message can be sent.
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canSendMessage(MapLocation loc, int messageContent);
+
+    /**
      * Sends a message (contained in an int, so 4 bytes) to a specific
      * unit at a location on the map, if it is possible
      * 

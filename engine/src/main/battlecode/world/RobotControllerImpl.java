@@ -968,13 +968,17 @@ public final class RobotControllerImpl implements RobotController {
 
     @Override
     public boolean canSendMessage(MapLocation loc) {
+        // use dummy message content as does not affect if message can be sent
+        return canSendMessage(loc, 0);
+    }
+
+    @Override
+    public boolean canSendMessage(MapLocation loc, int messageContent) {
         try {
-            // use dummy message content as does not affect if message can be sent
-            Message message = new Message(0, this.robot.getID(), this.gameWorld.getCurrentRound());
+            Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
             assertCanSendMessage(loc, message);
             return true;
         } catch (GameActionException e) {
-            //System.out.println(e);
             return false;
         }
     }
