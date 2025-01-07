@@ -527,7 +527,7 @@ public interface RobotController {
     boolean canMark(MapLocation loc);
 
     /**
-     * Checks if the location can be marked.
+     * Adds a mark at the given location.
      * 
      * @param loc the location to mark
      * @param secondary whether the secondary color should be used
