@@ -101,7 +101,7 @@ public class GameWorld {
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
 
-        this.allRuinsByLoc = gm.getRuinArray().clone();
+        this.allRuinsByLoc = gm.getRuinArray();
         this.allRuins = new ArrayList<MapLocation>();
         for (int i = 0; i < numSquares; i++){
             if (this.allRuinsByLoc[i]){
