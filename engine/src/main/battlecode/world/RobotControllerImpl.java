@@ -812,6 +812,8 @@ public final class RobotControllerImpl implements RobotController {
         if (this.robot.getPaint() < UnitType.SOLDIER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a soldier attack");
         }
+        if (this.gameWorld.getWall(loc))
+            throw new GameActionException(CANT_DO_THAT, "Soldiers cannot attack walls!");
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
@@ -828,6 +830,8 @@ public final class RobotControllerImpl implements RobotController {
         if (this.robot.getPaint() < UnitType.MOPPER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a mopper attack");
         }
+        if (!this.gameWorld.isPassable(loc))
+            throw new GameActionException(CANT_DO_THAT, "Moppers cannot attack squares with walls or ruins on them!");
     }
 
     private void assertCanAttackTower(MapLocation loc) throws GameActionException {
