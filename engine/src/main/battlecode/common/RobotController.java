@@ -744,12 +744,10 @@ public interface RobotController {
      * and only if one unit is a robot and the other is a tower.
      * 
      * @param loc the location to send the message to
-     * @param messageContent an int representing the content of the
-     * message (up to 4 bytes)
      * 
      * @battlecode.doc.costlymethod
      */
-    boolean canSendMessage(MapLocation loc, int messageContent);
+    boolean canSendMessage(MapLocation loc);
 
     /**
      * Sends a message (contained in an int, so 4 bytes) to a specific
