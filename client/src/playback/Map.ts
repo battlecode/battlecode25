@@ -9,6 +9,7 @@ import { DIVIDER_COLOR, TILE_COLOR, WALLS_COLOR, PAINT_COLORS, TEAM_COLORS, TEAM
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
+import Round from './Round'
 
 export type Dimension = {
     minCorner: Vector
@@ -191,14 +192,8 @@ export class CurrentMap {
         return info
     }
 
-    getEditorBrushes() {
-        const brushes: MapEditorBrush[] = [
-            // ruins brush
-            // tower brush
-            new PaintBrush(this),
-            new RuinsBrush(this.staticMap),
-            new WallsBrush(this.staticMap)
-        ]
+    getEditorBrushes(round: Round) {
+        const brushes: MapEditorBrush[] = [new PaintBrush(round), new RuinsBrush(round), new WallsBrush(round)]
         return brushes.concat(this.staticMap.getEditorBrushes())
     }
 

@@ -187,8 +187,8 @@ export default class Bodies {
         return this.bodies.size === 0
     }
 
-    getEditorBrushes(map: StaticMap): MapEditorBrush[] {
-        return [new TowerBrush(this, map)]
+    getEditorBrushes(round: Round): MapEditorBrush[] {
+        return [new TowerBrush(round)]
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
