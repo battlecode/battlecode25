@@ -5,6 +5,7 @@ import battlecode.common.*;
 import static battlecode.common.GameActionExceptionType.*;
 import battlecode.schema.Action;
 import battlecode.util.FlatHelpers;
+import battlecode.instrumenter.RobotDeathException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1037,6 +1038,11 @@ public final class RobotControllerImpl implements RobotController {
         robot.addPaint(amount);
         this.robot.addActionCooldownTurns(GameConstants.PAINT_TRANSFER_COOLDOWN);
         this.gameWorld.getMatchMaker().addTransferAction(robot.getID(), amount);
+    }
+
+    @Override
+    public void disintegrate() {
+        throw new RobotDeathException();
     }
 
     @Override

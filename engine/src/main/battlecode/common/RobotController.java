@@ -800,6 +800,13 @@ public interface RobotController {
     void transferPaint(MapLocation loc, int amount) throws GameActionException;
 
     /**
+     * Destroys the robot. 
+     *
+     * @battlecode.doc.costlymethod
+    **/
+    void disintegrate();
+
+    /**
      * Causes your team to lose the game. It's like typing "gg."
      *
      * @battlecode.doc.costlymethod
