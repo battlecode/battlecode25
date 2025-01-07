@@ -33,20 +33,17 @@ const DEFAULT_CONFIG = {
     validateMaps: false,
     resolutionScale: 100,
     colors: {
-        [Colors.TEAM_ONE]: '#8648d9',
-        [Colors.TEAM_TWO]: '#ffadcd',
+        [Colors.TEAM_ONE]: '#cdcdcc',
+        [Colors.TEAM_TWO]: '#fee493',
 
-        [Colors.PAINT_TEAMONE_ONE]: '#1d4f6c',
-        [Colors.PAINT_TEAMONE_TWO]: '#ffffff',
-        [Colors.PAINT_TEAMTWO_ONE]: '#ffffff',
-        [Colors.PAINT_TEAMTWO_TWO]: '#ffffff',
-        [Colors.WALLS_COLOR]: '#3B6B4C',
-        [Colors.RUINS_COLOR]: '#153e30',
+        [Colors.PAINT_TEAMONE_ONE]: '#666666',
+        [Colors.PAINT_TEAMONE_TWO]: '#565656',
+        [Colors.PAINT_TEAMTWO_ONE]: '#b28b52',
+        [Colors.PAINT_TEAMTWO_TWO]: '#997746',
+        [Colors.WALLS_COLOR]: '#547f31',
+        [Colors.TILE_COLOR]: '#4c301e',
         [Colors.GAMEAREA_BACKGROUND]: '#313847',
-
-        [Colors.ATTACK_COLOR]: '#db6b5c',
-        [Colors.BUILD_COLOR]: '#c573c9',
-        [Colors.HEAL_COLOR]: '#f2b804'
+        [Colors.SIDEBAR_BACKGROUND]: '#3f3131'
     } as Record<Colors, string>
 }
 
@@ -61,7 +58,8 @@ const configDescription: Record<keyof ClientConfig, string> = {
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
     profileGames: 'Enable saving profiling data when running games',
     validateMaps: 'Validate maps before running a game',
-    resolutionScale: 'Resolution scale for the game area. Decrease to help performance.'
+    resolutionScale: 'Resolution scale for the game area. Decrease to help performance.',
+    colors: ''
 }
 
 export function getDefaultConfig(): ClientConfig {

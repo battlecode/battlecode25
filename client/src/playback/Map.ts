@@ -5,10 +5,11 @@ import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
 import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
-import { DIVIDER_COLOR, TILE_COLOR, WALLS_COLOR, PAINT_COLORS, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
+import { TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
+import { Colors, currentColors, getPaintColors, getTeamColors } from '../colors'
 
 export type Dimension = {
     minCorner: Vector
@@ -109,13 +110,14 @@ export class CurrentMap {
                             this,
                             this.paint,
                             () => {
-                                ctx.fillStyle = PAINT_COLORS[paint]
+
+                                ctx.fillStyle = getPaintColors()[paint]
                                 ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                             },
                             { x: true, y: false }
                         )
                     } else {
-                        ctx.fillStyle = PAINT_COLORS[paint]
+                        ctx.fillStyle = getPaintColors()[paint]
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     }
                 }
@@ -123,7 +125,7 @@ export class CurrentMap {
                 if (config.showPaintMarkers) {
                     const markerA = this.markers[0][schemaIdx]
                     if (markerA) {
-                        ctx.fillStyle = TEAM_COLORS[0]
+                        ctx.fillStyle = getTeamColors()[0]
                         const label = markerA === 1 ? '1' : '2' // Primary/secondary
                         ctx.font = '0.5px monospace'
                         ctx.shadowColor = 'black'
@@ -135,7 +137,7 @@ export class CurrentMap {
 
                     const markerB = this.markers[1][schemaIdx]
                     if (markerB) {
-                        ctx.fillStyle = TEAM_COLORS[1]
+                        ctx.fillStyle = getTeamColors()[1]
                         const label = markerB === 3 ? '1' : '2' // Primary/secondary
                         ctx.font = '0.5px monospace'
                         ctx.shadowColor = 'black'
@@ -338,7 +340,7 @@ export class StaticMap {
 
     draw(ctx: CanvasRenderingContext2D) {
         // Fill background
-        ctx.fillStyle = TILE_COLOR
+        ctx.fillStyle = currentColors[Colors.TILE_COLOR]
         ctx.fillRect(
             this.dimension.minCorner.x,
             this.dimension.minCorner.y,

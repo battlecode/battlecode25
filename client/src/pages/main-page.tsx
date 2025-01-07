@@ -13,7 +13,10 @@ export const MainPage: React.FC = React.memo(() => {
 
     return (
         <ErrorBoundary>
-            <div className="flex overflow-hidden" style={{ backgroundColor: GAMEAREA_BACKGROUND }}>
+            <div
+                className="flex overflow-hidden"
+                style={{ backgroundColor: context.state.config.colors.GAMEAREA_BACKGROUND }}
+            >
                 <Sidebar />
                 <div className="w-full h-screen flex justify-center">
                     <GameArea />

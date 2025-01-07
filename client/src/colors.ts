@@ -7,29 +7,23 @@ export enum Colors {
     PAINT_TEAMTWO_ONE = 'PAINT_TEAMTWO_ONE',
     PAINT_TEAMTWO_TWO = 'PAINT_TEAMTWO_TWO',
     WALLS_COLOR = 'WALLS_COLOR',    //'#3B6B4C'
-    RUINS_COLOR = 'RUINS_COLOR', // '#153e30'
     GAMEAREA_BACKGROUND = 'GAMEAREA_BACKGROUND',    //'#313847'
-
-    ATTACK_COLOR = 'ATTACK_COLOR',  //'#db6b5c'
-    BUILD_COLOR = 'BUILD_COLOR',   //'#c573c9'
-    HEAL_COLOR = 'HEAL_COLOR',    //'#f2b804'
+    TILE_COLOR = 'TILE_COLOR',
+    SIDEBAR_BACKGROUND = 'SIDEBAR_BACKGROUND',
 }
 
 export const DEFAULT_GLOBAL_COLORS = {
-    [Colors.TEAM_ONE]: '#8648d9',
-    [Colors.TEAM_TWO]: '#ffadcd',
+        [Colors.TEAM_ONE]: '#cdcdcc',
+        [Colors.TEAM_TWO]: '#fee493',
 
-    [Colors.PAINT_TEAMONE_ONE]: '#1d4f6c',
-    [Colors.PAINT_TEAMONE_TWO]: '#ffffff',
-    [Colors.PAINT_TEAMTWO_ONE]: '#ffffff',
-    [Colors.PAINT_TEAMTWO_TWO]: '#ffffff',
-    [Colors.WALLS_COLOR]: '#3B6B4C',
-    [Colors.RUINS_COLOR]: '#153e30',
-    [Colors.GAMEAREA_BACKGROUND]: '#313847',
-
-    [Colors.ATTACK_COLOR]: '#db6b5c',
-    [Colors.BUILD_COLOR]: '#c573c9',
-    [Colors.HEAL_COLOR]: '#f2b804',
+        [Colors.PAINT_TEAMONE_ONE]: '#666666',
+        [Colors.PAINT_TEAMONE_TWO]: '#565656',
+        [Colors.PAINT_TEAMTWO_ONE]: '#b28b52',
+        [Colors.PAINT_TEAMTWO_TWO]: '#997746',
+        [Colors.WALLS_COLOR]: '#547f31',
+        [Colors.TILE_COLOR]: '#4c301e',
+        [Colors.GAMEAREA_BACKGROUND]: '#313847',
+        [Colors.SIDEBAR_BACKGROUND]: '#3f3131'
 }
 
 export const currentColors: Record<Colors, string> = { ...DEFAULT_GLOBAL_COLORS }
@@ -46,7 +40,15 @@ export const getGlobalColor = (color: Colors) => {
 export const resetGlobalColors = () => {
     for (const key in currentColors) {
         //console.log("Hello. =^-w-^=")
-        updateGlobalColor(key as Colors, DEFAULT_GLOBAL_COLORS[key as Colors])
-        
+        const test = key as Colors
+        updateGlobalColor(test, DEFAULT_GLOBAL_COLORS[test])
     }
+}
+
+export const getPaintColors = () => {
+    return ["#00000000", currentColors.PAINT_TEAMONE_ONE, currentColors.PAINT_TEAMONE_TWO, currentColors.PAINT_TEAMTWO_ONE, currentColors.PAINT_TEAMTWO_TWO]
+}
+
+export const getTeamColors = () => {
+    return [currentColors.TEAM_ONE, currentColors.TEAM_TWO]
 }

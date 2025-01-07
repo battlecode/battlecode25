@@ -7,7 +7,7 @@ import { ControlsBarTimeline } from './controls-bar-timeline'
 import Tooltip from '../tooltip'
 import GameRunner, { useControls, usePlaybackPerTurn, useRound } from '../../playback/GameRunner'
 import { HiddenIcon, VisibleIcon } from '../../icons/visible'
-import { TEAM_COLORS } from '../../constants'
+import { getTeamColors } from '../../colors'
 
 export const ControlsBar: React.FC = () => {
     const { state: appState } = useAppContext()
@@ -114,7 +114,7 @@ export const ControlsBar: React.FC = () => {
                         >
                             <button
                                 className={'rounded-md text-[12px] aspect-[1] flex justify-center select-none'}
-                                style={{ color: TEAM_COLORS[markerTeam] }}
+                                style={{ color: getTeamColors()[markerTeam] }}
                                 onClick={() => setMarkerTeam(1 - markerTeam)}
                             >
                                 {markerTeam === 0 ? 'S' : 'G'}

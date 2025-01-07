@@ -1,3 +1,5 @@
+import {Colors} from './colors'
+
 export const CLIENT_VERSION = '1.0.0'
 export const SPEC_VERSION = '1'
 export const BATTLECODE_YEAR: number = 2025
@@ -30,10 +32,10 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = ['DefaultSmall', 'DefaultMediu
 //export const TEAM_WHITE = '#bfbaa8'
 //export const TEAM_BROWN = '#9c8362' //'#b99c76'
 
-export const TEAM_COLORS = [Colors.TEAM_ONE, Colors.TEAM_TWO]
-export const TEAM_COLOR_NAMES = ['White', 'Brown']  //!! need to change
+//export const TEAM_COLORS = [Colors.TEAM_ONE, Colors.TEAM_TWO]
+export const TEAM_COLOR_NAMES = ['Silver', 'Gold']  //!! need to change
 
-export const SPECIALTY_COLORS = [Colors.ATTACK_COLOR, Colors.BUILD_COLOR, Colors.HEAL_COLOR]
+//export const SPECIALTY_COLORS = [Colors.ATTACK_COLOR, Colors.BUILD_COLOR, Colors.HEAL_COLOR]
 
 export const INDICATOR_DOT_SIZE = 0.2
 export const INDICATOR_LINE_WIDTH = 0.1

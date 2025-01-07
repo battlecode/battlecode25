@@ -2,9 +2,10 @@ import Match from './Match'
 import { flatbuffers, schema } from 'battlecode-schema'
 import { ungzip } from 'pako'
 import assert from 'assert'
-import { SPEC_VERSION, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
+import { SPEC_VERSION, TEAM_COLOR_NAMES } from '../constants'
 import { currentColors } from '../colors'
 import { FakeGameWrapper } from '../components/sidebar/runner/websocket'
+import { getTeamColors } from '../colors'
 
 let nextID = 0
 
@@ -168,7 +169,7 @@ export class Team {
         public readonly packageName: string
     ) {
         this.colorName = TEAM_COLOR_NAMES[id - 1]
-        this.color = currentColors[TEAM_COLORS[id - 1]]
+        this.color = getTeamColors()[id - 1]
     }
 
     static fromSchema(team: schema.TeamData) {
