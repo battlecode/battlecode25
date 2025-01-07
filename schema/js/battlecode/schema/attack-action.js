@@ -15,6 +15,9 @@ var AttackAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
+    /**
+     * Id of the attack target
+     */
     AttackAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };

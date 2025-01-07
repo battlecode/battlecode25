@@ -3,6 +3,7 @@ import React, { useEffect, useState, MouseEvent, PropsWithChildren } from 'react
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
+import { NumInput } from './components/forms'
 import {
     Colors,
     currentColors,
@@ -22,11 +23,15 @@ interface Props {
 const DEFAULT_CONFIG = {
     showAllIndicators: false,
     showAllRobotRadii: false,
-    showHealthBars: false,
+    showTimelineMarkers: true,
+    showHealthBars: true,
+    showPaintMarkers: true,
     showMapXY: true,
-    showFlagCarryIndicator: true,
-    streamRunnerGames: false,
+    enableFancyPaint: true,
+    streamRunnerGames: true,
+    profileGames: false,
     validateMaps: false,
+    resolutionScale: 100,
     colors: {
         [Colors.TEAM_ONE]: '#8648d9',
         [Colors.TEAM_TWO]: '#ffadcd',
@@ -45,21 +50,27 @@ const DEFAULT_CONFIG = {
     } as Record<Colors, string>
 }
 
-const configDescription: { [key: string]: string } = {
+const configDescription: Record<keyof ClientConfig, string> = {
     showAllIndicators: 'Show all indicator dots and lines',
     showAllRobotRadii: 'Show all robot view and attack radii',
+    showTimelineMarkers: 'Show user-generated markers on the timeline',
     showHealthBars: 'Show health bars below all robots',
+    showPaintMarkers: 'Show paint markers created using mark()',
     showMapXY: 'Show X,Y when hovering a tile',
-    showFlagCarryIndicator: 'Show an obvious indicator over flag carriers',
+    enableFancyPaint: 'Enable fancy paint rendering',
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
-    validateMaps: 'Validate maps before running a game'
+    profileGames: 'Enable saving profiling data when running games',
+    validateMaps: 'Validate maps before running a game',
+    resolutionScale: 'Resolution scale for the game area. Decrease to help performance.'
 }
 
 export function getDefaultConfig(): ClientConfig {
     const config: ClientConfig = { ...DEFAULT_CONFIG }
     for (const key in config) {
         const value = localStorage.getItem('config' + key)
-        if (value) config[key as keyof ClientConfig] = JSON.parse(value)
+        if (value) {
+            ;(config[key as keyof ClientConfig] as any) = JSON.parse(value)
+        }
     }
 
     for (const key in config.colors) {
@@ -129,10 +140,11 @@ export const ConfigPage: React.FC<Props> = (props) => {
     return (
         <div className={'flex flex-col'}>
             <div className="mb-2">Edit Client Config:</div>
-            {Object.entries(DEFAULT_CONFIG).map(([key, value]) => {
-                if (typeof value === 'string') return <ConfigStringElement configKey={key} key={key} />
-                if (typeof value === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
-                if (typeof value === 'number') return <ConfigNumberElement configKey={key} key={key} />
+            {Object.entries(DEFAULT_CONFIG).map(([k, v]) => {
+                const key = k as keyof ClientConfig
+                if (typeof v === 'string') return <ConfigStringElement configKey={key} key={key} />
+                if (typeof v === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
+                if (typeof v === 'number') return <ConfigNumberElement configKey={key} key={key} />
             })}
 
             <div>
@@ -170,9 +182,9 @@ export const ConfigPage: React.FC<Props> = (props) => {
     )
 }
 
-const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) => {
+const ConfigBooleanElement: React.FC<{ configKey: keyof ClientConfig }> = ({ configKey }) => {
     const context = useAppContext()
-    const value = context.state.config[configKey as keyof ClientConfig]
+    const value = context.state.config[configKey] as boolean
     return (
         <div className={'flex flex-row items-center mb-2'}>
             <input
@@ -185,7 +197,7 @@ const ConfigBooleanElement: React.FC<{ configKey: string }> = ({ configKey }) =>
                     }))
                     localStorage.setItem('config' + configKey, JSON.stringify(e.target.checked))
                     // hopefully after the setState is done
-                    setTimeout(() => GameRenderer.render(), 10)
+                    setTimeout(() => GameRenderer.fullRender(), 10)
                 }}
             />
             <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
@@ -199,8 +211,29 @@ const ConfigStringElement: React.FC<{ configKey: string }> = ({ configKey }) => 
     return <div className={'flex flex-row items-center'}>Todo</div>
 }
 
-const ConfigNumberElement: React.FC<{ configKey: string }> = ({ configKey }) => {
+const ConfigNumberElement: React.FC<{ configKey: keyof ClientConfig }> = ({ configKey }) => {
     const context = useAppContext()
-    const value = context.state.config[configKey as keyof ClientConfig]
-    return <div className={'flex flex-row items-center'}>Todo</div>
+    const value = context.state.config[configKey as keyof ClientConfig] as number
+    return (
+        <div className={'flex flex-row items-center mb-2'}>
+            <NumInput
+                value={value}
+                changeValue={(newVal) => {
+                    context.setState((prevState) => ({
+                        ...prevState,
+                        config: { ...context.state.config, [configKey]: newVal }
+                    }))
+                    localStorage.setItem('config' + configKey, JSON.stringify(newVal))
+                    // hopefully after the setState is done
+                    setTimeout(() => {
+                        // Trigger canvas dimension update to ensure resolution is updated
+                        GameRenderer.onMatchChange()
+                    }, 10)
+                }}
+                min={10}
+                max={200}
+            />
+            <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
+        </div>
+    )
 }

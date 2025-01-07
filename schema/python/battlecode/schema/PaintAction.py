@@ -4,6 +4,7 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
 # Visually indicate a tile has been painted
@@ -11,17 +12,21 @@ class PaintAction(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def SizeOf(cls):
-        return 2
+    def SizeOf(cls) -> int:
+        return 4
 
     # PaintAction
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # PaintAction
     def Loc(self): return self._tab.Get(flatbuffers.number_types.Uint16Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(0))
+    # PaintAction
+    def IsSecondary(self): return self._tab.Get(flatbuffers.number_types.Int8Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(2))
 
-def CreatePaintAction(builder, loc):
-    builder.Prep(2, 2)
+def CreatePaintAction(builder, loc, isSecondary):
+    builder.Prep(2, 4)
+    builder.Pad(1)
+    builder.PrependInt8(isSecondary)
     builder.PrependUint16(loc)
     return builder.Offset()

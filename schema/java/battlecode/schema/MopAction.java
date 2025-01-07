@@ -27,11 +27,18 @@ public final class MopAction extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public MopAction __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int loc() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  /**
+   * Ids of the mopped targets, possibly 0
+   */
+  public int id0() { return bb.getShort(bb_pos + 0) & 0xFFFF; }
+  public int id1() { return bb.getShort(bb_pos + 2) & 0xFFFF; }
+  public int id2() { return bb.getShort(bb_pos + 4) & 0xFFFF; }
 
-  public static int createMopAction(FlatBufferBuilder builder, int loc) {
-    builder.prep(2, 2);
-    builder.putShort((short) loc);
+  public static int createMopAction(FlatBufferBuilder builder, int id0, int id1, int id2) {
+    builder.prep(2, 6);
+    builder.putShort((short) id2);
+    builder.putShort((short) id1);
+    builder.putShort((short) id0);
     return builder.offset();
   }
 

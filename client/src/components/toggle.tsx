@@ -15,7 +15,7 @@ interface Props {
 
 export const Toggle: React.FC<Props> = (props: Props) => {
     const [value, setValue] = React.useState(Object.values(props.options)[0].value)
-    const { canvasRightClick } = GameRenderer.useCanvasEvents()
+    const { canvasRightClick } = GameRenderer.useCanvasClickEvents()
 
     const onClick = (val: any) => {
         props.onChange(val)
@@ -41,7 +41,7 @@ export const Toggle: React.FC<Props> = (props: Props) => {
     }, [canvasRightClick])
 
     return (
-        <div className="flex flex-row gap-0.5 border border-black p-0.5 rounded-md">
+        <div className="flex flex-row gap-0.5 border border-white p-0.5 rounded-md">
             {Object.entries(props.options).map(([label, option_props], i) => (
                 <button
                     key={i}
@@ -51,7 +51,7 @@ export const Toggle: React.FC<Props> = (props: Props) => {
                         ' flex flex-col transition rounded py-1 px-2 ' +
                         (value !== option_props.value
                             ? 'hover:bg-lightHighlight'
-                            : option_props.selectedClass ?? 'text-white bg-darkHighlight')
+                            : option_props.selectedClass ?? 'bg-medHighlight')
                     }
                 >
                     <span className={props.flipOnRightClickCanvas && i === 1 ? 'leading-3 mt-0.5' : ''}>{label}</span>

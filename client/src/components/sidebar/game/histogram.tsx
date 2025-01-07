@@ -1,3 +1,4 @@
+/*
 import React from 'react'
 import { CanvasHistogram } from './quick-histogram'
 import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
@@ -55,3 +56,4 @@ export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => 
         </div>
     )
 }
+*/

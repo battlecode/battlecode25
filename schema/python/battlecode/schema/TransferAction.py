@@ -4,24 +4,30 @@
 
 import flatbuffers
 from flatbuffers.compat import import_numpy
+from typing import Any
 np = import_numpy()
 
-# Visually indicate trasnferring paint from one robot to another
+# Visually indicate transferring paint from one robot to another
 class TransferAction(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def SizeOf(cls):
-        return 2
+    def SizeOf(cls) -> int:
+        return 8
 
     # TransferAction
-    def Init(self, buf, pos):
+    def Init(self, buf: bytes, pos: int):
         self._tab = flatbuffers.table.Table(buf, pos)
 
+    # Id of the transfer target
     # TransferAction
     def Id(self): return self._tab.Get(flatbuffers.number_types.Uint16Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(0))
+    # TransferAction
+    def Amount(self): return self._tab.Get(flatbuffers.number_types.Int32Flags, self._tab.Pos + flatbuffers.number_types.UOffsetTFlags.py_type(4))
 
-def CreateTransferAction(builder, id):
-    builder.Prep(2, 2)
+def CreateTransferAction(builder, id, amount):
+    builder.Prep(4, 8)
+    builder.PrependInt32(amount)
+    builder.Pad(2)
     builder.PrependUint16(id)
     return builder.Offset()

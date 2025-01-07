@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{path::Path, io::Write, fs, collections::HashMap, sync::{Arc, Mutex}};
-use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Runtime};
+use std::{collections::HashMap, fs, io::Write, path::Path, str::FromStr, sync::{Arc, Mutex}};
+use tauri::{plugin::{Builder as PluginBuilder, TauriPlugin}, Manager, Runtime};
 use tauri::api::dialog::blocking::FileDialogBuilder;
 use tauri::api::process::{Command, CommandEvent, CommandChild};
 use relative_path::RelativePath;
@@ -25,7 +25,7 @@ struct ChildProcessExitPayload {
 
 #[derive(Default, serde::Deserialize)]
 struct ServerApiResponse {
-    release_version_public: String
+    release_version_client: String
 }
 
 struct AppState {
@@ -71,10 +71,20 @@ async fn tauri_api(
         },
         "getJavas" => {
             let mut output = vec![];
-            let jvms = javalocate::run(&javalocate::Args {
-                name: None,
-                arch: None,
-                version: Some(String::from("1.8"))
+            let mut jvms = vec![];
+            for supported in ["21", "23"] { 
+                jvms.append(&mut where_is_it::java::run(where_is_it::java::MatchOptions {
+                    name: None,
+                    arch: None,
+                    version: Some(String::from(supported))
+                }));
+            }
+
+            // Add 'auto' option
+            output.push(String::from("Auto"));
+            output.push(match jvms.len() {
+                0 => String::new(),
+                _ => jvms[0].path.clone()
             });
 
             for jvm in jvms {
@@ -84,6 +94,36 @@ async fn tauri_api(
                     jvm.architecture
                 ));
                 output.push(jvm.path);
+            }
+
+            Ok(output)
+        },
+        "getPythons" => {
+            let mut output = vec![];
+            let pythons = where_is_it::python::run(where_is_it::python::MatchOptions {
+                major: Some(3),
+                minor: Some(12),
+                patch: None,
+                pre: None,
+                dev: None,
+                name: None,
+                architecture: None
+            });
+
+            for py in pythons {
+                let path = py.executable;
+                output.push(format!(
+                    "{} ({})",
+                    match &py.formatted_name {
+                        Some(n) => n.clone(),
+                        None => path.clone()
+                    },
+                    match py.version {
+                        Some(v) => v.clone(),
+                        None => String::from("Unknown".to_string())
+                    },
+                ));
+                output.push(path);
             }
 
             Ok(output)
@@ -106,10 +146,10 @@ async fn tauri_api(
         },
         "getServerVersion" => {
             let mut version = String::new();
-            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}/?format=json", &args[0]);
+            let uri = format!("https://api.battlecode.org/api/episode/e/bc{}java/?format=json", &args[0]);
             if let Ok(res) = ureq::get(&uri).call() {
                 let res: ServerApiResponse = res.into_json().unwrap_or(Default::default());
-                version = res.release_version_public;
+                version = res.release_version_client;
             }
 
             Ok(vec![version])
@@ -158,22 +198,39 @@ async fn tauri_api(
         },
         "child_process.spawn" => {
             let scaffold_path = &args[0];
-            let java_path = &args[1];
+            let lang = &args[1];
+            let lang_path = &args[2];
+
+            // Populate wrapper command
+            let mut envs = HashMap::new();
             let mut wrapper_path = std::path::PathBuf::new();
-            wrapper_path.push(scaffold_path);
-            wrapper_path.push(match cfg!(windows) {
-                true => "gradlew.bat",
-                false => "gradlew"
-            });
-            let mut child = Command::new(wrapper_path.to_str().unwrap())
-                .args(&args[2..])
-                .current_dir(scaffold_path.into());
-            if !java_path.is_empty() {
-                let mut envs = HashMap::new();
-                envs.insert(String::from("JAVA_HOME"), java_path.clone());
-                child = child.envs(envs);
+            match lang.as_str() {
+                "Java" => {
+                    wrapper_path.push(scaffold_path);
+                    wrapper_path.push(match cfg!(windows) {
+                        true => "gradlew.bat",
+                        false => "gradlew"
+                    });
+                    if !lang_path.is_empty() {
+                        envs.insert(String::from("JAVA_HOME"), lang_path.clone());
+                    }
+                },
+                "Python" => {
+                    if lang_path.is_empty() {
+                        wrapper_path.push(String::from("python"));
+                    } else {
+                        wrapper_path.push(lang_path.clone())
+                    }
+                },
+                _ => {}
             }
-            let child = child.spawn();
+
+            let child = Command::new(wrapper_path.to_str().unwrap())
+                .args(&args[3..])
+                .current_dir(scaffold_path.into())
+                .envs(envs)
+                .spawn();
+
             match child {
                 Ok(child) => {
                     let mut rx = child.0;
@@ -242,12 +299,23 @@ async fn tauri_api(
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("window")
+    PluginBuilder::new("nativeAPI")
         .setup(|_app| {
             Ok(())
         })
         .on_event(|_app, event| {
             match event {
+                tauri::RunEvent::Exit => {
+                    let state: tauri::State<'_, AppState> = _app.state();
+                    let mut active: HashMap<String, CommandChild> = Default::default();
+                    std::mem::swap(
+                        &mut active,
+                        &mut *state.active_processes.lock().unwrap()
+                    );
+
+                    // Kill all child processes
+                    active.into_iter().for_each(|p| { let _ = p.1.kill(); });
+                },
                 _ => ()
             }
         })

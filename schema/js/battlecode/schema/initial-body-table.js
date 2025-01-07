@@ -22,55 +22,29 @@ var InitialBodyTable = /** @class */ (function () {
         bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
         return (obj || new InitialBodyTable()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
     };
-    InitialBodyTable.prototype.robotIds = function (index) {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
-    InitialBodyTable.prototype.robotIdsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-    };
-    InitialBodyTable.prototype.robotIdsArray = function () {
-        var offset = this.bb.__offset(this.bb_pos, 4);
-        return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-    };
     InitialBodyTable.prototype.spawnActions = function (index, obj) {
-        var offset = this.bb.__offset(this.bb_pos, 6);
-        return offset ? (obj || new spawn_action_1.SpawnAction()).__init(this.bb.__vector(this.bb_pos + offset) + index * 6, this.bb) : null;
+        var offset = this.bb.__offset(this.bb_pos, 4);
+        return offset ? (obj || new spawn_action_1.SpawnAction()).__init(this.bb.__vector(this.bb_pos + offset) + index * 8, this.bb) : null;
     };
     InitialBodyTable.prototype.spawnActionsLength = function () {
-        var offset = this.bb.__offset(this.bb_pos, 6);
+        var offset = this.bb.__offset(this.bb_pos, 4);
         return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
     };
     InitialBodyTable.startInitialBodyTable = function (builder) {
-        builder.startObject(2);
-    };
-    InitialBodyTable.addRobotIds = function (builder, robotIdsOffset) {
-        builder.addFieldOffset(0, robotIdsOffset, 0);
-    };
-    InitialBodyTable.createRobotIdsVector = function (builder, data) {
-        builder.startVector(4, data.length, 4);
-        for (var i = data.length - 1; i >= 0; i--) {
-            builder.addInt32(data[i]);
-        }
-        return builder.endVector();
-    };
-    InitialBodyTable.startRobotIdsVector = function (builder, numElems) {
-        builder.startVector(4, numElems, 4);
+        builder.startObject(1);
     };
     InitialBodyTable.addSpawnActions = function (builder, spawnActionsOffset) {
-        builder.addFieldOffset(1, spawnActionsOffset, 0);
+        builder.addFieldOffset(0, spawnActionsOffset, 0);
     };
     InitialBodyTable.startSpawnActionsVector = function (builder, numElems) {
-        builder.startVector(6, numElems, 2);
+        builder.startVector(8, numElems, 2);
     };
     InitialBodyTable.endInitialBodyTable = function (builder) {
         var offset = builder.endObject();
         return offset;
     };
-    InitialBodyTable.createInitialBodyTable = function (builder, robotIdsOffset, spawnActionsOffset) {
+    InitialBodyTable.createInitialBodyTable = function (builder, spawnActionsOffset) {
         InitialBodyTable.startInitialBodyTable(builder);
-        InitialBodyTable.addRobotIds(builder, robotIdsOffset);
         InitialBodyTable.addSpawnActions(builder, spawnActionsOffset);
         return InitialBodyTable.endInitialBodyTable(builder);
     };

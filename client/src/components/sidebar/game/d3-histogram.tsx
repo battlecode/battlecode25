@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react'
-import { Colors } from '../../../colors'
 import * as d3 from 'd3'
 
 interface HistogramProps {

@@ -4,9 +4,8 @@ import { Vector } from './Vector'
 import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
-import { DividerBrush, ResourcePileBrush, SpawnZoneBrush, WallsBrush, PaintBrush } from './Brushes'
-import { TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
-import { Colors, currentColors } from '../colors'
+import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
+import { DIVIDER_COLOR, TILE_COLOR, WALLS_COLOR, PAINT_COLORS, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
@@ -35,8 +34,8 @@ type SchemaPacket = {
 
 export class CurrentMap {
     public readonly staticMap: StaticMap
-    //public readonly flagData: Map<number, FlagData>
     public readonly paint: Int8Array
+    public readonly markers: [Int8Array, Int8Array] // Each team has markers
 
     get width(): number {
         return this.dimension.width
@@ -55,26 +54,13 @@ export class CurrentMap {
 
             this.staticMap = from
             this.paint = new Int8Array(from.initialPaint)
-
-            /*
-            for (let i = 0; i < from.spawnLocations.length; i++) {
-                // Assign initial flag data, ids are initial map locations
-                const team = i % 2
-                const location = from.spawnLocations[i]
-                const flagId = this.locationToIndex(location.x, location.y)
-                this.flagData.set(flagId, { id: flagId, team, location, carrierId: null })
-            }
-            */
+            this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
-            /*
-            for (let [key, value] of from.flagData) {
-                this.flagData.set(key, { ...value })
-            }
-            */
             this.paint = new Int8Array(from.paint)
+            this.markers = [new Int8Array(from.markers[0]), new Int8Array(from.markers[1])]
         }
     }
 
@@ -95,9 +81,9 @@ export class CurrentMap {
     }
 
     /**
-     * Mutates this currentMap to reflect the given delta.
+     * Mutates this currentMap to reflect the given turn.
      */
-    applyDelta(delta: schema.Round): void {}
+    applyTurnDelta(turn: schema.Turn): void {}
 
     draw(
         match: Match,
@@ -113,66 +99,54 @@ export class CurrentMap {
                 const coords = renderUtils.getRenderCoords(i, j, dimension)
 
                 // Render rounded (clipped) paint
-                if (this.paint[schemaIdx]) {
-                    renderUtils.renderRounded(
-                        ctx,
-                        i,
-                        j,
-                        this,
-                        this.paint,
-                        () => {
-                            ctx.fillStyle = currentColors[Colors.PAINT_TEAMONE_ONE]
-                            ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
-                        },
-                        { x: true, y: false }
-                    )
+                const paint = this.paint[schemaIdx]
+                if (paint) {
+                    if (config.enableFancyPaint) {
+                        renderUtils.renderRounded(
+                            ctx,
+                            i,
+                            j,
+                            this,
+                            this.paint,
+                            () => {
+                                ctx.fillStyle = PAINT_COLORS[paint]
+                                ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
+                            },
+                            { x: true, y: false }
+                        )
+                    } else {
+                        ctx.fillStyle = PAINT_COLORS[paint]
+                        ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
+                    }
+                }
+
+                if (config.showPaintMarkers) {
+                    const markerA = this.markers[0][schemaIdx]
+                    if (markerA) {
+                        ctx.fillStyle = TEAM_COLORS[0]
+                        const label = markerA === 1 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.05, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
+
+                    const markerB = this.markers[1][schemaIdx]
+                    if (markerB) {
+                        ctx.fillStyle = TEAM_COLORS[1]
+                        const label = markerB === 3 ? '1' : '2' // Primary/secondary
+                        ctx.font = '0.5px monospace'
+                        ctx.shadowColor = 'black'
+                        ctx.shadowBlur = 4
+                        ctx.fillText(label, coords.x + 0.65, coords.y + 0.95)
+                        ctx.shadowColor = ''
+                        ctx.shadowBlur = 0
+                    }
                 }
             }
         }
-
-        // Render flags
-        /*
-        for (const flagId of this.flagData.keys()) {
-            const data = this.flagData.get(flagId)!
-            if (data.carrierId) continue
-            const coords = renderUtils.getRenderCoords(data.location.x, data.location.y, this.dimension)
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded('resources/bread_outline_64x64.png'),
-                coords,
-                1
-            )
-        }
-
-        // Render resource piles
-        for (const pileId of this.resourcePileData.keys()) {
-            const data = this.resourcePileData.get(pileId)!
-            if (data.amount == 0) continue
-            const loc = this.indexToLocation(pileId)
-            const size = (data.amount / 100) * 0.3 + 0.75
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            const crumbVersion = ((loc.x * 37 + loc.y * 19) % 3) + 1
-            renderUtils.renderCenteredImageOrLoadingIndicator(
-                ctx,
-                getImageIfLoaded(`resources/crumb_${crumbVersion}_64x64.png`),
-                coords,
-                size
-            )
-        }
-
-        // Render traps
-        for (const trapId of this.trapData.keys()) {
-            const data = this.trapData.get(trapId)!
-            const file = `traps/${BUILD_NAMES[data.type]}_64x64.png`
-            const loc = data.location
-            const coords = renderUtils.getRenderCoords(loc.x, loc.y, this.dimension)
-            renderUtils.renderRoundedOutline(ctx, coords, TEAM_COLORS[data.team - 1])
-
-            ctx.globalAlpha = 0.6
-            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(file), coords, 0.8)
-            ctx.globalAlpha = 1
-        }
-        */
     }
 
     getTooltipInfo(square: Vector, match: Match): string[] {
@@ -180,30 +154,44 @@ export class CurrentMap {
         if (square.x >= this.width || square.y >= this.height) return []
 
         const schemaIdx = this.locationToIndex(square.x, square.y)
-        //const flag = [...this.flagData.values()].find((x) => x.location.x == square.x && x.location.y == square.y)
+
         const paint = this.paint[schemaIdx]
-        const walls = this.staticMap.walls[schemaIdx]
+        const wall = this.staticMap.walls[schemaIdx]
+        const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+        const markerA = this.markers[0][schemaIdx]
+        const markerB = this.markers[1][schemaIdx]
+
         const info: string[] = []
-        /*
-        if (flag) {
-            info.push(`${TEAM_COLOR_NAMES[flag.team]} flag (ID: ${flag.id})`)
+        for (let i = 0; i < match.game.teams.length; i++) {
+            if (paint === i * 2 + 1) {
+                info.push(`${TEAM_COLOR_NAMES[i]} Paint (Primary)`)
+            } else if (paint === i * 2 + 2) {
+                info.push(`${TEAM_COLOR_NAMES[i]} Paint (Secondary)`)
+            }
         }
-        */
-        if (paint) {
-            info.push(`Painted`) //!! NEED TO UPDATE & put in whatever thing it's supposed to be
+        if (markerA) {
+            info.push(`Silver Marker (${markerA === 1 ? 'Primary' : 'Secondary'})`)
         }
-        if (walls) {
+        if (markerB) {
+            info.push(`Gold Marker (${markerB === 3 ? 'Primary' : 'Secondary'})`)
+        }
+        if (wall) {
             info.push('Wall')
         }
+        if (ruin) {
+            info.push('Ruin')
+        }
+
         return info
     }
 
     getEditorBrushes() {
         const brushes: MapEditorBrush[] = [
+            // ruins brush
+            // tower brush
             new PaintBrush(this),
-            new ResourcePileBrush(this),
-            new SpawnZoneBrush(this),
-            new WallsBrush(this)
+            new RuinsBrush(this.staticMap),
+            new WallsBrush(this.staticMap)
         ]
         return brushes.concat(this.staticMap.getEditorBrushes())
     }
@@ -221,10 +209,7 @@ export class CurrentMap {
             builder,
             Array.from(this.staticMap.walls).map((x) => !!x)
         )
-        const paintOffset = schema.GameMap.createPaintVector(
-            builder,
-            Array.from(this.staticMap.initialPaint).map((x) => !!x)
-        )
+        const paintOffset = schema.GameMap.createPaintVector(builder, this.staticMap.initialPaint)
         const ruinsOffset = packVecTable(builder, this.staticMap.ruins)
 
         return {
@@ -255,13 +240,23 @@ export class StaticMap {
         public readonly ruins: Vector[],
         public readonly initialPaint: Int8Array
     ) {
-        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) throw new Error(`Invalid symmetry ${symmetry}`)
+        if (symmetry < 0 || symmetry > 2 || !Number.isInteger(symmetry)) {
+            throw new Error(`Invalid symmetry ${symmetry}`)
+        }
 
-        if (walls.length != dimension.width * dimension.height) throw new Error('Invalid walls length')
-        if (initialPaint.length != dimension.width * dimension.height) throw new Error('Invalid paint length')
+        if (walls.length != dimension.width * dimension.height) {
+            throw new Error('Invalid walls length')
+        }
+        if (initialPaint.length != dimension.width * dimension.height) {
+            throw new Error('Invalid paint length')
+        }
 
-        if (walls.some((x) => x !== 0 && x !== 1)) throw new Error('Invalid walls value')
-        if (initialPaint.some((x) => x !== 0 && x !== 1 && x !== 2)) throw new Error('Invalid paint value')
+        if (walls.some((x) => x !== 0 && x !== 1)) {
+            throw new Error('Invalid walls value')
+        }
+        if (initialPaint.some((x) => x < 0 || x > 4)) {
+            throw new Error('Invalid paint value')
+        }
     }
 
     static fromSchema(schemaMap: schema.GameMap) {
@@ -312,11 +307,11 @@ export class StaticMap {
     }
 
     indexToLocation(index: number): { x: number; y: number } {
-        const target_x = index % this.width
-        const target_y = (index - target_x) / this.width
-        assert(target_x >= 0 && target_x < this.width, `target_x ${target_x} out of bounds`)
-        assert(target_y >= 0 && target_y < this.height, `target_y ${target_y} out of bounds`)
-        return { x: target_x, y: target_y }
+        const x = index % this.width
+        const y = (index - x) / this.width
+        assert(x >= 0 && x < this.width, `x=${x} out of bounds for indexToLocation`)
+        assert(y >= 0 && y < this.height, `y=${y} out of bounds for indexToLocation`)
+        return { x, y }
     }
 
     locationToIndex(x: number, y: number): number {
@@ -343,13 +338,24 @@ export class StaticMap {
 
     draw(ctx: CanvasRenderingContext2D) {
         // Fill background
-        ctx.fillStyle = currentColors[Colors.WALLS_COLOR]
+        ctx.fillStyle = TILE_COLOR
         ctx.fillRect(
             this.dimension.minCorner.x,
             this.dimension.minCorner.y,
             this.dimension.width,
             this.dimension.height
         )
+
+        const dirtImg = getImageIfLoaded('dirty.png')
+        if (dirtImg) {
+            ctx.drawImage(
+                dirtImg,
+                this.dimension.minCorner.x,
+                this.dimension.minCorner.y,
+                this.dimension.width,
+                this.dimension.height
+            )
+        }
 
         for (let i = 0; i < this.dimension.width; i++) {
             for (let j = 0; j < this.dimension.height; j++) {
@@ -364,15 +370,14 @@ export class StaticMap {
                     })
                 }
 
-                /*
-                // Render spawn zones
-                if (spawnZoneDrawAreas[schemaIdx]) {
-                    const color = TEAM_COLORS[spawnZoneDrawAreas[schemaIdx] - 1]
-                    renderUtils.renderRounded(ctx, i, j, this, spawnZoneDrawAreas, () => {
-                        renderUtils.drawDiagonalLines(ctx, coords, 1.0, color)
-                    })
-                }
-                */
+                // Render ruins
+                this.ruins.forEach(({ x, y }) => {
+                    const coords = renderUtils.getRenderCoords(x, y, this.dimension)
+
+                    const imgPath = `ruins/silver.png`
+                    const ruinImage = getImageIfLoaded(imgPath)
+                    renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
+                })
 
                 // Draw grid
                 const showGrid = true
@@ -400,6 +405,6 @@ export class StaticMap {
     }
 
     getEditorBrushes(): MapEditorBrush[] {
-        return [new DividerBrush(this)]
+        return []
     }
 }

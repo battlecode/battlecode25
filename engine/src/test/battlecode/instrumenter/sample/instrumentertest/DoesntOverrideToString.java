@@ -1,4 +1,4 @@
-package battlecode.instrumenter.sample.instrumentertest;
+package instrumentertest;
 
 @SuppressWarnings("unused")
 public class DoesntOverrideToString {

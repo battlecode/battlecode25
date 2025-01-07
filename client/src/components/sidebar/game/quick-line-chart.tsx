@@ -21,7 +21,13 @@ interface LineChartProps {
     resolution?: number
 }
 
-export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, margin, resolution = 1 }) => {
+export const QuickLineChart: React.FC<LineChartProps> = ({
+    data,
+    width,
+    height,
+    margin,
+    resolution = window.devicePixelRatio ?? 1
+}) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
     useEffect(() => {
@@ -58,15 +64,11 @@ export const QuickLineChart: React.FC<LineChartProps> = ({ data, width, height, 
             margin,
             {
                 range: { min: 0, max: data.length },
-                options: {
-                    count: 8
-                }
+                options: { textColor: 'white', lineColor: 'white' }
             },
             {
                 range: { min: 0, max: max },
-                options: {
-                    count: 8
-                }
+                options: { textColor: 'white', lineColor: 'white' }
             }
         )
     }, [data.length, height, margin, width])

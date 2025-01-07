@@ -1,14 +1,11 @@
-import { schema } from 'battlecode-schema'
-import { Colors } from './colors'
-
-export const GAME_VERSION = '3.0.6'
-export const SPEC_VERSION = '3.0.6'
-export const BATTLECODE_YEAR: number = 2024
+export const CLIENT_VERSION = '1.0.0'
+export const SPEC_VERSION = '1'
+export const BATTLECODE_YEAR: number = 2025
 export const MAP_SIZE_RANGE = {
-    min: 30,
+    min: 20,
     max: 60
 }
-
+export const GAME_MAX_TURNS = 2000
 /*
  * General constants
  */
@@ -24,90 +21,7 @@ export const DIRECTIONS: Record<number, Array<number>> = {
     8: [-1, 1]
 }
 
-export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
-    'DefaultSmall',
-    'DefaultMedium',
-    'DefaultLarge',
-    'DefaultHuge',
-
-    'Alligator',
-    'Anchor',
-    'Battlefield',
-    'BreadPudding',
-    'Decision',
-    'English',
-    'Gated',
-    'Gauntlet',
-    'Hurricane',
-    'Islands',
-    'Mountain',
-    'Occulus',
-    'Randy',
-    'Skyline',
-    'Starfish',
-    'StarryNight',
-    'Swoop',
-    'TwistedTreeline',
-    'Valentine',
-    'Waterworld',
-    'WheresMyWater',
-
-    'Asteroids',
-    'Backslash',
-    'Capacitance',
-    'Digging',
-    'EvilGrin',
-    'Funnel',
-    'GravitationalWaves',
-    'Joker',
-    'KingQuacksCastle',
-    'MIT',
-    'OceanFloor',
-    'ORV',
-    'Pancakes',
-    'Puzzle',
-    'StackGame',
-    'Tunnels',
-    'Whirlpool',
-    'YearOfTheDragon',
-
-    'BedWars',
-    'Bunkers',
-    'Checkered',
-    'Diagonal',
-    'Divergent',
-    'EndAround',
-    'FloodGates',
-    'Foxes',
-    'Fusbol',
-    'GaltonBoard',
-    'HeMustBeFreed',
-    'Intercontinental',
-    'Klein',
-    'QueenOfHearts',
-    'QuestionableChess',
-    'Racetrack',
-    'Rainbow',
-    'TreeSearch',
-
-    'AceOfSpades',
-    'Alien',
-    'Ambush',
-    'Battlecode24',
-    'BigDucksBigPond',
-    'Canals',
-    'CH3353C4K3F4CT0RY',
-    'Duck',
-    'Fountain',
-    'Hockey',
-    'HungerGames',
-    'MazeRunner',
-    'Rivers',
-    'Snake',
-    'Soccer',
-    'SteamboatMickey',
-    'Yinyang'
-]
+export const ENGINE_BUILTIN_MAP_NAMES: string[] = ['DefaultSmall', 'DefaultMedium', 'DefaultLarge', 'DefaultHuge']
 
 /*
  * Color constants (defined in tailwind.config.js as well)

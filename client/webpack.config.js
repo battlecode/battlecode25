@@ -7,7 +7,9 @@ module.exports = (env) => {
     const development = env.dev
 
     var config = {
-        entry: './src/app.tsx',
+        entry: {
+            app: './src/app.tsx'
+        },
         target: 'web',
         devtool: development ? 'source-map' : undefined,
         resolve: {
@@ -41,11 +43,20 @@ module.exports = (env) => {
             port: 3000,
             static: {
                 directory: path.join(__dirname, '/src')
+            },
+            devMiddleware: {
+                // Ensures files copied by the CopyWebpackPlugin are available during development
+                writeToDisk: (filePath) => filePath.includes('speedscope/')
+            },
+            static: {
+                directory: path.join(__dirname, '/')
             }
         },
         output: {
             path: path.resolve(__dirname, './dist'),
-            filename: 'bundle.js'
+            filename: (pathData) => {
+                return pathData.chunk.name === 'app' ? 'bundle.js' : '[name].js'
+            }
         },
         plugins: [
             new HtmlWebpackPlugin({
@@ -61,6 +72,26 @@ module.exports = (env) => {
             }),
             new CopyPlugin({
                 patterns: [{ from: 'src/static', to: 'static' }]
+            }),
+            new CopyPlugin({
+                // Copy speedscope files
+                patterns: [
+                    {
+                        from: 'node_modules/speedscope/dist/release',
+                        to: 'speedscope',
+                        transform: (content, filePath) => {
+                            // Make speedscope's localProfilePath hash parameter support relative paths
+                            if (filePath.endsWith('.js')) {
+                                return content.toString().replace('file:///', '')
+                            }
+                            return content
+                        }
+                    }
+                ]
+            }),
+            new CopyPlugin({
+                // Copy speedscope js files (again) to root so imports can get resolved
+                patterns: [{ from: 'node_modules/speedscope/dist/release/*.js', to: '[name][ext]' }]
             })
         ]
     }

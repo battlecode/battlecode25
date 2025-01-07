@@ -16,16 +16,40 @@ export class UpgradeAction {
   return this;
 }
 
+/**
+ * Id of the upgraded tower
+ */
 id():number {
   return this.bb!.readUint16(this.bb_pos);
 }
 
-static sizeOf():number {
-  return 2;
+newHealth():number {
+  return this.bb!.readInt32(this.bb_pos + 4);
 }
 
-static createUpgradeAction(builder:flatbuffers.Builder, id: number):flatbuffers.Offset {
-  builder.prep(2, 2);
+newMaxHealth():number {
+  return this.bb!.readInt32(this.bb_pos + 8);
+}
+
+newPaint():number {
+  return this.bb!.readInt32(this.bb_pos + 12);
+}
+
+newMaxPaint():number {
+  return this.bb!.readInt32(this.bb_pos + 16);
+}
+
+static sizeOf():number {
+  return 20;
+}
+
+static createUpgradeAction(builder:flatbuffers.Builder, id: number, newHealth: number, newMaxHealth: number, newPaint: number, newMaxPaint: number):flatbuffers.Offset {
+  builder.prep(4, 20);
+  builder.writeInt32(newMaxPaint);
+  builder.writeInt32(newPaint);
+  builder.writeInt32(newMaxHealth);
+  builder.writeInt32(newHealth);
+  builder.pad(2);
   builder.writeInt16(id);
   return builder.offset();
 }

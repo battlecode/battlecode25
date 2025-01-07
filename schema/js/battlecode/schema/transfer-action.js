@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransferAction = void 0;
 /**
- * Visually indicate trasnferring paint from one robot to another
+ * Visually indicate transferring paint from one robot to another
  */
 var TransferAction = /** @class */ (function () {
     function TransferAction() {
@@ -15,14 +15,22 @@ var TransferAction = /** @class */ (function () {
         this.bb = bb;
         return this;
     };
+    /**
+     * Id of the transfer target
+     */
     TransferAction.prototype.id = function () {
         return this.bb.readUint16(this.bb_pos);
     };
-    TransferAction.sizeOf = function () {
-        return 2;
+    TransferAction.prototype.amount = function () {
+        return this.bb.readInt32(this.bb_pos + 4);
     };
-    TransferAction.createTransferAction = function (builder, id) {
-        builder.prep(2, 2);
+    TransferAction.sizeOf = function () {
+        return 8;
+    };
+    TransferAction.createTransferAction = function (builder, id, amount) {
+        builder.prep(4, 8);
+        builder.writeInt32(amount);
+        builder.pad(2);
         builder.writeInt16(id);
         return builder.offset();
     };

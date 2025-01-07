@@ -10,20 +10,6 @@ table VecTable {
     ys: [int];
 }
 
-table TeamData {
-    name: string;
-    packageName: string;
-    teamId: byte;
-}
-
-table GameplayConstants {
-
-    // Constants per robot type
-    baseHealth: [int];
-    visionRadius: [int];
-    actionRadius: [int];
-}
-
 enum RobotType: byte {
     NONE,
     PAINT_TOWER,
@@ -37,6 +23,7 @@ enum RobotType: byte {
 enum WinType: byte {
     RESIGNATION,
     MAJORITY_PAINTED,
+    ALL_UNITS_DESTROYED,
     AREA_PAINTED,
     MORE_TOWERS,
     MORE_MONEY,
@@ -45,8 +32,36 @@ enum WinType: byte {
     COIN_FLIP
 }
 
+enum DieType: byte {
+    UNKNOWN,
+    EXCEPTION
+}
+
+table RobotTypeMetadata {
+    type: RobotType;
+    actionCooldown: int;
+    movementCooldown: int;
+    baseHealth: int;
+    basePaint: int;
+    maxPaint: int;
+    actionRadiusSquared: int;
+    visionRadiusSquared: int;
+    messageRadiusSquared: int;
+    bytecodeLimit: int;
+}
+
+table TeamData {
+    name: string;
+    packageName: string;
+    teamId: byte;
+}
+
+table GameplayConstants {
+}
+
 /// Generic action representing damage to a robot
 struct DamageAction {
+    /// Id of the damage target
     id: ushort;
     damage: ushort; 
 }
@@ -54,6 +69,7 @@ struct DamageAction {
 /// Visually indicate a tile has been painted
 struct PaintAction {
     loc: ushort;
+    isSecondary: byte;
 }
 
 /// Visually indicate a tile's paint has been removed
@@ -61,43 +77,82 @@ struct UnpaintAction {
     loc: ushort;
 }
 
+/// Visually indicate a tile marked with a color
+struct MarkAction {
+    loc: ushort;
+    isSecondary: byte;
+}
+
+/// Visually indicate a tile's marker has been removed
+struct UnmarkAction {
+    loc: ushort;
+}
+
 /// Visually indicate an attack
 struct AttackAction {
+    /// Id of the attack target
     id: ushort;
+}
+
+/// Visually indicate a splash attack
+struct SplashAction {
+    /// Location of the splash attack
+    loc: ushort;
 }
 
 /// Visually indicate a mop attack
 struct MopAction {
-    loc: ushort;
+    /// Ids of the mopped targets, possibly 0
+    id0: ushort;
+    id1: ushort;
+    id2: ushort;
 }
 
 /// Visually indicate a tower being built
 struct BuildAction {
+    /// Id of the tower bot
     id: ushort;
 }
 
-/// Visually indicate trasnferring paint from one robot to another
+/// Visually indicate transferring paint from one robot to another
 struct TransferAction {
+    /// Id of the transfer target
     id: ushort;
+    amount: int;
 }
 
 /// Visually indicate messaging from one robot to another
 struct MessageAction {
+    /// Id of the message target
     id: ushort;
     data: int;
 }
 
 /// Indicate that this robot was spawned on this turn
 struct SpawnAction {
+    /// Id of the bot that spawned
+    id: ushort;
     x: ushort;
     y: ushort;
     team: byte;
     robotType: RobotType;
 }
 
+/// Indicates that a robot died and should be removed
+struct DieAction {
+    /// Id of the robot that died
+    id: ushort;
+    dieType: DieType;
+}
+
 /// Visually indicate that a tower was upgraded
 struct UpgradeAction {
+    /// Id of the upgraded tower
     id: ushort;
+    newHealth: int;
+    newMaxHealth: int;
+    newPaint: int;
+    newMaxPaint: int;
 }
 
 /// Update the indicator string for this robot
@@ -122,12 +177,16 @@ union Action {
     DamageAction,
     PaintAction,
     UnpaintAction,
+    MarkAction,
+    UnmarkAction,
     AttackAction,
+    SplashAction,
     MopAction,
     BuildAction,
     TransferAction, 
     MessageAction,
     SpawnAction,
+    DieAction,
     UpgradeAction,
     IndicatorStringAction,
     IndicatorDotAction,
@@ -136,7 +195,6 @@ union Action {
 
 // A list of initial bodies to be placed on the map.
 table InitialBodyTable {
-    robotIds: [int];
     spawnActions: [SpawnAction];
 }
 
@@ -147,8 +205,17 @@ table GameMap {
     initialBodies: InitialBodyTable;
     randomSeed: int;
     walls: [bool];
-    paint: [bool];
+    paint: [byte];
     ruins: VecTable;
+    paintPatterns: [int];// resource pattern, defense tower pattern, money tower pattern, paint tower pattern.
+}
+
+/// Markers for events during the game indicated by the user
+table TimelineMarker{
+    team: byte;
+    round: int;
+    colorHex: int;
+    label: string;
 }
 
 //========================================================================================
@@ -215,7 +282,7 @@ union Event {
 table GameHeader {
     specVersion: string;
     teams: [TeamData];
-
+    robotTypeMetadata: [RobotTypeMetadata];
     constants: GameplayConstants;
 }
 
@@ -239,6 +306,8 @@ table MatchFooter {
     winType: WinType;
     /// The number of rounds played.
     totalRounds: int;
+    /// Markers for this match.
+    timelineMarkers: [TimelineMarker];
     /// Profiler data for team A and B if profiling is enabled.
     profilerFiles: [ProfilerFile];
 }
@@ -261,11 +330,15 @@ table Round {
     teamIds: [int];
     /// The total amount of resource this round per team
     teamResourceAmounts: [int];
-
+    /// The total paint coverage percent per team, mult by 10 (i.e. 70.5% is 705)
+    teamCoverageAmounts: [int];
+    /// The total number of active resource patterns per team
+    teamResourcePatternAmounts: [int];
+    
     /// Ordered turn data for each robot during the round
     turns: [Turn];
 
-    /// The IDs of bodies that died.
+    /// The IDs of bodies that died at the end of the round, with no attributable cause.
     diedIds: [int];
 
     /// The first sent Round in a match should have index 1. (The starting state,

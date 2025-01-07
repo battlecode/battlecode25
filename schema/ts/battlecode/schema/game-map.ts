@@ -69,9 +69,9 @@ wallsArray():Int8Array|null {
   return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
-paint(index: number):boolean|null {
+paint(index: number):number|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
-  return offset ? !!this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : false;
+  return offset ? this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
 }
 
 paintLength():number {
@@ -89,8 +89,23 @@ ruins(obj?:VecTable):VecTable|null {
   return offset ? (obj || new VecTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
+paintPatterns(index: number):number|null {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+}
+
+paintPatternsLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+paintPatternsArray():Int32Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+}
+
 static startGameMap(builder:flatbuffers.Builder) {
-  builder.startObject(8);
+  builder.startObject(9);
 }
 
 static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
@@ -133,10 +148,15 @@ static addPaint(builder:flatbuffers.Builder, paintOffset:flatbuffers.Offset) {
   builder.addFieldOffset(6, paintOffset, 0);
 }
 
-static createPaintVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
+static createPaintVector(builder:flatbuffers.Builder, data:number[]|Int8Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createPaintVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createPaintVector(builder:flatbuffers.Builder, data:number[]|Int8Array|Uint8Array):flatbuffers.Offset {
   builder.startVector(1, data.length, 1);
   for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(+data[i]!);
+    builder.addInt8(data[i]!);
   }
   return builder.endVector();
 }
@@ -147,6 +167,27 @@ static startPaintVector(builder:flatbuffers.Builder, numElems:number) {
 
 static addRuins(builder:flatbuffers.Builder, ruinsOffset:flatbuffers.Offset) {
   builder.addFieldOffset(7, ruinsOffset, 0);
+}
+
+static addPaintPatterns(builder:flatbuffers.Builder, paintPatternsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(8, paintPatternsOffset, 0);
+}
+
+static createPaintPatternsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createPaintPatternsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createPaintPatternsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addInt32(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startPaintPatternsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
 }
 
 static endGameMap(builder:flatbuffers.Builder):flatbuffers.Offset {

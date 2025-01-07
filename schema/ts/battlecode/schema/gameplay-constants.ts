@@ -22,116 +22,8 @@ static getSizePrefixedRootAsGameplayConstants(bb:flatbuffers.ByteBuffer, obj?:Ga
   return (obj || new GameplayConstants()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-baseHealth(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-baseHealthLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-baseHealthArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
-visionRadius(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-visionRadiusLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-visionRadiusArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
-actionRadius(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-actionRadiusLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-actionRadiusArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
 static startGameplayConstants(builder:flatbuffers.Builder) {
-  builder.startObject(3);
-}
-
-static addBaseHealth(builder:flatbuffers.Builder, baseHealthOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, baseHealthOffset, 0);
-}
-
-static createBaseHealthVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createBaseHealthVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createBaseHealthVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startBaseHealthVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
-}
-
-static addVisionRadius(builder:flatbuffers.Builder, visionRadiusOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, visionRadiusOffset, 0);
-}
-
-static createVisionRadiusVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createVisionRadiusVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createVisionRadiusVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startVisionRadiusVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
-}
-
-static addActionRadius(builder:flatbuffers.Builder, actionRadiusOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, actionRadiusOffset, 0);
-}
-
-static createActionRadiusVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createActionRadiusVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createActionRadiusVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startActionRadiusVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startObject(0);
 }
 
 static endGameplayConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -139,11 +31,8 @@ static endGameplayConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createGameplayConstants(builder:flatbuffers.Builder, baseHealthOffset:flatbuffers.Offset, visionRadiusOffset:flatbuffers.Offset, actionRadiusOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createGameplayConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
   GameplayConstants.startGameplayConstants(builder);
-  GameplayConstants.addBaseHealth(builder, baseHealthOffset);
-  GameplayConstants.addVisionRadius(builder, visionRadiusOffset);
-  GameplayConstants.addActionRadius(builder, actionRadiusOffset);
   return GameplayConstants.endGameplayConstants(builder);
 }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { BATTLECODE_YEAR, GAME_VERSION } from '../../constants'
+import { BATTLECODE_YEAR, CLIENT_VERSION } from '../../constants'
 import { nativeAPI } from './runner/native-api-wrapper'
 
 const UPDATE_CHECK_MINUTES = 5
@@ -13,7 +13,7 @@ export const UpdateWarning = () => {
             nativeAPI
                 .getServerVersion(`${BATTLECODE_YEAR % 100}`)
                 .then((latest) => {
-                    if (latest && latest.trim() != GAME_VERSION) {
+                    if (latest && latest.trim() != CLIENT_VERSION) {
                         setUpdate({ latest })
                     }
                 })
@@ -33,8 +33,8 @@ export const UpdateWarning = () => {
             <p className="text-yellow-800 text-xs">
                 <b>NEW VERSION AVAILABLE!</b>
                 <br />
-                download with <code>gradle update</code> followed by <code>gradle build</code>, and then restart the
-                client: v{update.latest}
+                download with (<code>gradle update</code> followed by <code>gradle build</code>) for java and (
+                <code>python run.py update</code>) for python, and then restart the client: v{update.latest}
             </p>
         </div>
     )
