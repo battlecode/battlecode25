@@ -162,12 +162,12 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
     }
 
     for (const teamIdx of [0, 1]) {
-        if (numPaintTowers[teamIdx] !== 2) {
-            return `Expected exactly 2 ${TEAM_COLOR_NAMES[teamIdx]} paint towers, found ${numPaintTowers[teamIdx]}`
+        if (numPaintTowers[teamIdx] !== 1) {
+            return `Expected exactly 1 ${TEAM_COLOR_NAMES[teamIdx]} paint tower, found ${numPaintTowers[teamIdx]}`
         }
 
-        if (numMoneyTowers[teamIdx] !== 2) {
-            return `Expected exactly 2 ${TEAM_COLOR_NAMES[teamIdx]} money towers, found ${numMoneyTowers[teamIdx]}`
+        if (numMoneyTowers[teamIdx] !== 1) {
+            return `Expected exactly 1 ${TEAM_COLOR_NAMES[teamIdx]} money tower, found ${numMoneyTowers[teamIdx]}`
         }
     }
 
