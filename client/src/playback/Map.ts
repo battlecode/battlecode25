@@ -121,14 +121,18 @@ export class CurrentMap {
                 }
 
                 if (config.showPaintMarkers) {
+                    // Scale text by 0.5 because sometimes 0.5px text does not work
+
                     const markerA = this.markers[0][schemaIdx]
                     if (markerA) {
                         ctx.fillStyle = TEAM_COLORS[0]
                         const label = markerA === 1 ? '1' : '2' // Primary/secondary
-                        ctx.font = '0.5px monospace'
+                        ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
                         ctx.shadowBlur = 4
-                        ctx.fillText(label, coords.x + 0.05, coords.y + 0.95)
+                        ctx.scale(0.5, 0.5)
+                        ctx.fillText(label, (coords.x + 0.05) * 2, (coords.y + 0.95) * 2)
+                        ctx.scale(2, 2)
                         ctx.shadowColor = ''
                         ctx.shadowBlur = 0
                     }
@@ -137,10 +141,12 @@ export class CurrentMap {
                     if (markerB) {
                         ctx.fillStyle = TEAM_COLORS[1]
                         const label = markerB === 3 ? '1' : '2' // Primary/secondary
-                        ctx.font = '0.5px monospace'
+                        ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
                         ctx.shadowBlur = 4
-                        ctx.fillText(label, coords.x + 0.65, coords.y + 0.95)
+                        ctx.scale(0.5, 0.5)
+                        ctx.fillText(label, (coords.x + 0.65) * 2, (coords.y + 0.95) * 2)
+                        ctx.scale(2, 2)
                         ctx.shadowColor = ''
                         ctx.shadowBlur = 0
                     }
