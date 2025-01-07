@@ -807,6 +807,7 @@ public final class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.SOLDIER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a soldier attack");
@@ -814,6 +815,7 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.SPLASHER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.SPLASHER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a splasher attack");
@@ -821,6 +823,7 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.MOPPER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.MOPPER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a mopper attack");
@@ -844,7 +847,6 @@ public final class RobotControllerImpl implements RobotController {
         if (loc == null && !this.robot.getType().isTowerType()){
             throw new GameActionException(CANT_DO_THAT, "Robot units must specify a location to attack");
         }
-        assertIsActionReady();
 
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
@@ -876,7 +878,8 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
-        this.robot.addActionCooldownTurns(this.robot.getType().actionCooldown);
+        if (this.robot.getType().isRobotType())
+            this.robot.addActionCooldownTurns(this.robot.getType().actionCooldown);
         this.robot.attack(loc, useSecondaryColor);
     }
 
