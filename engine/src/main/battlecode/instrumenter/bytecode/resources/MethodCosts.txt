@@ -43,6 +43,7 @@ battlecode/common/RobotController/getAllLocationsWithinRadiusSquared    100  tru
 battlecode/common/RobotController/getHealth                             1    true
 battlecode/common/RobotController/getID                                 1    true
 battlecode/common/RobotController/getPaint                              1    true
+battlecode/common/RobotController/getChips                              1    true
 battlecode/common/RobotController/getMoney                              1    true
 battlecode/common/RobotController/getType                               1    true
 battlecode/common/RobotController/getLocation                           1    true
