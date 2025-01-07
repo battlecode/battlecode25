@@ -187,8 +187,8 @@ export default class Bodies {
         return this.bodies.size === 0
     }
 
-    getEditorBrushes(map: StaticMap): MapEditorBrush[] {
-        return [new TowerBrush(this, map)]
+    getEditorBrushes(round: Round): MapEditorBrush[] {
+        return [new TowerBrush(round)]
     }
 
     toInitialBodyTable(builder: flatbuffers.Builder): number {
@@ -380,6 +380,15 @@ export class Body {
         ctx.lineWidth = 0.1
         const squares2 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.visionRadiusSquared())
         this.drawEdges(match, ctx, lightly, squares2)
+
+        // Currently vision/message radius are always the same
+        /*
+        ctx.beginPath()
+        ctx.strokeStyle = 'brown'
+        ctx.lineWidth = 0.1
+        const squares3 = this.getAllLocationsWithinRadiusSquared(match, pos, this.metadata.messageRadiusSquared())
+        this.drawEdges(match, ctx, lightly, squares3)
+        */
 
         ctx.globalAlpha = 1
     }

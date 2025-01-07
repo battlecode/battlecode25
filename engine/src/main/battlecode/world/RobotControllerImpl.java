@@ -5,6 +5,7 @@ import battlecode.common.*;
 import static battlecode.common.GameActionExceptionType.*;
 import battlecode.schema.Action;
 import battlecode.util.FlatHelpers;
+import battlecode.instrumenter.RobotDeathException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -153,6 +154,11 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public UnitType getType(){
         return this.robot.getType();
+    }
+
+    @Override
+    public int getNumberTowers(){
+        return this.gameWorld.getTeamInfo().getTotalNumberOfTowers(getTeam());
     }
 
     // ***********************************
@@ -806,13 +812,17 @@ public final class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.SOLDIER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a soldier attack");
         }
+        if (this.gameWorld.getWall(loc))
+            throw new GameActionException(CANT_DO_THAT, "Soldiers cannot attack walls!");
     }
 
     private void assertCanAttackSplasher(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.SPLASHER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.SPLASHER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a splasher attack");
@@ -820,10 +830,13 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     private void assertCanAttackMopper(MapLocation loc) throws GameActionException {
+        assertIsActionReady();
         assertCanActLocation(loc, UnitType.MOPPER.actionRadiusSquared);
         if (this.robot.getPaint() < UnitType.MOPPER.attackCost){
             throw new GameActionException(CANT_DO_THAT, "Unit does not have enough paint to do a mopper attack");
         }
+        if (!this.gameWorld.isPassable(loc))
+            throw new GameActionException(CANT_DO_THAT, "Moppers cannot attack squares with walls or ruins on them!");
     }
 
     private void assertCanAttackTower(MapLocation loc) throws GameActionException {
@@ -843,7 +856,6 @@ public final class RobotControllerImpl implements RobotController {
         if (loc == null && !this.robot.getType().isTowerType()){
             throw new GameActionException(CANT_DO_THAT, "Robot units must specify a location to attack");
         }
-        assertIsActionReady();
 
         // note: paint type is irrelevant for checking attack validity
         switch(this.robot.getType()) {
@@ -875,7 +887,8 @@ public final class RobotControllerImpl implements RobotController {
     @Override
     public void attack(MapLocation loc, boolean useSecondaryColor) throws GameActionException {
         assertCanAttack(loc);
-        this.robot.addActionCooldownTurns(this.robot.getType().actionCooldown);
+        if (this.robot.getType().isRobotType())
+            this.robot.addActionCooldownTurns(this.robot.getType().actionCooldown);
         this.robot.attack(loc, useSecondaryColor);
     }
 
@@ -954,13 +967,18 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
+    public boolean canSendMessage(MapLocation loc) {
+        // use dummy message content as does not affect if message can be sent
+        return canSendMessage(loc, 0);
+    }
+
+    @Override
     public boolean canSendMessage(MapLocation loc, int messageContent) {
         try {
             Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
             assertCanSendMessage(loc, message);
             return true;
         } catch (GameActionException e) {
-            //System.out.println(e);
             return false;
         }
     }
@@ -1040,6 +1058,11 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
+    public void disintegrate() {
+        throw new RobotDeathException();
+    }
+
+    @Override
     public void resign() {
         Team team = getTeam();
         gameWorld.getObjectInfo().eachRobot((robot) -> {
@@ -1064,15 +1087,21 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void setIndicatorDot(MapLocation loc, int red, int green, int blue) {
+    public void setIndicatorDot(MapLocation loc, int red, int green, int blue) throws GameActionException{
         assertNotNull(loc);
+        if (!this.gameWorld.getGameMap().onTheMap(loc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator dots should have map locations on the map!");
         this.gameWorld.getMatchMaker().addIndicatorDot(getID(), loc, red, green, blue);
     }
 
     @Override
-    public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
+    public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) throws GameActionException{
         assertNotNull(startLoc);
         assertNotNull(endLoc);
+        if (!this.gameWorld.getGameMap().onTheMap(startLoc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator lines should have map locations on the map!");
+        if (!this.gameWorld.getGameMap().onTheMap(endLoc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator lines should have map locations on the map!");
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);
     }
 

@@ -51,12 +51,14 @@ battlecode/common/RobotController/getMapWidth                           1    tru
 battlecode/common/RobotController/getMovementCooldownTurns              1    true
 battlecode/common/RobotController/getRoundNum                           1    true
 battlecode/common/RobotController/getTeam                               1    true
+battlecode/common/RobotController/getNumberTowers                       5    true
 battlecode/common/RobotController/isActionReady                         1    true
 battlecode/common/RobotController/isLocationOccupied                    5    true
 battlecode/common/RobotController/isMovementReady                       1    true
 battlecode/common/RobotController/move                                  0    true
 battlecode/common/RobotController/onTheMap                              5    true
 battlecode/common/RobotController/readSharedArray                       2    true
+battlecode/common/RobotController/disintegrate                          0    true
 battlecode/common/RobotController/resign                                0    true
 battlecode/common/RobotController/senseNearbyRobots                     100  true
 battlecode/common/RobotController/senseRobot                            25   true

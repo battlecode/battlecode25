@@ -4,9 +4,10 @@ import Match from '../../../playback/Match'
 import { CurrentMap, StaticMap } from '../../../playback/Map'
 import Round from '../../../playback/Round'
 import Bodies from '../../../playback/Bodies'
-import { BATTLECODE_YEAR, DIRECTIONS } from '../../../constants'
+import { BATTLECODE_YEAR, DIRECTIONS, TEAM_COLOR_NAMES } from '../../../constants'
 import { nativeAPI } from '../runner/native-api-wrapper'
 import { Vector } from '../../../playback/Vector'
+import { RobotType } from 'battlecode-schema/js/battlecode/schema'
 
 export function loadFileAsMap(file: File): Promise<Game> {
     return new Promise((resolve, reject) => {
@@ -54,8 +55,6 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
 
     // Validate map elements
     let numWalls = 0
-    let numPaintTowers = 0
-    let numMoneyTowers = 0
     const mapSize = map.width * map.height
     for (let i = 0; i < mapSize; i++) {
         const pos = map.indexToLocation(i)
@@ -104,8 +103,6 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
             }
         }
 
-        numPaintTowers += body && body.robotType === schema.RobotType.PAINT_TOWER ? 1 : 0
-        numMoneyTowers += body && body.robotType === schema.RobotType.MONEY_TOWER ? 1 : 0
         numWalls += wall
     }
 
@@ -117,23 +114,60 @@ function verifyMap(map: CurrentMap, bodies: Bodies): string {
     }
 
     // Validate initial bodies
-    if (numPaintTowers !== 2) {
-        return `Expected exactly 2 paint towers, found ${numPaintTowers}`
-    }
-    if (numMoneyTowers !== 2) {
-        return `Expected exactly 2 money towers, found ${numMoneyTowers}`
-    }
+    const numPaintTowers = [0, 0]
+    const numMoneyTowers = [0, 0]
     for (const body of bodies.bodies.values()) {
-        // Check distance to nearby ruins
+        // Check distance to nearby ruins, towers, and walls
+
+        if (body.robotType === RobotType.PAINT_TOWER) {
+            numPaintTowers[body.team.id - 1]++
+        } else if (body.robotType === RobotType.MONEY_TOWER) {
+            numMoneyTowers[body.team.id - 1]++
+        } else {
+            return `Tower at (${body.pos.x}, ${body.pos.y}) has invalid type!`
+        }
 
         for (const checkRuin of map.staticMap.ruins) {
-            if (squareIntersects(checkRuin, body.pos, 2)) {
+            if (squareIntersects(checkRuin, body.pos, 4)) {
                 return (
                     `Tower at (${body.pos.x}, ${body.pos.y}) is too close to ruin ` +
                     `at (${checkRuin.x}, ${checkRuin.y}), must be ` +
-                    `>= 3 away`
+                    `>= 5 away`
                 )
             }
+        }
+
+        for (const checkBody of bodies.bodies.values()) {
+            if (checkBody === body) continue
+            if (squareIntersects(checkBody.pos, body.pos, 4)) {
+                return (
+                    `Tower at (${body.pos.x}, ${body.pos.y}) is too close to ruin ` +
+                    `at (${checkBody.pos.x}, ${checkBody.pos.y}), must be ` +
+                    `>= 5 away`
+                )
+            }
+        }
+
+        const wall = map.staticMap.walls.findIndex(
+            (v, i) => !!v && squareIntersects(map.indexToLocation(i), body.pos, 2)
+        )
+        if (wall !== -1) {
+            const pos = map.indexToLocation(wall)
+            return (
+                `Tower at (${body.pos.x}, ${body.pos.y}) is too close to wall ` +
+                `at (${pos.x}, ${pos.y}), must be ` +
+                `>= 3 away`
+            )
+        }
+    }
+
+    for (const teamIdx of [0, 1]) {
+        if (numPaintTowers[teamIdx] !== 2) {
+            return `Expected exactly 2 ${TEAM_COLOR_NAMES[teamIdx]} paint towers, found ${numPaintTowers[teamIdx]}`
+        }
+
+        if (numMoneyTowers[teamIdx] !== 2) {
+            return `Expected exactly 2 ${TEAM_COLOR_NAMES[teamIdx]} money towers, found ${numMoneyTowers[teamIdx]}`
         }
     }
 

@@ -133,6 +133,8 @@ public class GameWorld {
             spawnRobot(robot.ID, robot.type, newLocation, robot.team);
             this.towerLocations.add(newLocation);
             towersByLoc[locationToIndex(newLocation)] = robot.team;
+            this.allRuinsByLoc[locationToIndex(newLocation)] = true;
+            this.allRuins.add(newLocation);
         }
     }
 
@@ -787,7 +789,7 @@ public class GameWorld {
     public void processBeginningOfRound() {
         currentRound++;
         updateResourcePatterns();
-        
+
         this.getMatchMaker().startRound(currentRound);
         // Process beginning of each robot's round
         objectInfo.eachRobot((robot) -> {
