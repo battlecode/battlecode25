@@ -1070,15 +1070,21 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void setIndicatorDot(MapLocation loc, int red, int green, int blue) {
+    public void setIndicatorDot(MapLocation loc, int red, int green, int blue) throws GameActionException{
         assertNotNull(loc);
+        if (!this.gameWorld.getGameMap().onTheMap(loc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator dots should have map locations on the map!");
         this.gameWorld.getMatchMaker().addIndicatorDot(getID(), loc, red, green, blue);
     }
 
     @Override
-    public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
+    public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) throws GameActionException{
         assertNotNull(startLoc);
         assertNotNull(endLoc);
+        if (!this.gameWorld.getGameMap().onTheMap(startLoc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator lines should have map locations on the map!");
+        if (!this.gameWorld.getGameMap().onTheMap(endLoc))
+            throw new GameActionException(CANT_DO_THAT, "Indicator lines should have map locations on the map!");
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);
     }
 

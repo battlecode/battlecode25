@@ -838,7 +838,7 @@ public interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorDot(MapLocation loc, int red, int green, int blue);
+    void setIndicatorDot(MapLocation loc, int red, int green, int blue) throws GameActionException;
 
     /**
      * Draw a line on the game map for debugging purposes.
@@ -851,7 +851,7 @@ public interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+    void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) throws GameActionException;
 
     /**
      * Adds a marker to the timeline at the current 
