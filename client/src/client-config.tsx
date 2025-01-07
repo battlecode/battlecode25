@@ -121,7 +121,7 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
                 {props.displayName}:
                 <button
                     className={'text-xs ml-2 px-4 py-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
-                    style={{ backgroundColor: value }}
+                    style={{ backgroundColor: value, border: '2px solid white' }}
                     onClick={handleClick}
                 ></button>
             </div>
@@ -151,13 +151,18 @@ export const ConfigPage: React.FC<Props> = (props) => {
             <div className="color-pickers">
                 {/*fake class*/}
                 Customize Colors:
-                <div className="text-sm">General</div>
+                <div className="text-sm">Interface</div>
                 <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
+                <ColorPicker displayName={'Sidebar'} colorName={Colors.SIDEBAR_BACKGROUND} />
+                <div className="text-sm">General</div>
                 <ColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
+                <ColorPicker displayName={'Tiles'} colorName={Colors.TILE_COLOR} />
                 <div className="text-sm">Team One</div>
+                <ColorPicker displayName={'General'} colorName={Colors.TEAM_ONE} />
                 <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMONE_ONE} />
                 <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMONE_TWO} />
                 <div className="text-sm">Team Two</div>
+                <ColorPicker displayName={'General'} colorName={Colors.TEAM_TWO} />
                 <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMTWO_ONE} />
                 <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMTWO_TWO} />
             </div>

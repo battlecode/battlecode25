@@ -1,3 +1,5 @@
+import { GameRenderer } from "./playback/GameRenderer"
+
 export enum Colors {
     TEAM_ONE = 'TEAM_ONE',   //'#8648d9'
     TEAM_TWO = 'TEAM_TWO',   //'#ffadcd'
@@ -31,6 +33,7 @@ export const currentColors: Record<Colors, string> = { ...DEFAULT_GLOBAL_COLORS 
 export const updateGlobalColor = (color: Colors, value: string) => {
     currentColors[color] = value
     localStorage.setItem('config-colors' + color, JSON.stringify(currentColors[color]))
+    GameRenderer.fullRender();
 }
 
 export const getGlobalColor = (color: Colors) => {
