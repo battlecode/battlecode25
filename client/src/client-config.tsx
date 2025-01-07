@@ -36,7 +36,6 @@ const DEFAULT_CONFIG = {
         [Colors.PAINT_TEAMTWO_ONE]: '#ffffff',
         [Colors.PAINT_TEAMTWO_TWO]: '#ffffff',
         [Colors.WALLS_COLOR]: '#3B6B4C',
-        [Colors.DIVIDER_COLOR]: '#7b4724',
         [Colors.RUINS_COLOR]: '#153e30',
         [Colors.GAMEAREA_BACKGROUND]: '#313847',
 
@@ -82,7 +81,7 @@ export function getDefaultConfig(): ClientConfig {
 //    )
 //}
 
-const ColorPicker = (props: { colorName: Colors }) => {
+const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.colorName]
 
@@ -108,11 +107,16 @@ const ColorPicker = (props: { colorName: Colors }) => {
 
     return (
         <>
-            <button
-                className={'text-xs mx-auto px-4 py-3 mt-1 mb-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
-                style={{ backgroundColor: value }}
-                onClick={handleClick}
-            ></button>
+            <div className={'ml-2 text-xs flex flex-start justify-start items-center'}>
+                {/*Background:*/}
+                {props.displayName}:
+                <button
+                    className={'text-xs ml-2 px-4 py-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
+                    style={{ backgroundColor: value }}
+                    onClick={handleClick}
+                ></button>
+            </div>
+
             {displayColorPicker && <ChromePicker color={value} onChange={onChange} />}
         </>
     )
@@ -135,12 +139,17 @@ export const ConfigPage: React.FC<Props> = (props) => {
                 <br></br>
             </div>
             <div className="color-pickers">
+                {/*fake class*/}
                 Customize Colors:
-                <div className={'ml-2 text-xs flex flex-row'}>
-                    Background:
-                    <ColorPicker colorName={Colors.GAMEAREA_BACKGROUND} />
-                </div>
-                <ColorPicker colorName={Colors.WALLS_COLOR} />
+                <div className="text-sm">General</div>
+                <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
+                <ColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
+                <div className="text-sm">Team One</div>
+                <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMONE_ONE} />
+                <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMONE_TWO} />
+                <div className="text-sm">Team Two</div>
+                <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMTWO_ONE} />
+                <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMTWO_TWO} />
             </div>
             <div className="flex flex-row mt-8">
                 <BrightButton

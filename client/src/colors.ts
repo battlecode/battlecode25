@@ -7,7 +7,6 @@ export enum Colors {
     PAINT_TEAMTWO_ONE = 'PAINT_TEAMTWO_ONE',
     PAINT_TEAMTWO_TWO = 'PAINT_TEAMTWO_TWO',
     WALLS_COLOR = 'WALLS_COLOR',    //'#3B6B4C'
-    DIVIDER_COLOR = 'DIVIDER_COLOR',  //'#7b4724'
     RUINS_COLOR = 'RUINS_COLOR', // '#153e30'
     GAMEAREA_BACKGROUND = 'GAMEAREA_BACKGROUND',    //'#313847'
 
@@ -25,7 +24,6 @@ export const DEFAULT_GLOBAL_COLORS = {
     [Colors.PAINT_TEAMTWO_ONE]: '#ffffff',
     [Colors.PAINT_TEAMTWO_TWO]: '#ffffff',
     [Colors.WALLS_COLOR]: '#3B6B4C',
-    [Colors.DIVIDER_COLOR]: '#7b4724',
     [Colors.RUINS_COLOR]: '#153e30',
     [Colors.GAMEAREA_BACKGROUND]: '#313847',
 
