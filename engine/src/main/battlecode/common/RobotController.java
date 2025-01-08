@@ -124,6 +124,15 @@ public interface RobotController {
     int getMoney();
 
     /**
+     * Alias for getMoney
+     *
+     * @return the amount of money this robot's team has
+     *
+     * @battlecode.doc.costlymethod
+     */
+    int getChips();
+
+    /**
      * Returns what UnitType this robot is. 
      * 
      * @return the UnitType of this robot

@@ -152,6 +152,11 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
+    public int getChips() {
+        return this.getMoney();
+    }
+
+    @Override
     public UnitType getType(){
         return this.robot.getType();
     }
