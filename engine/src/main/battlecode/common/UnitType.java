@@ -78,6 +78,18 @@ public enum UnitType {
         }
     }
 
+    public UnitType getBaseType(){
+        switch (this){
+            case LEVEL_TWO_DEFENSE_TOWER: return LEVEL_ONE_DEFENSE_TOWER;
+            case LEVEL_THREE_DEFENSE_TOWER: return LEVEL_ONE_DEFENSE_TOWER;
+            case LEVEL_TWO_PAINT_TOWER: return LEVEL_ONE_PAINT_TOWER;
+            case LEVEL_THREE_PAINT_TOWER: return LEVEL_ONE_PAINT_TOWER;
+            case LEVEL_TWO_MONEY_TOWER: return LEVEL_ONE_MONEY_TOWER;
+            case LEVEL_THREE_MONEY_TOWER: return LEVEL_ONE_MONEY_TOWER;
+            default: return this;
+        }
+    }
+
     UnitType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
         this.paintCost = paintCost;
         this.moneyCost = moneyCost;

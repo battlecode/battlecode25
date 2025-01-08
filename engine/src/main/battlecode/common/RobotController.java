@@ -677,6 +677,16 @@ public interface RobotController {
     // ****************************
 
     /**
+     * Tests whether this robot can paint the given location. 
+     * 
+     * @param loc target location to paint
+     * @return true if rc.attack(loc) will paint the given location 
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canPaint(MapLocation loc);
+
+    /**
      * Tests whether this robot can attack the given location. Types of
      * attacks for specific units determine whether or not towers, other
      * robots, or empty tiles can be attacked. 
@@ -857,6 +867,7 @@ public interface RobotController {
      * @param red   the red component of the dot's color
      * @param green the green component of the dot's color
      * @param blue  the blue component of the dot's color
+     * @throws GameActionException if the location is off the map
      *
      * @battlecode.doc.costlymethod
      */
@@ -870,6 +881,7 @@ public interface RobotController {
      * @param red      the red component of the line's color
      * @param green    the green component of the line's color
      * @param blue     the blue component of the line's color
+     * @throws GameActionException if any location is off the map
      *
      * @battlecode.doc.costlymethod
      */
