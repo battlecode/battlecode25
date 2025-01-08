@@ -236,7 +236,7 @@ public final class GameMapIO {
             int[] patternArray = new int[4];
             for (int i = 0; i < wallArray.length; i++) {
                 wallArray[i] = raw.walls(i);
-                paintArray[i] = raw.paint(i);
+                paintArray[i] = possiblyReversePaint(raw.paint(i), teamsReversed);
             }
             for (int i = 0; i < patternArray.length; i++){
                 patternArray[i] = raw.paintPatterns(i);
@@ -362,6 +362,19 @@ public final class GameMapIO {
                 if (bodyType.isRobotType())
                     initialPaint = (int) Math.round(bodyType.paintCapacity * GameConstants.INITIAL_ROBOT_PAINT_PERCENTAGE / 100.0);
                 initialBodies.add(new RobotInfo(curId, bodyTeam, bodyType, bodyType.health, new MapLocation(bodyX, bodyY), initialPaint));
+            }
+        }
+
+        // No color = 0, Team A color 1 = 1, Team A color 2 = 2, Team B color 1 = 3, Team B color 2 = 4
+        private static byte possiblyReversePaint(byte originalPaint, boolean teamsReversed){
+            if (!teamsReversed)
+                return originalPaint;
+            switch (originalPaint){
+                case 1: return 3;
+                case 2: return 4;
+                case 3: return 1;
+                case 4: return 2;
+                default: return originalPaint;
             }
         }
 
