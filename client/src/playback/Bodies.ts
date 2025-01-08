@@ -274,6 +274,9 @@ export class Body {
             if (focused || config.showHealthBars) {
                 this.drawHealthBar(match, overlayCtx)
             }
+            if (focused || config.showPaintBars) {
+                this.drawPaintBar(match, overlayCtx, config.showHealthBars)
+            }
         }
     }
 
@@ -433,6 +436,21 @@ export class Body {
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight)
         ctx.fillStyle = this.team.id == 1 ? 'red' : '#00ffff'
         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * (this.hp / this.maxHp), hpBarHeight)
+    }
+
+    private drawPaintBar(match: Match, ctx: CanvasRenderingContext2D, healthVisible: boolean): void {
+        const dimension = match.currentRound.map.staticMap.dimension
+        const interpCoords = this.getInterpolatedCoords(match)
+        const renderCoords = renderUtils.getRenderCoords(interpCoords.x, interpCoords.y, dimension)
+        const paintBarWidth = 0.8
+        const paintBarHeight = 0.1
+        const paintBarYOffset = 0.4 + (healthVisible ? 0.11 : 0)
+        const paintBarX = renderCoords.x + 0.5 - paintBarWidth / 2
+        const paintBarY = renderCoords.y + 0.5 + paintBarYOffset
+        ctx.fillStyle = 'rgba(0,0,0,.3)'
+        ctx.fillRect(paintBarX, paintBarY, paintBarWidth, paintBarHeight)
+        ctx.fillStyle = '#c515ed'
+        ctx.fillRect(paintBarX, paintBarY, paintBarWidth * (this.paint / this.maxPaint), paintBarHeight)
     }
 
     protected drawLevel(match: Match, ctx: CanvasRenderingContext2D) {
