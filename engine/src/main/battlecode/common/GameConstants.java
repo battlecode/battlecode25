@@ -120,13 +120,13 @@ public class GameConstants {
     public static final int EXTRA_RESOURCES_FROM_PATTERN = 3;
 
     /** The extra damage all ally towers get for each level 1 defense tower */
-    public static final int EXTRA_DAMAGE_FROM_DEFENSE_TOWER = 10;
+    public static final int EXTRA_DAMAGE_FROM_DEFENSE_TOWER = 5;
 
     /** The increase in extra damage for ally towers for upgrading a defense tower */
-    public static final int EXTRA_TOWER_DAMAGE_LEVEL_INCREASE = 5;
+    public static final int EXTRA_TOWER_DAMAGE_LEVEL_INCREASE = 2;
 
     /** The percent of the defense tower damage buff that is applied to AoE attacks */
-    public static final int DEFENSE_ATTACK_BUFF_AOE_EFFECTIVENESS = 50;
+    public static final int DEFENSE_ATTACK_BUFF_AOE_EFFECTIVENESS = 0;
 
     /** Maximum amount of turns a robot can go at 0 paint without dying */
     public static final int MAX_TURNS_WITHOUT_PAINT = 10;

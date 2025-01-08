@@ -26,6 +26,7 @@ battlecode/common/RobotController/getResourcePattern                    2    tru
 battlecode/common/RobotController/getTowerPattern                       2    true
 battlecode/common/RobotController/adjacentLocation                      1    true
 battlecode/common/RobotController/attack                                0    true
+battlecode/common/RobotController/canPaint                              10   true
 battlecode/common/RobotController/canAttack                             10   true
 battlecode/common/RobotController/canMopSwing                           10   true 
 battlecode/common/RobotController/mopSwing                              0    true            
@@ -112,11 +113,13 @@ battlecode/common/Message/getBytes                                      3    fal
 battlecode/common/Message/toString                                      5    false 
 battlecode/common/Message/copy                                          5    false
 battlecode/common/PaintType/isAlly                                      2    false
+battlecode/common/PaintType/isEnemy                                     2    false
 battlecode/common/PaintType/isSecondary                                 2    false
 battlecode/common/UnitType/isRobotType                                  3    false
 battlecode/common/UnitType/isTowerType                                  3    false
 battlecode/common/UnitType/canUpgradeType                               3    false
 battlecode/common/UnitType/getNextLevel                                 3    false
+battlecode/common/UnitType/getBaseType                                  3    false
 java/lang/Math/IEEEremainder            1  false
 java/lang/Math/abs                      1  false
 java/lang/Math/acos                     1  false
