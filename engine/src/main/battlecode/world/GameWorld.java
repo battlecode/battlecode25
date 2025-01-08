@@ -577,11 +577,23 @@ public class GameWorld {
     }
 
     public boolean isValidPatternCenter(MapLocation loc) {
-        return !(loc.x < GameConstants.PATTERN_SIZE / 2
+        return (!(loc.x < GameConstants.PATTERN_SIZE / 2
               || loc.y < GameConstants.PATTERN_SIZE / 2
               || loc.x >= gameMap.getWidth() - (GameConstants.PATTERN_SIZE - 1) / 2
               || loc.y >= gameMap.getHeight() - (GameConstants.PATTERN_SIZE - 1) / 2
-        );
+        )) && areaIsPaintable(loc) ;
+    }
+
+    // checks that location has no walls/ruins in the surrounding 5x5 area
+    public boolean areaIsPaintable(MapLocation loc){
+        for (int dx = -GameConstants.PATTERN_SIZE / 2; dx < (GameConstants.PATTERN_SIZE + 1) / 2; dx++) {
+            for (int dy = -GameConstants.PATTERN_SIZE / 2; dy < (GameConstants.PATTERN_SIZE + 1) / 2; dy++) {
+                MapLocation newLoc = loc.translate(dx, dy);
+                if (!isPaintable(newLoc))
+                    return false;
+            }
+        }
+        return true;
     }
 
     public boolean isPassable(MapLocation loc) {
