@@ -181,12 +181,15 @@ export default class Match {
         const currentTurnNumber = this.currentRound.turnNumber
 
         this._currentSimulationStep += deltaTime * MAX_SIMULATION_STEPS
+
         if (this.playbackPerTurn) {
+            // This works because of the way floor works
+            const deltaTurns = Math.floor(this._currentSimulationStep / MAX_SIMULATION_STEPS)
             if (this._currentSimulationStep >= MAX_SIMULATION_STEPS) {
-                this._stepTurn(1)
+                this._stepTurn(deltaTurns)
                 this._currentSimulationStep = 0
             } else if (this._currentSimulationStep < 0) {
-                this._stepTurn(-1)
+                this._stepTurn(deltaTurns)
                 this._currentSimulationStep = MAX_SIMULATION_STEPS - 1
             }
         } else {
@@ -230,6 +233,8 @@ export default class Match {
     }
 
     private _updateSimulationRoundsByTime(deltaTime: number): void {
+        // This works because of the way floor works
+        const deltaRounds = Math.floor(this._currentSimulationStep / MAX_SIMULATION_STEPS)
         if (this.currentRound.roundNumber == this.maxRound && deltaTime > 0) {
             // If we are at the end, round the simulation to the max value
             this._currentSimulationStep = Math.min(this._currentSimulationStep, MAX_SIMULATION_STEPS)
@@ -239,12 +244,12 @@ export default class Match {
         } else if (this._currentSimulationStep < 0) {
             // If we are going in reverse, step the rounds back by one. Also,
             // apply all turns for that round so that the transition is smooth
-            this._stepRound(-1)
+            this._stepRound(deltaRounds)
             this.currentRound.jumpToTurn(this.currentRound.turnsLength)
             this._currentSimulationStep = MAX_SIMULATION_STEPS - 1
         } else if (this._currentSimulationStep >= MAX_SIMULATION_STEPS) {
             // If we are going forward, simply step the turn
-            this._stepRound(1)
+            this._stepRound(deltaRounds)
         }
     }
 

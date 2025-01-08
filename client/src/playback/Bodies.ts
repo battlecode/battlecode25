@@ -275,7 +275,7 @@ export class Body {
                 this.drawHealthBar(match, overlayCtx)
             }
             if (focused || config.showPaintBars) {
-                this.drawPaintBar(match, overlayCtx, config.showHealthBars)
+                this.drawPaintBar(match, overlayCtx, focused || config.showHealthBars)
             }
         }
     }
