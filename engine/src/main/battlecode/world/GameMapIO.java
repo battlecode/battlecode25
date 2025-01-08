@@ -294,6 +294,7 @@ public final class GameMapIO {
                 bodyTypes.add(FlatHelpers.getRobotTypeFromUnitType(robot.type));
                 bodyLocsXs.add(robot.location.x);
                 bodyLocsYs.add(robot.location.y);
+                ruinArray[gameMap.locationToIndex(robot.location)] = true;
             }
 
             for (int i = 0; i < gameMap.getWidth() * gameMap.getHeight(); i++) {
