@@ -11,6 +11,10 @@ public enum PaintType {
         return this == ALLY_PRIMARY || this == ALLY_SECONDARY;
     }
 
+    public boolean isEnemy(){
+        return this == ENEMY_PRIMARY || this == ENEMY_SECONDARY;
+    }
+
     public boolean isSecondary() {
         return this == ALLY_SECONDARY || this == ENEMY_SECONDARY;
     }

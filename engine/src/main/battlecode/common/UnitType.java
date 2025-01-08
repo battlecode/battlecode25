@@ -1,21 +1,21 @@
 package battlecode.common;
 
 public enum UnitType {
-    SOLDIER(200, 250, 5, 250, -1, 200, 10, 9, 20, -1, 0, 0),
-    SPLASHER(300, 400, 50, 150, -1, 300, 50, 8, -1, 50, 0, 0),
+    SOLDIER(200, 250, 5, 250, -1, 200, 10, 9, 50, -1, 0, 0),
+    SPLASHER(300, 400, 50, 150, -1, 300, 50, 4, -1, 100, 0, 0),
     MOPPER(100, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
     
-    LEVEL_ONE_PAINT_TOWER(0, 100,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0),
-    LEVEL_TWO_PAINT_TOWER(0, 250, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
-    LEVEL_THREE_PAINT_TOWER(0, 500, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
+    LEVEL_ONE_PAINT_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0),
+    LEVEL_TWO_PAINT_TOWER(0, 2500, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
+    LEVEL_THREE_PAINT_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
 
-    LEVEL_ONE_MONEY_TOWER(0, 100,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 10),
-    LEVEL_TWO_MONEY_TOWER(0, 250,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 15),
-    LEVEL_THREE_MONEY_TOWER(0, 500, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 20),
+    LEVEL_ONE_MONEY_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 20),
+    LEVEL_TWO_MONEY_TOWER(0, 2500,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 30),
+    LEVEL_THREE_MONEY_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 40),
 
-    LEVEL_ONE_DEFENSE_TOWER(0, 100,  0, 2500, 1, 1000, 10, 20, 60, 30, 0, 0),
-    LEVEL_TWO_DEFENSE_TOWER(0, 250,  0, 3000, 2, 1000, 10, 20, 65, 35, 0, 0),
-    LEVEL_THREE_DEFENSE_TOWER(0, 500, 0, 3500, 3, 1000, 10, 20, 70, 40, 0, 0);
+    LEVEL_ONE_DEFENSE_TOWER(0, 1000,  0, 2000, 1, 1000, 10, 16, 40, 20, 0, 0),
+    LEVEL_TWO_DEFENSE_TOWER(0, 2500,  0, 2500, 2, 1000, 10, 16, 50, 25, 0, 0),
+    LEVEL_THREE_DEFENSE_TOWER(0, 5000, 0, 3000, 3, 1000, 10, 16, 60, 30, 0, 0);
 
 
     // the paint cost to build the unit
@@ -75,6 +75,18 @@ public enum UnitType {
             case LEVEL_ONE_PAINT_TOWER: return LEVEL_TWO_PAINT_TOWER;
             case LEVEL_TWO_PAINT_TOWER: return LEVEL_THREE_PAINT_TOWER;
             default: return null;
+        }
+    }
+
+    public UnitType getBaseType(){
+        switch (this){
+            case LEVEL_TWO_DEFENSE_TOWER: return LEVEL_ONE_DEFENSE_TOWER;
+            case LEVEL_THREE_DEFENSE_TOWER: return LEVEL_ONE_DEFENSE_TOWER;
+            case LEVEL_TWO_PAINT_TOWER: return LEVEL_ONE_PAINT_TOWER;
+            case LEVEL_THREE_PAINT_TOWER: return LEVEL_ONE_PAINT_TOWER;
+            case LEVEL_TWO_MONEY_TOWER: return LEVEL_ONE_MONEY_TOWER;
+            case LEVEL_THREE_MONEY_TOWER: return LEVEL_ONE_MONEY_TOWER;
+            default: return this;
         }
     }
 

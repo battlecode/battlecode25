@@ -837,6 +837,27 @@ public final class RobotControllerImpl implements RobotController {
     // ****** ATTACK / HEAL ********
     // *****************************
 
+    @Override
+    public boolean canPaint(MapLocation loc){
+        assertNotNull(loc);
+        if (!onTheMap(loc))
+            return false;
+        // towers and moppers cannot paint tiles
+        if (getType().isTowerType() || getType() == UnitType.MOPPER){
+            return false;
+        }
+        if (getType() == UnitType.SOLDIER){
+            if (loc.distanceSquaredTo(this.robot.getLocation()) > UnitType.SOLDIER.actionRadiusSquared)
+                return false;
+            return this.gameWorld.isPaintable(loc) && this.gameWorld.teamFromPaint(this.gameWorld.getPaint(loc)) != getTeam().opponent();
+        }
+        else{
+            if (loc.distanceSquaredTo(this.robot.getLocation()) > UnitType.SPLASHER.actionRadiusSquared)
+                return false;
+            return this.gameWorld.isPaintable(loc);
+        }
+    }
+
     private void assertCanAttackSoldier(MapLocation loc) throws GameActionException {
         assertIsActionReady();
         assertCanActLocation(loc, UnitType.SOLDIER.actionRadiusSquared);
