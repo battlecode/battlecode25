@@ -576,12 +576,12 @@ public class GameWorld {
         return this.patternArray[towerTypeToPatternIndex(towerType)];
     }
 
-    public boolean isValidPatternCenter(MapLocation loc) {
+    public boolean isValidPatternCenter(MapLocation loc, boolean isTower) {
         return (!(loc.x < GameConstants.PATTERN_SIZE / 2
               || loc.y < GameConstants.PATTERN_SIZE / 2
               || loc.x >= gameMap.getWidth() - (GameConstants.PATTERN_SIZE - 1) / 2
               || loc.y >= gameMap.getHeight() - (GameConstants.PATTERN_SIZE - 1) / 2
-        )) && areaIsPaintable(loc) ;
+        )) && (isTower || areaIsPaintable(loc)) ;
     }
 
     // checks that location has no walls/ruins in the surrounding 5x5 area

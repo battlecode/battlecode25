@@ -583,7 +583,7 @@ public final class RobotControllerImpl implements RobotController {
                             + ") because the center is not a ruin");
         }
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, true)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
@@ -678,10 +678,10 @@ public final class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
+                            + ") because it is blocked or too close to the edge of the map");
         }
 
         if (this.robot.getPaint() < GameConstants.MARK_PATTERN_PAINT_COST){
@@ -750,7 +750,7 @@ public final class RobotControllerImpl implements RobotController {
                     + ") because the team does not have enough money!"); 
         }
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, true)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
@@ -802,10 +802,10 @@ public final class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
+                            + ") because it is blocked or too close to the edge of the map");
         }
 
         boolean valid = this.gameWorld.checkResourcePattern(this.robot.getTeam(), loc);
