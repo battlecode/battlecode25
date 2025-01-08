@@ -152,6 +152,11 @@ public final class RobotControllerImpl implements RobotController {
     }
 
     @Override
+    public int getChips() {
+        return this.getMoney();
+    }
+
+    @Override
     public UnitType getType(){
         return this.robot.getType();
     }
@@ -578,7 +583,7 @@ public final class RobotControllerImpl implements RobotController {
                             + ") because the center is not a ruin");
         }
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, true)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
@@ -673,10 +678,10 @@ public final class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot mark resource pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
+                            + ") because it is blocked or too close to the edge of the map");
         }
 
         if (this.robot.getPaint() < GameConstants.MARK_PATTERN_PAINT_COST){
@@ -708,6 +713,20 @@ public final class RobotControllerImpl implements RobotController {
         this.gameWorld.markResourcePattern(getTeam(), loc, rotationAngle, reflect);
     }
 
+    private UnitType getBaseUnitType(UnitType type){
+        UnitType baseType;
+        switch (type){
+            case LEVEL_TWO_DEFENSE_TOWER: baseType = UnitType.LEVEL_ONE_DEFENSE_TOWER; break;
+            case LEVEL_THREE_DEFENSE_TOWER: baseType = UnitType.LEVEL_ONE_DEFENSE_TOWER; break;
+            case LEVEL_TWO_MONEY_TOWER: baseType = UnitType.LEVEL_ONE_MONEY_TOWER; break;
+            case LEVEL_THREE_MONEY_TOWER: baseType = UnitType.LEVEL_ONE_MONEY_TOWER; break;
+            case LEVEL_TWO_PAINT_TOWER: baseType = UnitType.LEVEL_ONE_PAINT_TOWER; break;
+            case LEVEL_THREE_PAINT_TOWER: baseType = UnitType.LEVEL_ONE_PAINT_TOWER; break;
+            default: baseType = type;
+        }
+        return baseType;
+    }
+
     private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
@@ -725,7 +744,13 @@ public final class RobotControllerImpl implements RobotController {
                             + ") because the center is not a ruin");
         }
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (getMoney() < getBaseUnitType(type).moneyCost){
+            throw new GameActionException(CANT_DO_THAT,
+            "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
+                    + ") because the team does not have enough money!"); 
+        }
+
+        if (!this.gameWorld.isValidPatternCenter(loc, true)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
                             + ") because it is too close to the edge of the map");
@@ -768,6 +793,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
         InternalRobot tower = this.gameWorld.getRobot(loc);
+        this.gameWorld.getTeamInfo().addMoney(getTeam(), -getBaseUnitType(type).moneyCost);
         this.gameWorld.getMatchMaker().addSpawnAction(tower.getID(), loc, tower.getTeam(), type);
         this.gameWorld.getMatchMaker().addBuildAction(tower.getID());
     }
@@ -776,10 +802,10 @@ public final class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
-        if (!this.gameWorld.isValidPatternCenter(loc)) {
+        if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
-                            + ") because it is too close to the edge of the map");
+                            + ") because it is blocked or too close to the edge of the map");
         }
 
         boolean valid = this.gameWorld.checkResourcePattern(this.robot.getTeam(), loc);
