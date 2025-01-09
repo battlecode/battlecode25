@@ -2,6 +2,7 @@
 import React from 'react'
 import { CanvasHistogram } from './quick-histogram'
 import { SPECIALTY_COLORS, TEAM_COLORS } from '../../../constants'
+import { currentColors } from '../../../colors'
 import { useRound } from '../../../playback/GameRunner'
 import Round from '../../../playback/Round'
 
@@ -38,7 +39,7 @@ export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => 
             <h2 className="mx-auto text-center">Specialty breakdown</h2>
             {[0, 1].map((team) => (
                 <div className="flex flex-row" key={team}>
-                    <div className="w-4 mr-2 mb-3" style={{ backgroundColor: TEAM_COLORS[team] }}></div>
+                    <div className="w-4 mr-2 mb-3" style={{ backgroundColor: currentColors[TEAM_COLORS[team]] }}></div>
                     {[0, 1, 2].map((specialty) => (
                         <CanvasHistogram
                             key={specialty}
@@ -46,7 +47,7 @@ export const SpecialtyHistogram: React.FC<SpecialtyHistogramProps> = (props) => 
                             width={110}
                             height={100}
                             margin={{ top: 10, right: 10, bottom: 20, left: 20 }}
-                            color={SPECIALTY_COLORS[specialty]}
+                            color={currentColors[SPECIALTY_COLORS[specialty]]}
                             resolution={1.5}
                         />
                     ))}
