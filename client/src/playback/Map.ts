@@ -10,6 +10,7 @@ import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
 import { Colors, currentColors, getPaintColors, getTeamColors } from '../colors'
+import Round from './Round'
 
 export type Dimension = {
     minCorner: Vector
@@ -73,6 +74,10 @@ export class CurrentMap {
         return this.staticMap.locationToIndex(x, y)
     }
 
+    locationToIndexUnchecked(x: number, y: number): number {
+        return this.staticMap.locationToIndexUnchecked(x, y)
+    }
+
     applySymmetry(point: Vector): Vector {
         return this.staticMap.applySymmetry(point)
     }
@@ -96,7 +101,7 @@ export class CurrentMap {
         const dimension = this.dimension
         for (let i = 0; i < dimension.width; i++) {
             for (let j = 0; j < dimension.height; j++) {
-                const schemaIdx = this.locationToIndex(i, j)
+                const schemaIdx = this.locationToIndexUnchecked(i, j)
                 const coords = renderUtils.getRenderCoords(i, j, dimension)
 
                 // Render rounded (clipped) paint
@@ -123,14 +128,18 @@ export class CurrentMap {
                 }
 
                 if (config.showPaintMarkers) {
+                    // Scale text by 0.5 because sometimes 0.5px text does not work
+
                     const markerA = this.markers[0][schemaIdx]
                     if (markerA) {
                         ctx.fillStyle = getTeamColors()[0]
                         const label = markerA === 1 ? '1' : '2' // Primary/secondary
-                        ctx.font = '0.5px monospace'
+                        ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
                         ctx.shadowBlur = 4
-                        ctx.fillText(label, coords.x + 0.05, coords.y + 0.95)
+                        ctx.scale(0.5, 0.5)
+                        ctx.fillText(label, (coords.x + 0.05) * 2, (coords.y + 0.95) * 2)
+                        ctx.scale(2, 2)
                         ctx.shadowColor = ''
                         ctx.shadowBlur = 0
                     }
@@ -139,10 +148,12 @@ export class CurrentMap {
                     if (markerB) {
                         ctx.fillStyle = getTeamColors()[1]
                         const label = markerB === 3 ? '1' : '2' // Primary/secondary
-                        ctx.font = '0.5px monospace'
+                        ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
                         ctx.shadowBlur = 4
-                        ctx.fillText(label, coords.x + 0.65, coords.y + 0.95)
+                        ctx.scale(0.5, 0.5)
+                        ctx.fillText(label, (coords.x + 0.65) * 2, (coords.y + 0.95) * 2)
+                        ctx.scale(2, 2)
                         ctx.shadowColor = ''
                         ctx.shadowBlur = 0
                     }
@@ -187,14 +198,8 @@ export class CurrentMap {
         return info
     }
 
-    getEditorBrushes() {
-        const brushes: MapEditorBrush[] = [
-            // ruins brush
-            // tower brush
-            new PaintBrush(this),
-            new RuinsBrush(this.staticMap),
-            new WallsBrush(this.staticMap)
-        ]
+    getEditorBrushes(round: Round) {
+        const brushes: MapEditorBrush[] = [new PaintBrush(round), new RuinsBrush(round), new WallsBrush(round)]
         return brushes.concat(this.staticMap.getEditorBrushes())
     }
 
@@ -322,6 +327,10 @@ export class StaticMap {
         return Math.floor(y) * this.width + Math.floor(x)
     }
 
+    locationToIndexUnchecked(x: number, y: number): number {
+        return y * this.width + x
+    }
+
     /**
      * Returns a point representing the reflection of the given point following the map's symmetry.
      */
@@ -361,7 +370,7 @@ export class StaticMap {
 
         for (let i = 0; i < this.dimension.width; i++) {
             for (let j = 0; j < this.dimension.height; j++) {
-                const schemaIdx = this.locationToIndex(i, j)
+                const schemaIdx = this.locationToIndexUnchecked(i, j)
                 const coords = renderUtils.getRenderCoords(i, j, this.dimension)
 
                 // Render rounded (clipped) wall

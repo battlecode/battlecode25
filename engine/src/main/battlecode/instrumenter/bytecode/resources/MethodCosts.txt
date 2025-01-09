@@ -26,6 +26,7 @@ battlecode/common/RobotController/getResourcePattern                    2    tru
 battlecode/common/RobotController/getTowerPattern                       2    true
 battlecode/common/RobotController/adjacentLocation                      1    true
 battlecode/common/RobotController/attack                                0    true
+battlecode/common/RobotController/canPaint                              10   true
 battlecode/common/RobotController/canAttack                             10   true
 battlecode/common/RobotController/canMopSwing                           10   true 
 battlecode/common/RobotController/mopSwing                              0    true            
@@ -43,6 +44,7 @@ battlecode/common/RobotController/getAllLocationsWithinRadiusSquared    100  tru
 battlecode/common/RobotController/getHealth                             1    true
 battlecode/common/RobotController/getID                                 1    true
 battlecode/common/RobotController/getPaint                              1    true
+battlecode/common/RobotController/getChips                              1    true
 battlecode/common/RobotController/getMoney                              1    true
 battlecode/common/RobotController/getType                               1    true
 battlecode/common/RobotController/getLocation                           1    true
@@ -51,12 +53,14 @@ battlecode/common/RobotController/getMapWidth                           1    tru
 battlecode/common/RobotController/getMovementCooldownTurns              1    true
 battlecode/common/RobotController/getRoundNum                           1    true
 battlecode/common/RobotController/getTeam                               1    true
+battlecode/common/RobotController/getNumberTowers                       5    true
 battlecode/common/RobotController/isActionReady                         1    true
 battlecode/common/RobotController/isLocationOccupied                    5    true
 battlecode/common/RobotController/isMovementReady                       1    true
 battlecode/common/RobotController/move                                  0    true
 battlecode/common/RobotController/onTheMap                              5    true
 battlecode/common/RobotController/readSharedArray                       2    true
+battlecode/common/RobotController/disintegrate                          0    true
 battlecode/common/RobotController/resign                                0    true
 battlecode/common/RobotController/senseNearbyRobots                     100  true
 battlecode/common/RobotController/senseRobot                            25   true
@@ -109,11 +113,13 @@ battlecode/common/Message/getBytes                                      3    fal
 battlecode/common/Message/toString                                      5    false 
 battlecode/common/Message/copy                                          5    false
 battlecode/common/PaintType/isAlly                                      2    false
+battlecode/common/PaintType/isEnemy                                     2    false
 battlecode/common/PaintType/isSecondary                                 2    false
 battlecode/common/UnitType/isRobotType                                  3    false
 battlecode/common/UnitType/isTowerType                                  3    false
 battlecode/common/UnitType/canUpgradeType                               3    false
 battlecode/common/UnitType/getNextLevel                                 3    false
+battlecode/common/UnitType/getBaseType                                  3    false
 java/lang/Math/IEEEremainder            1  false
 java/lang/Math/abs                      1  false
 java/lang/Math/acos                     1  false
