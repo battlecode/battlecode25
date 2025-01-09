@@ -181,14 +181,14 @@ export const ConfigPage: React.FC<Props> = (props) => {
                 <div className="text-sm pb-1">General</div>
                 <ColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
                 <ColorPicker displayName={'Tiles'} colorName={Colors.TILE_COLOR} />
-                <div className="text-sm pb-1">Team One</div>
+                <div className="text-sm pb-1">Silver</div>
                 <ColorPicker displayName={'Text'} colorName={Colors.TEAM_ONE} />
-                <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMONE_ONE} />
-                <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMONE_TWO} />
-                <div className="text-sm pb-1">Team Two</div>
+                <ColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMONE_ONE} />
+                <ColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMONE_TWO} />
+                <div className="text-sm pb-1">Gold</div>
                 <ColorPicker displayName={'Text'} colorName={Colors.TEAM_TWO} />
-                <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMTWO_ONE} />
-                <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMTWO_TWO} />
+                <ColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMTWO_ONE} />
+                <ColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMTWO_TWO} />
             </div>
             <div className="flex flex-row mt-8">
                 <BrightButton
