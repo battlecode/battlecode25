@@ -133,6 +133,7 @@ export const HelpPage: React.FC<Props> = (props) => {
                 {hotkeyElement(`R`, 'Resets the map camera if it has been panned/zoomed')}
                 {hotkeyElement(`C`, 'Hides and unhides game control bar')}
                 {hotkeyElement(`T`, 'Toggles per-turn playback for the current game')}
+                {hotkeyElement(`F`, 'Toggles per-turn robot focus config')}
                 {hotkeyElement(`.`, 'Skip to the very last round of the current game')}
                 {hotkeyElement(`,`, 'Skip to the first round of the current game')}
             </div>

@@ -149,7 +149,7 @@ class GameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._stepTurn(delta)
-        if (GameConfig.config.highlightRobotTurn) {
+        if (GameConfig.config.focusRobotTurn) {
             GameRenderer.setSelectedRobot(this.match.currentRound.lastSteppedRobotId)
         }
         GameRenderer.render()

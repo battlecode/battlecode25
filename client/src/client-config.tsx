@@ -14,6 +14,7 @@ import {
     DEFAULT_GLOBAL_COLORS
 } from './colors'
 import { BrightButton, Button } from './components/button'
+import { useKeyboard } from './util/keyboard'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -29,7 +30,7 @@ const DEFAULT_CONFIG = {
     showPaintBars: false,
     showPaintMarkers: true,
     showMapXY: true,
-    highlightRobotTurn: true,
+    focusRobotTurn: true,
     enableFancyPaint: true,
     streamRunnerGames: true,
     profileGames: false,
@@ -58,7 +59,7 @@ const configDescription: Record<keyof ClientConfig, string> = {
     showPaintBars: 'Show paint bars below all robots',
     showPaintMarkers: 'Show paint markers created using mark()',
     showMapXY: 'Show X,Y when hovering a tile',
-    highlightRobotTurn: 'Highlight the robot when performing their turn during turn-stepping mode',
+    focusRobotTurn: 'Focus the robot when performing their turn during turn-stepping mode',
     enableFancyPaint: 'Enable fancy paint rendering',
     streamRunnerGames: 'Stream each round from the runner live as the game is being played',
     profileGames: 'Enable saving profiling data when running games',
@@ -88,6 +89,16 @@ export function getDefaultConfig(): ClientConfig {
 }
 
 export const ConfigPage: React.FC<Props> = (props) => {
+    const context = useAppContext()
+    const keyboard = useKeyboard()
+
+    useEffect(() => {
+        if (context.state.disableHotkeys) return
+
+        if (keyboard.keyCode === 'KeyF')
+            context.updateConfigValue('focusRobotTurn', !context.state.config.focusRobotTurn)
+    }, [keyboard.keyCode])
+
     if (!props.open) return null
 
     return (
@@ -238,15 +249,7 @@ const ConfigBooleanElement: React.FC<{ configKey: keyof ClientConfig }> = ({ con
             <input
                 type={'checkbox'}
                 checked={value as any}
-                onChange={(e) => {
-                    context.setState((prevState) => ({
-                        ...prevState,
-                        config: { ...prevState.config, [configKey]: e.target.checked }
-                    }))
-                    localStorage.setItem('config' + configKey, JSON.stringify(e.target.checked))
-                    // hopefully after the setState is done
-                    setTimeout(() => GameRenderer.fullRender(), 10)
-                }}
+                onChange={(e) => context.updateConfigValue(configKey, e.target.checked)}
             />
             <div className={'ml-2 text-xs'}>{configDescription[configKey] ?? configKey}</div>
         </div>
@@ -267,16 +270,11 @@ const ConfigNumberElement: React.FC<{ configKey: keyof ClientConfig }> = ({ conf
             <NumInput
                 value={value}
                 changeValue={(newVal) => {
-                    context.setState((prevState) => ({
-                        ...prevState,
-                        config: { ...context.state.config, [configKey]: newVal }
-                    }))
-                    localStorage.setItem('config' + configKey, JSON.stringify(newVal))
-                    // hopefully after the setState is done
-                    setTimeout(() => {
+                    context.updateConfigValue(configKey, newVal)
+                    if (configKey === 'resolutionScale') {
                         // Trigger canvas dimension update to ensure resolution is updated
                         GameRenderer.onMatchChange()
-                    }, 10)
+                    }
                 }}
                 min={10}
                 max={200}
