@@ -96,6 +96,10 @@ export default class Game {
         this.id = nextID++
     }
 
+    get complete() {
+        return this.winner !== null
+    }
+
     /*
      * Adds a new game event to the game.
      */
