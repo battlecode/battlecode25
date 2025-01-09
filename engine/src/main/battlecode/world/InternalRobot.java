@@ -409,6 +409,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 robot.addPaint(-GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
                 addPaint(GameConstants.MOPPER_ATTACK_PAINT_ADDITION);
                 this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
+                this.gameWorld.getMatchMaker().addRemovePaintAction(robot.getID(), GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
             }
         }
         
@@ -486,6 +487,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 if(this.team != robot.getTeam()){
                     robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
                     affectedIDs.add(robot.ID);
+                    this.gameWorld.getMatchMaker().addRemovePaintAction(robot.getID(), GameConstants.MOPPER_SWING_PAINT_DEPLETION);
                 }
             }
         }

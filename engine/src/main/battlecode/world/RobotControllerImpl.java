@@ -819,6 +819,7 @@ public final class RobotControllerImpl implements RobotController {
     public void completeResourcePattern(MapLocation loc) throws GameActionException {
         assertCanCompleteResourcePattern(loc);
         this.gameWorld.completeResourcePattern(getTeam(), loc);
+        this.gameWorld.getMatchMaker().addCompleteResourcePatternAction(loc);
     }
 
     // *****************************
