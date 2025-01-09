@@ -124,6 +124,15 @@ public interface RobotController {
     int getMoney();
 
     /**
+     * Alias for getMoney
+     *
+     * @return the amount of money this robot's team has
+     *
+     * @battlecode.doc.costlymethod
+     */
+    int getChips();
+
+    /**
      * Returns what UnitType this robot is. 
      * 
      * @return the UnitType of this robot
@@ -131,6 +140,15 @@ public interface RobotController {
      * @battlecode.doc.costlymethod
      */
     UnitType getType();
+
+    /**
+     * Returns how many allied towers are currently alive.
+     * 
+     * @return the number of alive allied towers.
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    int getNumberTowers();
 
     // ***********************************
     // ****** GENERAL VISION METHODS *****
@@ -527,7 +545,7 @@ public interface RobotController {
     boolean canMark(MapLocation loc);
 
     /**
-     * Checks if the location can be marked.
+     * Adds a mark at the given location.
      * 
      * @param loc the location to mark
      * @param secondary whether the secondary color should be used
@@ -668,6 +686,16 @@ public interface RobotController {
     // ****************************
 
     /**
+     * Tests whether this robot can paint the given location. 
+     * 
+     * @param loc target location to paint
+     * @return true if rc.attack(loc) will paint the given location 
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canPaint(MapLocation loc);
+
+    /**
      * Tests whether this robot can attack the given location. Types of
      * attacks for specific units determine whether or not towers, other
      * robots, or empty tiles can be attacked. 
@@ -735,8 +763,20 @@ public interface RobotController {
      * and only if one unit is a robot and the other is a tower.
      * 
      * @param loc the location to send the message to
-     * @param messageContent an int representing the content of the
-     * message (up to 4 bytes)
+     * 
+     * @battlecode.doc.costlymethod
+     */
+    boolean canSendMessage(MapLocation loc);
+
+    /**
+     * Returns true if the unit can send a message to a specific
+     * location, false otherwise. We can send a message to a location
+     * if it is within a specific distance and connected by paint,
+     * and only if one unit is a robot and the other is a tower.
+     * 
+     * @param loc the location to send the message to
+     * @param messageContent the contents of the message.
+     * Does not affect whether or not the message can be sent.
      * 
      * @battlecode.doc.costlymethod
      */
@@ -774,10 +814,10 @@ public interface RobotController {
     /**
      * Tests whether you can transfer paint to a given robot/tower.
      * 
-     * You can give paint to an allied robot if you are a mopper and can act at the
+     * You can give paint to an allied robot/tower if you are a mopper and can act at the
      * given location.
-     * You can give/take paint from allied towers regardless of type, if you can act
-     * at the location.
+     * You can take paint from allied towers regardless of type, if you can act
+     * at the location. Pass in a negative number to take paint.
      * 
      * @param loc    the location of the robot/tower to transfer paint to
      * @param amount the amount of paint to transfer. Positive to give paint,
@@ -789,7 +829,8 @@ public interface RobotController {
 
     /**
      * Transfers paint from the robot's stash to the stash of the allied
-     * robot or tower at loc.
+     * robot or tower at loc. Pass in a negative number to take paint, positive
+     * to give paint.
      * 
      * @param loc    the location of the robot/tower to transfer paint to
      * @param amount the amount of paint to transfer. Positive to give paint,
@@ -798,6 +839,13 @@ public interface RobotController {
      *                             location
      */
     void transferPaint(MapLocation loc, int amount) throws GameActionException;
+
+    /**
+     * Destroys the robot. 
+     *
+     * @battlecode.doc.costlymethod
+    **/
+    void disintegrate();
 
     /**
      * Causes your team to lose the game. It's like typing "gg."
@@ -828,10 +876,11 @@ public interface RobotController {
      * @param red   the red component of the dot's color
      * @param green the green component of the dot's color
      * @param blue  the blue component of the dot's color
+     * @throws GameActionException if the location is off the map
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorDot(MapLocation loc, int red, int green, int blue);
+    void setIndicatorDot(MapLocation loc, int red, int green, int blue) throws GameActionException;
 
     /**
      * Draw a line on the game map for debugging purposes.
@@ -841,10 +890,11 @@ public interface RobotController {
      * @param red      the red component of the line's color
      * @param green    the green component of the line's color
      * @param blue     the blue component of the line's color
+     * @throws GameActionException if any location is off the map
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+    void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) throws GameActionException;
 
     /**
      * Adds a marker to the timeline at the current 

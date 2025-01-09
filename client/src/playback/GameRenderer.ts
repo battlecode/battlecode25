@@ -155,6 +155,7 @@ class GameRendererClass {
 
     private canvasMouseMove(e: MouseEvent) {
         const newTile = eventToPoint(e)
+        if (!newTile) return
         if (newTile.x !== this.mouseTile?.x || newTile.y !== this.mouseTile?.y) {
             this.mouseTile = newTile
             this.render()
@@ -176,7 +177,9 @@ class GameRendererClass {
     }
 
     private canvasMouseEnter(e: MouseEvent) {
-        this.mouseTile = eventToPoint(e)
+        const point = eventToPoint(e)
+        if (!point) return
+        this.mouseTile = point
         this.mouseDown = e.buttons > 0
         if (e.buttons === 2) this.mouseDownRight = true
         this._trigger(this._canvasHoverListeners)
@@ -192,6 +195,9 @@ class GameRendererClass {
             return
 
         this.selectedTile = eventToPoint(e)
+
+        if (!this.selectedTile) return
+
         const newSelectedBody = GameRunner.match?.currentRound.bodies.getBodyAtLocation(
             this.selectedTile.x,
             this.selectedTile.y
@@ -244,15 +250,16 @@ class GameRendererClass {
     }
 }
 
-const eventToPoint = (e: MouseEvent) => {
+const eventToPoint = (e: MouseEvent): Vector | undefined => {
     const canvas = e.target as HTMLCanvasElement
     const rect = canvas.getBoundingClientRect()
-    const map = GameRunner.match?.map ?? assert.fail('map is null in onclick')
+    const map = GameRunner.match?.map
+    if (!map) return undefined
     let x = Math.floor(((e.clientX - rect.left) / rect.width) * map.width)
     let y = Math.floor((1 - (e.clientY - rect.top) / rect.height) * map.height)
     x = Math.max(0, Math.min(x, map.width - 1))
     y = Math.max(0, Math.min(y, map.height - 1))
-    return { x: x, y: y }
+    return { x, y }
 }
 
 export const GameRenderer = new GameRendererClass()

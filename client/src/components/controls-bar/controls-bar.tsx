@@ -167,7 +167,7 @@ export const ControlsBar: React.FC = () => {
                     icon={<ControlIcons.SkipForwardsIcon />}
                     tooltip={'Increase Speed'}
                     onClick={() => GameRunner.multiplyUpdatesPerSecond(2)}
-                    disabled={Math.abs(targetUPS) >= 64}
+                    disabled={Math.abs(targetUPS) >= 128}
                 />
                 <ControlsBarButton
                     icon={<ControlIcons.PlaybackStopIcon />}
