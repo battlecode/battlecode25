@@ -224,6 +224,9 @@ export default class Match {
         this._jumpToTurn(targetTurn)
     }
 
+    /**
+     * Jump to a turn within the current round's turns.R
+     */
     public _jumpToTurn(turn: number): void {
         if (!this.game.playable) return
 
