@@ -1,4 +1,4 @@
-import React, { useEffect, useState, MouseEvent, PropsWithChildren } from 'react'
+import React, { useEffect, useState, MouseEvent, PropsWithChildren, useRef } from 'react'
 
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
@@ -42,7 +42,7 @@ const DEFAULT_CONFIG = {
         [Colors.PAINT_TEAMTWO_TWO]: '#997746',
         [Colors.WALLS_COLOR]: '#547f31',
         [Colors.TILE_COLOR]: '#4c301e',
-        [Colors.GAMEAREA_BACKGROUND]: '#313847',
+        [Colors.GAMEAREA_BACKGROUND]: '#2e2323',
         [Colors.SIDEBAR_BACKGROUND]: '#3f3131'
     } as Record<Colors, string>
 }
@@ -93,6 +93,10 @@ export function getDefaultConfig(): ClientConfig {
 const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.colorName]
+    //const wrapperRef = React.createRef()
+    const ref = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    //this.handleClickOutside = this.handleClickOutside.bind(this);
 
     const [displayColorPicker, setDisplayColorPicker] = useState(false)
 
@@ -103,6 +107,26 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const handleClose = () => {
         setDisplayColorPicker(false)
     }
+
+    //const handleClickOutside = (event) => {
+    //    if (wrapperRef && !wrapperRef.contains(event.target)) {
+    //        alert('You clicked outside of me!')
+    //    }
+    //}
+
+    const handleClickOutside = (event: any) => {
+        if (
+            ref.current &&
+            buttonRef.current &&
+            !ref.current.contains(event.target) &&
+            !buttonRef.current.contains(event.target)
+        ) {
+            //alert('hi')
+            handleClose()
+        }
+    }
+
+    addEventListener('mousedown', handleClickOutside)
 
     const onChange = (newColor: any) => {
         updateGlobalColor(props.colorName, newColor.hex)
@@ -116,17 +140,17 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
 
     return (
         <>
-            <div className={'ml-2 text-xs flex flex-start justify-start items-center'}>
+            <div className={'ml-2 mb-2 text-xs flex flex-start justify-start items-center'}>
                 {/*Background:*/}
                 {props.displayName}:
                 <button
+                    ref={buttonRef}
                     className={'text-xs ml-2 px-4 py-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
                     style={{ backgroundColor: value, border: '2px solid white' }}
                     onClick={handleClick}
                 ></button>
             </div>
-
-            {displayColorPicker && <ChromePicker color={value} onChange={onChange} />}
+            <div ref={ref}>{displayColorPicker && <ChromePicker color={value} onChange={onChange} />}</div>
         </>
     )
 }
@@ -151,18 +175,18 @@ export const ConfigPage: React.FC<Props> = (props) => {
             <div className="color-pickers">
                 {/*fake class*/}
                 Customize Colors:
-                <div className="text-sm">Interface</div>
+                <div className="text-sm pb-1 pt-1">Interface</div>
                 <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
                 <ColorPicker displayName={'Sidebar'} colorName={Colors.SIDEBAR_BACKGROUND} />
-                <div className="text-sm">General</div>
+                <div className="text-sm pb-1">General</div>
                 <ColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
                 <ColorPicker displayName={'Tiles'} colorName={Colors.TILE_COLOR} />
-                <div className="text-sm">Team One</div>
-                <ColorPicker displayName={'General'} colorName={Colors.TEAM_ONE} />
+                <div className="text-sm pb-1">Team One</div>
+                <ColorPicker displayName={'Text'} colorName={Colors.TEAM_ONE} />
                 <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMONE_ONE} />
                 <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMONE_TWO} />
-                <div className="text-sm">Team Two</div>
-                <ColorPicker displayName={'General'} colorName={Colors.TEAM_TWO} />
+                <div className="text-sm pb-1">Team Two</div>
+                <ColorPicker displayName={'Text'} colorName={Colors.TEAM_TWO} />
                 <ColorPicker displayName={'Paint One'} colorName={Colors.PAINT_TEAMTWO_ONE} />
                 <ColorPicker displayName={'Paint Two'} colorName={Colors.PAINT_TEAMTWO_TWO} />
             </div>
