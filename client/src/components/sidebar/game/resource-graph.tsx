@@ -1,9 +1,8 @@
 import React from 'react'
-import { D3LineChart, LineChartDataPoint } from './d3-line-chart'
 import assert from 'assert'
 import { useRound } from '../../../playback/GameRunner'
 import Round from '../../../playback/Round'
-import { QuickLineChart } from './quick-line-chart'
+import { LineChartDataPoint, QuickLineChart } from './quick-line-chart'
 
 interface Props {
     active: boolean
@@ -26,8 +25,8 @@ function getChartData(round: Round, property: string): LineChartDataPoint[] {
     return values[0].slice(0, round.roundNumber).map((value, index) => {
         return {
             round: index + 1,
-            white: value as number,
-            brown: values[1][index] as number
+            team0: value as number,
+            team1: values[1][index] as number
         }
     })
 }
