@@ -46,14 +46,14 @@ export const QuickLineChart: React.FC<LineChartProps> = ({
         if (data.length > 0) {
             context.strokeStyle = currentColors[Colors.TEAM_ONE]
             context.beginPath()
-            context.moveTo(xScale(data[0].round), yScale(data[0].brown))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
+            context.moveTo(xScale(data[0].round), yScale(data[0].white))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))
             context.stroke()
 
             context.strokeStyle = currentColors[Colors.TEAM_TWO]
             context.beginPath()
-            context.moveTo(xScale(data[0].round), yScale(data[0].white))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))
+            context.moveTo(xScale(data[0].round), yScale(data[0].brown))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
             context.stroke()
         }
 
