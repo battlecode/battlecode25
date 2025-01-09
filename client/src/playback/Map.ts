@@ -19,15 +19,6 @@ export type Dimension = {
     height: number
 }
 
-/*
-type FlagData = {
-    id: number
-    team: number
-    location: Vector
-    carrierId: number | null
-}
-*/
-
 type SchemaPacket = {
     wallsOffset: number
     paintOffset: number
@@ -99,6 +90,8 @@ export class CurrentMap {
         hoveredTile?: Vector
     ) {
         const dimension = this.dimension
+        const paintColors = getPaintColors()
+        const teamColors = getTeamColors()
         for (let i = 0; i < dimension.width; i++) {
             for (let j = 0; j < dimension.height; j++) {
                 const schemaIdx = this.locationToIndexUnchecked(i, j)
@@ -115,14 +108,13 @@ export class CurrentMap {
                             this,
                             this.paint,
                             () => {
-
-                                ctx.fillStyle = getPaintColors()[paint]
+                                ctx.fillStyle = paintColors[paint]
                                 ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                             },
                             { x: true, y: false }
                         )
                     } else {
-                        ctx.fillStyle = getPaintColors()[paint]
+                        ctx.fillStyle = paintColors[paint]
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     }
                 }
@@ -132,7 +124,7 @@ export class CurrentMap {
 
                     const markerA = this.markers[0][schemaIdx]
                     if (markerA) {
-                        ctx.fillStyle = getTeamColors()[0]
+                        ctx.fillStyle = teamColors[0]
                         const label = markerA === 1 ? '1' : '2' // Primary/secondary
                         ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
@@ -146,7 +138,7 @@ export class CurrentMap {
 
                     const markerB = this.markers[1][schemaIdx]
                     if (markerB) {
-                        ctx.fillStyle = getTeamColors()[1]
+                        ctx.fillStyle = teamColors[1]
                         const label = markerB === 3 ? '1' : '2' // Primary/secondary
                         ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'

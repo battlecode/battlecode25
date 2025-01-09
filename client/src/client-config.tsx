@@ -85,15 +85,68 @@ export function getDefaultConfig(): ClientConfig {
     return config
 }
 
-//const ColorRow = (props: { displayName: string, colorName: Colors }) => {
-//    return (
-//        <>
-//            <ColorPicker name={colorName} />
-//        </>
-//    )
-//}
+export const ConfigPage: React.FC<Props> = (props) => {
+    if (!props.open) return null
 
-const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
+    return (
+        <div className={'flex flex-col'}>
+            <div className="mb-2">Edit Client Config:</div>
+            {Object.entries(DEFAULT_CONFIG).map(([k, v]) => {
+                const key = k as keyof ClientConfig
+                if (typeof v === 'string') return <ConfigStringElement configKey={key} key={key} />
+                if (typeof v === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
+                if (typeof v === 'number') return <ConfigNumberElement configKey={key} key={key} />
+            })}
+
+            <ColorConfig />
+        </div>
+    )
+}
+
+const ColorConfig = () => {
+    const context = useAppContext()
+
+    /* TODO: [future] do this dynamically rather than hardcoding sections */
+
+    return (
+        <>
+            <div className="m-0 mt-4">
+                Customize Colors:
+                <div className="text-sm pb-1 pt-1">Interface</div>
+                <SingleColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
+                <SingleColorPicker displayName={'Sidebar'} colorName={Colors.SIDEBAR_BACKGROUND} />
+                <div className="text-sm pb-1">General</div>
+                <SingleColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
+                <SingleColorPicker displayName={'Tiles'} colorName={Colors.TILE_COLOR} />
+                <div className="text-sm pb-1">Silver</div>
+                <SingleColorPicker displayName={'Text'} colorName={Colors.TEAM_ONE} />
+                <SingleColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMONE_ONE} />
+                <SingleColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMONE_TWO} />
+                <div className="text-sm pb-1">Gold</div>
+                <SingleColorPicker displayName={'Text'} colorName={Colors.TEAM_TWO} />
+                <SingleColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMTWO_ONE} />
+                <SingleColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMTWO_TWO} />
+            </div>
+            <div className="flex flex-row mt-8">
+                <BrightButton
+                    className=""
+                    onClick={() => {
+                        resetGlobalColors()
+
+                        context.setState((prevState) => ({
+                            ...prevState,
+                            config: { ...prevState.config, colors: { ...DEFAULT_GLOBAL_COLORS } }
+                        }))
+                    }}
+                >
+                    Reset Colors
+                </BrightButton>
+            </div>
+        </>
+    )
+}
+
+const SingleColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.colorName]
     const ref = useRef<HTMLDivElement>(null)
@@ -110,12 +163,6 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
         setDisplayColorPicker(false)
     }
 
-    //const handleClickOutside = (event) => {
-    //    if (wrapperRef && !wrapperRef.contains(event.target)) {
-    //        alert('You clicked outside of me!')
-    //    }
-    //}
-
     const handleClickOutside = (event: any) => {
         if (
             ref.current &&
@@ -123,12 +170,9 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
             !ref.current.contains(event.target) &&
             !buttonRef.current.contains(event.target)
         ) {
-            //alert('hi')
             handleClose()
         }
     }
-
-    addEventListener('mousedown', handleClickOutside)
 
     const onChange = (newColor: any) => {
         updateGlobalColor(props.colorName, newColor.hex)
@@ -141,11 +185,14 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     }
 
     const resetColor = () => {
-        console.log(DEFAULT_GLOBAL_COLORS)
-        console.log(props.colorName as Colors)
-        console.log(DEFAULT_GLOBAL_COLORS[props.colorName as Colors])
         onChange({ hex: DEFAULT_GLOBAL_COLORS[props.colorName as Colors] })
     }
+
+    useEffect(() => {
+        window.addEventListener('mousedown', handleClickOutside)
+
+        return () => window.removeEventListener('mousedown', handleClickOutside)
+    }, [])
 
     return (
         <>
@@ -178,60 +225,6 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
                 {displayColorPicker && <ChromePicker color={value} onChange={onChange} />}
             </div>
         </>
-    )
-}
-
-export const ConfigPage: React.FC<Props> = (props) => {
-    if (!props.open) return null
-    const context = useAppContext()
-
-    return (
-        <div className={'flex flex-col'}>
-            <div className="mb-2">Edit Client Config:</div>
-            {Object.entries(DEFAULT_CONFIG).map(([k, v]) => {
-                const key = k as keyof ClientConfig
-                if (typeof v === 'string') return <ConfigStringElement configKey={key} key={key} />
-                if (typeof v === 'boolean') return <ConfigBooleanElement configKey={key} key={key} />
-                if (typeof v === 'number') return <ConfigNumberElement configKey={key} key={key} />
-            })}
-
-            <div>
-                <br></br>
-            </div>
-            <div className="color-pickers">
-                {/*fake class*/}
-                Customize Colors:
-                <div className="text-sm pb-1 pt-1">Interface</div>
-                <ColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
-                <ColorPicker displayName={'Sidebar'} colorName={Colors.SIDEBAR_BACKGROUND} />
-                <div className="text-sm pb-1">General</div>
-                <ColorPicker displayName={'Walls'} colorName={Colors.WALLS_COLOR} />
-                <ColorPicker displayName={'Tiles'} colorName={Colors.TILE_COLOR} />
-                <div className="text-sm pb-1">Silver</div>
-                <ColorPicker displayName={'Text'} colorName={Colors.TEAM_ONE} />
-                <ColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMONE_ONE} />
-                <ColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMONE_TWO} />
-                <div className="text-sm pb-1">Gold</div>
-                <ColorPicker displayName={'Text'} colorName={Colors.TEAM_TWO} />
-                <ColorPicker displayName={'Primary Paint'} colorName={Colors.PAINT_TEAMTWO_ONE} />
-                <ColorPicker displayName={'Secondary Paint'} colorName={Colors.PAINT_TEAMTWO_TWO} />
-            </div>
-            <div className="flex flex-row mt-8">
-                <BrightButton
-                    className=""
-                    onClick={() => {
-                        resetGlobalColors()
-
-                        context.setState((prevState) => ({
-                            ...prevState,
-                            config: { ...prevState.config, colors: { ...DEFAULT_GLOBAL_COLORS } }
-                        }))
-                    }}
-                >
-                    Reset Colors
-                </BrightButton>
-            </div>
-        </div>
     )
 }
 
