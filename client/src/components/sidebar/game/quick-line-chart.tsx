@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import { Colors, currentColors } from '../../../colors'
 import { drawAxes, getAxes, setCanvasResolution } from '../../../util/graph-util'
+import { useGame } from '../../../playback/GameRunner'
 
 export interface LineChartDataPoint {
     round: number
-    brown: number
-    white: number
+    team0: number
+    team1: number
 }
 
 interface LineChartProps {
@@ -29,6 +30,7 @@ export const QuickLineChart: React.FC<LineChartProps> = ({
     resolution = window.devicePixelRatio ?? 1
 }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
+    const game = useGame()
 
     useEffect(() => {
         if (!canvasRef.current) return
@@ -38,22 +40,22 @@ export const QuickLineChart: React.FC<LineChartProps> = ({
 
         setCanvasResolution(canvas, width, height, resolution)
 
-        const max = Math.max(...data.map((d) => Math.max(d.brown, d.white)))
+        const max = Math.max(...data.map((d) => Math.max(d.team0, d.team1)))
         const { xScale, yScale, innerWidth, innerHeight } = getAxes(width, height, margin, { x: data.length, y: max })
 
         context.clearRect(0, 0, width, height)
 
         if (data.length > 0) {
-            context.strokeStyle = currentColors[Colors.TEAM_ONE]
+            context.strokeStyle = game?.teams[0].color ?? 'black'
             context.beginPath()
-            context.moveTo(xScale(data[0].round), yScale(data[0].white))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].white))
+            context.moveTo(xScale(data[0].round), yScale(data[0].team0))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].team0))
             context.stroke()
 
-            context.strokeStyle = currentColors[Colors.TEAM_TWO]
+            context.strokeStyle = game?.teams[1].color ?? 'black'
             context.beginPath()
-            context.moveTo(xScale(data[0].round), yScale(data[0].brown))
-            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].brown))
+            context.moveTo(xScale(data[0].round), yScale(data[0].team1))
+            for (let i = 1; i < data.length; i++) context.lineTo(xScale(data[i].round), yScale(data[i].team1))
             context.stroke()
         }
 

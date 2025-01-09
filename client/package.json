@@ -129,11 +129,9 @@
     "homepage": "https://github.com/battlecode/battlecode25#readme",
     "dependencies": {
         "@headlessui/react": "^2.2.0",
-        "@types/d3": "^7.4.2",
         "assert": "^2.0.0",
         "battlecode-schema": "file:../schema",
         "child_process": "^1.0.2",
-        "d3": "^7.8.5",
         "electron-fetch": "^1.9.1",
         "electron-is-dev": "^2.0.0",
         "fs": "^0.0.1-security",

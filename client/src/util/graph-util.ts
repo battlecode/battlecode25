@@ -1,5 +1,3 @@
-import { Axis } from 'd3'
-
 export function getAxes(
     width: number,
     height: number,
