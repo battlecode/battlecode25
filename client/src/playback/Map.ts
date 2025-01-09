@@ -73,6 +73,10 @@ export class CurrentMap {
         return this.staticMap.locationToIndex(x, y)
     }
 
+    locationToIndexUnchecked(x: number, y: number): number {
+        return this.staticMap.locationToIndexUnchecked(x, y)
+    }
+
     applySymmetry(point: Vector): Vector {
         return this.staticMap.applySymmetry(point)
     }
@@ -96,7 +100,7 @@ export class CurrentMap {
         const dimension = this.dimension
         for (let i = 0; i < dimension.width; i++) {
             for (let j = 0; j < dimension.height; j++) {
-                const schemaIdx = this.locationToIndex(i, j)
+                const schemaIdx = this.locationToIndexUnchecked(i, j)
                 const coords = renderUtils.getRenderCoords(i, j, dimension)
 
                 // Render rounded (clipped) paint
@@ -321,6 +325,10 @@ export class StaticMap {
         return Math.floor(y) * this.width + Math.floor(x)
     }
 
+    locationToIndexUnchecked(x: number, y: number): number {
+        return y * this.width + x
+    }
+
     /**
      * Returns a point representing the reflection of the given point following the map's symmetry.
      */
@@ -360,7 +368,7 @@ export class StaticMap {
 
         for (let i = 0; i < this.dimension.width; i++) {
             for (let j = 0; j < this.dimension.height; j++) {
-                const schemaIdx = this.locationToIndex(i, j)
+                const schemaIdx = this.locationToIndexUnchecked(i, j)
                 const coords = renderUtils.getRenderCoords(i, j, this.dimension)
 
                 // Render rounded (clipped) wall
