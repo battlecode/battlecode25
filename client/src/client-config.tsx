@@ -1,5 +1,6 @@
 import React, { useEffect, useState, MouseEvent, PropsWithChildren, useRef } from 'react'
-
+import { IconContext } from 'react-icons'
+import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
@@ -95,10 +96,9 @@ export function getDefaultConfig(): ClientConfig {
 const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
     const context = useAppContext()
     const value = context.state.config.colors[props.colorName]
-    //const wrapperRef = React.createRef()
     const ref = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
-    //this.handleClickOutside = this.handleClickOutside.bind(this);
+    const [hoveredClose, setHoveredClose] = useState(false)
 
     const [displayColorPicker, setDisplayColorPicker] = useState(false)
 
@@ -140,6 +140,13 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
         setTimeout(() => GameRenderer.render(), 10)
     }
 
+    const resetColor = () => {
+        console.log(DEFAULT_GLOBAL_COLORS)
+        console.log(props.colorName as Colors)
+        console.log(DEFAULT_GLOBAL_COLORS[props.colorName as Colors])
+        onChange({ hex: DEFAULT_GLOBAL_COLORS[props.colorName as Colors] })
+    }
+
     return (
         <>
             <div className={'ml-2 mb-2 text-xs flex flex-start justify-start items-center'}>
@@ -147,12 +154,29 @@ const ColorPicker = (props: { displayName: string; colorName: Colors }) => {
                 {props.displayName}:
                 <button
                     ref={buttonRef}
-                    className={'text-xs ml-2 px-4 py-3 flex flex-row hover:bg-cyanDark rounded-md text-white'}
+                    className={'text-xs ml-2 px-4 py-3 mr-2 flex flex-row hover:bg-cyanDark rounded-md text-white'}
                     style={{ backgroundColor: value, border: '2px solid white' }}
                     onClick={handleClick}
                 ></button>
+                <div
+                    className="rounded-full overflow-clip"
+                    onClick={() => resetColor()}
+                    onMouseEnter={() => setHoveredClose(true)}
+                    onMouseLeave={() => setHoveredClose(false)}
+                >
+                    <IconContext.Provider
+                        value={{
+                            color: 'white',
+                            className: 'w-5 h-5'
+                        }}
+                    >
+                        {hoveredClose ? <IoCloseCircle /> : <IoCloseCircleOutline />}
+                    </IconContext.Provider>
+                </div>
             </div>
-            <div ref={ref}>{displayColorPicker && <ChromePicker color={value} onChange={onChange} />}</div>
+            <div ref={ref} className={'width: w-min'}>
+                {displayColorPicker && <ChromePicker color={value} onChange={onChange} />}
+            </div>
         </>
     )
 }
