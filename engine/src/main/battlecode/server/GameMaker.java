@@ -380,7 +380,7 @@ public class GameMaker {
 
             matchHeaders.add(events.size() - 1);
 
-            clearData();
+            clearMatchData();
         }
 
         public void makeMatchFooter(Team winTeam, DominationFactor winType, int totalRounds,
@@ -477,7 +477,7 @@ public class GameMaker {
                 return EventWrapper.createEventWrapper(builder, Event.Round, round);
             });
 
-            clearData();
+            clearRoundData();
         }
 
         public void startTurn(int robotID){
@@ -678,12 +678,20 @@ public class GameMaker {
             return loc.x + this.currentMapWidth * loc.y;
         }
 
-        private void clearData() {
+        private void clearRoundData() {
             this.teamIDs.clear();
             this.teamMoneyAmounts.clear();
             this.teamPaintCoverageAmounts.clear();
             this.teamResourcePatternAmounts.clear();
             this.diedIds.clear();
+        }
+
+        private void clearMatchData() {
+            clearRoundData();
+            this.timelineMarkerTeams.clear();
+            this.timelineMarkerColors.clear();
+            this.timelineMarkerLabels.clear();
+            this.timelineMarkerRounds.clear();
         }
     }
 
