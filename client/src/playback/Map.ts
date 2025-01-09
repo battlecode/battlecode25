@@ -5,10 +5,11 @@ import Match from './Match'
 import { MapEditorBrush, Symmetry } from '../components/sidebar/map-editor/MapEditorBrush'
 import { packVecTable, parseVecTable } from './SchemaHelpers'
 import { RuinsBrush, WallsBrush, PaintBrush } from './Brushes'
-import { DIVIDER_COLOR, TILE_COLOR, WALLS_COLOR, PAINT_COLORS, TEAM_COLORS, TEAM_COLOR_NAMES } from '../constants'
+import { TEAM_COLOR_NAMES } from '../constants'
 import * as renderUtils from '../util/RenderUtil'
 import { getImageIfLoaded } from '../util/ImageLoader'
 import { ClientConfig } from '../client-config'
+import { Colors, currentColors, getPaintColors, getTeamColors } from '../colors'
 import Round from './Round'
 
 export type Dimension = {
@@ -17,15 +18,6 @@ export type Dimension = {
     width: number
     height: number
 }
-
-/*
-type FlagData = {
-    id: number
-    team: number
-    location: Vector
-    carrierId: number | null
-}
-*/
 
 type SchemaPacket = {
     wallsOffset: number
@@ -98,6 +90,8 @@ export class CurrentMap {
         hoveredTile?: Vector
     ) {
         const dimension = this.dimension
+        const paintColors = getPaintColors()
+        const teamColors = getTeamColors()
         for (let i = 0; i < dimension.width; i++) {
             for (let j = 0; j < dimension.height; j++) {
                 const schemaIdx = this.locationToIndexUnchecked(i, j)
@@ -114,13 +108,13 @@ export class CurrentMap {
                             this,
                             this.paint,
                             () => {
-                                ctx.fillStyle = PAINT_COLORS[paint]
+                                ctx.fillStyle = paintColors[paint]
                                 ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                             },
                             { x: true, y: false }
                         )
                     } else {
-                        ctx.fillStyle = PAINT_COLORS[paint]
+                        ctx.fillStyle = paintColors[paint]
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     }
                 }
@@ -130,7 +124,7 @@ export class CurrentMap {
 
                     const markerA = this.markers[0][schemaIdx]
                     if (markerA) {
-                        ctx.fillStyle = TEAM_COLORS[0]
+                        ctx.fillStyle = teamColors[0]
                         const label = markerA === 1 ? '1' : '2' // Primary/secondary
                         ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
@@ -144,7 +138,7 @@ export class CurrentMap {
 
                     const markerB = this.markers[1][schemaIdx]
                     if (markerB) {
-                        ctx.fillStyle = TEAM_COLORS[1]
+                        ctx.fillStyle = teamColors[1]
                         const label = markerB === 3 ? '1' : '2' // Primary/secondary
                         ctx.font = '1px monospace'
                         ctx.shadowColor = 'black'
@@ -347,7 +341,7 @@ export class StaticMap {
 
     draw(ctx: CanvasRenderingContext2D) {
         // Fill background
-        ctx.fillStyle = TILE_COLOR
+        ctx.fillStyle = currentColors[Colors.TILE_COLOR]
         ctx.fillRect(
             this.dimension.minCorner.x,
             this.dimension.minCorner.y,
@@ -374,7 +368,7 @@ export class StaticMap {
                 // Render rounded (clipped) wall
                 if (this.walls[schemaIdx]) {
                     renderUtils.renderRounded(ctx, i, j, this, this.walls, () => {
-                        ctx.fillStyle = WALLS_COLOR
+                        ctx.fillStyle = currentColors[Colors.WALLS_COLOR]
                         ctx.fillRect(coords.x, coords.y, 1.0, 1.0)
                     })
                 }

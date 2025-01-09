@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-import { TEAM_COLORS } from '../../../constants'
+//import { TEAM_COLORS } from '../../../constants'
 import * as d3 from 'd3'
+import { getTeamColors, Colors } from '../../../colors'
 
 export interface LineChartDataPoint {
     round: number
@@ -60,7 +61,7 @@ export const D3LineChart: React.FC<LineChartProps> = ({ data, width, height, mar
         svg.append('path')
             .datum(data)
             .attr('fill', 'none')
-            .attr('stroke', TEAM_COLORS[1])
+            .attr('stroke', getTeamColors()[1])
             .attr('stroke-width', 1.5)
             .attr('d', lineGenerator((d: LineChartDataPoint) => yScale(d.brown))(data))
 
@@ -68,7 +69,7 @@ export const D3LineChart: React.FC<LineChartProps> = ({ data, width, height, mar
         svg.append('path')
             .datum(data)
             .attr('fill', 'none')
-            .attr('stroke', TEAM_COLORS[0])
+            .attr('stroke', getTeamColors()[0])
             .attr('stroke-width', 1.5)
             .attr('d', lineGenerator((d: LineChartDataPoint) => yScale(d.white))(data))
 

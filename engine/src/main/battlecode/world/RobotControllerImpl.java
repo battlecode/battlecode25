@@ -713,21 +713,8 @@ public final class RobotControllerImpl implements RobotController {
         this.gameWorld.markResourcePattern(getTeam(), loc, rotationAngle, reflect);
     }
 
-    private UnitType getBaseUnitType(UnitType type){
-        UnitType baseType;
-        switch (type){
-            case LEVEL_TWO_DEFENSE_TOWER: baseType = UnitType.LEVEL_ONE_DEFENSE_TOWER; break;
-            case LEVEL_THREE_DEFENSE_TOWER: baseType = UnitType.LEVEL_ONE_DEFENSE_TOWER; break;
-            case LEVEL_TWO_MONEY_TOWER: baseType = UnitType.LEVEL_ONE_MONEY_TOWER; break;
-            case LEVEL_THREE_MONEY_TOWER: baseType = UnitType.LEVEL_ONE_MONEY_TOWER; break;
-            case LEVEL_TWO_PAINT_TOWER: baseType = UnitType.LEVEL_ONE_PAINT_TOWER; break;
-            case LEVEL_THREE_PAINT_TOWER: baseType = UnitType.LEVEL_ONE_PAINT_TOWER; break;
-            default: baseType = type;
-        }
-        return baseType;
-    }
-
     private void assertCanCompleteTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
+        type = type.getBaseType();
         assertIsRobotType(this.robot.getType());
         assertIsTowerType(type);
         assertCanActLocation(loc, GameConstants.BUILD_TOWER_RADIUS_SQUARED);
@@ -744,7 +731,7 @@ public final class RobotControllerImpl implements RobotController {
                             + ") because the center is not a ruin");
         }
 
-        if (getMoney() < getBaseUnitType(type).moneyCost){
+        if (getMoney() < type.moneyCost){
             throw new GameActionException(CANT_DO_THAT,
             "Cannot complete tower pattern centered at (" + loc.x + ", " + loc.y
                     + ") because the team does not have enough money!"); 
@@ -790,10 +777,11 @@ public final class RobotControllerImpl implements RobotController {
 
     @Override
     public void completeTowerPattern(UnitType type, MapLocation loc) throws GameActionException {
+        type = type.getBaseType();
         assertCanCompleteTowerPattern(type, loc);
         this.gameWorld.completeTowerPattern(getTeam(), type, loc);
         InternalRobot tower = this.gameWorld.getRobot(loc);
-        this.gameWorld.getTeamInfo().addMoney(getTeam(), -getBaseUnitType(type).moneyCost);
+        this.gameWorld.getTeamInfo().addMoney(getTeam(), -type.moneyCost);
         this.gameWorld.getMatchMaker().addSpawnAction(tower.getID(), loc, tower.getTeam(), type);
         this.gameWorld.getMatchMaker().addBuildAction(tower.getID());
     }
