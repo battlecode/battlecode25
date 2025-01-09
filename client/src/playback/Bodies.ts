@@ -6,6 +6,7 @@ import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
 import { Vector } from './Vector'
+import { Colors, currentColors } from '../colors'
 import {
     INDICATOR_DOT_SIZE,
     INDICATOR_LINE_WIDTH,
