@@ -32,6 +32,24 @@ export const DEFAULT_GLOBAL_COLORS = {
     [Colors.SIDEBAR_BACKGROUND]: '#3f3131'
 }
 
+export const colorPresets: Record<string, typeof DEFAULT_GLOBAL_COLORS> = {
+    "Default": DEFAULT_GLOBAL_COLORS,
+    "stupid": {
+        [Colors.TEAM_ONE]: '#cdcdcc',
+        [Colors.TEAM_TWO]: '#fee493',
+    
+        [Colors.PAINT_TEAMONE_ONE]: '#666666',
+        [Colors.PAINT_TEAMONE_TWO]: '#565656',
+        [Colors.PAINT_TEAMTWO_ONE]: '#b28b52',
+        [Colors.PAINT_TEAMTWO_TWO]: '#997746',
+        [Colors.WALLS_COLOR]: '#547f31',
+        [Colors.TILE_COLOR]: '#4c301e',
+        [Colors.GAMEAREA_BACKGROUND]: '#2e2323',
+        [Colors.SIDEBAR_BACKGROUND]: '#3f3131'
+    }
+    
+}
+
 export const currentColors: Record<Colors, string> = { ...DEFAULT_GLOBAL_COLORS }
 
 export const updateGlobalColor = (color: Colors, value: string) => {

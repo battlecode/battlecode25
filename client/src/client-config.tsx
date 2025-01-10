@@ -4,16 +4,18 @@ import { IoCloseCircle, IoCloseCircleOutline } from 'react-icons/io5'
 import { ChromePicker } from 'react-color'
 import { AppContextProvider, useAppContext } from './app-context'
 import { GameRenderer } from './playback/GameRenderer'
-import { NumInput } from './components/forms'
+import { NumInput, Select } from './components/forms'
 import {
     Colors,
     currentColors,
     updateGlobalColor,
     getGlobalColor,
     resetGlobalColors,
-    DEFAULT_GLOBAL_COLORS
+    DEFAULT_GLOBAL_COLORS,
+    colorPresets
 } from './colors'
 import { BrightButton, Button } from './components/button'
+import Dropdown from 'react-dropdown'
 
 export type ClientConfig = typeof DEFAULT_CONFIG
 
@@ -111,7 +113,12 @@ const ColorConfig = () => {
     return (
         <>
             <div className="m-0 mt-4">
-                Customize Colors:
+                <div className="flex">
+                    Customize Colors:
+                    <div className="">
+                        <PresetPicker></PresetPicker>
+                    </div>
+                </div>
                 <div className="text-sm pb-1 pt-1">Interface</div>
                 <SingleColorPicker displayName={'Background'} colorName={Colors.GAMEAREA_BACKGROUND} />
                 <SingleColorPicker displayName={'Sidebar'} colorName={Colors.SIDEBAR_BACKGROUND} />
@@ -139,8 +146,33 @@ const ColorConfig = () => {
                         }))
                     }}
                 >
-                    Reset Colors
+                    Reset All Colors
                 </BrightButton>
+            </div>
+        </>
+    )
+}
+
+const PresetPicker = () => {
+    const options = [
+        { value: '#ffccdb', label: 'Erm what!!' },
+        { value: '#000000', label: 'whar' }
+    ]
+
+    const _onSelect = () => {}
+
+    return (
+        <>
+            <div className="ml-1">
+                {/*<Dropdown options={options} onChange={_onSelect} placeholder="Select a preset.." />*/}
+                <Select onChange={(v) => _onSelect}>
+                    <option value={''}>{'Select a preset...'}</option>
+                    {Object.keys(colorPresets).map((key, i) => (
+                        <option key={key} value={key}>
+                            {key}
+                        </option>
+                    ))}
+                </Select>
             </div>
         </>
     )
@@ -217,7 +249,7 @@ const SingleColorPicker = (props: { displayName: string; colorName: Colors }) =>
                             className: 'w-5 h-5'
                         }}
                     >
-                        {hoveredClose ? <IoCloseCircle /> : <IoCloseCircleOutline />}
+                        <button>{hoveredClose ? <IoCloseCircle /> : <IoCloseCircleOutline />}</button>
                     </IconContext.Provider>
                 </div>
             </div>

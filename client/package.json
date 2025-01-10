@@ -144,6 +144,7 @@
         "react-color": "^2.19.3",
         "react-custom-scrollbars-2": "^4.5.0",
         "react-dom": "^18.2.0",
+        "react-dropdown": "^1.11.0",
         "react-icons": "^4.8.0",
         "react-router-dom": "^6.13.0",
         "react-window": "^1.8.10",
