@@ -409,6 +409,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 robot.addPaint(-GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
                 addPaint(GameConstants.MOPPER_ATTACK_PAINT_ADDITION);
                 this.gameWorld.getMatchMaker().addAttackAction(robot.getID());
+                this.gameWorld.getMatchMaker().addRemovePaintAction(robot.getID(), GameConstants.MOPPER_ATTACK_PAINT_DEPLETION);
             }
         }
         
@@ -486,6 +487,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
                 if(this.team != robot.getTeam()){
                     robot.addPaint(-GameConstants.MOPPER_SWING_PAINT_DEPLETION);
                     affectedIDs.add(robot.ID);
+                    this.gameWorld.getMatchMaker().addRemovePaintAction(robot.getID(), GameConstants.MOPPER_SWING_PAINT_DEPLETION);
                 }
             }
         }
@@ -597,10 +599,11 @@ public class InternalRobot implements Comparable<InternalRobot> {
 
         if (this.getType().isRobotType()){
             Team owningTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(this.location));
+            int multiplier = this.getType() == UnitType.MOPPER ? GameConstants.MOPPER_PAINT_PENALTY_MULTIPLIER : 1;
             if (owningTeam == Team.NEUTRAL) {
-                this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY);
+                this.addPaint(-GameConstants.PENALTY_NEUTRAL_TERRITORY*multiplier);
             } else if (owningTeam == this.getTeam().opponent()) {
-                this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY);
+                this.addPaint(-GameConstants.PENALTY_ENEMY_TERRITORY*multiplier);
                 int allyRobotCount = 0;
                 for (InternalRobot robot : this.gameWorld.getAllRobotsWithinRadiusSquared(this.location, 2, this.team)){
                     if (robot.ID != this.ID)

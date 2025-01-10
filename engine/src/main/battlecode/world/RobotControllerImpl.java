@@ -529,6 +529,8 @@ public final class RobotControllerImpl implements RobotController {
     private void assertCanMark(MapLocation loc) throws GameActionException {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.MARK_RADIUS_SQUARED);
+        if (!this.gameWorld.isPaintable(loc))
+            throw new GameActionException(CANT_DO_THAT, "Can't place marks on squares that are not paintable!");
     }
 
     @Override
@@ -819,6 +821,7 @@ public final class RobotControllerImpl implements RobotController {
     public void completeResourcePattern(MapLocation loc) throws GameActionException {
         assertCanCompleteResourcePattern(loc);
         this.gameWorld.completeResourcePattern(getTeam(), loc);
+        this.gameWorld.getMatchMaker().addCompleteResourcePatternAction(loc);
     }
 
     // *****************************

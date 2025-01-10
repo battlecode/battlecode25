@@ -3,6 +3,7 @@ import Game from './Game'
 import Match from './Match'
 import Round from './Round'
 import { GameRenderer } from './GameRenderer'
+import { GameConfig } from '../app-context'
 
 const SIMULATION_UPDATE_INTERVAL_MS = 17 // About 60 fps
 
@@ -148,6 +149,9 @@ class GameRunnerClass {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
         this.match._stepTurn(delta)
+        if (GameConfig.config.focusRobotTurn) {
+            GameRenderer.setSelectedRobot(this.match.currentRound.lastSteppedRobotId)
+        }
         GameRenderer.render()
         this._trigger(this._turnListeners)
     }
@@ -249,9 +253,7 @@ export function useRound(): Round | undefined {
 
 export function useTurnNumber(): { current: number; max: number } | undefined {
     const round = useRound()
-    const [turnIdentifierNumber, setTurnIdentifierNumber] = React.useState(
-        round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined
-    )
+    const [turnIdentifierNumber, setTurnIdentifierNumber] = React.useState<number | undefined>(-1)
     React.useEffect(() => {
         const listener = () =>
             setTurnIdentifierNumber(round ? round.roundNumber * round.match.maxRound + round.turnNumber : undefined)
@@ -268,7 +270,7 @@ export function useTurnNumber(): { current: number; max: number } | undefined {
                       max: round.turnsLength || 0
                   }
                 : undefined,
-        [round, turnIdentifierNumber, round?.turnNumber]
+        [round, round?.roundNumber, round?.turnNumber]
     )
 }
 

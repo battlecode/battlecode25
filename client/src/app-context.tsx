@@ -2,6 +2,7 @@ import React from 'react'
 import Game from './playback/Game'
 import Tournament, { DEFAULT_TOURNAMENT_STATE, TournamentState } from './playback/Tournament'
 import { ClientConfig, getDefaultConfig } from './client-config'
+import { GameRenderer } from './playback/GameRenderer'
 
 export interface TimelineMarker {
     round: number
@@ -28,6 +29,7 @@ const DEFAULT_APP_STATE: AppState = {
 export interface AppContext {
     state: AppState
     setState: (value: React.SetStateAction<AppState>) => void
+    updateConfigValue: (key: keyof ClientConfig, newVal: any) => void
 }
 
 interface Props {
@@ -37,9 +39,25 @@ interface Props {
 const appContext = React.createContext({} as AppContext)
 export const AppContextProvider: React.FC<Props> = (props) => {
     const [appState, setAppState] = React.useState(DEFAULT_APP_STATE)
+
     GameConfig.config = appState.config
+
+    const updateConfigValue = (key: keyof ClientConfig, newVal: any) => {
+        setAppState((prevState) => ({
+            ...prevState,
+            config: { ...prevState.config, [key]: newVal }
+        }))
+        localStorage.setItem('config' + key, JSON.stringify(newVal))
+        setTimeout(() => {
+            // After the setState is done, rerender
+            GameRenderer.fullRender()
+        }, 10)
+    }
+
     return (
-        <appContext.Provider value={{ state: appState, setState: setAppState }}>{props.children}</appContext.Provider>
+        <appContext.Provider value={{ state: appState, setState: setAppState, updateConfigValue }}>
+            {props.children}
+        </appContext.Provider>
     )
 }
 

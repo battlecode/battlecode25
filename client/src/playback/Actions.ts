@@ -90,10 +90,17 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.DamageAction]: class DamageAction extends Action<schema.DamageAction> {
         apply(round: Round): void {
+            const src = round.bodies.getById(this.robotId)
             const target = round.bodies.getById(this.actionData.id())
 
-            // Apply damage to the target
-            target.hp = Math.max(target.hp - this.actionData.damage(), 0)
+            const damage = this.actionData.damage()
+            if (src.robotType === schema.RobotType.MOPPER) {
+                // Apply paint damage to the target
+                target.paint = Math.max(target.paint - damage, 0)
+            } else {
+                // Apply HP damage to the target
+                target.hp = Math.max(target.hp - damage, 0)
+            }
         }
     },
     [schema.Action.SplashAction]: class SplashAction extends Action<schema.SplashAction> {
@@ -328,30 +335,42 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
+            const amount = this.actionData.amount()
+
+            if (amount === 0) {
+                /* ! SCUFFED SPECIAL CASE: Resource pattern completed ! */
+                return
+            }
+
             const src = round.bodies.getById(this.robotId)
             const dst = round.bodies.getById(this.actionData.id())
 
-            src.paint -= this.actionData.amount()
-            dst.paint += this.actionData.amount()
+            src.paint -= amount
+            dst.paint += amount
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
-            const srcBody = match.currentRound.bodies.getById(this.robotId)
-            const dstBody = match.currentRound.bodies.getById(this.actionData.id())
+            if (this.actionData.amount() === 0) {
+                /* ! SCUFFED SPECIAL CASE: Resource pattern completed ! */
+                const centerIdx = this.actionData.id()
+            } else {
+                const srcBody = match.currentRound.bodies.getById(this.robotId)
+                const dstBody = match.currentRound.bodies.getById(this.actionData.id())
 
-            const from = srcBody.getInterpolatedCoords(match)
-            const to = dstBody.getInterpolatedCoords(match)
+                const from = srcBody.getInterpolatedCoords(match)
+                const to = dstBody.getInterpolatedCoords(match)
 
-            renderUtils.renderLine(
-                ctx,
-                renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
-                renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
-                {
-                    color: '#11fc30',
-                    lineWidth: 0.06,
-                    opacity: 0.5,
-                    renderArrow: true
-                }
-            )
+                renderUtils.renderLine(
+                    ctx,
+                    renderUtils.getRenderCoords(from.x, from.y, match.currentRound.map.staticMap.dimension),
+                    renderUtils.getRenderCoords(to.x, to.y, match.currentRound.map.staticMap.dimension),
+                    {
+                        color: '#11fc30',
+                        lineWidth: 0.06,
+                        opacity: 0.5,
+                        renderArrow: true
+                    }
+                )
+            }
         }
     },
     [schema.Action.MessageAction]: class MessageAction extends Action<schema.MessageAction> {
