@@ -14,9 +14,17 @@ export const FloatingTooltip: React.FC<{
     const [tooltipSize, setTooltipSize] = React.useState({ width: 0, height: 0 })
     React.useEffect(() => {
         const observer = new ResizeObserver((entries) => {
-            if (entries[0]) {
-                const borderBox = entries[0].borderBoxSize[0]
+            const entry = entries[0]
+            if (!entry) return
+
+            // Check if this property exists, it may not for older OSes
+            if (entry.borderBoxSize) {
+                const borderBox = Array.isArray(entry.borderBoxSize) ? entry.borderBoxSize[0] : entry.borderBoxSize
                 setTooltipSize({ width: borderBox.inlineSize, height: borderBox.blockSize })
+            } else {
+                // Fallback to contentRect
+                const rect = entry.contentRect
+                setTooltipSize({ width: rect.width, height: rect.height })
             }
         })
         if (tooltipRef.current) observer.observe(tooltipRef.current)
