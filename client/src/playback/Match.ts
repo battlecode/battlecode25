@@ -10,7 +10,7 @@ import * as Profiler from './Profiler'
 import * as Timeline from './Timeline'
 
 // Amount of rounds before a snapshot of the game state is saved for the next recalculation
-const SNAPSHOT_EVERY = 50
+const SNAPSHOT_EVERY = 40
 
 // Amount of simulation steps before the round counter is progressed
 const MAX_SIMULATION_STEPS = 50000
@@ -315,6 +315,12 @@ export default class Match {
                 ? this.currentRound
                 : closestSnapshot.copy()
 
+        // While we are jumping (forward) to a round, mark the intermediate rounds
+        // as transient. This way, we do not store initial state for these rounds that
+        // we are simply passing through, as they will never have any sort of backward
+        // turn stepping.
+        updatingRound.isTransient = true
+
         while (updatingRound.roundNumber < roundNumber) {
             // Fully apply the previous round by applying each turn sequentially
             updatingRound.jumpToTurn(updatingRound.turnsLength)
@@ -329,6 +335,8 @@ export default class Match {
                 this.snapshots.push(updatingRound.copy())
             }
         }
+
+        updatingRound.isTransient = false
 
         this.currentRound = updatingRound
     }

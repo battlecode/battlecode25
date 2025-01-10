@@ -10,6 +10,7 @@ import assert from 'assert'
 export default class Round {
     public turnNumber: number = 0
     public lastSteppedRobotId: number | undefined = undefined
+    public isTransient: boolean = false
     private initialRoundState: Round | null = null
 
     constructor(
@@ -93,7 +94,7 @@ export default class Round {
         const turn = this.currentDelta!.turns(this.turnNumber)
         assert(turn, 'Turn not found to step to')
 
-        if (!this.initialRoundState) {
+        if (!this.initialRoundState && !this.isTransient) {
             // Store the initial round state for resetting only after stepping, that way snapshots dont need to store it, halving memory usage
             assert(this.turnNumber === 0, 'Initial round state should only be set at turn 0')
             this.initialRoundState = this.copy()
