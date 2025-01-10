@@ -9,6 +9,7 @@ import assert from 'assert'
 
 export default class Round {
     public turnNumber: number = 0
+    public lastSteppedRobotId: number | undefined = undefined
     private initialRoundState: Round | null = null
 
     constructor(
@@ -83,6 +84,9 @@ export default class Round {
         }
     }
 
+    /**
+     * Step the current turn within the current delta.
+     */
     private stepTurn(): void {
         assert(this.turnNumber < this.turnsLength, 'Cannot step a round that is at the end')
 
@@ -110,6 +114,8 @@ export default class Round {
         this.bodies.applyTurnDelta(this, turn)
 
         this.turnNumber += 1
+
+        this.lastSteppedRobotId = turn.robotId()
     }
 
     public copy(): Round {

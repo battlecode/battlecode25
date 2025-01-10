@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { Vector } from '../../playback/Vector'
 import { CurrentMap } from '../../playback/Map'
-import { useMatch, useRound } from '../../playback/GameRunner'
+import { useMatch, useRound, useTurnNumber } from '../../playback/GameRunner'
 import { CanvasLayers, GameRenderer } from '../../playback/GameRenderer'
 import { Space, VirtualSpaceRect } from 'react-zoomable-ui'
 import { ResetZoomIcon } from '../../icons/resetzoom'
@@ -16,6 +16,9 @@ export const GameRendererPanel: React.FC = () => {
 
     const appContext = useAppContext()
     const round = useRound()
+
+    // Unused, but we want to rerender the tooltips when the turn changes as well
+    const turn = useTurnNumber()
 
     const { selectedBodyID } = GameRenderer.useCanvasClickEvents()
     const { hoveredTile } = GameRenderer.useCanvasHoverEvents()
