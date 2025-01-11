@@ -373,15 +373,6 @@ export class StaticMap {
                     })
                 }
 
-                // Render ruins
-                this.ruins.forEach(({ x, y }) => {
-                    const coords = renderUtils.getRenderCoords(x, y, this.dimension)
-
-                    const imgPath = `ruins/silver.png`
-                    const ruinImage = getImageIfLoaded(imgPath)
-                    renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
-                })
-
                 // Draw grid
                 const showGrid = true
                 if (showGrid) {
@@ -401,6 +392,15 @@ export class StaticMap {
                 }
             }
         }
+
+        // Render ruins
+        this.ruins.forEach(({ x, y }) => {
+            const coords = renderUtils.getRenderCoords(x, y, this.dimension)
+
+            const imgPath = `ruins/silver_64x64.png`
+            const ruinImage = getImageIfLoaded(imgPath)
+            renderUtils.renderCenteredImageOrLoadingIndicator(ctx, ruinImage, coords, 1.0)
+        })
     }
 
     isEmpty(): boolean {
