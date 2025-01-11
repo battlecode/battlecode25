@@ -94,6 +94,17 @@ class GameRendererClass {
         return this.canvas(layer).getContext('2d')
     }
 
+    renderOverlay() {
+        const ctx = this.ctx(CanvasLayers.Overlay)
+        const match = GameRunner.match
+        if (!match || !ctx) return
+
+        const currentRound = match.currentRound
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        currentRound.bodies.draw(match, null, ctx, GameConfig.config, this.selectedBodyID, this.mouseTile)
+    }
+
     render() {
         const ctx = this.ctx(CanvasLayers.Dynamic)
         const overlayCtx = this.ctx(CanvasLayers.Overlay)
@@ -158,7 +169,7 @@ class GameRendererClass {
         if (!newTile) return
         if (newTile.x !== this.mouseTile?.x || newTile.y !== this.mouseTile?.y) {
             this.mouseTile = newTile
-            this.render()
+            this.renderOverlay()
             this._trigger(this._canvasHoverListeners)
         }
     }

@@ -15,7 +15,9 @@ const EMPTY_ROBOT_COUNTS: Record<schema.RobotType, number> = {
 
 export class TeamRoundStat {
     robotCounts: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
+    robotPaints: Record<schema.RobotType, number> = { ...EMPTY_ROBOT_COUNTS }
     moneyAmount: number = 0
+    totalPaint: number = 0
     paintPercent: number = 0
     resourcePatterns: number = 0
 
@@ -24,6 +26,7 @@ export class TeamRoundStat {
 
         // Copy any internal objects here
         newStat.robotCounts = { ...this.robotCounts }
+        newStat.robotPaints = { ...this.robotPaints }
 
         return newStat
     }
@@ -98,9 +101,11 @@ export default class RoundStat {
             }
         }
 
-        // Clear robot counts for recomputing
+        // Clear values for recomputing
         for (const stat of this.teams.values()) {
+            stat.totalPaint = 0
             stat.robotCounts = { ...EMPTY_ROBOT_COUNTS }
+            stat.robotPaints = { ...EMPTY_ROBOT_COUNTS }
         }
 
         // Compute total robot counts
@@ -111,6 +116,8 @@ export default class RoundStat {
             if (body.dead) continue
 
             teamStat.robotCounts[body.robotType]++
+            teamStat.robotPaints[body.robotType] += body.paint
+            teamStat.totalPaint += body.paint
         }
 
         const timems = Date.now() - time

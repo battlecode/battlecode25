@@ -1,34 +1,37 @@
 import React from 'react'
-import assert from 'assert'
 import { useRound } from '../../../playback/GameRunner'
 import Round from '../../../playback/Round'
 import { LineChartDataPoint, QuickLineChart } from './quick-line-chart'
+import { TeamRoundStat } from '../../../playback/RoundStat'
 
 interface Props {
     active: boolean
-    property: string
+    property: keyof TeamRoundStat
     propertyDisplayName: string
 }
-function hasKey<O extends Object>(obj: O, key: PropertyKey): key is keyof O {
-    return key in obj
-}
 
-function getChartData(round: Round, property: string): LineChartDataPoint[] {
-    const values = [0, 1].map((index) =>
-        round.match.stats.map((roundStat) => {
-            const teamStat = roundStat.getTeamStat(round.match.game.teams[index])
-            assert(hasKey(teamStat, property), `TeamStat missing property '${property}' when rendering chart`)
-            return teamStat[property]
+function getChartData(round: Round, property: keyof TeamRoundStat): LineChartDataPoint[] {
+    const teams = round.match.game.teams
+
+    const result: LineChartDataPoint[] = []
+
+    // Sparser graph as datapoints increase
+    const interval = Math.ceil(round.roundNumber / 500)
+
+    for (let i = 0; i < round.roundNumber; i += interval) {
+        const roundStat = round.match.stats[i]
+
+        const team0Stat = roundStat.getTeamStat(teams[0])
+        const team1Stat = roundStat.getTeamStat(teams[1])
+
+        result.push({
+            round: i + 1,
+            team0: team0Stat[property] as number,
+            team1: team1Stat[property] as number
         })
-    )
+    }
 
-    return values[0].slice(0, round.roundNumber).map((value, index) => {
-        return {
-            round: index + 1,
-            team0: value as number,
-            team1: values[1][index] as number
-        }
-    })
+    return result
 }
 
 export const ResourceGraph: React.FC<Props> = (props: Props) => {
@@ -38,7 +41,7 @@ export const ResourceGraph: React.FC<Props> = (props: Props) => {
     return (
         <div className="mt-2 w-full">
             <h2 className="mx-auto text-center mb-2">{props.propertyDisplayName}</h2>
-            <QuickLineChart data={data} width={350} height={170} margin={{ top: 2, right: 20, bottom: 17, left: 30 }} />
+            <QuickLineChart data={data} width={350} height={170} margin={{ top: 2, right: 20, bottom: 17, left: 40 }} />
         </div>
     )
 }

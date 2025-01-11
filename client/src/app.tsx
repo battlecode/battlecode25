@@ -8,4 +8,10 @@ import '../style.css'
 
 const elem = document.getElementById('root')
 const root = ReactDom.createRoot(elem!)
-root.render(<BrowserRouter><AppContextProvider><MainPage /></AppContextProvider></BrowserRouter>)
+root.render(
+    <BrowserRouter>
+        <AppContextProvider>
+            <MainPage />
+        </AppContextProvider>
+    </BrowserRouter>
+)

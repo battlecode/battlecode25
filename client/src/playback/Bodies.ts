@@ -5,7 +5,7 @@ import Round from './Round'
 import * as renderUtils from '../util/RenderUtil'
 import { MapEditorBrush } from '../components/sidebar/map-editor/MapEditorBrush'
 import { StaticMap } from './Map'
-import { Vector } from './Vector'
+import { Vector, vectorDistSquared, vectorEq } from './Vector'
 import { Colors, currentColors } from '../colors'
 import {
     INDICATOR_DOT_SIZE,
@@ -145,21 +145,22 @@ export default class Bodies {
 
     draw(
         match: Match,
-        ctx: CanvasRenderingContext2D,
-        overlayCtx: CanvasRenderingContext2D,
+        bodyCtx: CanvasRenderingContext2D | null,
+        overlayCtx: CanvasRenderingContext2D | null,
         config: ClientConfig,
         selectedBodyID?: number,
         hoveredTile?: Vector
     ): void {
         for (const body of this.bodies.values()) {
-            body.draw(
-                match,
-                ctx,
-                overlayCtx,
-                config,
-                body.id === selectedBodyID,
-                body.pos.x === hoveredTile?.x && body.pos.y === hoveredTile?.y
-            )
+            if (bodyCtx) {
+                body.draw(match, bodyCtx)
+            }
+
+            const selected = selectedBodyID === body.id
+            const hovered = !!hoveredTile && vectorEq(body.pos, hoveredTile)
+            if (overlayCtx) {
+                body.drawOverlay(match, overlayCtx, config, selected, hovered)
+            }
         }
     }
 
@@ -245,40 +246,41 @@ export class Body {
         return this.game.robotTypeMetadata.get(this.robotType) ?? assert.fail('Robot missing metadata!')
     }
 
-    public draw(
+    public drawOverlay(
         match: Match,
         ctx: CanvasRenderingContext2D,
-        overlayCtx: CanvasRenderingContext2D,
         config: ClientConfig,
         selected: boolean,
         hovered: boolean
     ): void {
+        if (!this.game.playable) return
+
+        // Draw various statuses
+        const focused = selected || hovered
+        if (focused) {
+            this.drawPath(match, ctx)
+        }
+        if (focused || config.showAllRobotRadii) {
+            this.drawRadii(match, ctx, !selected)
+        }
+        if (focused || config.showAllIndicators) {
+            this.drawIndicators(match, ctx, !selected && !config.showAllIndicators)
+        }
+        if (focused || config.showHealthBars) {
+            this.drawHealthBar(match, ctx)
+        }
+        if (focused || config.showPaintBars) {
+            this.drawPaintBar(match, ctx, focused || config.showHealthBars)
+        }
+    }
+
+    public draw(match: Match, ctx: CanvasRenderingContext2D): void {
         const pos = this.getInterpolatedCoords(match)
         const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
 
         if (this.dead) ctx.globalAlpha = 0.5
         renderUtils.renderCenteredImageOrLoadingIndicator(ctx, getImageIfLoaded(this.imgPath), renderCoords, this.size)
         ctx.globalAlpha = 1
-
-        // Draw various statuses
-        const focused = selected || hovered
-        if (this.game.playable) {
-            if (focused) {
-                this.drawPath(match, overlayCtx)
-            }
-            if (focused || config.showAllRobotRadii) {
-                this.drawRadii(match, overlayCtx, !selected)
-            }
-            if (focused || config.showAllIndicators) {
-                this.drawIndicators(match, overlayCtx, !selected && !config.showAllIndicators)
-            }
-            if (focused || config.showHealthBars) {
-                this.drawHealthBar(match, overlayCtx)
-            }
-            if (focused || config.showPaintBars) {
-                this.drawPaintBar(match, overlayCtx, focused || config.showHealthBars)
-            }
-        }
     }
 
     private drawPath(match: Match, ctx: CanvasRenderingContext2D) {
@@ -570,16 +572,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.size = 1.5
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
-            super.drawLevel(match, ctx)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     },
 
@@ -594,16 +588,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.size = 1.5
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
-            super.drawLevel(match, ctx)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     },
 
@@ -618,16 +604,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.size = 1.5
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
-            super.drawLevel(match, ctx)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     },
 
@@ -641,15 +619,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/mopper_64x64.png`
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     },
 
@@ -663,15 +634,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/soldier_64x64.png`
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     },
 
@@ -685,15 +649,8 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
             this.imgPath = `robots/${this.team.colorName.toLowerCase()}/splasher_64x64.png`
         }
 
-        public draw(
-            match: Match,
-            ctx: CanvasRenderingContext2D,
-            overlayCtx: CanvasRenderingContext2D,
-            config: ClientConfig,
-            selected: boolean,
-            hovered: boolean
-        ): void {
-            super.draw(match, ctx, overlayCtx, config, selected, hovered)
+        public draw(match: Match, ctx: CanvasRenderingContext2D): void {
+            super.draw(match, ctx)
         }
     }
 }

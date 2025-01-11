@@ -138,6 +138,7 @@
         "pako": "^2.1.0",
         "path": "^0.12.7",
         "process": "^0.11.10",
+        "re-resizable": "^6.10.3",
         "react": "^18.2.0",
         "react-color": "^2.19.3",
         "react-custom-scrollbars-2": "^4.5.0",
