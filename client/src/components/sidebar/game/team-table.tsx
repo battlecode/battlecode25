@@ -110,7 +110,10 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
         ['Mopper', <UnitsIcon teamIdx={teamIdx} robotType="mopper" key="5" />]
     ]
 
-    let data: [string, number[]][] = [['Count', [0, 0, 0, 0, 0, 0]]]
+    let data: [string, number[]][] = [
+        ['Count', [0, 0, 0, 0, 0, 0]],
+        ['Paint', [0, 0, 0, 0, 0, 0]]
+    ]
     if (teamStat) {
         data = [
             [
@@ -118,6 +121,12 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({ teamStat, teamIdx }) => 
                 Object.values(schema.RobotType)
                     .filter((k) => typeof k === 'number' && k !== schema.RobotType.NONE)
                     .map((k) => teamStat.robotCounts[k as schema.RobotType])
+            ],
+            [
+                'Paint',
+                Object.values(schema.RobotType)
+                    .filter((k) => typeof k === 'number' && k !== schema.RobotType.NONE)
+                    .map((k) => teamStat.robotPaints[k as schema.RobotType])
             ]
         ]
     }

@@ -122,6 +122,8 @@ export const GamePage: React.FC<Props> = React.memo((props) => {
                         <ResourceGraph active={showStats} property="paintPercent" propertyDisplayName="Coverage %" />
                         <br />
                         <ResourceGraph active={showStats} property="moneyAmount" propertyDisplayName="Chips" />
+                        <br />
+                        <ResourceGraph active={showStats} property="totalPaint" propertyDisplayName="Paint" />
                     </div>
                 ) : (
                     <div>Select a game to see stats</div>
