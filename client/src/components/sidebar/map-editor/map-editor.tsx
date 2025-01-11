@@ -81,6 +81,7 @@ export const MapEditorPage: React.FC<Props> = (props) => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
                 handleUndo()
+                event.preventDefault()
             }
         }
         window.addEventListener('keydown', handleKeyDown)
