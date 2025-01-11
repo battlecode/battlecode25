@@ -411,7 +411,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             const team = found[1]
             const id = Number(found[2])
             const round = Number(found[3])
-            const ogText = found[4]
+            const ogText = found[4].replace(/\n/g, ' ')
 
             return (
                 <div className="flex items-center gap-1 sele" style={props.style}>
@@ -421,9 +421,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
                     >
                         {`[Team ${team}, ID #${id}, Round ${round}]`}
                     </span>
-                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
-                        {ogText}
-                    </span>
+                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-pre'}>{ogText}</span>
                 </div>
             )
         }
