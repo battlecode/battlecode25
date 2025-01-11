@@ -393,6 +393,11 @@ export const Console: React.FC<Props> = ({ lines }) => {
         setPopout(false)
         GameRunner.jumpToRound(round)
         GameRenderer.setSelectedRobot(id)
+
+        // If turn playback is enabled, focus the robot's exact turn as well
+        if (GameRunner.match?.playbackPerTurn) {
+            GameRunner.jumpToRobotTurn(id)
+        }
     }
 
     const ConsoleRow = (props: { index: number; style: any }) => {

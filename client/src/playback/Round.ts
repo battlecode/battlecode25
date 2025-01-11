@@ -86,6 +86,21 @@ export default class Round {
     }
 
     /**
+     *  Jumps to a specific robot's turn in the round, if it exists.
+     */
+    public jumpToRobotTurn(robotId: number): void {
+        if (!this.currentDelta) return // Final round does not have a delta, so there is nothing to jump to
+
+        for (let i = 0; i < this.currentDelta.turnsLength(); i++) {
+            const turn = this.currentDelta.turns(i)!
+            if (turn.robotId() === robotId) {
+                this.jumpToTurn(i + 1)
+                return
+            }
+        }
+    }
+
+    /**
      * Step the current turn within the current delta.
      */
     private stepTurn(): void {

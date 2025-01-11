@@ -225,7 +225,7 @@ export default class Match {
     }
 
     /**
-     * Jump to a turn within the current round's turns.R
+     * Jump to a turn within the current round's turns.
      */
     public _jumpToTurn(turn: number): void {
         if (!this.game.playable) return
@@ -233,6 +233,17 @@ export default class Match {
         this._roundSimulation()
 
         this.currentRound.jumpToTurn(turn)
+    }
+
+    /**
+     * Jump to the turn of a specific robot within the current round's turns, if it exists.
+     */
+    public _jumpToRobotTurn(robotId: number): void {
+        if (!this.game.playable) return
+
+        this._roundSimulation()
+
+        this.currentRound.jumpToRobotTurn(robotId)
     }
 
     private _updateSimulationRoundsByTime(deltaTime: number): void {
