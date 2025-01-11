@@ -13,6 +13,7 @@ import { RingBuffer } from '../../../util/ring-buffer'
 import { ProfilerDialog } from './profiler'
 import { GameRenderer } from '../../../playback/GameRenderer'
 import GameRunner from '../../../playback/GameRunner'
+import { Resizable } from 're-resizable'
 
 type RunnerPageProps = {
     open: boolean
@@ -286,7 +287,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
                 <label>Team A</label>
                 <Select className="w-full" value={teamA ?? 'NONE'} onChange={(e) => onChangeA(e)}>
                     {teamA === undefined && <option value={'NONE'}>Select a team</option>}
-                    {[...options].map((t) => (
+                    {[...options].sort().map((t) => (
                         <option key={t} value={t}>
                             {t}
                         </option>
@@ -309,7 +310,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
                 <label className="ml-auto">Team B</label>
                 <Select className="w-full" value={teamB ?? 'NONE'} onChange={(e) => onChangeB(e)}>
                     {teamB === undefined && <option value={'NONE'}>Select a team</option>}
-                    {[...options].map((t) => (
+                    {[...options].sort().map((t) => (
                         <option key={t} value={t}>
                             {t}
                         </option>
@@ -331,21 +332,36 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
     return (
         <div className="flex flex-col mt-3">
             <label>Maps</label>
-            <div className="flex flex-col border border-white py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
-                {[...availableMaps].map((m) => {
-                    const selected = maps.has(m)
-                    return (
-                        <div
-                            key={m}
-                            className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
-                            onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
-                        >
-                            {m}
-                            <input type={'checkbox'} readOnly checked={selected} className="pointer-events-none mr-2" />
-                        </div>
-                    )
-                })}
-            </div>
+            <Resizable
+                minWidth="100%"
+                maxWidth="100%"
+                minHeight={50}
+                defaultSize={{
+                    width: '100%',
+                    height: 120
+                }}
+            >
+                <div className="flex flex-col border border-white py-1 px-1 h-full rounded-md overflow-y-auto">
+                    {[...availableMaps].sort().map((m) => {
+                        const selected = maps.has(m)
+                        return (
+                            <div
+                                key={m}
+                                className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
+                                onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
+                            >
+                                {m}
+                                <input
+                                    type={'checkbox'}
+                                    readOnly
+                                    checked={selected}
+                                    className="pointer-events-none mr-2"
+                                />
+                            </div>
+                        )
+                    })}
+                </div>
+            </Resizable>
         </div>
     )
 }
