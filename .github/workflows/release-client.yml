@@ -28,7 +28,7 @@ jobs:
             tauri-target: "universal-apple-darwin"
             tauri-copy-path: "bundle/macos/*.app"
             electron-module-name: "UNUSED"
-          - platform-name: "ubuntu-latest"
+          - platform-name: "ubuntu-22.04"
             build-name: "linux"
             tauri-target: "x86_64-unknown-linux-gnu"
             tauri-copy-path: "bundle/appimage/*.AppImage"
