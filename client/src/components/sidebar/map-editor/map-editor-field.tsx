@@ -46,6 +46,7 @@ export const MapEditorBrushRowField: React.FC<Props> = (props: Props) => {
         case MapEditorBrushFieldType.TEAM:
             field = (
                 <Toggle
+                    initialValue={props.field.value}
                     options={{
                         [TEAM_COLOR_NAMES[0]]: { value: 0, selectedClass: 'bg-team0 text-black' },
                         [TEAM_COLOR_NAMES[1]]: { value: 1, selectedClass: 'bg-team1 text-black' }

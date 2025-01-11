@@ -8,13 +8,14 @@ interface OptionProp {
 }
 
 interface Props {
+    initialValue?: string
     options: Record<string, OptionProp>
     onChange: (value: any) => void
     flipOnRightClickCanvas?: boolean
 }
 
 export const Toggle: React.FC<Props> = (props: Props) => {
-    const [value, setValue] = React.useState(Object.values(props.options)[0].value)
+    const [value, setValue] = React.useState(props.initialValue ?? Object.values(props.options)[0].value)
     const { canvasRightClick } = GameRenderer.useCanvasClickEvents()
 
     const onClick = (val: any) => {

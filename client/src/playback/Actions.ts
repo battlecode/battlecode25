@@ -40,7 +40,13 @@ export default class Actions {
         for (let i = 0; i < this.actions.length; i++) {
             this.actions[i].duration--
             if (this.actions[i].duration == 0) {
-                this.actions.splice(i, 1)
+                // If action render order matters, use this (slower)
+                //this.actions.splice(i, 1)
+
+                // Otherwise, this is faster
+                this.actions[i] = this.actions[this.actions.length - 1]
+                this.actions.pop()
+
                 i--
             }
         }

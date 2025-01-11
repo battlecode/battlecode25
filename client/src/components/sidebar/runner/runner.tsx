@@ -13,6 +13,7 @@ import { RingBuffer } from '../../../util/ring-buffer'
 import { ProfilerDialog } from './profiler'
 import { GameRenderer } from '../../../playback/GameRenderer'
 import GameRunner from '../../../playback/GameRunner'
+import { Resizable } from 're-resizable'
 
 type RunnerPageProps = {
     open: boolean
@@ -91,14 +92,20 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
 
     const MemoConsole = React.useMemo(() => <Console lines={consoleLines} />, [consoleLines.effectiveLength()])
 
-    if (!open) return null
+    if (open && !nativeAPI) return <>Run the client locally to use the runner</>
 
-    if (!nativeAPI) return <>Run the client locally to use the runner</>
+    /* Keep the component mounted but hidden when !open so we retain any locally resized/edited elements */
 
     const lastLogLine = consoleLines.get(consoleLines.length() - 1)
     const runDisabled = !teamA || !teamB || maps.size === 0 || !langVersion
     return (
-        <div className={'flex flex-col grow ' + (scaffoldLoading ? 'opacity-50 pointer-events-none' : '')}>
+        <div
+            className={
+                'flex flex-col grow' +
+                (scaffoldLoading ? ' opacity-50 pointer-events-none' : '') +
+                (open ? '' : ' hidden')
+            }
+        >
             {!setup ? (
                 <>
                     {error && <div className="text-red">{`Setup Error: ${error}`}</div>}
@@ -286,7 +293,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
                 <label>Team A</label>
                 <Select className="w-full" value={teamA ?? 'NONE'} onChange={(e) => onChangeA(e)}>
                     {teamA === undefined && <option value={'NONE'}>Select a team</option>}
-                    {[...options].map((t) => (
+                    {[...options].sort().map((t) => (
                         <option key={t} value={t}>
                             {t}
                         </option>
@@ -309,7 +316,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
                 <label className="ml-auto">Team B</label>
                 <Select className="w-full" value={teamB ?? 'NONE'} onChange={(e) => onChangeB(e)}>
                     {teamB === undefined && <option value={'NONE'}>Select a team</option>}
-                    {[...options].map((t) => (
+                    {[...options].sort().map((t) => (
                         <option key={t} value={t}>
                             {t}
                         </option>
@@ -331,21 +338,36 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
     return (
         <div className="flex flex-col mt-3">
             <label>Maps</label>
-            <div className="flex flex-col border border-white py-1 px-1 rounded-md max-h-[190px] overflow-y-auto">
-                {[...availableMaps].map((m) => {
-                    const selected = maps.has(m)
-                    return (
-                        <div
-                            key={m}
-                            className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
-                            onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
-                        >
-                            {m}
-                            <input type={'checkbox'} readOnly checked={selected} className="pointer-events-none mr-2" />
-                        </div>
-                    )
-                })}
-            </div>
+            <Resizable
+                minWidth="100%"
+                maxWidth="100%"
+                minHeight={50}
+                defaultSize={{
+                    width: '100%',
+                    height: 120
+                }}
+            >
+                <div className="flex flex-col border border-white py-1 px-1 h-full rounded-md overflow-y-auto">
+                    {[...availableMaps].sort().map((m) => {
+                        const selected = maps.has(m)
+                        return (
+                            <div
+                                key={m}
+                                className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
+                                onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
+                            >
+                                {m}
+                                <input
+                                    type={'checkbox'}
+                                    readOnly
+                                    checked={selected}
+                                    className="pointer-events-none mr-2"
+                                />
+                            </div>
+                        )
+                    })}
+                </div>
+            </Resizable>
         </div>
     )
 }
@@ -377,6 +399,11 @@ export const Console: React.FC<Props> = ({ lines }) => {
         setPopout(false)
         GameRunner.jumpToRound(round)
         GameRenderer.setSelectedRobot(id)
+
+        // If turn playback is enabled, focus the robot's exact turn as well
+        if (GameRunner.match?.playbackPerTurn) {
+            GameRunner.jumpToRobotTurn(id)
+        }
     }
 
     const ConsoleRow = (props: { index: number; style: any }) => {
@@ -390,7 +417,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
             const team = found[1]
             const id = Number(found[2])
             const round = Number(found[3])
-            const ogText = found[4]
+            const ogText = found[4].replace(/\n/g, ' ')
 
             return (
                 <div className="flex items-center gap-1 sele" style={props.style}>
@@ -400,9 +427,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
                     >
                         {`[Team ${team}, ID #${id}, Round ${round}]`}
                     </span>
-                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-nowrap'}>
-                        {ogText}
-                    </span>
+                    <span className={getLineClass(lines.get(props.index)!) + ' text-xs whitespace-pre'}>{ogText}</span>
                 </div>
             )
         }

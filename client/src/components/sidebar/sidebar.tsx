@@ -213,7 +213,7 @@ export const Sidebar: React.FC = () => {
                             </div>
                         </>
                     )}
-                    <div className="h-full overflow-y-scroll overflow-x-hidden">
+                    <div className="h-full overflow-y-auto overflow-x-hidden">
                         <GamePage open={open && page == PageType.GAME} />
                         <QueuePage open={open && page == PageType.QUEUE} />
                         <RunnerPage open={open && page == PageType.RUNNER} scaffold={scaffold} />

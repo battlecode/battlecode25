@@ -172,6 +172,14 @@ class GameRunnerClass {
         this._trigger(this._turnListeners)
     }
 
+    jumpToRobotTurn(robotId: number) {
+        if (!this.match) return
+        // explicit rerender at the end so a render doesnt occur between these two steps
+        this.match._jumpToRobotTurn(robotId)
+        GameRenderer.render()
+        this._trigger(this._turnListeners)
+    }
+
     jumpToStart() {
         if (!this.match) return
         // explicit rerender at the end so a render doesnt occur between these two steps
