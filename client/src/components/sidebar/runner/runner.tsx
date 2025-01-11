@@ -92,14 +92,20 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
 
     const MemoConsole = React.useMemo(() => <Console lines={consoleLines} />, [consoleLines.effectiveLength()])
 
-    if (!open) return null
+    if (open && !nativeAPI) return <>Run the client locally to use the runner</>
 
-    if (!nativeAPI) return <>Run the client locally to use the runner</>
+    /* Keep the component mounted but hidden when !open so we retain any locally resized/edited elements */
 
     const lastLogLine = consoleLines.get(consoleLines.length() - 1)
     const runDisabled = !teamA || !teamB || maps.size === 0 || !langVersion
     return (
-        <div className={'flex flex-col grow ' + (scaffoldLoading ? 'opacity-50 pointer-events-none' : '')}>
+        <div
+            className={
+                'flex flex-col grow' +
+                (scaffoldLoading ? ' opacity-50 pointer-events-none' : '') +
+                (open ? '' : ' hidden')
+            }
+        >
             {!setup ? (
                 <>
                     {error && <div className="text-red">{`Setup Error: ${error}`}</div>}
