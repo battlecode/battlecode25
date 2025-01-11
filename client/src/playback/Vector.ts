@@ -6,6 +6,7 @@ export interface Vector {
 export const getEmptyVector = () => ({ x: 0, y: 0 }) as Vector
 export const vectorLength = (a: Vector) => Math.sqrt(a.x * a.x + a.y * a.y)
 export const vectorLengthSquared = (a: Vector) => a.x * a.x + a.y * a.y
+export const vectorEq = (a: Vector, b: Vector) => a.x === b.x && a.y === b.y
 export const vectorDot = (a: Vector, b: Vector) => a.x * b.x + a.y * b.y
 export const vectorAdd = (a: Vector, b: Vector) => ({ x: a.x + b.x, y: a.y + b.y })
 export const vectorSub = (a: Vector, b: Vector) => ({ x: a.x - b.x, y: a.y - b.y })

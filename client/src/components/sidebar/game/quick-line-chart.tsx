@@ -40,8 +40,14 @@ export const QuickLineChart: React.FC<LineChartProps> = ({
 
         setCanvasResolution(canvas, width, height, resolution)
 
-        const max = Math.max(...data.map((d) => Math.max(d.team0, d.team1)))
-        const { xScale, yScale, innerWidth, innerHeight } = getAxes(width, height, margin, { x: data.length, y: max })
+        let maxX = -9999999
+        let maxY = -9999999
+        for (const d of data) {
+            maxX = Math.max(maxX, d.round)
+            maxY = Math.max(maxY, Math.max(d.team0, d.team1))
+        }
+
+        const { xScale, yScale, innerWidth, innerHeight } = getAxes(width, height, margin, { x: maxX, y: maxY })
 
         context.clearRect(0, 0, width, height)
 
@@ -65,11 +71,11 @@ export const QuickLineChart: React.FC<LineChartProps> = ({
             height,
             margin,
             {
-                range: { min: 0, max: data.length },
+                range: { min: 0, max: maxX },
                 options: { textColor: 'white', lineColor: 'white' }
             },
             {
-                range: { min: 0, max: max },
+                range: { min: 0, max: maxY },
                 options: { textColor: 'white', lineColor: 'white' }
             }
         )
