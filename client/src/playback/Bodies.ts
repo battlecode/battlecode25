@@ -574,6 +574,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         public draw(match: Match, ctx: CanvasRenderingContext2D): void {
             super.draw(match, ctx)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -590,6 +591,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         public draw(match: Match, ctx: CanvasRenderingContext2D): void {
             super.draw(match, ctx)
+            super.drawLevel(match, ctx)
         }
     },
 
@@ -606,6 +608,7 @@ export const BODY_DEFINITIONS: Record<schema.RobotType, typeof Body> = {
 
         public draw(match: Match, ctx: CanvasRenderingContext2D): void {
             super.draw(match, ctx)
+            super.drawLevel(match, ctx)
         }
     },
 
