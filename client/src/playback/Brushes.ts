@@ -212,7 +212,8 @@ export class PaintBrush extends SymmetricMapEditorBrush<CurrentMap> {
             const pos = this.map.indexToLocation(idx)
             const ruin = this.map.staticMap.ruins.find((r) => r.x === pos.x && r.y === pos.y)
             const wall = this.map.staticMap.walls[idx]
-            if (ruin || wall) return true
+            const body = this.bodies.getBodyAtLocation(pos.x, pos.y)
+            if (body || ruin || wall) return true
             this.map.paint[idx] = value
             this.map.staticMap.initialPaint[idx] = this.map.paint[idx]
         }
