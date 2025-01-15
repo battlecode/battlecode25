@@ -10,11 +10,34 @@ export default class Tournament {
     public readonly minRound: number = 0
     public readonly participantCount: number
 
-    constructor(raw_games: JsonTournamentGame[]) {
+    constructor(rawGames: JsonTournamentGame[]) {
+        if (rawGames.length == 0) {
+            this.games = [
+                {
+                    id: 0,
+                    teams: ['A', 'B'],
+                    teamIDs: [1, 2],
+                    dependsOn: [undefined, undefined],
+                    winnerIndex: 0,
+                    round: 1,
+                    viewed: false,
+                    gameFile: '',
+                    displayOrder: 0
+                }
+            ]
+            this.gamesByTeamID = new Map()
+            this.name = 'Local Tournament'
+            this.maxRound = 1
+            this.participantCount = 2
+            this.winnersBracketRoot = this.games[0]
+
+            return
+        }
+
         let nextID = -1
         let name = ''
         let participants = new Set()
-        this.games = raw_games
+        this.games = rawGames
             // .filter((game) => game.tournament_round.release_status === 2)
             .map((game) => {
                 name = game.tournament_round.tournament

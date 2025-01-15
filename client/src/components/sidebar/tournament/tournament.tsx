@@ -81,7 +81,6 @@ export const TournamentPage: React.FC<TournamentPageProps> = ({ open }) => {
         if (!tournament) return
 
         // Reset state if it was not overridden
-        console.log(tournamentShowLosers)
         context.setState((prevState) => ({
             ...prevState,
             tournamentState: {

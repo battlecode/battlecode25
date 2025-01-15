@@ -19,7 +19,7 @@ export const TournamentRenderer: React.FC = () => {
     return (
         <div className="w-full h-screen relative">
             <Space ref={spaceRef} treatTwoFingerTrackPadGesturesLikeTouch={false}>
-                {tournament && spaceRef.current ? (
+                {tournament ? (
                     <TournamentTree
                         tournament={tournament}
                         tournamentState={tournamentState}
@@ -38,7 +38,7 @@ export const TournamentRenderer: React.FC = () => {
 interface TournamentTreeProps {
     tournament: Tournament
     tournamentState: TournamentState
-    spaceRef: Space
+    spaceRef: Space | null
     winnerStart: number
     loserStart: number
 }
@@ -85,7 +85,7 @@ const TournamentTree: React.FC<TournamentTreeProps> = (props) => {
 interface TournamentGameWrapperProps {
     game: TournamentGame
     tournamentState: TournamentState
-    spaceRef: Space
+    spaceRef: Space | null
     winnerStart: number
     loserStart: number
 }
@@ -106,7 +106,7 @@ const TournamentGameWrapper: React.FC<TournamentGameWrapperProps> = (props) => {
             if (!wrapperRef.current) return
 
             const wrapperRect = wrapperRef.current.getBoundingClientRect()
-            const scale = props.spaceRef.viewPort?.zoomFactor ?? 1
+            const scale = props.spaceRef?.viewPort?.zoomFactor ?? 1
             const startX = wrapperRect.x + wrapperRect.width / 2
             const startY = wrapperRect.y + wrapperRect.height - 17.45
 
