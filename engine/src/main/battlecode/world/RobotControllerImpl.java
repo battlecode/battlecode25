@@ -1036,6 +1036,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanSendMessage(loc, message);
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
+        this.robot.incremenetMessageCount();
         // this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
     }
 
@@ -1072,13 +1073,14 @@ public final class RobotControllerImpl implements RobotController {
     public void broadcastMessage(int messageContent) throws GameActionException{
         assertCanBroadcastMessage();
         Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
-        MapLocation[] allLocs = getAllLocationsWithinRadiusSquared(getLocation(), GameConstants.BROADCAST_RADIUS_SQUARED);
+        MapLocation[] allLocs = this.gameWorld.getAllLocationsWithinRadiusSquared(getLocation(), GameConstants.BROADCAST_RADIUS_SQUARED);
         for(MapLocation loc : allLocs) {
             InternalRobot robot = this.gameWorld.getRobot(loc);
-            if(robot != null && robot.getType().isTowerType() && robot.getTeam() == getTeam()) {
+            if(robot != null && robot.getType().isTowerType() && robot.getTeam() == getTeam() && robot != this.robot) {
                 this.robot.sendMessage(robot, message);
             }
         }
+        this.robot.incremenetMessageCount();
     }
 
     // ***********************************
