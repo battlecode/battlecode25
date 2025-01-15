@@ -272,6 +272,16 @@ export class Body {
         if (focused || config.showPaintBars) {
             this.drawPaintBar(match, ctx, focused || config.showHealthBars)
         }
+
+        // Draw bytecode overage indicator
+        if (config.showExceededBytecode && this.bytecodesUsed >= this.metadata.bytecodeLimit()) {
+            const pos = this.getInterpolatedCoords(match)
+            const renderCoords = renderUtils.getRenderCoords(pos.x, pos.y, match.currentRound.map.staticMap.dimension)
+            ctx.globalAlpha = 0.5
+            ctx.fillStyle = 'red'
+            ctx.fillRect(renderCoords.x, renderCoords.y, 1, 1)
+            ctx.globalAlpha = 1.0
+        }
     }
 
     public draw(match: Match, ctx: CanvasRenderingContext2D): void {
@@ -494,7 +504,9 @@ export class Body {
             `Location: (${this.pos.x}, ${this.pos.y})`,
             `Move Cooldown: ${this.moveCooldown}`,
             `Action Cooldown: ${this.actionCooldown}`,
-            `Bytecodes Used: ${this.bytecodesUsed}`
+            `Bytecodes Used: ${this.bytecodesUsed}${
+                this.bytecodesUsed >= this.metadata.bytecodeLimit() ? ' <EXCEEDED!>' : ''
+            }`
         ]
         if (this.indicatorString != '') {
             defaultInfo.push(`Indicator: ${this.indicatorString}`)
