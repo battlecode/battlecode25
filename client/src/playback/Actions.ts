@@ -351,8 +351,8 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
             const src = round.bodies.getById(this.robotId)
             const dst = round.bodies.getById(this.actionData.id())
 
-            src.paint -= amount
-            dst.paint += amount
+            src.paint = Math.max(src.paint - amount, 0)
+            dst.paint = Math.min(dst.paint + amount, dst.maxPaint)
         }
         draw(match: Match, ctx: CanvasRenderingContext2D): void {
             if (this.actionData.amount() === 0) {
