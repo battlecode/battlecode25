@@ -1036,7 +1036,7 @@ public final class RobotControllerImpl implements RobotController {
         assertCanSendMessage(loc, message);
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
-        this.robot.incremenetMessageCount();
+        this.robot.incrementMessageCount();
         // this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
     }
 
@@ -1080,7 +1080,7 @@ public final class RobotControllerImpl implements RobotController {
                 this.robot.sendMessage(robot, message);
             }
         }
-        this.robot.incremenetMessageCount();
+        this.robot.incrementMessageCount();
     }
 
     // ***********************************

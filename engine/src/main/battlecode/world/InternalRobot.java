@@ -555,6 +555,9 @@ public class InternalRobot implements Comparable<InternalRobot> {
 
     public void sendMessage(InternalRobot robot, Message message) {
         robot.addMessage(message.copy());
+    }
+
+    public void incrementMessageCount() {
         this.sentMessagesCount++;
     }
 
