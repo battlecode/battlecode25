@@ -1,21 +1,21 @@
 package battlecode.common;
 
 public enum UnitType {
-    SOLDIER(200, 250, 5, 250, -1, 200, 10, 9, 50, -1, 0, 0),
-    SPLASHER(300, 400, 50, 150, -1, 300, 50, 4, -1, 100, 0, 0),
-    MOPPER(100, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0),
+    SOLDIER(200, 250, 5, 250, -1, 200, 10, 9, 50, -1, 0, 0, 0),
+    SPLASHER(300, 400, 50, 150, -1, 300, 50, 4, -1, 100, 0, 0, 0),
+    MOPPER(100, 300, 0, 50, -1, 100, 30, 2, -1, -1, 0, 0, 0),
     
-    LEVEL_ONE_PAINT_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0),
-    LEVEL_TWO_PAINT_TOWER(0, 2500, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0),
-    LEVEL_THREE_PAINT_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0),
+    LEVEL_ONE_PAINT_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 5, 0, 0),
+    LEVEL_TWO_PAINT_TOWER(0, 2500, 0, 1500, 2, 1000, 10, 9, 20, 10, 10, 0, 0),
+    LEVEL_THREE_PAINT_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 15, 0, 0),
 
-    LEVEL_ONE_MONEY_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 20),
-    LEVEL_TWO_MONEY_TOWER(0, 2500,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 30),
-    LEVEL_THREE_MONEY_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 40),
+    LEVEL_ONE_MONEY_TOWER(0, 1000,  0, 1000, 1, 1000, 10, 9, 20, 10, 0, 20, 0),
+    LEVEL_TWO_MONEY_TOWER(0, 2500,  0, 1500, 2, 1000, 10, 9, 20, 10, 0, 30, 0),
+    LEVEL_THREE_MONEY_TOWER(0, 5000, 0, 2000, 3, 1000, 10, 9, 20, 10, 0, 40, 0),
 
-    LEVEL_ONE_DEFENSE_TOWER(0, 1000,  0, 2000, 1, 1000, 10, 16, 40, 20, 0, 0),
-    LEVEL_TWO_DEFENSE_TOWER(0, 2500,  0, 2500, 2, 1000, 10, 16, 50, 25, 0, 0),
-    LEVEL_THREE_DEFENSE_TOWER(0, 5000, 0, 3000, 3, 1000, 10, 16, 60, 30, 0, 0);
+    LEVEL_ONE_DEFENSE_TOWER(0, 1000,  0, 2000, 1, 1000, 10, 16, 40, 20, 0, 0, 20),
+    LEVEL_TWO_DEFENSE_TOWER(0, 2500,  0, 2500, 2, 1000, 10, 16, 50, 25, 0, 0, 30),
+    LEVEL_THREE_DEFENSE_TOWER(0, 5000, 0, 3000, 3, 1000, 10, 16, 60, 30, 0, 0, 40);
 
 
     // the paint cost to build the unit
@@ -54,6 +54,9 @@ public enum UnitType {
     // how much money the unit generates per turn
     public final int moneyPerTurn;
 
+    // how much money the unit earns from a successful attack (attack that hits at least one unit)
+    public final int attackMoneyBonus;
+
     public boolean isRobotType(){
         return this == SOLDIER || this == SPLASHER || this == MOPPER;
     }
@@ -90,7 +93,7 @@ public enum UnitType {
         }
     }
 
-    UnitType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn) {
+    UnitType(int paintCost, int moneyCost, int attackCost, int health, int level, int paintCapacity, int actionCooldown, int actionRadiusSquared, int attackStrength, int aoeAttackStrength, int paintPerTurn, int moneyPerTurn, int attackMoneyBonus) {
         this.paintCost = paintCost;
         this.moneyCost = moneyCost;
         this.attackCost = attackCost;
@@ -103,5 +106,6 @@ public enum UnitType {
         this.aoeAttackStrength = aoeAttackStrength;
         this.paintPerTurn = paintPerTurn;
         this.moneyPerTurn = moneyPerTurn;
+        this.attackMoneyBonus = attackMoneyBonus;
     }
 }

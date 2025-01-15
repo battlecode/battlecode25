@@ -797,6 +797,24 @@ public interface RobotController {
     void sendMessage(MapLocation loc, int messageContent) throws GameActionException;
 
     /**
+     * Returns true if this tower can broadcast a message. You can broadcast a message
+     * if this robot is a tower and the tower has not yet sent the maximum number of messages
+     * this round (broadcasting a message to other towers counts as one message sent, even
+     * if multiple towers receive the message).
+     * @return Whether this robot can broadcast a message
+     */
+    boolean canBroadcastMessage();
+
+    /**
+     * Broadcasts a message to all friendly towers within the broadcasting radius. This works the same
+     * as sendMessage, but it can only be performed by towers and sends the message to all friendly
+     * towers within range simultaneously. The towers need not be connected by paint to receive the message.
+     * @param messageContent The message to broadcast.
+     * @throws GameActionException If the message can't be sent
+     */
+    void broadcastMessage(int messageContent) throws GameActionException;
+
+    /**
      * Reads all messages sent to this unit within the past 5 rounds if roundNum = -1, or only
      * messages sent from the specified round otherwise
      * 
