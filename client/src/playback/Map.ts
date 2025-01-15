@@ -194,8 +194,8 @@ export class CurrentMap {
             ctx.lineWidth = 0.03
             this.resourcePatterns.forEach((srp) => {
                 const topLeftCoords = renderUtils.getRenderCoords(srp.center.x - 2, srp.center.y + 2, this.dimension)
-                const roundsRemaining = Math.max(srp.createRound + 50 - match.currentRound.roundNumber, 0)
-                if (roundsRemaining > 0 && config.showSRPText) {
+                const roundsRemaining = Math.max(srp.createRound + 50 - match.currentRound.roundNumber, -1)
+                if (roundsRemaining >= 0 && config.showSRPText) {
                     const label = roundsRemaining.toString()
                     ctx.fillStyle = 'white'
                     ctx.textAlign = 'right'
@@ -208,7 +208,7 @@ export class CurrentMap {
                     ctx.shadowColor = ''
                     ctx.shadowBlur = 0
                     ctx.textAlign = 'start'
-                } else if (roundsRemaining === 0 && config.showSRPOutlines) {
+                } else if (roundsRemaining === -1 && config.showSRPOutlines) {
                     ctx.strokeStyle = teamColors[srp.teamId - 1]
                     ctx.strokeRect(topLeftCoords.x, topLeftCoords.y, 5, 5)
                 }
