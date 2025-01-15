@@ -134,6 +134,9 @@ public class GameConstants {
     /** The percent of the defense tower damage buff that is applied to AoE attacks */
     public static final int DEFENSE_ATTACK_BUFF_AOE_EFFECTIVENESS = 0;
 
+    /** DEPRECATED: See NO_PAINT_DAMAGE */
+    public static final int MAX_TURNS_WITHOUT_PAINT = 10;
+
     /** Percent of paint capacity at which a robot begins to face increased cooldowns */
     public static final int INCREASED_COOLDOWN_THRESHOLD = 50;
 
