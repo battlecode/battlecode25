@@ -796,6 +796,10 @@ public final class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT, "Not enough money to complete resource pattern");
         }
 
+        if(this.gameWorld.hasResourcePatternCenter(loc, getTeam())) {
+            throw new GameActionException(CANT_DO_THAT, "Can't complete a resource pattern that has already been completed.");
+        }
+
         if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
@@ -825,7 +829,7 @@ public final class RobotControllerImpl implements RobotController {
     public void completeResourcePattern(MapLocation loc) throws GameActionException {
         assertCanCompleteResourcePattern(loc);
         this.gameWorld.completeResourcePattern(getTeam(), loc);
-        this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), GameConstants.COMPLETE_RESOURCE_PATTERN_COST);
+        this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), -GameConstants.COMPLETE_RESOURCE_PATTERN_COST);
         this.gameWorld.getMatchMaker().addCompleteResourcePatternAction(loc);
     }
 
