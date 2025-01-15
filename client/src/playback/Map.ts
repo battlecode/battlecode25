@@ -25,10 +25,17 @@ type SchemaPacket = {
     ruinsOffset: number
 }
 
+type ResourcePatternData = {
+    teamId: number
+    center: Vector
+    createRound: number
+}
+
 export class CurrentMap {
     public readonly staticMap: StaticMap
     public readonly paint: Int8Array
     public readonly markers: [Int8Array, Int8Array] // Each team has markers
+    public readonly resourcePatterns: ResourcePatternData[]
 
     get width(): number {
         return this.dimension.width
@@ -48,12 +55,16 @@ export class CurrentMap {
             this.staticMap = from
             this.paint = new Int8Array(from.initialPaint)
             this.markers = [new Int8Array(this.width * this.height), new Int8Array(this.width * this.height)]
+            this.resourcePatterns = []
         } else {
             // Create current map from current map (copy)
 
             this.staticMap = from.staticMap
             this.paint = new Int8Array(from.paint)
             this.markers = [new Int8Array(from.markers[0]), new Int8Array(from.markers[1])]
+
+            // Assumes ResourcePatternData is immutable
+            this.resourcePatterns = [...from.resourcePatterns]
         }
     }
 
@@ -78,9 +89,34 @@ export class CurrentMap {
     }
 
     /**
-     * Mutates this currentMap to reflect the given turn.
+     * Mutates this currentMap to reflect the given round.
      */
-    applyTurnDelta(turn: schema.Turn): void {}
+    applyRoundDelta(round: Round, delta: schema.Round | null): void {
+        // Update resource patterns and remove if they have been broken
+        const patternMask = 28873275
+        for (let i = 0; i < this.resourcePatterns.length; i++) {
+            const srp = this.resourcePatterns[i]
+            let patternIdx = 0
+            let patternFailed = false
+            for (let y = srp.center.y + 2; y >= srp.center.y - 2; y--) {
+                for (let x = srp.center.x - 2; x <= srp.center.x + 2; x++) {
+                    const idx = this.locationToIndex(x, y)
+                    const expectedPaint = ((patternMask >> patternIdx) & 1) + (srp.teamId - 1) * 2 + 1
+                    const actualPaint = this.paint[idx]
+                    if (actualPaint !== expectedPaint) {
+                        this.resourcePatterns[i] = this.resourcePatterns[this.resourcePatterns.length - 1]
+                        this.resourcePatterns.pop()
+                        i--
+                        patternFailed = true
+                        break
+                    }
+                    patternIdx++
+                }
+
+                if (patternFailed) break
+            }
+        }
+    }
 
     draw(
         match: Match,
@@ -152,6 +188,32 @@ export class CurrentMap {
                 }
             }
         }
+
+        if (config.showSRPOutlines || config.showSRPText) {
+            ctx.globalAlpha = 1
+            ctx.lineWidth = 0.03
+            this.resourcePatterns.forEach((srp) => {
+                const topLeftCoords = renderUtils.getRenderCoords(srp.center.x - 2, srp.center.y + 2, this.dimension)
+                const roundsRemaining = Math.max(srp.createRound + 50 - match.currentRound.roundNumber, -1)
+                if (roundsRemaining >= 0 && config.showSRPText) {
+                    const label = roundsRemaining.toString()
+                    ctx.fillStyle = 'white'
+                    ctx.textAlign = 'right'
+                    ctx.font = '1px monospace'
+                    ctx.shadowColor = 'black'
+                    ctx.shadowBlur = 4
+                    ctx.scale(0.4, 0.4)
+                    ctx.fillText(label, (topLeftCoords.x + 3) * 2.5, (topLeftCoords.y + 2.5) * 2.5)
+                    ctx.scale(2.5, 2.5)
+                    ctx.shadowColor = ''
+                    ctx.shadowBlur = 0
+                    ctx.textAlign = 'start'
+                } else if (roundsRemaining === -1 && config.showSRPOutlines) {
+                    ctx.strokeStyle = teamColors[srp.teamId - 1]
+                    ctx.strokeRect(topLeftCoords.x, topLeftCoords.y, 5, 5)
+                }
+            })
+        }
     }
 
     getTooltipInfo(square: Vector, match: Match): string[] {
@@ -163,6 +225,7 @@ export class CurrentMap {
         const paint = this.paint[schemaIdx]
         const wall = this.staticMap.walls[schemaIdx]
         const ruin = this.staticMap.ruins.find((r) => r.x === square.x && r.y === square.y)
+        const srp = this.resourcePatterns.find((r) => r.center.x === square.x && r.center.y === square.y)
         const markerA = this.markers[0][schemaIdx]
         const markerB = this.markers[1][schemaIdx]
 
@@ -185,6 +248,14 @@ export class CurrentMap {
         }
         if (ruin) {
             info.push('Ruin')
+        }
+        if (srp) {
+            const roundsRemaining = Math.max(srp.createRound + 50 - match.currentRound.roundNumber, 0)
+            if (roundsRemaining === 0) {
+                info.push(`${TEAM_COLOR_NAMES[srp.teamId - 1]} SRP Center (Active)`)
+            } else {
+                info.push(`${TEAM_COLOR_NAMES[srp.teamId - 1]} SRP Center (${roundsRemaining} Rounds Left)`)
+            }
         }
 
         return info

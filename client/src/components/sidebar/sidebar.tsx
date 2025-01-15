@@ -74,6 +74,10 @@ export const Sidebar: React.FC = () => {
     React.useEffect(() => {
         if (localTournament) {
             setPage(PageType.TOURNAMENT)
+            context.setState((prevState) => ({
+                ...prevState,
+                tournament: new Tournament([])
+            }))
         }
     }, [localTournament])
 

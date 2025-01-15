@@ -37,6 +37,8 @@ battlecode/common/RobotController/canSenseRobotAtLocation               5    tru
 battlecode/common/RobotController/canSendMessage                        50   true
 battlecode/common/RobotController/sendMessage                           50   true
 battlecode/common/RobotController/readMessages                          10   true
+battlecode/common/RobotController/canBroadcastMessage                   5    true
+battlecode/common/RobotController/broadcastMessage                      50   true
 battlecode/common/RobotController/canTransferPaint                      5    true
 battlecode/common/RobotController/transferPaint                         5    true
 battlecode/common/RobotController/getActionCooldownTurns                1    true
@@ -98,6 +100,7 @@ battlecode/common/MapInfo/isWall                                        2    fal
 battlecode/common/MapInfo/hasRuin                                       2    false
 battlecode/common/MapInfo/getPaint                                      2    false
 battlecode/common/MapInfo/getMark                                       2    false
+battlecode/common/MapInfo/isResourcePatternCenter                       2    false
 battlecode/common/RobotInfo/getID                                       1    false
 battlecode/common/RobotInfo/getTeam                                     1    false
 battlecode/common/RobotInfo/getHealth                                   2    false

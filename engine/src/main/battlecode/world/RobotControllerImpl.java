@@ -83,7 +83,7 @@ public final class RobotControllerImpl implements RobotController {
             markType = PaintType.ALLY_PRIMARY;
         else if (mark == 2)
             markType = PaintType.ALLY_SECONDARY;
-        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), markType, gw.hasRuin(loc));
+        MapInfo currentLocInfo = new MapInfo(loc, gw.isPassable(loc), gw.getWall(loc), gw.getPaintType(getTeam(), loc), markType, gw.hasRuin(loc), gw.hasResourcePatternCenter(loc, getTeam()));
         return currentLocInfo;
     }
 
@@ -792,6 +792,14 @@ public final class RobotControllerImpl implements RobotController {
         assertIsRobotType(this.robot.getType());
         assertCanActLocation(loc, GameConstants.RESOURCE_PATTERN_RADIUS_SQUARED);
 
+        if(this.gameWorld.getTeamInfo().getMoney(this.robot.getTeam()) < GameConstants.COMPLETE_RESOURCE_PATTERN_COST) {
+            throw new GameActionException(CANT_DO_THAT, "Not enough money to complete resource pattern");
+        }
+
+        if(this.gameWorld.hasResourcePatternCenter(loc, getTeam())) {
+            throw new GameActionException(CANT_DO_THAT, "Can't complete a resource pattern that has already been completed.");
+        }
+
         if (!this.gameWorld.isValidPatternCenter(loc, false)) {
             throw new GameActionException(CANT_DO_THAT,
                     "Cannot complete resource pattern centered at (" + loc.x + ", " + loc.y
@@ -821,6 +829,7 @@ public final class RobotControllerImpl implements RobotController {
     public void completeResourcePattern(MapLocation loc) throws GameActionException {
         assertCanCompleteResourcePattern(loc);
         this.gameWorld.completeResourcePattern(getTeam(), loc);
+        this.gameWorld.getTeamInfo().addMoney(this.robot.getTeam(), -GameConstants.COMPLETE_RESOURCE_PATTERN_COST);
         this.gameWorld.getMatchMaker().addCompleteResourcePatternAction(loc);
     }
 
@@ -1027,7 +1036,8 @@ public final class RobotControllerImpl implements RobotController {
         assertCanSendMessage(loc, message);
         InternalRobot robot = this.gameWorld.getRobot(loc);
         this.robot.sendMessage(robot, message);
-        this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
+        this.robot.incrementMessageCount();
+        // this.gameWorld.getMatchMaker().addMessageAction(robot.getID(), messageContent);
     }
 
     @Override 
@@ -1038,6 +1048,39 @@ public final class RobotControllerImpl implements RobotController {
                 messages.add(m);
         }
         return messages.toArray(new Message[messages.size()]);
+    }
+
+    public void assertCanBroadcastMessage() throws GameActionException{
+        if (this.robot.getType().isRobotType()) {
+            throw new GameActionException(CANT_DO_THAT, "Only towers can broadcast messages");
+        }
+        if (this.robot.getSentMessagesCount() >= GameConstants.MAX_MESSAGES_SENT_TOWER){
+            throw new GameActionException(CANT_DO_THAT, "Tower has already sent too many messages this round!");
+        }
+    }
+
+    @Override
+    public boolean canBroadcastMessage() {
+        try {
+            assertCanBroadcastMessage();
+            return true;
+        } catch (GameActionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void broadcastMessage(int messageContent) throws GameActionException{
+        assertCanBroadcastMessage();
+        Message message = new Message(messageContent, this.robot.getID(), this.gameWorld.getCurrentRound());
+        MapLocation[] allLocs = this.gameWorld.getAllLocationsWithinRadiusSquared(getLocation(), GameConstants.BROADCAST_RADIUS_SQUARED);
+        for(MapLocation loc : allLocs) {
+            InternalRobot robot = this.gameWorld.getRobot(loc);
+            if(robot != null && robot.getType().isTowerType() && robot.getTeam() == getTeam() && robot != this.robot) {
+                this.robot.sendMessage(robot, message);
+            }
+        }
+        this.robot.incrementMessageCount();
     }
 
     // ***********************************

@@ -14,14 +14,16 @@ public class MapInfo {
 
     private boolean hasRuin;
 
+    private boolean isResourcePatternCenter;
 
-    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, PaintType paint, PaintType mark, boolean hasRuin){
+    public MapInfo(MapLocation loc, boolean isPassable, boolean isWall, PaintType paint, PaintType mark, boolean hasRuin, boolean isResourcePatternCenter){
         this.loc = loc;
         this.isPassable = isPassable;
         this.isWall = isWall;
         this.paint = paint;
         this.mark = mark;
         this.hasRuin = hasRuin;
+        this.isResourcePatternCenter = isResourcePatternCenter;
     }
 
     /**
@@ -88,6 +90,15 @@ public class MapInfo {
      */
     public MapLocation getMapLocation() {
         return loc;
+    }
+
+    /**
+     * Returns whether this tile is at the center of an ally resource pattern (regardless of whether the pattern is active yet)
+     * 
+     * @return Whether this is a resource pattern center
+     */
+    public boolean isResourcePatternCenter() {
+        return isResourcePatternCenter;
     }
 
     public String toString(){

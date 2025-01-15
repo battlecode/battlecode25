@@ -45,6 +45,7 @@ public class GameWorld {
 
     private ArrayList<MapLocation> resourcePatternCenters;
     private Team[] resourcePatternCentersByLoc;
+    private int[] resourcePatternLifetimes;
     private ArrayList<MapLocation> towerLocations;
     private Team[] towersByLoc; // indexed by location
     private int[] currentDamageIncreases = {0,0};
@@ -113,6 +114,7 @@ public class GameWorld {
         //this.patternArray = gm.getPatternArray();
         this.resourcePatternCenters = new ArrayList<MapLocation>();
         this.resourcePatternCentersByLoc = new Team[numSquares];
+        this.resourcePatternLifetimes = new int[numSquares];
         byte[] initialPaint = gm.getPaintArray();
         for (int i = 0; i < numSquares; i++) {
             this.resourcePatternCentersByLoc[i] = Team.NEUTRAL;
@@ -190,14 +192,17 @@ public class GameWorld {
     private void updateResourcePatterns() {
         ArrayList<MapLocation> newResourcePatternCenters = new ArrayList<>();
         for (MapLocation center : resourcePatternCenters) {
-            Team team = resourcePatternCentersByLoc[locationToIndex(center)];
+            int locIdx = locationToIndex(center);
+            Team team = resourcePatternCentersByLoc[locIdx];
             boolean stillActive = checkResourcePattern(team, center);
 
             if (!stillActive) {
                 resourcePatternCentersByLoc[locationToIndex(center)] = Team.NEUTRAL;
+                resourcePatternLifetimes[locIdx] = 0;
             }
             else{
                 newResourcePatternCenters.add(center);
+                resourcePatternLifetimes[locIdx]++;
             }
         }
         this.resourcePatternCenters = newResourcePatternCenters;
@@ -333,6 +338,7 @@ public class GameWorld {
         }
 
         this.resourcePatternCentersByLoc[idx] = team;
+        this.resourcePatternLifetimes[idx] = 0;
     }
 
     private boolean updateRobot(InternalRobot robot) {
@@ -535,9 +541,11 @@ public class GameWorld {
 
     public int getNumResourcePatterns(Team team){
         int numPatterns = 0;
-        for (MapLocation loc : this.resourcePatternCenters)
-            if (this.resourcePatternCentersByLoc[locationToIndex(loc)] == team)
+        for (MapLocation loc : this.resourcePatternCenters) {
+            int locIdx = locationToIndex(loc);
+            if (this.resourcePatternCentersByLoc[locIdx] == team && this.resourcePatternLifetimes[locIdx] >= GameConstants.RESOURCE_PATTERN_ACTIVE_DELAY)
                 numPatterns++;
+        }
         return numPatterns;
     }
 
@@ -610,6 +618,10 @@ public class GameWorld {
 
     public boolean hasRuin(MapLocation loc) {
         return allRuinsByLoc[locationToIndex(loc)];
+    }
+
+    public boolean hasResourcePatternCenter(MapLocation loc, Team team) {
+        return resourcePatternCentersByLoc[locationToIndex(loc)] == team;
     }
 
     public Team teamFromPaint(int paint) {
