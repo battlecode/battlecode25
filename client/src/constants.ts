@@ -21,7 +21,32 @@ export const DIRECTIONS: Record<number, Array<number>> = {
     8: [-1, 1]
 }
 
-export const ENGINE_BUILTIN_MAP_NAMES: string[] = ['DefaultSmall', 'DefaultMedium', 'DefaultLarge', 'DefaultHuge']
+export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
+    // Default
+    'DefaultSmall',
+    'DefaultMedium',
+    'DefaultLarge',
+    'DefaultHuge',
+
+    // Sprint 1
+    'Justice',
+    'memstore',
+    'Mirage',
+    'MoneyTower',
+    'Restart',
+    'Thirds',
+    'catface',
+    'Fossil',
+    'gardenworld',
+    'Gears',
+    'Money',
+    'Racetrack',
+    'SaltyPepper',
+    'SMILE',
+    'TargetPractice',
+    'UglySweater',
+    'UnderTheSea'
+]
 
 export const TEAM_COLOR_NAMES = ['Silver', 'Gold']
 
