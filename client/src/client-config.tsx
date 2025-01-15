@@ -27,7 +27,7 @@ const DEFAULT_CONFIG = {
     showAllRobotRadii: false,
     showTimelineMarkers: true,
     showHealthBars: true,
-    showPaintBars: false,
+    showPaintBars: true,
     showPaintMarkers: true,
     showSRPOutlines: true,
     showSRPText: false,
