@@ -59,6 +59,7 @@ export default class Round {
 
         this.roundNumber += 1
 
+        this.map.applyRoundDelta(this, this.currentDelta)
         this.stat.applyRoundDelta(this, this.currentDelta)
 
         this.initialRoundState = null
@@ -125,7 +126,6 @@ export default class Round {
 
         this.bodies.clearIndicators(turn.robotId())
 
-        this.map.applyTurnDelta(turn)
         this.actions.applyTurnDelta(this, turn)
         this.bodies.applyTurnDelta(this, turn)
 

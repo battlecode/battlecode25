@@ -341,14 +341,23 @@ export const ACTION_DEFINITIONS: Record<schema.Action, typeof Action<ActionUnion
     },
     [schema.Action.TransferAction]: class TransferAction extends Action<schema.TransferAction> {
         apply(round: Round): void {
+            const src = round.bodies.getById(this.robotId)
             const amount = this.actionData.amount()
 
             if (amount === 0) {
                 /* ! SCUFFED SPECIAL CASE: Resource pattern completed ! */
+                const center = round.map.indexToLocation(this.actionData.id())
+                if (!round.map.resourcePatterns.find((srp) => srp.center.x === center.x && srp.center.y === center.y)) {
+                    round.map.resourcePatterns.push({
+                        center,
+                        teamId: src.team.id,
+                        createRound: round.roundNumber
+                    })
+                }
+
                 return
             }
 
-            const src = round.bodies.getById(this.robotId)
             const dst = round.bodies.getById(this.actionData.id())
 
             src.paint = Math.max(src.paint - amount, 0)
