@@ -202,11 +202,16 @@ export const useScaffold = (): Scaffold => {
         }
 
         const onGameComplete = (game: Game) => {
-            appContext.setState((prevState) => ({
-                ...prevState,
-                queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
-            }))
-            if (game.matches.length > 0) GameRunner.setMatch(game.matches[0])
+            appContext.setState((prevState) => {
+                if (prevState.config.populateRunnerGames && game.matches.length > 0) {
+                    GameRunner.setMatch(game.matches[0])
+                }
+
+                return {
+                    ...prevState,
+                    queue: prevState.queue.find((g) => g == game) ? prevState.queue : prevState.queue.concat([game])
+                }
+            })
         }
 
         setWebSocketListener(

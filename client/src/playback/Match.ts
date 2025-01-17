@@ -313,7 +313,7 @@ export default class Match {
         // Determine the maximum round we are allowed to jump to. If the game is
         // incomplete (still being updated with rounds), prevent jumping to the last
         // round to prevent issues (TODO: investigate why, but this seems to fix it)
-        const maxRound = this.maxRound - (this.game.complete ? 0 : 1)
+        const maxRound = this.maxRound - (this.game.complete ? 0 : 2)
 
         roundNumber = Math.max(1, Math.min(roundNumber, maxRound))
         if (roundNumber == this.currentRound.roundNumber) return
