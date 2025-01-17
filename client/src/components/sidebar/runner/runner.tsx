@@ -5,9 +5,7 @@ import { nativeAPI } from './native-api-wrapper'
 import { Select } from '../../forms'
 import { InputDialog } from '../../input-dialog'
 import Tooltip from '../../tooltip'
-import { SectionHeader } from '../../section-header'
 import { FixedSizeList, ListOnScrollProps } from 'react-window'
-import { OpenExternal } from '../../../icons/open-external'
 import { BasicDialog } from '../../basic-dialog'
 import { RingBuffer } from '../../../util/ring-buffer'
 import { ProfilerDialog } from './profiler'
@@ -141,11 +139,11 @@ export const RunnerPage: React.FC<RunnerPageProps> = ({ open, scaffold }) => {
                     <MapSelector
                         maps={maps}
                         availableMaps={availableMaps}
-                        onSelect={(m) => setMaps(new Set([...maps, m]))}
-                        onDeselect={(m) => setMaps(new Set([...maps].filter((x) => x !== m)))}
+                        onSelect={(m) => setMaps(new Set([...maps, ...m]))}
+                        onDeselect={(m) => setMaps(new Set([...maps].filter((x) => !m.includes(x))))}
                     />
                     <SmallButton
-                        className="mt-2"
+                        className="mt-3"
                         onClick={() => {
                             resetSettings()
                             reloadData()
@@ -330,8 +328,8 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({ teamA, teamB, options, onCh
 interface MapSelectorProps {
     maps: Set<string>
     availableMaps: Set<string>
-    onSelect: (map: string) => void
-    onDeselect: (map: string) => void
+    onSelect: (map: string[]) => void
+    onDeselect: (map: string[]) => void
 }
 
 const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect, onDeselect }) => {
@@ -354,7 +352,7 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
                             <div
                                 key={m}
                                 className={'cursor-pointer hover:bg-lightHighlight flex items-center justify-between'}
-                                onClick={() => (maps.has(m) ? onDeselect(m) : onSelect(m))}
+                                onClick={() => (maps.has(m) ? onDeselect([m]) : onSelect([m]))}
                             >
                                 {m}
                                 <input
@@ -368,6 +366,14 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
                     })}
                 </div>
             </Resizable>
+            <div className="flex gap-2 items-center mt-1 justify-center">
+                <SmallButton style={{ margin: 0 }} onClick={() => onSelect([...availableMaps])}>
+                    Select All
+                </SmallButton>
+                <SmallButton style={{ margin: 0 }} onClick={() => onDeselect([...availableMaps])}>
+                    Deselect All
+                </SmallButton>
+            </div>
         </div>
     )
 }

@@ -191,7 +191,7 @@ export class CurrentMap {
 
         if (config.showSRPOutlines || config.showSRPText) {
             ctx.globalAlpha = 1
-            ctx.lineWidth = 0.03
+            ctx.lineWidth = 0.05
             this.resourcePatterns.forEach((srp) => {
                 const topLeftCoords = renderUtils.getRenderCoords(srp.center.x - 2, srp.center.y + 2, this.dimension)
                 const roundsRemaining = Math.max(srp.createRound + 50 - match.currentRound.roundNumber, -1)

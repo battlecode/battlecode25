@@ -62,7 +62,7 @@ export default class WebSocketListener {
         // Auto progress the round if the user hasn't done it themselves
         // We only want to do this if the currently selected match is the one being updated
         if (this.activeMatch && this.activeMatch === GameRunner.match) {
-            const newRound = this.activeMatch.maxRound - 1
+            const newRound = Math.max(this.activeMatch.maxRound - 2, 1)
             if (this.lastSetRound == this.activeMatch.currentRound.roundNumber) {
                 GameRunner.jumpToRound(newRound)
                 this.lastSetRound = newRound

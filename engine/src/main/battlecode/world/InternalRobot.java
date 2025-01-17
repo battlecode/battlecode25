@@ -601,8 +601,6 @@ public class InternalRobot implements Comparable<InternalRobot> {
         if (!indicatorString.equals("")) {
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
         }
-        this.gameWorld.getMatchMaker().endTurn(this.ID, this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
-        this.roundsAlive++;
 
         if (this.getType().isRobotType()){
             Team owningTeam = this.gameWorld.teamFromPaint(this.gameWorld.getPaint(this.location));
@@ -627,6 +625,9 @@ public class InternalRobot implements Comparable<InternalRobot> {
         if (this.paintAmount == 0 && type.isRobotType()){
             this.addHealth(-GameConstants.NO_PAINT_DAMAGE);
         }
+
+        this.gameWorld.getMatchMaker().endTurn(this.ID, this.health, this.paintAmount, this.movementCooldownTurns, this.actionCooldownTurns, this.bytecodesUsed, this.location);
+        this.roundsAlive++;
     }
 
     // *********************************
