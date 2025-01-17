@@ -2,6 +2,7 @@ import React, { MouseEvent, PropsWithChildren } from 'react'
 
 type Props = {
     className?: string
+    style?: React.CSSProperties
     onClick: (event: MouseEvent<HTMLButtonElement>) => void
     disabled?: boolean
 }
@@ -15,6 +16,7 @@ export const Button = (props: PropsWithChildren<Props>) => {
                 (props.disabled ? ' opacity-50 cursor-not-allowed' : '')
             }
             onClick={props.onClick}
+            style={props.style}
         >
             {props.children}
         </button>
@@ -28,6 +30,7 @@ export const SmallButton = (props: PropsWithChildren<Props>) => (
             (props.className ?? '')
         }
         onClick={props.onClick}
+        style={props.style}
     >
         {props.children}
     </button>
@@ -40,6 +43,7 @@ export const BrightButton = (props: PropsWithChildren<Props>) => (
             (props.className ?? '')
         }
         onClick={props.onClick}
+        style={props.style}
     >
         {props.children}
     </button>

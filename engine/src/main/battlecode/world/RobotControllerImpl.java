@@ -970,6 +970,7 @@ public final class RobotControllerImpl implements RobotController {
 
     @Override
     public void mopSwing(Direction dir) throws GameActionException {
+        assertCanMopSwing(dir);
         this.robot.addActionCooldownTurns(GameConstants.ATTACK_MOPPER_SWING_COOLDOWN);
         this.robot.mopSwing(dir);
     }
