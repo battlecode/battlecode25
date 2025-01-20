@@ -105,6 +105,8 @@ export const ConfigPage: React.FC<Props> = (props) => {
 
         if (keyboard.keyCode === 'KeyF')
             context.updateConfigValue('focusRobotTurn', !context.state.config.focusRobotTurn)
+        if (keyboard.keyCode === 'KeyI')
+            context.updateConfigValue('showAllIndicators', !context.state.config.showAllIndicators)
     }, [keyboard.keyCode])
 
     if (!props.open) return null
