@@ -53,12 +53,23 @@ export const useScaffold = (): Scaffold => {
     const [error, setError] = useState('')
     const matchPID = useRef<string | undefined>(undefined)
     const forceUpdate = useForceUpdate()
-    const consoleLines = useRef<RingBuffer<ConsoleLine>>(new RingBuffer(10000))
+    const consoleLines = useRef<RingBuffer<ConsoleLine>>(new RingBuffer(50000))
 
     const [webSocketListener, setWebSocketListener] = useState<WebSocketListener | undefined>()
 
     const log = (line: ConsoleLine) => {
+        // Set match index to be the same as the previous log value
+        if (consoleLines.current.length() > 0) {
+            line.matchIdx = consoleLines.current.get(consoleLines.current.length() - 1)!.matchIdx
+        }
+
+        // If we encounter the end-of-match message, increment the match index
+        if (line.content.startsWith('[server]') && line.content.includes('Finished')) {
+            line.matchIdx++
+        }
+
         consoleLines.current.push(line)
+
         forceUpdate()
     }
 
@@ -107,7 +118,7 @@ export const useScaffold = (): Scaffold => {
             )
             matchPID.current = newPID
         } catch (e: any) {
-            consoleLines.current.push({ content: e, type: 'error' })
+            consoleLines.current.push({ content: e, type: 'error', matchIdx: 0 })
         }
         forceUpdate()
     }
@@ -176,15 +187,15 @@ export const useScaffold = (): Scaffold => {
 
         nativeAPI.child_process.onStdout(({ pid, data }) => {
             if (pid !== matchPID.current) return
-            log({ content: data, type: 'output' })
+            log({ content: data, type: 'output', matchIdx: 0 })
         })
         nativeAPI.child_process.onStderr(({ pid, data }) => {
             if (pid !== matchPID.current) return
-            log({ content: data, type: 'error' })
+            log({ content: data, type: 'error', matchIdx: 0 })
         })
         nativeAPI.child_process.onExit(({ pid, code, signal }) => {
             if (pid !== matchPID.current) return
-            log({ content: `Exited with code ${code} | ${JSON.stringify(signal)}`, type: 'bold' })
+            log({ content: `Exited with code ${code} | ${JSON.stringify(signal)}`, type: 'bold', matchIdx: 0 })
             matchPID.current = undefined
             forceUpdate()
         })

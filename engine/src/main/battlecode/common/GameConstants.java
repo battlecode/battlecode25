@@ -65,7 +65,7 @@ public class GameConstants {
      * The maximum length of indicator strings that a player can associate with a
      * robot.
      */
-    public static final int INDICATOR_STRING_MAX_LENGTH = 64;
+    public static final int INDICATOR_STRING_MAX_LENGTH = 256;
 
     /** The maximum length of a label to add to the timeline. */
     public static final int TIMELINE_LABEL_MAX_LENGTH = 64;

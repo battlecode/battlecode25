@@ -378,7 +378,7 @@ const MapSelector: React.FC<MapSelectorProps> = ({ maps, availableMaps, onSelect
     )
 }
 
-export type ConsoleLine = { content: string; type: 'output' | 'error' | 'bold' }
+export type ConsoleLine = { content: string; type: 'output' | 'error' | 'bold'; matchIdx: number }
 
 type Props = {
     lines: RingBuffer<ConsoleLine>
@@ -401,19 +401,23 @@ export const Console: React.FC<Props> = ({ lines }) => {
         }
     }
 
-    const focusRobot = (round: number, id: number) => {
+    const focusRobot = (match: number, round: number, id: number) => {
         setPopout(false)
-        GameRunner.jumpToRound(round)
-        GameRenderer.setSelectedRobot(id)
+        GameRunner.setMatch(GameRunner.game?.matches[match], round)
 
-        // If turn playback is enabled, focus the robot's exact turn as well
-        if (GameRunner.match?.playbackPerTurn) {
-            GameRunner.jumpToRobotTurn(id)
-        }
+        // Update selection after a delay so it doesn't get overwritten
+        setTimeout(() => {
+            // If turn playback is enabled, focus the robot's exact turn as well
+            GameRenderer.setSelectedRobot(id)
+            if (GameRunner.match?.playbackPerTurn) {
+                GameRunner.jumpToRobotTurn(id)
+            }
+        }, 5)
     }
 
     const ConsoleRow = (props: { index: number; style: any }) => {
-        const content = lines.get(props.index)!.content
+        const row = lines.get(props.index)!
+        const content = row.content
 
         // Check if the printout is from a bot. If so, add a special click element
         // that selects the bot
@@ -429,7 +433,7 @@ export const Console: React.FC<Props> = ({ lines }) => {
                 <div className="flex items-center gap-1 sele" style={props.style}>
                     <span
                         className="text-blueLight decoration-blueLight text-xs whitespace-nowrap underline cursor-pointer"
-                        onClick={() => focusRobot(round, id)}
+                        onClick={() => focusRobot(row.matchIdx, round, id)}
                     >
                         {`[Team ${team}, ID #${id}, Round ${round}]`}
                     </span>
