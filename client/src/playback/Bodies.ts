@@ -509,7 +509,7 @@ export class Body {
             }`
         ]
         if (this.indicatorString != '') {
-            defaultInfo.push(`Indicator: ${this.indicatorString}`)
+            defaultInfo.push(this.indicatorString)
         }
 
         return defaultInfo
