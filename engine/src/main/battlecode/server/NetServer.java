@@ -151,19 +151,21 @@ public class NetServer extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        System.out.println("Closed: "+conn.getRemoteSocketAddress() + " for "+reason);
+        System.out.println("Closed: " + conn.getRemoteSocketAddress() + " for " + reason);
     }
 
     @Override
     public void onMessage(WebSocket ws, String s) {
-        System.err.println("Spurious message from "+
-                ws.getRemoteSocketAddress()+": `"+s+"`");
+        System.err.println("Spurious message from " + ws.getRemoteSocketAddress() + ": \"" + s + "\"");
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
         if (!(ex instanceof ClosedByInterruptException)) {
-            System.err.println("Error from: "+conn.getRemoteSocketAddress()+": "+ex);
+            if (conn != null)
+                System.err.println("Error from " + conn.getRemoteSocketAddress() + ": " + ex);
+            else
+                System.err.println("Error from [unopened WebSocket]: " + ex);
         }
     }
 }
