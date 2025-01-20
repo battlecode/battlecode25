@@ -102,12 +102,12 @@ class GameRunnerClass {
         })
     }
 
-    setMatch(match: Match | undefined): void {
+    setMatch(match: Match | undefined, round: number = 1): void {
         this._trigger(this._matchListeners)
         if (match) {
             match.game.currentMatch = match
             this.setGame(match.game)
-            match._jumpToStart()
+            match._jumpToRound(round)
             GameRenderer.render()
         }
         this.setPaused(true)
