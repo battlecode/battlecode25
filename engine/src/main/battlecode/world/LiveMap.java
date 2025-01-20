@@ -372,11 +372,26 @@ public class LiveMap {
         }
         int[] towerCountA = new int[3];
         int[] towerCountB = new int[3];
+        int initialBodyCountTeamA = 0;
+        int initialBodyCountTeamB = 0;
         for (RobotInfo initialBody : initialBodies){
             if (initialBody.team == Team.A){
                 towerCountA[FlatHelpers.getRobotTypeFromUnitType(initialBody.type)-1] += 1;
+                initialBodyCountTeamA++;
             }
-            else towerCountB[FlatHelpers.getRobotTypeFromUnitType(initialBody.type)-1] += 1;
+            else if (initialBody.team == Team.B){
+                towerCountB[FlatHelpers.getRobotTypeFromUnitType(initialBody.type)-1] += 1;
+                initialBodyCountTeamB++;
+            }
+            else {
+                throw new RuntimeException("Expected initial body team "  + initialBody.team + " to be team A or team B!");
+            }
+        }
+        if (initialBodyCountTeamA != GameConstants.NUMBER_INITIAL_TOWERS) {
+            throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_TOWERS + " team A towers!");
+        }
+        if (initialBodyCountTeamB != GameConstants.NUMBER_INITIAL_TOWERS) {
+            throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_TOWERS + " team B towers!");
         }
         if (towerCountA[FlatHelpers.getRobotTypeFromUnitType(UnitType.LEVEL_ONE_PAINT_TOWER) - 1] != GameConstants.NUMBER_INITIAL_PAINT_TOWERS){
             throw new RuntimeException("Expected to have "  + GameConstants.NUMBER_INITIAL_PAINT_TOWERS + " paint towers!");
