@@ -463,8 +463,19 @@ public class InternalRobot implements Comparable<InternalRobot> {
         }
     }
 
-    public void mopSwing(Direction dir) { // NOTE: only works for moppers!
-        // swing even if there's not 3 robots there, just remove from existing
+    /**
+     * Special action exclusive to moppers.
+     * Given a cardinal direction, apply swing to adjacent square in that direction and that direction's diagonal directions.
+     * Also apply to squares directly behind those three.
+     * Example EAST SWING: mopper m, unaffected o, affected x.
+     * oooo
+     * oxxo
+     * mxxo
+     * oxxo
+     * oooo
+     */
+    public void mopSwing(Direction dir) {
+        // swing even if robots in the swing map locations are missing, remove hp from the present enemy robots
         if(this.type != UnitType.MOPPER)
             throw new RuntimeException("Unit must be a mopper");
         if(!(dir == Direction.SOUTH || dir == Direction.NORTH || dir == Direction.WEST || dir == Direction.EAST))
@@ -479,7 +490,7 @@ public class InternalRobot implements Comparable<InternalRobot> {
         else if(dir == Direction.WEST) dirIdx = 3;
         ArrayList<Integer> affectedIDs = new  ArrayList<>();
 
-        for(int i = 0; i < 6; i ++) { // check all three spots
+        for(int i = 0; i < 6; i ++) { // check all six affected MapLocations
             int x = this.getLocation().x + dx[dirIdx][i], y = this.getLocation().y + dy[dirIdx][i];
             MapLocation newLoc = new MapLocation(x, y);
             if(!this.gameWorld.getGameMap().onTheMap(newLoc)) continue;
