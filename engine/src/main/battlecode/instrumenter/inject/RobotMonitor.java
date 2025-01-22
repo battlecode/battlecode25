@@ -3,6 +3,7 @@ package battlecode.instrumenter.inject;
 import battlecode.instrumenter.SandboxedRobotPlayer;
 import battlecode.instrumenter.profiler.Profiler;
 import battlecode.server.ErrorReporter;
+import battlecode.world.control.PlayerControlProvider;
 
 import java.io.PrintStream;
 import java.lang.Math;
@@ -33,6 +34,7 @@ public final class RobotMonitor {
     private static SandboxedRobotPlayer.Killer killer;
 
     private static Profiler profiler;
+    private static PlayerControlProvider provider;
 
     // Methods called from SandboxedRobotPlayer
 
@@ -46,12 +48,14 @@ public final class RobotMonitor {
      * @param theKiller   killer to use to kill the thread
      * @param seed        seed to use for new Random instances
      * @param theProfiler profiler to log bytecode usage per method to (profiling is disabled if null)
+     * @param theProvider player control provider to query computation time remaining
      */
     @SuppressWarnings("unused")
     public static void init(SandboxedRobotPlayer.Pauser thePauser,
                             SandboxedRobotPlayer.Killer theKiller,
                             int seed,
-                            Profiler theProfiler) {
+                            Profiler theProfiler,
+                            PlayerControlProvider theProvider) {
         shouldDie = false;
         bytecodesLeft = 0;
         debugLevel = 0;
@@ -61,6 +65,7 @@ public final class RobotMonitor {
         killer = theKiller;
 
         profiler = theProfiler;
+        provider = theProvider;
     }
 
     /**
@@ -109,6 +114,23 @@ public final class RobotMonitor {
     @SuppressWarnings("unused")
     public static int getBytecodesLeft() {
         return bytecodesLeft;
+    }
+
+    /**
+     * @return the bytecode number that the active robot is currently on.
+     *         Note that this can be above bytecodeLimit in some cases.
+     */
+    @SuppressWarnings("unused")
+    public static long getTimeElapsed() {
+        return provider.getTimeElapsed();
+    }
+
+    /**
+     * @return the bytecodes this robot has left to use.
+     */
+    @SuppressWarnings("unused")
+    public static long getTimeLeft() {
+        return provider.getTimeLeft();
     }
 
     // Methods called from RobotPlayer

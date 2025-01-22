@@ -6,6 +6,7 @@ import battlecode.instrumenter.profiler.Profiler;
 import battlecode.instrumenter.stream.RoboPrintStream;
 import battlecode.instrumenter.stream.SilencedPrintStream;
 import battlecode.server.ErrorReporter;
+import battlecode.world.control.PlayerControlProvider;
 import battlecode.server.Config;
 
 import java.io.OutputStream;
@@ -111,7 +112,8 @@ public class SandboxedRobotPlayer {
                                 int seed,
                                 TeamClassLoaderFactory.Loader loader,
                                 OutputStream robotOut,
-                                Profiler profiler)
+                                Profiler profiler,
+                                PlayerControlProvider provider)
             throws InstrumentationException {
         this.robotController = robotController;
         this.seed = seed;
@@ -135,7 +137,7 @@ public class SandboxedRobotPlayer {
             setBytecodeLimitMethod = monitor.getMethod("setBytecodeLimit", int.class);
             getBytecodeNumMethod = monitor.getMethod("getBytecodeNum");
             pauseMethod = monitor.getMethod("pause");
-            initMethod = monitor.getMethod("init", Pauser.class, Killer.class, int.class, Profiler.class);
+            initMethod = monitor.getMethod("init", Pauser.class, Killer.class, int.class, Profiler.class, PlayerControlProvider.class);
 
             // Note: loading this here also keeps any initialization we do in System
             // from inflicting its bytecode cost on the player.
@@ -175,7 +177,7 @@ public class SandboxedRobotPlayer {
         mainThread = new Thread(() -> {
             try {
                 // Init RobotMonitor
-                initMethod.invoke(null, pauser, killer, this.seed, profiler);
+                initMethod.invoke(null, pauser, killer, this.seed, profiler, provider);
                 // Pause immediately
                 pauseMethod.invoke(null);
                 // Run the robot!
