@@ -3,6 +3,10 @@ package battlecode.server;
 // TODO: pass messages along to the client
 public class ErrorReporter {
 
+    public static void warn(String message) {
+        Server.warn(message + "\n\n");
+    }
+
     // reports the error, and tells the contestant to contact the devs
     public static void report(Throwable e) {
         report(e, true);
