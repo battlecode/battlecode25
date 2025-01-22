@@ -1,4 +1,4 @@
-export const CLIENT_VERSION = '2.0.3'
+export const CLIENT_VERSION = '3.0.0'
 export const SPEC_VERSION = '1'
 export const BATTLECODE_YEAR: number = 2025
 export const MAP_SIZE_RANGE = {
@@ -45,7 +45,25 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
     'SMILE',
     'TargetPractice',
     'UglySweater',
-    'UnderTheSea'
+    'UnderTheSea',
+
+    // Sprint 2
+    'giver',
+    'galaxy',
+    'leavemealone',
+    'sayhi',
+    'sierpinski',
+    'windmill',
+    'quack',
+    'gridworld',
+    'fix',
+    'Filter',
+    'BunnyGame',
+    'Bread',
+    'Snowglobe',
+    'Barcode',
+    'Flower',
+    'Piglets2'
 ]
 
 export const TEAM_COLOR_NAMES = ['Silver', 'Gold']

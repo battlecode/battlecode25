@@ -130,13 +130,20 @@ public class GameWorld {
             towersByLoc[i] = Team.NEUTRAL;  
         }
         for (int i = 0; i < initialBodies.length; i++) {
-            RobotInfo robot = initialBodies[i];
-            MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
-            spawnRobot(robot.ID, robot.type, newLocation, robot.team);
+            RobotInfo robotInfo = initialBodies[i];
+            MapLocation newLocation = robotInfo.location.translate(gm.getOrigin().x, gm.getOrigin().y);
+            spawnRobot(robotInfo.ID, robotInfo.type, newLocation, robotInfo.team);
             this.towerLocations.add(newLocation);
-            towersByLoc[locationToIndex(newLocation)] = robot.team;
+            towersByLoc[locationToIndex(newLocation)] = robotInfo.team;
             this.allRuinsByLoc[locationToIndex(newLocation)] = true;
             this.allRuins.add(newLocation);
+
+            // Start initial towers at level 2. Defer upgrade action until the tower's first
+            // turn since client only supports actions this way
+            InternalRobot robot = getRobot(newLocation);
+            UnitType newType = robot.getType().getNextLevel();
+            robot.upgradeTower(newType);
+            upgradeTower(newType, robot.getTeam());
         }
     }
 
