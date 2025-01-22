@@ -85,16 +85,8 @@ public class GameConstants {
     /** The percent of the map which a team needs to paint to win. */
     public static final int PAINT_PERCENT_TO_WIN = 70;
 
-    /** The maximum number of towers that a team can have. */
-    public static final int MAX_NUMBER_OF_TOWERS = 25;
-
-    /** 
-     * The maximum execution time that can be spent on a team in one match. If the total time spent executing a team's bots
-     * exceeds this limit, the team will immediately lose the game. Execution time is measured in ns.
-     */
-    // public static final long MAX_TEAM_EXECUTION_TIME = 1200000000000L;
-
-    public static final long MAX_TEAM_EXECUTION_TIME = 5000000000L;
+     /** The maximum number of towers that a team can have. */
+     public static final int MAX_NUMBER_OF_TOWERS = 25;
 
     // *********************************
     // ****** GAME MECHANICS ***********
