@@ -1,5 +1,6 @@
 package battlecode.world.control;
 
+import battlecode.common.GameConstants;
 import battlecode.common.Team;
 import battlecode.instrumenter.InstrumentationException;
 import battlecode.instrumenter.TeamClassLoaderFactory;
@@ -71,6 +72,11 @@ public class PlayerControlProvider implements RobotControlProvider {
     private int matchId = -1;
 
     /**
+     * The total time the player's bots have spent executing, measured in ns
+     */
+    private long totalPlayerTime = 0;
+
+    /**
      * Create a new PlayerControlProvider.
      *
      * @param team             the team we're loading
@@ -116,6 +122,7 @@ public class PlayerControlProvider implements RobotControlProvider {
 
         this.sandboxes.clear();
         this.gameWorld = null;
+        this.totalPlayerTime = 0;
     }
 
     @Override
@@ -173,7 +180,12 @@ public class PlayerControlProvider implements RobotControlProvider {
 
         if (player != null) {
             player.setBytecodeLimit(robot.getBytecodeLimit());
+            long timeBefore = System.nanoTime();
             player.step();
+            totalPlayerTime += (System.nanoTime() - timeBefore);
+            if(totalPlayerTime > GameConstants.MAX_TEAM_EXECUTION_TIME) {
+                robot.getController().resign();
+            }
         }
     }
 
