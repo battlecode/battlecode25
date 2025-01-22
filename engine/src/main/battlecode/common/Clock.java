@@ -48,6 +48,27 @@ public final class Clock {
     }
 
     /**
+     * Returns the total amount of execution time left this team has before they timeout
+     *
+     * @return the amount of execution time remaining, in nanoseconds
+     * @battlecode.doc.costlymethod
+     */
+    public static long getTimeLeft() {
+        return RobotMonitor.getTimeLeft();
+    }
+
+    /**
+     * Returns the total amount of time that this team's robots have collectively spent executing
+     * since the beginning of the match.
+     *
+     * @return the total execution time, in nanoseconds
+     * @battlecode.doc.costlymethod
+     */
+    public static long getTimeElapsed() {
+        return RobotMonitor.getTimeElapsed();
+    }
+
+    /**
      * Prevent construction.
      */
     private Clock() {}

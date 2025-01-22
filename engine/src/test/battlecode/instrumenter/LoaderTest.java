@@ -1,6 +1,8 @@
 package battlecode.instrumenter;
 
 import battlecode.instrumenter.profiler.Profiler;
+import battlecode.world.control.PlayerControlProvider;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -69,8 +71,9 @@ public class LoaderTest {
                 SandboxedRobotPlayer.Pauser.class,
                 SandboxedRobotPlayer.Killer.class,
                 int.class,
-                Profiler.class)
-                .invoke(null, pauser, killer, 0, null);
+                Profiler.class,
+                PlayerControlProvider.class)
+                .invoke(null, pauser, killer, 0, null, null);
         monitor1.getMethod("setBytecodeLimit", int.class)
                 .invoke(null, Integer.MAX_VALUE);
 

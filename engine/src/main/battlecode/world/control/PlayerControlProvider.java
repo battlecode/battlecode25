@@ -101,6 +101,14 @@ public class PlayerControlProvider implements RobotControlProvider {
         }
     }
 
+    public long getTimeElapsed() {
+        return totalPlayerTime;
+    }
+
+    public long getTimeLeft() {
+        return Math.max(GameConstants.MAX_TEAM_EXECUTION_TIME - totalPlayerTime, 0L);
+    }
+
     @Override
     public void matchStarted(GameWorld gameWorld) {
         this.gameWorld = gameWorld;
@@ -139,7 +147,8 @@ public class PlayerControlProvider implements RobotControlProvider {
                     robot.getID(),
                     factory.createLoader(profiler != null),
                     robotOut,
-                    profiler
+                    profiler,
+                    this
             );
             this.sandboxes.put(robot.getID(), player);
         } catch (InstrumentationException e) {
@@ -184,6 +193,7 @@ public class PlayerControlProvider implements RobotControlProvider {
             player.step();
             totalPlayerTime += (System.nanoTime() - timeBefore);
             if(totalPlayerTime > GameConstants.MAX_TEAM_EXECUTION_TIME) {
+                ErrorReporter.warn("Team " + team + " has timed out!");
                 robot.getController().resign();
             }
         }

@@ -92,9 +92,7 @@ public class GameConstants {
      * The maximum execution time that can be spent on a team in one match. If the total time spent executing a team's bots
      * exceeds this limit, the team will immediately lose the game. Execution time is measured in ns.
      */
-    // public static final long MAX_TEAM_EXECUTION_TIME = 1200000000000L;
-
-    public static final long MAX_TEAM_EXECUTION_TIME = 5000000000L;
+    public static final long MAX_TEAM_EXECUTION_TIME = 1200000000000L;
 
     // *********************************
     // ****** GAME MECHANICS ***********
