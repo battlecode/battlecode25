@@ -596,6 +596,12 @@ public class InternalRobot implements Comparable<InternalRobot> {
             addPaint(this.type.paintPerTurn + this.gameWorld.extraResourcesFromPatterns(this.team));
         if (this.type.moneyPerTurn != 0)
             this.gameWorld.getTeamInfo().addMoney(this.team, this.type.moneyPerTurn+this.gameWorld.extraResourcesFromPatterns(this.team));
+
+        // Add upgrade action for initially upgraded starting towers
+        if (this.type.isTowerType() && this.gameWorld.getCurrentRound() == 1 && this.type.level == 2) {
+            this.getGameWorld().getMatchMaker().addUpgradeAction(getID(), getHealth(), 
+                getType().health, getPaint(), getType().paintCapacity);
+        }
     }
 
     public void processBeginningOfTurn() {
