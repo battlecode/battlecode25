@@ -1,4 +1,4 @@
-export const CLIENT_VERSION = '3.0.0'
+export const CLIENT_VERSION = '3.1.0'
 export const SPEC_VERSION = '1'
 export const BATTLECODE_YEAR: number = 2025
 export const MAP_SIZE_RANGE = {
@@ -63,7 +63,49 @@ export const ENGINE_BUILTIN_MAP_NAMES: string[] = [
     'Snowglobe',
     'Barcode',
     'Flower',
-    'Piglets2'
+    'Piglets2',
+
+    // HS
+    'lighthouse',
+    'shell',
+    'walalilongla',
+    'mit',
+    'defensetower',
+    'maze',
+    'box',
+    'roads',
+    'Paintball',
+    'FourCorners',
+    'Snowman',
+    'Crab',
+    'Oasis',
+    'TheBest',
+    'starburst',
+    'Portal',
+    'Jail',
+    'PlumberGame',
+
+    // Quals
+    'boxofchocolates',
+    'sunrise',
+    'yearofthesnake',
+    'Circuit',
+    'headphones',
+    'Brat',
+    'Parking_lot',
+    'Rose',
+    'HungerGames',
+    'Castle',
+    'Bunny',
+    'Terminal',
+    'Leaf',
+    'BatSignal',
+    'CastleDefense',
+    'AlarmClock',
+    'DonkeyKong',
+    'rain',
+    'Dominoes',
+    'SandyBeach'
 ]
 
 export const TEAM_COLOR_NAMES = ['Silver', 'Gold']
