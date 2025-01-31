@@ -85,6 +85,7 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [])
     return (
         <div
+            className="w-full h-screen"
             ref={divRef}
             onClick={(e) => {
                 // Dont clear the GameRenderer selection
@@ -105,16 +106,22 @@ const ZoomableGameRenderer: React.FC<{
 
     const playable = round.match.game.playable // playable unless we are in the map editor
     React.useEffect(() => {
-        if (spaceRef.current && spaceRef.current.viewPort) {
-            if (!playable) {
-                // disable zooming and panning in map editor
-                const vp = spaceRef.current.viewPort
-                vp.setBounds({ x: [0, vp.containerWidth], y: [0, vp.containerHeight], zoom: [1, 1] })
-            } else {
-                const vp = spaceRef.current.viewPort
-                vp.setBounds({ x: [-10000, 10000], y: [-10000, 10000], zoom: [0.1, 10] })
+        const handleResize = () => {
+            if (spaceRef.current && spaceRef.current.viewPort) {
+                if (!playable) {
+                    // disable zooming and panning in the map editor
+                    const vp = spaceRef.current.viewPort
+                    vp.setBounds({ x: [0, vp.containerWidth], y: [0, vp.containerHeight], zoom: [1, 1] })
+                } else {
+                    const vp = spaceRef.current.viewPort
+                    vp.setBounds({ x: [-10000, 10000], y: [-10000, 10000], zoom: [0.1, 10] })
+                }
             }
         }
+        handleResize()
+
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
     }, [playable])
 
     const gameAreaRect = spaceRef.current?.viewPort?.translateClientRectToVirtualSpace(
@@ -146,7 +153,7 @@ const ZoomableGameRenderer: React.FC<{
     React.useEffect(resetCamera, [match])
 
     return (
-        <div onClick={() => GameRenderer.clearSelected()}>
+        <div onClick={() => GameRenderer.clearSelected()} className="w-full h-screen">
             <Space
                 ref={spaceRef}
                 onUpdated={(vp) => {
