@@ -85,7 +85,6 @@ const GameRendererCanvases: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [])
     return (
         <div
-            className="w-full h-screen"
             ref={divRef}
             onClick={(e) => {
                 // Dont clear the GameRenderer selection
@@ -153,7 +152,7 @@ const ZoomableGameRenderer: React.FC<{
     React.useEffect(resetCamera, [match])
 
     return (
-        <div onClick={() => GameRenderer.clearSelected()} className="w-full h-screen">
+        <div onClick={() => GameRenderer.clearSelected()}>
             <Space
                 ref={spaceRef}
                 onUpdated={(vp) => {
